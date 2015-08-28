@@ -2,8 +2,9 @@
 ;LAST UPDATE: 21.11.2013 savelij
 
 C_INIT		EX AF,AF'
-		LD A,3
-		RST 0X18
+		LD A,0x7c
+		ld bc,WIN_A3
+		out (c),a
 		EX AF,AF'
        LD   (PAR1),A
        LD   A,HIGH (INTRADR)
@@ -17,20 +18,11 @@ C_INIT		EX AF,AF'
        RST  18H
        LD   A,0C3H
        LD   (SW_DO),A
-;       LD   (OUT_SW),A
-;       LD   (SW_CLR),A
        LD   HL,OUT_CH
        LD   (OUT_SW+1),HL
-;       LD   DE,SG_ENC
-;       LD   HL,SGENCI
-;       LD   BC,12
-;       LDIR
-;       CALL MODE
-;       LD   HL,PALN
 		CALL MODE;       CALL SP_AUX1
 		CALL SP_DEF;       CALL CUR_AC
        LD   A,3
-;       JP   SET_PG
 		RST 0X18
 		RET
 
@@ -46,40 +38,6 @@ M_INIT: LD      A,3
 		LD (HL),0
 		LDIR
 		RET
-
-;        LD      HL,CH2
-;        LD      DE,23H
-;        LD      B,8
-;M_I_LP: LD      (HL),0
-;        ADD     HL,DE
-;        DJNZ    M_I_LP
-;	IF ROM
-;        LD      HL,0C000H
-;        XOR     A
-;        RST 18H
-;        LD      D,(HL)
-;        LD      (HL),55H
-;        LD      A,8
-;        RST 18H
-;        LD      E,(HL)
-;        LD      (HL),0AAH
-;        XOR     A
-;        RST 18H
-;        LD      A,55H
-;        CP      (HL)
-;        EX      AF,AF'
-;        LD      (HL),D
-;        LD      A,8
-;        RST 18H
-;        LD      (HL),E
-;        LD      A,3
-;        RST     18H
-;        EX      AF,AF'
-;        RET     Z
-;        LD      BC,CH1_5
-;        LD      (CHTBL+2),BC
-;	ENDIF
-;        RET
 
 SWP:    EX      (SP),HL
         LD      DE,BUF+3
@@ -129,16 +87,6 @@ __SRC:  DB      49H, 92H, 24H
 	LD	DE,M_1024
 	DEC	C
 	RET	Z
-;/*
-;        DW      M_1024
-;        CALL    __TST
-;        DB      92H, 92H, 24H
-;        DW      M_512
-;        SET     _RU5,(_FLAG+IX)
-;        CALL    @@TST
-;        DB      24H, 24H, 24H
-;        DW      M_128
-;*/
         CALL    PRN
         DB      "fault. (",0
 	LD	A,(BUF)
@@ -151,25 +99,6 @@ __SRC:  DB      49H, 92H, 24H
 	DB	")",0DH,0AH,0
         DI
         HALT
-;/*
-;@@TST:  POP     HL
-;        LD      DE,BUF
-;        LD      BC,3FFH
-;@@LP:   LD      A,(DE)
-;        CP      (HL)
-;	INC	HL
-;	INC	DE
-;        JR      Z,@@1
-;        INC     C
-;@@1:    DJNZ    @@LP
-;        LD      E,(HL)
-;        INC     HL
-;        LD      D,(HL)
-;        INC     HL
-;        INC     C
-;        RET	Z
-;        JP      (HL)
-;*/
 
 __TST:  POP     HL
         LD      DE,BUF
@@ -193,7 +122,7 @@ M_512:  DB      1BH
         DB      "512",0
 M_1024: DB      3BH
         DW      7552
-        DB      "1024",0
+        DB      "4096",0
 
 MEM_SIZE:
         CALL    PRN
@@ -202,168 +131,34 @@ MEM_SIZE:
 	LD	A,3
 	RST	18H
         EX      DE,HL
-        LD      A,(HL)
+        ;LD      A,(HL)
         INC     HL
-        LD      (CHED+_DCYLN),A
-        LD      (CHED+_DTRACK),A
-        LD      E,(HL)
+        ;LD      (CHED+_DCYLN),A
+        ;LD      (CHED+_DTRACK),A
+        ;LD      E,(HL)
         INC     HL
-        LD      D,(HL)
+        ;LD      D,(HL)
         INC     HL
-        LD      (CHED+_DBLDR),DE
+        ;LD      (CHED+_DBLDR),DE
+		ld a,1
+        LD      (CHED+_DFN),a
         CALL    PRN
         DB      "size is ",0
         CALL    PRN_HL
         CALL    PRN
         DB      "k.",0DH,0AH,0
+		
         RET
 
 CPM_LOAD:
 	LD	BC,CPM_SIZE
 CPM_L1
-;	PUSH	BC
-;        CALL    TST_RT
-;        CALL    _SIGN
-;        DW      32EH, 101H
-;	IF ROM
-;        DW      0FFF4H-0FF72H
-;	ELSE
-;        DW      0FFF4H-0EFEFH
-;	ENDIF
-;					LD	HL,0FFF4H
-;.COMMENT @
-;        EX      DE,HL
-;        INC     DE
-;	LD	HL,0FFFEH
-;	ADD	HL,DE
-;	SBC	HL,HL			; HL=0 IF ERR, ELSE HL=FFFF
-;LPL1:	LD	A,D
-;	XOR	E
-;	XOR	L
-;	LD	(ED_BUF),A
-;	LD	A,(ED_BUF+10)
-;	ADD	A,D
-;	DAA
-;	LD	E,A
-;	DEC	D
-;	JR	NZ,LPL1
-;	XOR	L
-;	XOR	E
-;	LD	L,A
-;@
-;	CALL	MS
-;	DB 0DH,0AH,'SIGN:',0
-;	LD	A,H
-;	CALL	HEX2
-;	LD	A,L
-;	CALL	HEX1
-;	CALL	MS
-;	DB 0DH,0AH,'TIME:',0
-;	LD	A,(RTIME+1)
-;	CALL	HEX2
-;	LD	A,(RTIME)
-;	CALL	HEX1
-;	CALL	CRLF
-
-;	LD	C,0
-;	EXX
-;	POP	BC
 	LD      DE,CCP
-        LD      HL,CPM_IMG
+    LD      HL,CPM_IMG
 
 	LDIR
 	RET
 
-;CPMLLP: LD	A,(HL)
-;	EXX
-;	XOR	C
-;	XOR	L
-;	LD	C,A
-;	ADD	HL,HL
-;	JR	NC,$+3
-;	INC	HL
-;	EXX
-;	LD	(DE),A
-;	INC	DE
-;	CPI
-;	JP	PE,CPMLLP
-;        RET
-
-;SUB_1: 	DI
-;        POP     HL
-;	LD	A,3
-;        RST     18H
-;	PUSH	AF
-;	LD	BC,(INTRADR)
-;	PUSH	BC
-;        LD      BC,PTST_1
-;        LD      (INTRADR),BC
-;        PUSH    HL
-;        LD      HL,1
-;	IM	2
-;	RET
-
-;TST_RT: CALL    SUB_1      ; RET HL & RTIME
-;	EI
-;	HALT
-;	LD B,20
-;	DJNZ $
-;	OR A
-;	EI
-;PTST_L:	INC	HL
-;	JR	NC,PTST_L
-;	LD	(RTIME),HL
-;PTST_E:	DI
-;	IM	1
-;        POP     DE
-;        LD      (INTRADR),DE
-;	POP	AF
-;        RST     18H
-;	EI
-;	RET
-
-;PTST_1: SCF
-;	RET
-
-;SIGN:   CALL    SUB_1      ; DE - CONST, RET - HL
-;        LD      HL,1
-;        EI
-;	HALT
-;        NOP
-;__L:    DEC     DE
-;        LD A,D
-;        OR E
-;        JR      NZ,__L
-;LL:     IN      A,(0FEH)
-;	ADD	A,A
-;	ADC	HL,HL
-;        JR      NC,LL
-;	JR	PTST_E
-
-
-;_SIGN:  POP     HL        ; CALL _SIGN\DW<TUR-CONST>,<NOR-CONST>\DW<ADD-IF-TURBO>
-;        LD      E,(HL)
-;        INC     HL
-;        LD      D,(HL)
-;        INC     HL
-;        PUSH    DE           ; PUSH TUR CONST 
-;        LD      E,(HL)
-;        INC     HL
-;        LD      D,(HL)
-;        INC     HL           ; DE <- NOR CONST
-;        LD      C,(HL)
-;        INC     HL
-;        LD      B,(HL)       ; BC <- ADD
-;        INC     HL
-;        EX      (SP),HL      ; HL <- TUR CONST
-;        BIT     4,(IX-_RTIME+1) ; NZ IF TURBO
-;        JR      Z,SIGN
-;        EX      DE,HL
-;	PUSH	BC
-;        CALL    SIGN
-;	POP	BC
-;        ADD     HL,BC
-;        RET
 
 SET_SYS:LD      A,(SYS_P)
 SET_ASYS:
@@ -420,28 +215,6 @@ DSK_1:    LD  A,(HL)
           LD A,0FFH
           OUT (0FFH),A
 		JP ENTRY
-
-;          LD HL,0C000H
-;          LD A,(HL)
-;          CP 0C3H
-;          JR NZ,_ENT
-;          XOR A
-;CH_LP:    ADD A,(HL)
-;          ADC A,0
-;          INC HL
-;          BIT 7,H
-;          JR  NZ,CH_LP
-;          DEC A
-;          JR  NZ,_ENT
-;          LD  A,0AAH
-;          DEC HL
-;          CP  (HL)
-;          JR  NZ,_ENT
-;          CPL
-;          DEC HL
-;          CP  (HL)
-;          JP  Z,0C000H
-;_ENT:     JP  ENTRY
 
 PG_SET:   LD HL,PAGE_D
           LD DE,40H

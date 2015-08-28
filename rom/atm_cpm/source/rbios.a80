@@ -26,6 +26,9 @@ PM_RUN_4000	OUT (C),E
 		RET
 
 		DUPL 0X18-$,0
+		DI
+		PUSH BC
+		LD B,(IX-_MEMDSP)
 		JP SET_PG
 
 		DUPL 0X20-$,0
@@ -41,29 +44,13 @@ ED_PG		ADD A,6
 		RET
 
 ; SET PAGE NUMBER
-SET_PG		DI
-		PUSH BC
-		LD B,(IX-_MEMDSP)
-		LD (MEMDSP),A
-		AND 0X3F
-		CALL S_PG1
-		POP BC
-		RET
-
-S_PG1		DI
-		OR 0X80
+SET_PG	LD (MEMDSP),A
 		PUSH BC
 		CPL
-;		LD BC,0XFC77
-;		PUSH DE
-;		LD E,(IX-_SYS_P)
-;		OUT (C),E
-		LD BC,WIN_A3
+		LD BC,WIN_P3
 		OUT (C),A
-;		LD BC,0XFD77
-;		OUT (C),E
-;		POP DE
 		POP AF
+		POP BC
 		RET
 
 ENTRY:  LD      SP,SYS_SP       ; MUST BE CPSYS
@@ -432,16 +419,16 @@ CH1_5:          ; EDISK RU5 (ROM)
         DB      2       ;+ ŠŽ„ “‘’Ž‰‘’‚€
         DB      0       ;+ ŽŒ… ˆ‚Ž„€
         DB      1       ;- ŠŽ„ ˆ‚Ž„€
-        DB      1       ;+ —ˆ‘‹Ž ”ˆŠ‘ˆŽ‚€›• ƒŽ‹Ž‚ŽŠ
+        DB      2       ;+ —ˆ‘‹Ž ”ˆŠ‘ˆŽ‚€›• ƒŽ‹Ž‚ŽŠ
         DB      0       ;+ —ˆ‘‹Ž ‘Œ…›• ƒŽ‹Ž‚ŽŠ
-		DW 0	;3H      ;+ —ˆ‘‹Ž –ˆ‹ˆ„Ž‚ € „ˆ‘Š…
-        DB      128     ;+ —ˆ‘‹Ž ‘…Š’ŽŽ‚ € „ŽŽ†Š…
-        DW      128     ;+ —ˆ‘‹Ž €‰’Ž‚ ‚ ‘…Š’Ž…
-        DB      1       ;+ —ˆ‘‹Ž ‘ˆ‘’…Œ›• „ŽŽ†…Š
+		DW 		80		;3H      ;+ —ˆ‘‹Ž –ˆ‹ˆ„Ž‚ € „ˆ‘Š…
+        DB      16     	;+ —ˆ‘‹Ž ‘…Š’ŽŽ‚ € „ŽŽ†Š…
+        DW      256     ;+ —ˆ‘‹Ž €‰’Ž‚ ‚ ‘…Š’Ž…
+        DB      2       ;+ —ˆ‘‹Ž ‘ˆ‘’…Œ›• „ŽŽ†…Š
         DW      0       ;+ ŽŒ… €—€‹œŽƒŽ –ˆ‹ˆ„€
-		DW 0	;     384     ;+ —ˆ‘‹Ž ‹ŽŠŽ‚ € „ˆ‘Š…
-        DW      128     ;+ —ˆ‘‹Ž ‹ŽŠŽ‚ € „ŽŽ†Š…
-		DW 0	;3H      ;+ —ˆ‘‹Ž „ŽŽ†…Š € „ˆ‘Š…
+		DW 		5120	;     384     ;+ —ˆ‘‹Ž ‹ŽŠŽ‚ € „ˆ‘Š…
+        DW      32     ;+ —ˆ‘‹Ž ‹ŽŠŽ‚ € „ŽŽ†Š…
+		DW 		160		;3H      ;+ —ˆ‘‹Ž „ŽŽ†…Š € „ˆ‘Š…
         DB      8       ;+ „‹ˆ€ ŽŒ…€ ‹ŽŠ€ ‚ ‘…Š’Ž…
         DW      128     ;+ —ˆ‘‹Ž ‡€ˆ‘…‰ ‚ „ˆ…Š’Žˆˆ
 

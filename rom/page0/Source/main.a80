@@ -7,7 +7,7 @@
 		include ../../ports_ide.a80
 
 ;VERSION
-VERSBIOS	EQU "0.56c "
+VERSBIOS	EQU "0.56e "
 
 ;BIT 4,(IY+55)
 ;BIT 3,(IY+55)-0-‡€…’ €ˆŒ€–ˆˆ ŠŽ˜€Š€, 1-€‡…˜…ˆ…

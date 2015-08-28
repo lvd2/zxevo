@@ -20,25 +20,62 @@ ED_NOP
         XOR     A
         RET
 
-;-------------------------
+;-------------------------17dd
 ED_SEEK: LD     A,(RQCYL)
-	 DEC	A
+		 ;dec a
+		add a,a
+		 add a,(IX-_RQHEAD)
          LD     (ED_CYL),A
          XOR    A
          RET
 
 ;-------------------------
 ; ÇõóàëãÖçàÖ ÄÑêÖëÄ
-ED_ADR		BIT ED_INI,(IX-_TST_IS1)
+ED_ADR	BIT ED_INI,(IX-_TST_IS1)
 		CALL NZ,ED_INIT
-		BIT 7,(IX-_ED_CYL)
-		JR NZ,ED_ERRA1
-	LD      A,(RQSECT)      ; 128 ëÖäíéêéÇ çÄ ÑéêéÜäì
-        RRA
-        LD      L,0
-        RR      L
-        OR      0C0H
-        LD      H,A
+		ld		a,~PAGE_RAMDISK
+        RST     18H
+        EX      AF,AF'
+		ld		hl,(ED_CYL)
+		ld		h,0xc2
+		LD      de,(RQSECT)      
+		inc e
+		ld d,0
+		ld b,126
+ED_ADR_LOOP:
+		ld a,(hl)
+		cp e
+		jr z,ED_ADR_END
+		inc h
+		ld a,(hl)
+		add a,d
+		ld d,a
+		inc h
+		djnz ED_ADR_LOOP
+        EX      AF,AF'
+		rst 0x18
+		JR ED_ERRA1
+ED_ADR_END:	
+		ld e,0
+		srl d
+		rr e
+		ld h,0xc0
+		ld a,(hl)
+		add a,d
+		ld d,a
+		inc h
+		ld a,~PAGE_DATARAMD
+		sub (hl)
+		ld hl,0xc000
+		ex de,hl
+		add hl,de
+		jr nc,ED_ADR_NINC
+		add hl,de
+		dec a
+ED_ADR_NINC:
+        EX      AF,AF'
+		rst 0x18
+        EX      AF,AF'
         RET
 
 ED_INIT:RES     ED_INI,(IX-_TST_IS1)
@@ -50,13 +87,14 @@ ED_INIT:RES     ED_INI,(IX-_TST_IS1)
         JP      ED_CLR
 
 ;-------------------------
-; óíÖçàÖ
+; óíÖçàÖ 0x183b
 ED_RD:  CALL    ED_ADR          ; COPY FROM HL ...
-        LD      A,(ED_CYL)
-        CALL    ED_PG
         LD      (R8_FR),A
         LD      BC,128
         LD      DE,(DCBUF)      ; ... TO DE 128 BYTE
+        RST     8
+        DB      3, 0FFH
+        LD      BC,128
         RST     8
         DB      3, 0FFH
         EI
@@ -70,12 +108,13 @@ ED_ERRA:LD      A,_ADRERR
 ;------------------------
 ; áÄèàëú
 ED_WR:  CALL    ED_ADR          ; COPY TO HL ...
-        LD      A,(ED_CYL)
-        CALL    ED_PG
         LD      (R8_TO),A
         LD      BC,128
         EX      DE,HL
         LD      HL,(DCBUF)      ; ... FROM DE 128 BYTE
+        RST     8
+        DB      0FFH, 3
+        LD      BC,128
         RST     8
         DB      0FFH, 3
         EI
