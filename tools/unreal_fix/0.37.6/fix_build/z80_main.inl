@@ -63,7 +63,6 @@ void wm(unsigned addr, unsigned char val)
        unsigned idx = ((addr&0x07F8) >> 3) | ((addr & 7) << 8);
        fontatm2[idx] = val;
        update_screen();
-       return;
    }
 
    unsigned char *a = bankw[(addr >> 14) & 3];
