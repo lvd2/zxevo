@@ -1,6 +1,7 @@
 .NOLIST
 .INCLUDE "m128def.inc"
 .INCLUDE "_macros.asm"
+.INCLUDE "deflang.inc"
 .LIST
 .LISTMAC
 
@@ -119,7 +120,7 @@ GLB_Y:          .BYTE   2
                 .ORG    $0F00
 EE_DUMMY:       .DB     $54,$53
 EE_MODE1:       .DB     $FF
-EE_LANG:        .DB     $00
+EE_LANG:        .DB     DEF_LANG
 ;
 ;--------------------------------------
 ;
