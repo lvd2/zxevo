@@ -419,9 +419,9 @@ CH1_5:          ; EDISK RU5 (ROM)
         DB      2       ;+ ŠŽ„ “‘’Ž‰‘’‚€
         DB      0       ;+ ŽŒ… ˆ‚Ž„€
         DB      1       ;- ŠŽ„ ˆ‚Ž„€
-        DB      2       ;+ —ˆ‘‹Ž ”ˆŠ‘ˆŽ‚€›• ƒŽ‹Ž‚ŽŠ
+        DB      1       ;+ —ˆ‘‹Ž ”ˆŠ‘ˆŽ‚€›• ƒŽ‹Ž‚ŽŠ
         DB      0       ;+ —ˆ‘‹Ž ‘Œ…›• ƒŽ‹Ž‚ŽŠ
-		DW 		80		;3H      ;+ —ˆ‘‹Ž –ˆ‹ˆ„Ž‚ € „ˆ‘Š…
+		DW 		160		;3H      ;+ —ˆ‘‹Ž –ˆ‹ˆ„Ž‚ € „ˆ‘Š…
         DB      16     	;+ —ˆ‘‹Ž ‘…Š’ŽŽ‚ € „ŽŽ†Š…
         DW      256     ;+ —ˆ‘‹Ž €‰’Ž‚ ‚ ‘…Š’Ž…
         DB      2       ;+ —ˆ‘‹Ž ‘ˆ‘’…Œ›• „ŽŽ†…Š

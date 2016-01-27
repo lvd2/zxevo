@@ -227,9 +227,9 @@ R8_CVRT
 ;		IF HACK_RBIOS=0
 ;		BIT 5,A           ; CONVERT PAGE FROM CALL TO REAL PAGE NUM
 ;		ELSE
-		cp 0xfe				;BIT 7,A
+		BIT 7,A
 ;		ENDIF
-        RET    NZ
+        RET    Z
 R8_UH:  BIT    7,H
         LD     A,3           ;       PAGE 3
         RET    NZ            ;       PAGE 2  (IN SYS TOO)

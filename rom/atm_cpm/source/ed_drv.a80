@@ -20,11 +20,8 @@ ED_NOP
         XOR     A
         RET
 
-;-------------------------17dd
+;-------------------------
 ED_SEEK: LD     A,(RQCYL)
-		 ;dec a
-		add a,a
-		 add a,(IX-_RQHEAD)
          LD     (ED_CYL),A
          XOR    A
          RET
@@ -64,18 +61,16 @@ ED_ADR_END:
 		add a,d
 		ld d,a
 		inc h
-		ld a,~PAGE_DATARAMD
-		sub (hl)
-		ld hl,0xc000
-		ex de,hl
-		add hl,de
-		jr nc,ED_ADR_NINC
-		add hl,de
-		dec a
+		ld a,PAGE_DATARAMD
+		add a,(hl)
+		set 7,d
+		bit 6,d
+		jr z,ED_ADR_NINC
+		res 6,d
+		inc a
 ED_ADR_NINC:
         EX      AF,AF'
 		rst 0x18
-        EX      AF,AF'
         RET
 
 ED_INIT:RES     ED_INI,(IX-_TST_IS1)
@@ -87,16 +82,27 @@ ED_INIT:RES     ED_INI,(IX-_TST_IS1)
         JP      ED_CLR
 
 ;-------------------------
-; óíÖçàÖ 0x183b
+; óíÖçàÖ
+ED_LDIR:
+		ld		a,0x06
+		in		a,(0xbe)
+        EX      AF,AF'
+		push 	bc
+		ld 		bc,WIN_P2
+		out 	(c),a
+		pop 	bc
+		ldir
+        EX      AF,AF'
+		ld 		bc,WIN_P2
+		out 	(c),a
+		ret
+;-------------------------
+; 
 ED_RD:  CALL    ED_ADR          ; COPY FROM HL ...
-        LD      (R8_FR),A
-        LD      BC,128
+        EX      DE,HL
+        LD      BC,256
         LD      DE,(DCBUF)      ; ... TO DE 128 BYTE
-        RST     8
-        DB      3, 0FFH
-        LD      BC,128
-        RST     8
-        DB      3, 0FFH
+		call 	ED_LDIR
         EI
         XOR     A
         RET
@@ -108,15 +114,9 @@ ED_ERRA:LD      A,_ADRERR
 ;------------------------
 ; áÄèàëú
 ED_WR:  CALL    ED_ADR          ; COPY TO HL ...
-        LD      (R8_TO),A
-        LD      BC,128
-        EX      DE,HL
-        LD      HL,(DCBUF)      ; ... FROM DE 128 BYTE
-        RST     8
-        DB      0FFH, 3
-        LD      BC,128
-        RST     8
-        DB      0FFH, 3
+        LD      BC,256
+        LD      HL,(DCBUF)     
+		call 	ED_LDIR
         EI
         XOR     A
         RET
@@ -125,7 +125,7 @@ ED_WR:  CALL    ED_ADR          ; COPY TO HL ...
 ; FORMAT
 ED_FRM: LD      A,(RQCYL)
         DEC     A
-		JP M,ED_ERRA
+		JP 		M,ED_ERRA
         CALL    ED_PG
         RST     18H
         EX      AF,AF'
