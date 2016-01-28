@@ -154,6 +154,8 @@ module top(
 	wire zports_dataout;
 	wire porthit;
 
+	wire csrom_int;
+
 
 	wire [39:0] kbd_data;
 	wire [ 7:0] mus_data;
@@ -405,6 +407,7 @@ module top(
 	wire [3:0] border;
 
 	wire drive_ff;
+	wire drive_00;
 
 
 	wire       atm_palwr;
@@ -418,10 +421,15 @@ module top(
 	wire int_start;
 
 
+
 	// data bus out: either RAM data or internal ports data or 0xFF with unused ports
-	assign d = ena_ram ? dout_ram : ( ena_ports ? dout_ports : ( drive_ff ? 8'hFF : 8'bZZZZZZZZ ) );
+	assign d = ena_ram ? dout_ram : ( ena_ports ? dout_ports : ( (drive_ff|drive_00) ? {8{drive_ff}} : 8'bZZZZZZZZ ) );
 
-
+/*	wire [7:0] d_pre_out;
+	assign d_pre_out = (({8{ena_ram}} & dout_ram) | ({8{ena_ports}} & dout_ports) | {8{drive_ff}}) & {8{~drive_00}} ;
+	assign d = (ena_ram|ena_ports|drive_ff) ? d_pre_out : 8'bZZZZ_ZZZZ;
+*/
+	assign csrom = csrom_int && !drive_00;
 
 
 	zbus zxbus( .iorq_n(iorq_n), .rd_n(rd_n), .wr_n(wr_n), .m1_n(m1_n),
@@ -579,7 +587,7 @@ module top(
 		.rompg  (rompg  ),
 		.romoe_n(romoe_n),
 		.romwe_n(romwe_n),
-		.csrom  (csrom  ),
+		.csrom  (csrom_int),
 
 		.cpu_req   (cpu_req   ),
 		.cpu_rnw   (cpu_rnw   ),
@@ -877,6 +885,8 @@ module top(
 		.set_nmi(set_nmi),
 		.imm_nmi(imm_nmi),
 		.clr_nmi(clr_nmi),
+
+		.drive_00(drive_00),
 
 		.in_nmi (in_nmi ),
 		.gen_nmi(gen_nmi)
