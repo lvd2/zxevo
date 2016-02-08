@@ -5,9 +5,9 @@
 ;*                                                                          *
 ;*   AS 1.41 - Datei REGAVR.INC                                             *
 ;*                                                                          *
-;*   Sinn : enth„lt SFR- und Bitdefinitionen fuer die AVR-Prozessoren       *
+;*   Sinn : enthält SFR- und Bitdefinitionen fuer die AVR-Prozessoren       *
 ;*                                                                          *
-;*   letzte Žnderungen :  6. 7.1996                                         *
+;*   letzte Änderungen :  6. 7.1996                                         *
 ;*                        8. 6.1997 Anpassung an die endgueltigen Versionen *
 ;*                       19.11.1999 Konstantenmodus fuer AVR jetzt HEX      *
 ;*                       26. 2.2000 MomCPU-->MOMCPU fuer case-sensitiven    *
@@ -192,7 +192,7 @@ timsk           port    0x39            ; Timer-Interrupt-Maske:
                 if      ismega(__cpucode)
 toie0            equ     0
                 elseif
-toie0            equ     1              ;  šberlauf Timer 0
+toie0            equ     1              ;  Überlauf Timer 0
                 endif
                 if      __cpucode>=0x012313
                  if      __cpucode>=0x014414
@@ -283,7 +283,7 @@ com01		 equ	 5
 foc0		 equ	 7		; force output compare
 		endif
 
-tcnt0           port    0x32            ; Z„hlregister Timer 0
+tcnt0           port    0x32            ; Zählregister Timer 0
 
 ocr0		port	0x3c
 

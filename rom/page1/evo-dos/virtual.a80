@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 10.03.2015 savelij
+;LAST UPDATE: 03.05.2015 savelij
 
 		DB 0XFF				;DCU
 
@@ -640,7 +640,7 @@ SP_RAMD4	NEG
 		LD B,0
 		LDIR
 		NEG
-		EX AF,AF'			;‘Ÿ’€‹ˆ ‘ŠŽ‹œŠŽ Ž‘’€‹Ž‘œ ŠŽˆŽ‚€’œ ˆ‡ €—€‹€ ‘‹…„“ž™…ƒŽ ‹ŽŠ€
+		PUSH AF			;‘Ÿ’€‹ˆ ‘ŠŽ‹œŠŽ Ž‘’€‹Ž‘œ ŠŽˆŽ‚€’œ ˆ‡ €—€‹€ ‘‹…„“ž™…ƒŽ ‹ŽŠ€
 		LD BC,(BB_CPU2)
 		LD A,C
 		LD C,LOW (WIN_A0)
@@ -662,7 +662,7 @@ SP_RAMD4	NEG
 SP_RAMD5	LD A,H				;„‹Ÿ —’…ˆŸ  
 		SUB 0X40			;ˆ‡Œ…ˆ‹ˆ €„…‘ Š“„€ ŠŽˆŽ‚€’œ € „“ƒŽ… ŽŠŽ Ž…–ˆŽ‚€ˆŸ 
 		LD H,A
-SP_RAMD6	EX AF,AF'
+SP_RAMD6	POP AF
 		LD C,A				;‘ŠŽ‹œŠŽ Ž‘’€‹Ž‘œ ‘ŠŽˆŽ‚€’œ €‰’
 		LD B,0
 		LDIR
@@ -802,7 +802,7 @@ CREATE_TRDTABL	LD BC,WIN_P1
 		POP DE				;€„…‘ €—€‹€ 
 		LD HL,0				;‘Œ…™…ˆ… ‚ ‹ŽŠ€• ˆ ‘’€ˆ–€•
 		LD A,0XA0
-ELT2		EX AF,AF'
+ELT2		PUSH AF
 		LD BC,0X1000			;‘—…’—ˆŠ ŽŒ…Ž‚ ‘…Š’ŽŽ‚ ˆ ˆ• ŽŒ…€
 		LD A,L
 		RRCA
@@ -824,7 +824,7 @@ ELT1		INC C
 		INC E				;„‹Ÿ ‘‹…„“ž™…‰ „ŽŽ†Šˆ
 		LD BC,0X40
 		ADD HL,BC			;……•Ž„ Š ‘‹…„“ž™…‰ „ŽŽ†Š…
-		EX AF,AF'
+		POP AF
 		DEC A
 		JR NZ,ELT2			;Ž‚’ŽŸ…Œ „‹Ÿ ‚‘…• „ŽŽ†…Š
 		LD HL,CPU1+0X3FFF

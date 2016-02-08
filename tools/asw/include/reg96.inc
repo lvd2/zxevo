@@ -1,18 +1,18 @@
 		save
-                listing off   ; kein Listing Åber diesen File
+                listing off   ; kein Listing ¸ber diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.41 - Datei REG96.INC                                              *
 ;*   								            *
-;*   Sinn : enthÑlt Makro-, SFR- und Adre·definitionen fÅr die              *
+;*   Sinn : enth‰lt Makro-, SFR- und Adreﬂdefinitionen f¸r die              *
 ;*          MCS-96-Prozessoren                                              *
-;*          OK, der Name fÑllt aus dem Rahmen, aber STDDEF96.INC war schon  *
+;*          OK, der Name f‰llt aus dem Rahmen, aber STDDEF96.INC war schon  *
 ;*          belegt...                                                       *
 ;* 									    *
-;*   letzte énderungen : 20. 2.1994                                         *
-;*                       28. 6.1994 80196 (KR) hinzugefÅgt                  *
-;*                        9. 3.1997 80196N(T), 80296 hinzugefÅgt            *
+;*   letzte ƒnderungen : 20. 2.1994                                         *
+;*                       28. 6.1994 80196 (KR) hinzugef¸gt                  *
+;*                        9. 3.1997 80196N(T), 80296 hinzugef¸gt            *
 ;*                                                                          *
 ;****************************************************************************
 
@@ -40,7 +40,7 @@ SP    		equ	18h		; Stackpointer
                 if      MOMCPU>=80196h
 WSR              equ     14h            ; RAM-Window in Registerbank
                  if      MOMCPU>=80296h
-WSR1              equ     15h           ; RAM-Window in untere HÑlfte Registerbank
+WSR1              equ     15h           ; RAM-Window in untere H‰lfte Registerbank
                  endif
                 endif
 
@@ -55,7 +55,7 @@ ICX0             equ     0010h
 ICX1             equ     0016h
 IDX0             equ     1fc0h
 IDX1             equ     1fc4h
-RPT_CNT          equ     0004h          ; ZÑhlregister
+RPT_CNT          equ     0004h          ; Z‰hlregister
                 endif
 
 ;----------------------------------------------------------------------------
@@ -65,7 +65,7 @@ RPT_CNT          equ     0004h          ; ZÑhlregister
 ; A/D-Wandler
                 switch  MOMCPUNAME
 
-                case    "80296"         ; Warnung unterdrÅcken
+                case    "80296"         ; Warnung unterdr¸cken
 
 
                 case    "80196N"
@@ -124,7 +124,7 @@ EPA{"\{__CNT}"}_CON equ  1f60h+(__CNT*4) ; Steuerung Vergleicher/Fangeinheiten
 EPA{"\{__CNT}"}_TIME equ 1f62h+(__CNT*4) ; Zeitpunkt     "            "
 __CNT             set    __CNT+1
                  endm
-EPAIPV           equ     1fa8h          ; Interrupt-PrioritÑt
+EPAIPV           equ     1fa8h          ; Interrupt-Priorit‰t
 
 
                 case    "80196"
@@ -132,7 +132,7 @@ EPA_Mask         equ     1fa0h          ; (w) EPA Interruptfreigabe 4..9, 0..1, 
 EPA_Mask1        equ     1fa4h
 EPA_Pend         equ     1fa2h          ; (w) EPA Interrupt aufgetreten 4..9, 0..1, overrun 0..9/0/1
 EPA_Pend1        equ     1fa6h
-EPAIpv           equ     1fa8h          ; PrioritÑt EPA-Interrupt
+EPAIpv           equ     1fa8h          ; Priorit‰t EPA-Interrupt
 
 EPA_Control0     equ     1f60h          ; Steuerung Capture/Compare Kanal 0..9
 EPA_Time0        equ     1f62h          ; (w) gespeicherter Zeitpunkt Kanal 0..9
@@ -201,9 +201,9 @@ SSIO1_CON        equ     1fb3h          ; Modus SSIO1
 
                 case    "80196"
 SSIO_StB0        equ     1fb0h          ; Datenpuffer SSIO Kanal 0
-SSIO_StCr0       equ     1fb1h          ; Steuerung Sender/EmpfÑnger SSIO Kanal 0
+SSIO_StCr0       equ     1fb1h          ; Steuerung Sender/Empf‰nger SSIO Kanal 0
 SSIO_StB1        equ     1fb2h          ; Datenpuffer SSIO Kanal 1
-SSIO_StCr1       equ     1fb3h          ; Steuerung Sender/EmpfÑnger SSIO Kanal 1
+SSIO_StCr1       equ     1fb3h          ; Steuerung Sender/Empf‰nger SSIO Kanal 1
 SSIO_Baud        equ     1fb4h          ; Baudrate SSIO
 SBuf_RX          equ     1fb8h          ; Empfangsdaten
 SP_Stat          equ     1fb9h          ; Zustand SIO
@@ -233,9 +233,9 @@ INT_MASK1        equ     13h
 INT_PEND         equ     09h            ; Interruptanzeigen
 INT_PEND1        equ     12h
 EXTINT_CON       equ     1fcch          ; Flankenwahl externe Interrupts
-IN_PROG0         equ     1fc8h          ; Interruptbearbeitung lÑuft
+IN_PROG0         equ     1fc8h          ; Interruptbearbeitung l‰uft
 IN_PROG1         equ     1fcah
-INT_CON0         equ     1fe8h          ; PrioritÑtsfestlegung
+INT_CON0         equ     1fe8h          ; Priorit‰tsfestlegung
 INT_CON1         equ     1feah
 INT_CON2         equ     1fech
 INT_CON3         equ     1feeh
@@ -272,7 +272,7 @@ INT_Pending      equ     9              ; Interrupts aufgetreten ?
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ; Timer
 
-Watchdog	equ	0ah		; Watchdog zurÅcksetzen
+Watchdog	equ	0ah		; Watchdog zur¸cksetzen
 
                 switch  MOMCPUNAME
 
@@ -325,7 +325,7 @@ P1_MODE          equ     1fd0h          ; Auswahl Port 1 Spezialfunktion/IO-Port
 P1_PIN           equ     1fd6h          ; Status Port 1 Pins
 P1_REG           equ     1fd4h          ; Port 1 Ausgabedaten
 
-P2_DIR           equ     1fd3h          ; Rest sinngemÑ·
+P2_DIR           equ     1fd3h          ; Rest sinngem‰ﬂ
 P2_MODE          equ     1fd1h
 P2_PIN           equ     1fd7h
 P2_REG           equ     1fd5h
@@ -354,7 +354,7 @@ P1_MODE          equ     1fd0h          ; Auswahl Port 1 Spezialfunktion/IO-Port
 P1_PIN           equ     1fd6h          ; Status Port 1 Pins
 P1_REG           equ     1fd4h          ; Port 1 Ausgabedaten
 
-P2_DIR           equ     1fcbh          ; Rest sinngemÑ·
+P2_DIR           equ     1fcbh          ; Rest sinngem‰ﬂ
 P2_MODE          equ     1fc9h
 P2_PIN           equ     1fcfh
 P2_REG           equ     1fcdh
@@ -391,7 +391,7 @@ P1IO             equ     1fd2h          ; Port 1 Datenrichtungsregister
 P1Reg            equ     1fd4h          ; Port 1 Datenausgabe
 P1PIn            equ     1fd6h          ; Eingangszustand Port 1
 
-P2SSel           equ     1fc9h          ; Rest sinngemÑ·
+P2SSel           equ     1fc9h          ; Rest sinngem‰ﬂ
 P2IO             equ     1fcbh
 P2Reg            equ     1fcdh
 P2PIn            equ     1fcfh
@@ -434,7 +434,7 @@ IOC1             equ     16h            ; I/O-Statusregister 1
                 switch  MOMCPUNAME
 
 
-                case    "80296"         ; Warnung unterdrÅcken
+                case    "80296"         ; Warnung unterdr¸cken
 
 
                 case    "80196N"
@@ -443,7 +443,7 @@ SLP_CON          equ     1ffbh
 SLP_STAT         equ     1ff8h
 
 
-                case    "80196"         ; Warnung unterdrÅcken
+                case    "80196"         ; Warnung unterdr¸cken
 
 
                 case    "8096"
@@ -476,12 +476,12 @@ SIO_RcInt_Vec    equ     2038h          ; SIO hat Zeichen empfangen
 ExtInt_Vec       equ     203ch          ; externer Interrupt
 NMI_Vec          equ     203eh          ; nicht mask. Interrupt
                 elseif
-TOverInt_Vec     equ     2000h          ; Vektor TimerÅberlauf
+TOverInt_Vec     equ     2000h          ; Vektor Timer¸berlauf
 ADInt_Vec        equ     2002h          ; Vektor A/D-Wandlung beendet
-HSIDataInt_Vec   equ     2004h          ; Vektor HSI-Daten verfÅgbar
+HSIDataInt_Vec   equ     2004h          ; Vektor HSI-Daten verf¸gbar
 HSOInt_Vec       equ     2006h          ; Vektor HSO
 HSI0Int_Vec      equ     2008h          ; Vektor HSI.0
-TimeInt_Vec      equ     200ah          ; Vektor fÅr Timer
+TimeInt_Vec      equ     200ah          ; Vektor f¸r Timer
 SerialInt_Vec    equ     200ch          ; Vektor serieller Interrupt
 ExtInt_Vec       equ     200eh          ; Vektor externer Interrupt
 SoftInt_Vec      equ     2010h          ; TRAP Interruptvektor
@@ -528,7 +528,7 @@ EXTMEM5END       equ     0ffffffh       ; Ende externer Speicher Bereich 5
 CCB0             equ     0ff2018h       ; Chip-Konfiguration
 CCB1             equ     0ff201ah       ; erw. Chip-Konfiguration
 CCB2             equ     0ff201ch
-Security_Key     equ     0ff2020h       ; SchlÅssel
+Security_Key     equ     0ff2020h       ; Schl¸ssel
 Reset_Location   equ     0ff2080h       ; Startadresse nach Reset
 USFR             equ     1ff6h          ; ???
 IRAM_CON         equ     1fe0h          ; Konfiguration Code-RAM
@@ -549,7 +549,7 @@ EXTMEM2          equ     4000h          ; Beginn externer Speicher Bereich 2
 EXTMEM2END       equ     0ffffh         ; Ende externer Speicher Bereich 2
 CCB              equ     2018h          ; Chip-Konfiguration
 CCB1             equ     201ah          ; erw. Chip-Konfiguration
-Security_Key     equ     2020h          ; SchlÅssel
+Security_Key     equ     2020h          ; Schl¸ssel
 Reset_Location   equ     2080h          ; Startadresse nach Reset
 USFR             equ     1ff6h          ; ???
 
@@ -566,7 +566,7 @@ EXTMEM1END       equ     1effh          ; Ende externer Speicher Bereich 1
 EXTMEM2          equ     4000h          ; Beginn externer Speicher Bereich 2
 EXTMEM2END       equ     0ffffh         ; Ende externer Speicher Bereich 2
 CCB              equ     2018h          ; Chip-Konfiguration
-Security_Key     equ     2020h          ; SchlÅssel
+Security_Key     equ     2020h          ; Schl¸ssel
 Reset_Location   equ     2080h          ; Startadresse nach Reset
 
 
@@ -575,7 +575,7 @@ Reset_Location   equ     2080h          ; Startadresse nach Reset
 Security_Key_End equ    Security_Key+15
 
 ;--------------------------------------------------------------------------
-; lange SprÅnge
+; lange Spr¸nge
 
 __DefLongJmp    macro   new,old
 new             macro   Adr,{NoExpand}

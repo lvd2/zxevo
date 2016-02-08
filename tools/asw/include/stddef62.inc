@@ -1,13 +1,13 @@
                 save
-                listing off   ; kein Listing ber diesen File
+                listing off   ; kein Listing über diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.39 - Datei STDDEF62.INC                                           *
 ;*   								            *
-;*   Sinn : enth„lt SFR- und Makrodefinitionen fr die ST62xx-Prozessoren   *
+;*   Sinn : enthält SFR- und Makrodefinitionen für die ST62xx-Prozessoren   *
 ;* 									    *
-;*   letzte Žnderungen :  7. 8.1993                                         *
+;*   letzte Änderungen :  7. 8.1993                                         *
 ;*                       11. 9.1993 Meldung nur im 1.Pass                   *
 ;*                       21.11.1993 ROMWIN eingebaut                        *
 ;*                                                                          *
@@ -27,11 +27,11 @@ stddef62inc     equ     1
 		endif
 
 ;----------------------------------------------------------------------------
-; erstmal die Sachen, die es berall gibt :
+; erstmal die Sachen, die es überall gibt :
 
 RegX            SFR     80h             ; Registeradressen (die kennt AS aber
 RegY            SFR     81h             ; auch schon intern, nur der Voll-
-RegV            SFR     82h             ; st„ndigkeit halber)
+RegV            SFR     82h             ; ständigkeit halber)
 RegW            SFR     83h
 RegA            SFR     0ffh
 
@@ -68,9 +68,9 @@ OPTC             SFR    0ceh
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ; hiermit versuche ich, etwas die Leerstellen im Befehlssatz aufzufangen.
 ; das ist nur ein Angebot an Ihre Bequemlichkeit, niemand zwingt Sie, diese
-; Makros zu benutzen, wenn Sie es im Einzelfall krzer k”nnen!
+; Makros zu benutzen, wenn Sie es im Einzelfall kürzer können!
 
-; Addition/Subtraktion mit Carry: erster Operand muá A (Akku) sein!
+; Addition/Subtraktion mit Carry: erster Operand muß A (Akku) sein!
 
 adc             macro   dst,src
 		jrnc    NoCarry
@@ -84,10 +84,10 @@ sbc             macro   dst,src
 NoCarry:        sub     dst,src
 		endm
 
-; ODER-Verknpfung:
+; ODER-Verknüpfung:
 ; arbeitet nach der Regel von De Morgan: A OR B = /((/A) AND (/B))
 ; verwendet W-Register
-; dst muá A (Akku) sein!
+; dst muß A (Akku) sein!
 
 or              macro   dst,src
 		com     dst
@@ -98,11 +98,11 @@ or              macro   dst,src
 		com     dst
 		endm
 
-; EXOR-Verknpfung:
-; arbeitet nach dem Prinzip der 4 NAND-Gatter, muá also selber nicht auf
+; EXOR-Verknüpfung:
+; arbeitet nach dem Prinzip der 4 NAND-Gatter, muß also selber nicht auf
 ; das OR-Makro zugreifen
 ; verwendet V- und W-Register
-; dst muá A (Akku) sein!
+; dst muß A (Akku) sein!
 
 xor             macro   dst,src
 		ld      v,dst           ; Op1 retten
@@ -123,7 +123,7 @@ xor             macro   dst,src
 
 ; rechts mit Carry rotieren
 ; ok, das ist brute force, aber mir ist nix besseres eingefallen...
-; dst muá Akku (A) sein
+; dst muß Akku (A) sein
 
 rrc             macro   dst
 		rept    7
@@ -132,8 +132,8 @@ rrc             macro   dst
 		endm
 
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-; Fr diejenigen, die auf einmal den ROMWIN-Befehl vermissen, hier eine
-; kleine šberbrckungshilfe:
+; Für diejenigen, die auf einmal den ROMWIN-Befehl vermissen, hier eine
+; kleine Überbrückungshilfe:
 
 romwin		macro	adr
 		assume	rombase:adr>>6

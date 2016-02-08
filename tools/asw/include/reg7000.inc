@@ -1,13 +1,13 @@
                 save
-;                listing off   ; kein Listing ber diesen File
+;                listing off   ; kein Listing über diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.41 - Datei REG7000.INC                                            *
 ;*   								            *
-;*   Sinn : enth„lt SFR- und Bitdefinitionen fr die TMS70Cxx-Prozessoren   *
+;*   Sinn : enthält SFR- und Bitdefinitionen für die TMS70Cxx-Prozessoren   *
 ;* 									    *
-;*   letzte nderungen : 15. 2.1997                                         *
+;*   letzte Änderungen : 15. 2.1997                                         *
 ;*									    *
 ;****************************************************************************
 

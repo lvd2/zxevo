@@ -1,14 +1,14 @@
                 save
-		listing off   ; kein Listing Åber diesen File
+		listing off   ; kein Listing ¸ber diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.41 - Datei 80C50x.INC                                             *
 ;*   								            *
-;*   Sinn : enthÑlt SFR- und Bitdefinitionen fÅr die SAB C50x-Prozessoren   *
+;*   Sinn : enth‰lt SFR- und Bitdefinitionen f¸r die SAB C50x-Prozessoren   *
 ;           (Ableitung aus STDDEF51.INC)                                    *
 ;* 									    *
-;*   letzte énderungen : 26. 3.1997 Grundsteinlegung                        *
+;*   letzte ƒnderungen : 26. 3.1997 Grundsteinlegung                        *
 ;*                        8. 6.1997 Korrekturen von Herrn Schmid            * 
 ;*                                                                          *
 ;****************************************************************************
@@ -31,7 +31,7 @@ reg50xinc       equ     1
 ; Prozessorkern
 
 ACC             SFRB    0e0h            ; Akkumulator
-B               SFRB    0f0h            ; Hilfsakku fÅr MUL/DIV
+B               SFRB    0f0h            ; Hilfsakku f¸r MUL/DIV
 SP              SFR     81h             ; Stapelzeiger
 DPL             SFR     82h             ; Datenzeiger Bit 0..7
 DPH             SFR     83h             ;      "      Bit 8..15
@@ -95,10 +95,10 @@ REN		BIT	SCON.4		; Empfangssperre
 TB8		BIT	SCON.3		; 9. zu sendendes Bit
 RB8		BIT	SCON.2		; 9. empfangenes Bit
 TI		BIT	SCON.1		; Senderinterruptflag
-RI		BIT	SCON.0		; EmpfÑngerinterruptflag
+RI		BIT	SCON.0		; Empf‰ngerinterruptflag
 SBUF		SFR	99h		;  "         "        Datenregister
                 if      MOMCPUNAME="80C502"
-SRELL            SFR     0aah           ; Wert fÅr Baudratengenerator
+SRELL            SFR     0aah           ; Wert f¸r Baudratengenerator
 SRELH            SFR     0bah
 BAUD             SFRB    0d8h
 BD               BIT     BAUD.7         ; Baudratengenerator aktivieren
@@ -108,9 +108,9 @@ BD               BIT     BAUD.7         ; Baudratengenerator aktivieren
 ; Timer
 
 TCON		SFRB	88h		; Timer 0/1 Steuerregister
-TF1		BIT	TCON.7		; öberlauf Timer 1
+TF1		BIT	TCON.7		; ‹berlauf Timer 1
 TR1		BIT	TCON.6		; Timer 1 laufenlassen
-TF0		BIT	TCON.5		; öberlauf Timer 0
+TF0		BIT	TCON.5		; ‹berlauf Timer 0
 TR0		BIT	TCON.4		; Timer 0 laufenlassen
 IE1		BIT	TCON.3		; Externer Interrupt 1 aufgetreten
 IT1		BIT	TCON.2		; Einstellung Triggerflanke externer Interrupt 1
@@ -132,7 +132,7 @@ RCLK            BIT     T2CON.5         ; Timer 2 liefert RxD-Takt
 TCLK            BIT     T2CON.4         ; Timer 2 liefert TxD-Takt
 EXEN2           BIT     T2CON.3         ; externer Enable Timer 2
 TR2             BIT     T2CON.2         ; Timer 2 starten
-CT2             BIT     T2CON.1         ; Timer 2 als ZÑhler
+CT2             BIT     T2CON.1         ; Timer 2 als Z‰hler
 CPRL2           BIT     T2CON.0         ; Capture erlauben
 
 ;---------------------------------------------------------------------------
@@ -141,7 +141,7 @@ CPRL2           BIT     T2CON.0         ; Capture erlauben
                 if      MOMCPU>=80C504h
 WDCON            SFRB    0c0h           ; Watchdog Steuerung
 SWDT             BIT     WDCON.0        ; Watchdog starten
-WDT              BIT     WDCON.1        ; Watchdog zurÅcksetzen
+WDT              BIT     WDCON.1        ; Watchdog zur¸cksetzen
 WDTS             BIT     WDCON.2        ; Watchdog-Reset-Flagge
 OWDS             BIT     WDCON.3        ; dito Oszillator-Watchdog
 WDTREL           SFR     86h
@@ -200,11 +200,11 @@ IE              SFRB    IEN0
 EA              BIT     IEN0.7          ; generelle Sperre
 ET2             BIT     IEN0.5          ; Timer 2
 ES              BIT     IEN0.4          ; ser. Schnittstelle
-ET1             BIT     IEN0.3          ; öberlauf Timer 1
+ET1             BIT     IEN0.3          ; ‹berlauf Timer 1
 EX1             BIT     IEN0.2          ; ext. Interrupt 1
-ET0             BIT     IEN0.1          ; Timer 0 öberlauf
+ET0             BIT     IEN0.1          ; Timer 0 ‹berlauf
 EX0             BIT     IEN0.0          ; ext. Interrupt 0
-IP0             SFRB    0b8h            ; PrioritÑten
+IP0             SFRB    0b8h            ; Priorit‰ten
 IP              SFRB    IP0
 PT2             BIT     IP0.5           ; siehe Freigabebits
 PS              BIT     IP0.4
@@ -219,13 +219,13 @@ ITCON            SFR     09ah           ; Triggerbedingungen
                 endif
 
 ;---------------------------------------------------------------------------
-; Da man die Register beim 8051 nicht direkt pushen und poppen kann, mu· man
-; dies Åber direkte Adressen tun. Da dazu die Kenntnis der gewÑhlten Regis-
-; terbank erforderlich ist, steht hier das Makro USING zur VerfÅgung, wel-
+; Da man die Register beim 8051 nicht direkt pushen und poppen kann, muﬂ man
+; dies ¸ber direkte Adressen tun. Da dazu die Kenntnis der gew‰hlten Regis-
+; terbank erforderlich ist, steht hier das Makro USING zur Verf¸gung, wel-
 ; ches in den Symbolen AR0..AR7 die momentanen Registeradressen ablegt.
-; USING erwartet als Parameter die gewÑhlte Banknummer.
+; USING erwartet als Parameter die gew‰hlte Banknummer.
 
-Bank0		equ	0		; nur der Schînheit halber...
+Bank0		equ	0		; nur der Schˆnheit halber...
 Bank1		equ	1
 Bank2		equ	2
 Bank3		equ	3
@@ -235,7 +235,7 @@ using		macro	bank
                  error  "Falsche Banknummer: \{BANK}"
                 endif
 
-                ifdef	RegUsage	; BuchfÅhrung Åber benutzte BÑnke
+                ifdef	RegUsage	; Buchf¸hrung ¸ber benutzte B‰nke
 RegUsage	 set	RegUsage|(2^bank)
 		elseif
 RegUsage	 set	2^bank

@@ -1,4 +1,6 @@
 
+;LAST UPDATE: 16.08.2015 savelij
+
 ;‡€Ž‹Ÿ‹Š€ Ž‚ŽƒŽ ’…Š‘’ŒŽ„ŽƒŽ Š€€ ‚ ‘’€ˆ–€• 9 ˆ 11, …‡ ‚›•Ž„€
 FILL_NEWTXTMODE	DI
 		LD A,1

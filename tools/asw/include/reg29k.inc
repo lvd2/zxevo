@@ -1,13 +1,13 @@
                 save
-                listing off   ; kein Listing Åber diesen File
+                listing off   ; kein Listing ¸ber diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.41 - Datei REG29K.INC                                             *
 ;*   								            *
-;*   Sinn : enthÑlt Adre·definitionen fÅr die 2924x-Prozessoren             *
+;*   Sinn : enth‰lt Adreﬂdefinitionen f¸r die 2924x-Prozessoren             *
 ;* 									    *
-;*   letzte énderungen : 20. 7.1995                                         *
+;*   letzte ƒnderungen : 20. 7.1995                                         *
 ;*                                                                          *
 ;****************************************************************************
 
@@ -52,26 +52,26 @@ PICT1           equ     RegBase+0x24    ; PIA Steuerregister 1
 ; DMA-Controller
 
 DMCT0           equ     RegBase+0x30    ; Steuerregister Kanal 0
-DMAD0           equ     RegBase+0x34    ; Adre·register Kanal 0
-TAD0            equ     RegBase+0x70    ; Queued-Adre·register Kanal 0
-DMCN0           equ     RegBase+0x38    ; ZÑhlregister Kanal 0
-TCN0            equ     RegBase+0x3c    ; Queued-ZÑhlregister Kanal 0
+DMAD0           equ     RegBase+0x34    ; Adreﬂregister Kanal 0
+TAD0            equ     RegBase+0x70    ; Queued-Adreﬂregister Kanal 0
+DMCN0           equ     RegBase+0x38    ; Z‰hlregister Kanal 0
+TCN0            equ     RegBase+0x3c    ; Queued-Z‰hlregister Kanal 0
 DMCT1           equ     RegBase+0x40    ; Steuerregister Kanal 1
-DMAD1           equ     RegBase+0x44    ; Adre·register Kanal 1
-TAD1            equ     RegBase+0x74    ; Queued-Adre·register Kanal 1
-DMCN1           equ     RegBase+0x48    ; ZÑhlregister Kanal 1
-TCN1            equ     RegBase+0x4c    ; Queued-ZÑhlregister Kanal 1
+DMAD1           equ     RegBase+0x44    ; Adreﬂregister Kanal 1
+TAD1            equ     RegBase+0x74    ; Queued-Adreﬂregister Kanal 1
+DMCN1           equ     RegBase+0x48    ; Z‰hlregister Kanal 1
+TCN1            equ     RegBase+0x4c    ; Queued-Z‰hlregister Kanal 1
                 if      MOMCPU<>0x29245
 DMCT2            equ     RegBase+0x50   ; Steuerregister Kanal 2
-DMAD2            equ     RegBase+0x54   ; Adre·register Kanal 2
-TAD2             equ     RegBase+0x78   ; Queued-Adre·register Kanal 2
-DMCN2            equ     RegBase+0x58   ; ZÑhlregister Kanal 2
-TCN2             equ     RegBase+0x5c   ; Queued-ZÑhlregister Kanal 2
+DMAD2            equ     RegBase+0x54   ; Adreﬂregister Kanal 2
+TAD2             equ     RegBase+0x78   ; Queued-Adreﬂregister Kanal 2
+DMCN2            equ     RegBase+0x58   ; Z‰hlregister Kanal 2
+TCN2             equ     RegBase+0x5c   ; Queued-Z‰hlregister Kanal 2
 DMCT3            equ     RegBase+0x60   ; Steuerregister Kanal 3
-DMAD3            equ     RegBase+0x64   ; Adre·register Kanal 3
-TAD3             equ     RegBase+0x7c   ; Queued-Adre·register Kanal 3
-DMCN3            equ     RegBase+0x68   ; ZÑhlregister Kanal 3
-TCN3             equ     RegBase+0x6c   ; Queued-ZÑhlregister Kanal 3
+DMAD3            equ     RegBase+0x64   ; Adreﬂregister Kanal 3
+TAD3             equ     RegBase+0x7c   ; Queued-Adreﬂregister Kanal 3
+DMCN3            equ     RegBase+0x68   ; Z‰hlregister Kanal 3
+TCN3             equ     RegBase+0x6c   ; Queued-Z‰hlregister Kanal 3
                 endif
 
 ;----------------------------------------------------------------------------

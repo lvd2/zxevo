@@ -1,17 +1,17 @@
 		save
-		listing off     ; kein Listing Åber diesen File
+		listing off     ; kein Listing ¸ber diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.40 - Datei STDDEF87.INC                                           *
 ;*                                                                          *
-;*   Sinn : enthÑlt Register- und Speicheradressen fÅr TLCS-870-Prozessoren *
+;*   Sinn : enth‰lt Register- und Speicheradressen f¸r TLCS-870-Prozessoren *
 ;*          Port- bzw. Registernamen nach Toshiba-Konvention                *
 ;*          aus dem Handbuch zur Prozessorfamilie TLCS-870                  *
 ;*                                                                          *
 ;*   Author Alfred Arnold                                                   *
 ;*                                                                          *
-;*   letzte énderungen :  9.1.1994                                          *
+;*   letzte ƒnderungen :  9.1.1994                                          *
 ;*                                                                          *
 ;****************************************************************************
 
@@ -24,7 +24,7 @@ stddef87inc     equ     1
 		endif
 
                 if      MOMPASS=1
-		 message "TLCS-870-Adre·definitionen"
+		 message "TLCS-870-Adreﬂdefinitionen"
 		 message "(C) 1994 Alfred Arnold"
                  message "Zielprozessor: \{MOMCPU}"
 		endif
@@ -113,7 +113,7 @@ TC3CR		equ	1Ah
 TREG4		equ	1Bh
 TC4CR		equ	1Ch
 
-; Seriell: auch nicht viel Åbersichtlicher
+; Seriell: auch nicht viel ¸bersichtlicher
 
                 if      (MOMCPU=87C00h)||(MOMCPU=87C40h)
 SIO1SR		 equ	20h

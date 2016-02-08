@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 01.12.2014 savelij
+;LAST UPDATE: 08.02.2016 savelij
 
 		include ../../macros.a80
 		include ../../define.a80
@@ -7,6 +7,7 @@
 		include ../../ports_ngs.a80
 		include ../../sdcomand.a80
 		include ../../fat_vars.a80
+		include ../../bootsecfat.a80
 
 READ_7FFD	MACRO
 		LD A,HIGH (RD_7FFD)
@@ -141,7 +142,7 @@ CONT_MAGIC	NOP
 		DUPL 0X00FF-$,0XFF
 		DW 0X0038
 
-;[íÄÅãàñÄ èÖêÖïéÑéÇ çÄ Ñãü RST 8]
+;[íÄÅãàñÄ èÖêÖïéÑéÇ Ñãü RST 8]
 CODE_TABL	DW AY_PRN_INIT_			;40
 		DW AY_PRN_A__			;41
 		DW AY_PRN_TOKEN_		;42
@@ -165,6 +166,7 @@ CODE_TABL	DW AY_PRN_INIT_			;40
 		DW INST_FATBOOT_		;54
 		DW CMOS_RW_			;55
 		DW SETUP_PAL_			;56
+		DW SETUP_FONT_			;57
 ECODE_TABL
 
 ;===============
@@ -194,6 +196,9 @@ CONT_MAGIC1	LD A,(CPU6+DEBUG_ONOFF)
 		AND JMP_DBG
 		JP NZ,DEBUGGER
 		JP RESTART_NMI
+
+SETUP_FONT_	PCALL SETUP_FONT,P_ADDON1
+		RET
 
 SET_MAP_	PCALL SET_MAP,P_ERS
 		RET

@@ -1,15 +1,15 @@
                 save
-                listing off   ; kein Listing ber diesen File
+                listing off   ; kein Listing über diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.41 - Datei REGZ380.INC                                            *
 ;*   								            *
-;*   Sinn : enth„lt Registerdefinitionen fr den Z380                       *
+;*   Sinn : enthält Registerdefinitionen für den Z380                       *
 ;*          Diese Register sind nur mit den Befehlen IN0,OUT0 und TSTIO     *
 ;*          erreichbar!!                                                    *
 ;* 									    *
-;*   letzte nderungen : 12.11.1994                                         *
+;*   letzte Änderungen : 12.11.1994                                         *
 ;*                        2. 1.1996 Register 0..16h                         *
 ;*                                  (Info von Leonhard Schneider)           *
 ;*                                                                          *

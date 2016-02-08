@@ -1,15 +1,15 @@
 		save
-		listing off   ; kein Listing Åber diesen File
+		listing off   ; kein Listing ¸ber diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.40 - Datei STDDEF18.INC                                           *
 ;*   								            *
-;*   Sinn : enthÑlt die SFR-Definitionen fÅr die PIC 16C8x-Familie    	    *
+;*   Sinn : enth‰lt die SFR-Definitionen f¸r die PIC 16C8x-Familie    	    *
 ;*          Die Makrodefinitionen kann man bei Bedarf aus STDDEF16.INC      *
 ;*          kopieren							    *
 ;* 									    *
-;*   letzte énderungen : 14.11.1993                                         *
+;*   letzte ƒnderungen : 14.11.1993                                         *
 ;*                       27. 2.1993 PIC16C64-Register                       *
 ;*                                  IND0-->INDF umbenannt                   *
 ;*									    *
@@ -33,7 +33,7 @@ stddef18inc     equ     1
 
 INDF            SFR     0               ; indirekte Adressierung
 PCL             SFR     2               ; PC Bits 0..7
-PCLATH          SFR     10              ; obere HÑlfte ProgrammzÑhler
+PCLATH          SFR     10              ; obere H‰lfte Programmz‰hler
 Status          SFR     3               ; Status-Register
 FSR             SFR     4               ; File-Select-Register
 OPTION          SFR     $81             ; Chipkonfiguration
@@ -61,18 +61,18 @@ TrisE            SFR    $89             ; Datenrichtungsregister Port E
 ; Timer
 
                 if      MOMCPU=$16C64
-TMR0             SFR    1               ; ZÑhler 0
-TMR1L            SFR    14              ; ZÑhler 1
+TMR0             SFR    1               ; Z‰hler 0
+TMR1L            SFR    14              ; Z‰hler 1
 TMR1H            SFR    15
-TMR2             SFR    17              ; ZÑhler 2
+TMR2             SFR    17              ; Z‰hler 2
 CCPR1L           SFR    $15             ; Vergleichs/Pulsweitenregister
 CCPR1H           SFR    $16
-T1CON            SFR    16              ; Steuerung ZÑhler 1
-T2CON            SFR    18              ; Steuerung ZÑhler 2
-PR2              SFR    $92             ; Periode ZÑhler 2
+T1CON            SFR    16              ; Steuerung Z‰hler 1
+T2CON            SFR    18              ; Steuerung Z‰hler 2
+PR2              SFR    $92             ; Periode Z‰hler 2
 CCP1CON          SFR    $17             ; Modus Vergleicher
                 elseif
-RTCC             SFR    1               ; ZÑhler
+RTCC             SFR    1               ; Z‰hler
                 endif
 
 ;----------------------------------------------------------------------------
@@ -81,7 +81,7 @@ RTCC             SFR    1               ; ZÑhler
                 if      MOMCPU=$16C64
 SSPBuf           SFR    $13             ; serielles Datenregister
 SSPCon           SFR    $14             ; Konfiguration
-SSPAD0           SFR    $93             ; I2C-Adre·register
+SSPAD0           SFR    $93             ; I2C-Adreﬂregister
 SSPSTAT          SFR    $94             ; Schnittstellenstatus
                 endif
 
@@ -90,7 +90,7 @@ SSPSTAT          SFR    $94             ; Schnittstellenstatus
 
                 if      MOMCPU=$16C84
 EEData           SFR    8               ; EEPROM Datenregister
-EEAdr            SFR    9               ; EEPROM Adre·register
+EEAdr            SFR    9               ; EEPROM Adreﬂregister
 EECON1           SFR    $88             ; Konfiguration EEPROM
 EECON2           SFR    $89
                 endif
@@ -111,7 +111,7 @@ Flag_C		EQU	0		; Carry
 Flag_DC		EQU	1		; Digit-Carry
 Flag_Z		EQU	2		; Zero
 Flag_PD		EQU	3		; Aufgewacht aus SLEEP-Befehl ?
-Flag_TO		EQU	4		; Durch Watchdog zurÅckgesetzt ?
+Flag_TO		EQU	4		; Durch Watchdog zur¸ckgesetzt ?
 Flag_RP0	EQU	5		; Registerbank Bit 8
                 if      MOMCPU=$16C84
 Flag_RP1         EQU    6               ; Registerbank Bit 9
@@ -126,7 +126,7 @@ TRISE0           EQU    0               ; Datenrichtung RE0
 TRISE1           EQU    1               ; Datenrichtung RE1
 TRISE2           EQU    2               ; Datenrichtung RE2
 PSPMODE          EQU    4               ; Modus Port D&E
-IBOV             EQU    5               ; öberlauf Eingabepuffer
+IBOV             EQU    5               ; ‹berlauf Eingabepuffer
 OBF              EQU    6               ; Ausgabepuffer voll
 IBF              EQU    7               ; Eingabepuffer voll
                 endif
@@ -171,7 +171,7 @@ CCP1X            EQU    5
 
                 if      MOMCPU=$16C64
 BF               EQU    0               ; Puffer voll ?
-UA               EQU    1               ; neue Adresse mu· in SSPADD geschrieben werden
+UA               EQU    1               ; neue Adresse muﬂ in SSPADD geschrieben werden
 RW               EQU    2               ; I2C lesen/schreiben ?
 S                EQU    3               ; Startbit gefunden ?
 P                EQU    4               ; Stopbit gefunden
@@ -185,9 +185,9 @@ SSPM0            EQU    0               ; Schnittstellenmodus
 SSPM1            EQU    1
 SSPM2            EQU    2
 SSPM3            EQU    3
-CKP              EQU    4               ; TaktpolaritÑt
+CKP              EQU    4               ; Taktpolarit‰t
 SSPEN            EQU    5               ; Portfreigabe
-SSPOV            EQU    6               ; EmpfÑgerÅberlauf
+SSPOV            EQU    6               ; Empf‰ger¸berlauf
 WCOL             EQU    7               ; Senderkollision
                 endif
 

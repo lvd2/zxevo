@@ -1,13 +1,13 @@
                 save
-                listing off   ; kein Listing ber diesen File
+                listing off   ; kein Listing über diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.41 - Datei REGST9.INC                                             *
 ;*                                                                          *
-;*   Sinn : enth„lt SFR-, Makro- und Adreádefinitionen fr die ST9-Familie  *
+;*   Sinn : enthält SFR-, Makro- und Adreßdefinitionen für die ST9-Familie  *
 ;* 									    *
-;*   letzte nderungen :  6. 2.1997                                         *
+;*   letzte Änderungen :  6. 2.1997                                         *
 ;*                                                                          *
 ;****************************************************************************
 
@@ -24,7 +24,7 @@ regst9inc       equ     1
 		endif
 
 ;----------------------------------------------------------------------------
-; Registerb„nke
+; Registerbänke
 
 __CNT           set     0
                 rept    16

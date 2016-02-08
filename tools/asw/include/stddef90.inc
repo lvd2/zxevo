@@ -1,17 +1,17 @@
                 save
-                listing off     ; kein Listing Åber diesen File
+                listing off     ; kein Listing ¸ber diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.39 - Datei STDDEF90.INC                                           *
 ;*                                                                          *
-;*   Sinn : enthÑlt Register- und Speicheradressen fÅr TLCS-90-Prozessoren  *
+;*   Sinn : enth‰lt Register- und Speicheradressen f¸r TLCS-90-Prozessoren  *
 ;*          Port- bzw. Registernamen nach Toshiba-Konvention                *
 ;*          aus dem Handbuch zur Prozessorfamilie TLCS-90                   *
 ;*                                                                          *
 ;*   Author Alfred Arnold                                                   *
 ;*                                                                          *
-;*   letzte énderungen :  1.11.1993                                         *
+;*   letzte ƒnderungen :  1.11.1993                                         *
 ;*                                                                          *
 ;****************************************************************************
 
@@ -24,7 +24,7 @@ stddef90inc     equ     1
                 endif
 
                 if      MOMPASS=1
-                 message "TLCS-90-Adre·definitionen"
+                 message "TLCS-90-Adreﬂdefinitionen"
                  message "(C) 1993 Alfred Arnold"
                 endif
 

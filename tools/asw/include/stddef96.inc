@@ -1,18 +1,18 @@
                 save
-                listing off     ; kein Listing Åber diesen File
+                listing off     ; kein Listing ¸ber diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.39 - Datei STDDEF96.INC                                           *
 ;*                                                                          *
-;*   Sinn : enthÑlt Register- und Speicheradressen fÅr TLCS-900-Prozessoren *
+;*   Sinn : enth‰lt Register- und Speicheradressen f¸r TLCS-900-Prozessoren *
 ;*          Port- bzw. Registernamen nach Toshiba-Konvention                *
 ;*          aus dem Handbuch zur Prozessorfamilie TLCS-900                  *
 ;*                                                                          *
 ;*   Original von Ernst Ahlers, Oktober 1993                                *
-;*   fÅr AS angepa·t von Alfred Arnold                                      *
+;*   f¸r AS angepaﬂt von Alfred Arnold                                      *
 ;*                                                                          *
-;*   letzte énderungen :  30.10.1993                                        *
+;*   letzte ƒnderungen :  30.10.1993                                        *
 ;*                                                                          *
 ;****************************************************************************
 
@@ -25,7 +25,7 @@ stddef96inc     equ     1
                 endif
 
                 if      MOMPASS=1
-                 message "TLCS-900(L)-Adre·definitionen"
+                 message "TLCS-900(L)-Adreﬂdefinitionen"
                  message "(C) 1993 Ernst Ahlers, Alfred Arnold"
                 endif
 

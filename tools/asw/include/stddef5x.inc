@@ -1,14 +1,14 @@
 		save
-		listing off   ; kein Listing ber diesen File
+		listing off   ; kein Listing über diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.40 - Datei STDDEF2X.INC                                           *
 ;*   								            *
-;*   Sinn : enth„lt die globalen Register-Definitionen fr die              *
+;*   Sinn : enthält die globalen Register-Definitionen für die              *
 ;*          TMS320C5x Prozessoren                                           *
 ;* 									    *
-;*   letzte nderungen : 03.11.1995                                         *
+;*   letzte Änderungen : 03.11.1995                                         *
 ;*                                                                          *
 ;****************************************************************************
 

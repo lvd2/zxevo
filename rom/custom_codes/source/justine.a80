@@ -1,4 +1,6 @@
 
+;LAST UPDATE: 16.08.2015 savelij
+
 		include ../../macros.a80
 		include ../../global_vars.a80
 
@@ -173,8 +175,8 @@ TEXT_SPMODE	DB "SPECTRUM SCREEN MODE",0
 TEXT_TXTMODE	DB "TEXT SCREEN MODE",0
 PRESS_SPACE	DB "PRESS SPACE FOR CONTINUE",0
 
-CHARS		binclude ../../page0/source/shr_3d00.bin
-TXT_CHARS	binclude ../../page4/source/8x8_ar.fnt
+CHARS		binclude ../../page3/source/shr_3d00.bin
+TXT_CHARS	binclude ../../page5/source/8x8_ar.fnt
 
    ; Fill rest of rom with 0XFF
 		DUPL 0X3D2F-$,0XFF

@@ -1,13 +1,13 @@
                 save
-                listing off   ; kein Listing ber diesen File
+                listing off   ; kein Listing über diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.40 - Datei STDDEF3X.INC                                           *
 ;*   								            *
-;*   Sinn : enth„lt Register- und Adreádefinitionen fr die TMS320C3x-CPUs  *
+;*   Sinn : enthält Register- und Adreßdefinitionen für die TMS320C3x-CPUs  *
 ;* 									    *
-;*   letzte nderungen : 27. 9.1994                                         *
+;*   letzte Änderungen : 27. 9.1994                                         *
 ;*									    *
 ;****************************************************************************
 

@@ -1,13 +1,13 @@
                 save
-                listing off   ; kein Listing Åber diesen File
+                listing off   ; kein Listing ¸ber diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.41 - Datei REGMSP.INC                                             *
 ;*   					 			            *
-;*   Sinn : enthÑlt Makro- und Registerdefinitionen fÅr den MSP430          *
+;*   Sinn : enth‰lt Makro- und Registerdefinitionen f¸r den MSP430          *
 ;* 									    *
-;*   letzte énderungen : 2002-01-11                                         *
+;*   letzte ƒnderungen : 2002-01-11                                         *
 ;*                                                                          *
 ;****************************************************************************
 ;* $Id: regmsp.inc,v 1.3 2008/01/02 22:32:21 alfred Exp $                    
@@ -134,7 +134,7 @@ eint            macro
                 endm
 
 nop             macro
-                .word   04303h         ; den symbolischen Befehl wÅrde AS zurÅckweisen
+                .word   04303h         ; den symbolischen Befehl w¸rde AS zur¸ckweisen
                 endm
 
 ret             macro
@@ -276,13 +276,13 @@ BTCTL           equ     040h            ; Basis-Steuerregister Timer 1
 
 TCCTL           equ     042h
 TCPLD           equ     043h            ; Vorladewert
-TCDAT           equ     044h            ; ZÑhlwert
+TCDAT           equ     044h            ; Z‰hlwert
 
-BTCNT1          equ     046h            ; ZÑhlregister
+BTCNT1          equ     046h            ; Z‰hlregister
 BTCNT2          equ     047h
 
 TPCTL           equ     04Bh            ; Timer/Port Steuerregister
-TPCNT1          equ     04Ch            ; ZÑhlregister
+TPCNT1          equ     04Ch            ; Z‰hlregister
 TPCNT2          equ     04Dh
 TPD             equ     04Eh            ; Datenregister
 TPE             equ     04Fh            ; Freigaberegister
@@ -355,7 +355,7 @@ CAPD		equ	05Bh		; Comparator A port disable
 ;----------------------------------------------------------------------------
 ; PWM
 
-PWMCTL          equ     058h            ; ZÑhlwert
+PWMCTL          equ     058h            ; Z‰hlwert
 PWMDTB          equ     059h            ; Pulsweite (Puffer)
 PWMDTR          equ     05Ah            ; Pulsweite
 PWMCNT          equ     05Bh            ; Steuerung

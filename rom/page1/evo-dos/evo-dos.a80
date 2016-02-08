@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 11.03.2015 savelij
+;LAST UPDATE: 03.05.2015 savelij
 
 		include ../../macros.a80
 		include ../../define.a80
@@ -10,7 +10,7 @@
 		include macros.a80
 
 ;		     0123456789012345678
-NUMBER_VERS	EQU " EVO-DOS Ver 0.41  "
+NUMBER_VERS	EQU " EVO-DOS Ver 0.42  "
 ZASTV_X		EQU 7					;ŠŽŽ„ˆ€’€ X …—€’ˆ €„ˆ‘ˆ BETA128
 ZASTV_Y		EQU 7					;ŠŽŽ„ˆ€’€ Y …—€’ˆ €„ˆ‘ˆ BETA128
 ZASTV_PIX	EQU ZASTV_Y*0X20+0X4000+ZASTV_X+9	;€„…‘ ‚›‚Ž„€ ‘ŠŽ˜…›• “ƒŽ‹ŠŽ‚

@@ -1,16 +1,16 @@
 		save
-		listing off     ; kein Listing ber diesen File
+		listing off     ; kein Listing über diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.40 - Datei STDDEF47.INC                                           *
 ;*                                                                          *
-;*   Sinn : enth„lt den "erweiterten Befehlssatz fr die                    *
+;*   Sinn : enthält den "erweiterten Befehlssatz für die                    *
 ;*          TLCS-47(0(A*))-Reihe                                            *
 ;*                                                                          *
 ;*   Author Alfred Arnold                                                   *
 ;*                                                                          *
-;*   letzte nderungen : 22.1.1994                                          *
+;*   letzte Änderungen : 22.1.1994                                          *
 ;*                                                                          *
 ;****************************************************************************
 
@@ -31,7 +31,7 @@ stddef47inc     equ     1
 ;----------------------------------------------------------------------------
 ; hier geht's los...
 
-; bedingte Sprnge
+; bedingte Sprünge
 
 
 bz		macro	adr		; Sprung, falls ZF=1
@@ -156,7 +156,7 @@ s1:
 		endm
 
 
-; Unterprogrammrcksprnge
+; Unterprogrammrücksprünge
 
 
 retz		macro			; falls ZF=1
@@ -192,7 +192,7 @@ s1:
 		endm
 
 
-; Interruptrcksprnge
+; Interruptrücksprünge
 
 
 retiz		macro			; falls ZF=1

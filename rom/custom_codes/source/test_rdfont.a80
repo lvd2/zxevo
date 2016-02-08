@@ -1,4 +1,6 @@
 
+;LAST UPDATE: 16.08.2015 savelij
+
 		include ../../macros.a80
 		include ../../global_vars.a80
 
@@ -211,7 +213,7 @@ WAIT_SPACE1	XOR A
 		JR NZ,WAIT_SPACE1
 		RET
 
-TXT_CHARS	binclude ../../page4/source/8x8_ar.fnt
+TXT_CHARS	binclude ../../page5/source/8x8_ar.fnt
 
 ;		    01234567890123456789012345678901
 FIRST_TEST	DB " Первый тест: чтение фонта ",0

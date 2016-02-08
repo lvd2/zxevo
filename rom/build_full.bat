@@ -7,6 +7,8 @@ cd fat_boot\source
 ..\..\..\tools\asw\bin\p2bin micro_boot_fat.p micro_boot_fat.rom -r $-$ -k
 ..\..\..\tools\mhmt\mhmt -mlz micro_boot_fat.rom micro_boot_fat_pack.rom
 
+del *.lst
+
 cd ..\..\page0\source
 
 ..\..\..\tools\asw\bin\asw -U -L main.a80
@@ -26,6 +28,7 @@ del main.rom
 del cmosset.rom
 del main_pack.rom
 del cmosset_pack.rom
+del *.lst
 
 cd ..\..\page1\evo-dos
 
@@ -35,20 +38,28 @@ cd ..\..\page1\evo-dos
 ..\..\..\tools\asw\bin\asw -U -L evo-dos_virt.a80
 ..\..\..\tools\asw\bin\p2bin evo-dos_virt.p ..\evo-dos_virt.rom -r $-$ -k
 
+del *.lst
+
 cd ..\..\page2\source
 
 ..\..\..\tools\asw\bin\asw -U -L spec128_0.a80
 ..\..\..\tools\asw\bin\p2bin spec128_0.p ..\basic128.rom -r $-$ -k
+
+del *.lst
 
 cd ..\..\page3\source
 
 ..\..\..\tools\asw\bin\asw -U -L basic48.a80
 ..\..\..\tools\asw\bin\p2bin basic48.p ..\basic48_128.rom -r $-$ -k
 
+del *.lst
+
 cd ..\..\atm_cpm\source
 
 ..\..\..\tools\asw\bin\asw -U -L rbios.a80
 ..\..\..\tools\asw\bin\p2bin rbios.p ..\rbios.rom -r $-$ -k
+
+del *.lst
 
 cd ..\..\page5\source
 
@@ -61,11 +72,14 @@ cd ..\..\page5\source
 del 8x8_ar_pack.bin
 del 866_code_pack.bin
 del atm_code_pack.bin
+del *.lst
 
 cd ..\..\trdos_v6\source
 
 ..\..\..\tools\asw\bin\asw -U -L trdos_v6.a80
 ..\..\..\tools\asw\bin\p2bin trdos_v6.p ..\dosatm3.rom -r $-$ -k
+
+del *.lst
 
 cd ..\..
 

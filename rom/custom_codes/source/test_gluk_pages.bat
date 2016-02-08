@@ -11,5 +11,6 @@
 copy /B /Y make_testgp2scl.rom+csum32.bin ..\testgp.scl
 
 del csum32.bin
+del *.lst
 
 pause

@@ -213,7 +213,7 @@ MCTC0            bit     BUSCON0.0      ; Speicherzykluslaenge
 RWDC0            bit     BUSCON0.4      ; Schreib/Leseverzoegerung
 MTTC0            bit     BUSCON0.5      ; Tri-State-Zeit
 BTYP0            bit     BUSCON0.6      ; Status EBC-Pins
-ALECTL0          bit     BUSCON0.9      ; ALE Verl„ngerung
+ALECTL0          bit     BUSCON0.9      ; ALE Verlängerung
 BUSACT0          bit     BUSCON0.10     ; Bus aktiv-Steuerbit
 RDYEN0           bit     BUSCON0.12     ; /READY benutzen
 BUSCON1          equ     0ff14h
@@ -457,7 +457,7 @@ T6I             bit     T6CON.0         ; Eingangssignal Timer 6
 T6M              bit    T6CON.3         ; Modus Timer 6
                 endif
 T6R             bit     T6CON.6         ; Timer 6 starten/stoppen
-T6UD            bit     T6CON.7         ; Timer 6 Z„hlrichtung
+T6UD            bit     T6CON.7         ; Timer 6 Zählrichtung
                 if      _n>=167
 T6UDE            bit    T6CON.8         ; Timer 6 externe Zaehlrichtungswahl
                 endif

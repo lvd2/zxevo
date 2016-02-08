@@ -1,14 +1,14 @@
                 save
                 listing off
-; kein Listing Åber diesen File
+; kein Listing ¸ber diesen File
 
 ;****************************************************************************
 ;*                                                                          *
 ;*   AS 1.41 - Datei REG3048.INC                                            *
 ;*   								            *
-;*   Sinn : enthÑlt SFR-, Makro- und Adreadefinitionen fÅr H8/3048          *
+;*   Sinn : enth‰lt SFR-, Makro- und Adreadefinitionen f¸r H8/3048          *
 ;* 									    *
-;*   letzte énderungen :  24.10.1995                                        *
+;*   letzte ƒnderungen :  24.10.1995                                        *
 ;*                                                                          *
 ;****************************************************************************
 
@@ -106,7 +106,7 @@ CS4E            equ     4
 ISCR            equ     $fff4           ; IRQ sense control register
 IER             equ     $fff5           ; IRQ enable register
 ISR             equ     $fff6           ; IRQ status register
-IPRA            equ     $fff8           ; PrioritÑtssteuerung
+IPRA            equ     $fff8           ; Priorit‰tssteuerung
 IPRB            equ     $fff9           ;
 
 
