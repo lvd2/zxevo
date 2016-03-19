@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 15.11.2014 savelij
+;LAST UPDATE: 19.03.2016 savelij
 
 TAPE_EMUL	LD H,CMOS_BYTE_00
 		CALL READCMOS
@@ -41,6 +41,7 @@ ELT02		ADD A,D
 		LD B,(HL)			;‚‡Ÿ‹ˆ €‡Œ… ‹ŽŠ€ „‹Ÿ ‡€ƒ“‡Šˆ
 		INC HL
 		INC HL				;Ž“‘Š€…Œ ”‹€ƒŽ‚›‰ €‰’
+		DEC BC
 		DEC BC				;ƒ“‡ˆ’œ € 2 €‰’€ Œ…œ˜… (Œˆ“‘ ”‹€ƒŽ‚›‰ €‰’ ˆ CRC)
 ELT07		LDI
 		JP PO,ELT05
@@ -70,7 +71,8 @@ ELT06		LD A,H
 		LD H,0X40
 		JR ELT07
 		
-ELT05		RES 6,H
+ELT05		INC HL				;Ž“‘Š ŠŽ’Ž‹œŽ‰ ‘“ŒŒ› ‹ŽŠ€
+		RES 6,H
 		EVOPORT WIN_P5,0XFA		;‚…“‹ˆ ‘’€ˆ–“ ‚ 1 ŽŠ… Ž…–ˆŽ‚€ˆŸ
 		LD B,HIGH (WIN_P6)
 		XOR A
