@@ -98,7 +98,7 @@ RUNSNA	;4ab4
 	out (c),a
 	RUNSNA_LP128_M 0	;загрузим нулевую снова
 RUNSNA_NOL0	
-	RUNSNA_LP128_M 1
+	RUNSNA_LP128_M 1	;и остальные
 	RUNSNA_LP128_M 3
 	RUNSNA_LP128_M 4
 	RUNSNA_LP128_M 6
@@ -107,17 +107,17 @@ RUNSNA_ENDLOAD
 	ld bc,WIN_P2	;вернём паги на место
 	ld a,00
 	out (c),a
-	ld b,HIGH (WIN_A3)
+	ld b,HIGH (WIN_A3)	;включим FF пагу
 	ld a,0!0xff
 	out (c),a
-	ld bc,CONF_128
+	ld bc,CONF_128	;восстановим порт конфигурации
 	ld a,(lsna_P7FFD)
 	out (c),a
 	ld a,(lsna_BORD)
-	out (0xfe),a ;бордер
-	ld a,(lsna_RI)
+	out (0xfe),a 	;восстановим бордер
+	ld a,(lsna_RI)	;рег I
 	ld i,a
-	ld a,(lsna_SIM)
+	ld a,(lsna_SIM)	;режим прерываний
 	im 0
 	or a
 	jr z,RUNSNA_ENDIM
@@ -126,27 +126,27 @@ RUNSNA_ENDLOAD
 	jr z,RUNSNA_ENDIM
 	im 2
 RUNSNA_ENDIM
-	ld hl,toFFpage
+	ld hl,toFFpage		;переместим стартер в FF пагу
 	ld de,0xA000
 	ld bc,endFFpage-toFFpage
 	ldir
-	ld hl,(0x8066)
+	ld hl,(0x8066)		;сохраним код из 0x0066
 	ld de,(0x8068)
 	ld bc,0xc300
-	ld (0x8066),bc
+	ld (0x8066),bc		;закинем свой JP на стартер
 	ld bc,0x2000
 	ld (0x8068),bc
-	ld bc,WIN_A2	;вернём паги на место
+	ld bc,WIN_A2	;вернём пагу на место
 	ld a,2!0x7f
-	out (c),a
+	out (c),a		;сгенерим NMI
 	ld a,8
 	out (0xbf),a
 	xor a
 	out (0xbf),a
-	halt
+	halt			;ждём прерывание
 	
 RUNSNA_LP128
-	cp 0
+	cp 0			;проверим может страница уже загружена
 	ret z
 	xor 0x7f
 	ld bc,WIN_A2
@@ -177,17 +177,17 @@ RUNSNA_L1P
 
 
 toFFpage
-	ld (0x0066),hl
+	ld (0x0066),hl		;восстановим код
 	ld (0x0068),de
 	ld a,1
 	out (0xbf),a
-	ld bc,WIN_A1
+	ld bc,WIN_A1		;восстановим страницу
 	ld a,5!0x7f
 	out (c),a
 	xor a
-	out (0xbf),a
+	out (0xbf),a		
 	ld a,(fsna+LSNAST_P7FFD)
-	cp 0x30
+	cp 0x30				;если 48к то возврат уже на стеке
 	jr z,FFYESRET
 	ld sp,(fsna+LSNAST_RSP)
 	ld hl,(fsna+LSNAST_RPC)
@@ -215,7 +215,7 @@ FFENDEI
 	ld sp,fsna+LSNAST_RAF
 	pop af
 	ld sp,(fsna+LSNAST_RSP)
-	out (0xbe),a
+	out (0xbe),a	;выходим из NMI
 	retn
 ENDFFCODE
 fsna	EQU	$-toFFpage+0x2000
