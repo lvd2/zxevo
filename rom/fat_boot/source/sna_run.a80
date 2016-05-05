@@ -1,0 +1,223 @@
+
+LSNAST	STRUCT	;заголовок снапшотов
+RI		DB	?
+AHL		DW
+ADE		DW
+ABC		DW
+AAF		DW
+RHL		DW
+RDE		DW
+RBC		DW
+RIY		DW
+RIX		DW
+IFF2	DB
+RR		DB
+RAF		DW
+RSP		DW
+SIM		DB
+BORD	DB
+RPC		DW
+P7FFD	DB
+PDOS	DB
+NUM  	DW
+B3		DB
+LSNAST	ENDSTRUCT
+
+RUNSNA_LP_M MACRO PF,PS
+	ld de,((PF!0x7f)<<8)+(PS!0x7f)
+	call RUNSNA_LP
+	ENDM 
+RUNSNA_LP128_M MACRO PL
+	ld a,PL
+	call RUNSNA_LP128
+	ENDM 
+	
+RUNSNA_LP5_M MACRO
+	ld hl,0x8000-27
+	ld iyl,0x4000/512+1
+	ld de,((5!0x7f)<<8)+(2!0x7f)
+	call RUNSNA_LP5
+	ENDM 
+	
+
+RUNSNA	;4ab4
+	di
+	ld iyh,0
+	ld a,0x30	;по умолчанию б48
+	ld (lsna_P7FFD),a
+	ld a,HIGH(RD_EFF7)
+	in a,(LOW(RD_EFF7))
+	ld bc,PENT_CONF
+	or %00000100
+	out (c),a
+	ld a,1
+	out (PEVO_CONF),a
+	;освободим 1 окно
+	ld bc,WIN_A2
+	ld a,8!0x7f
+	out (c),a
+	ld de,0x8000
+	ld hl,0x4000
+	ld b,h
+	ld c,l
+	ldir
+	ld bc,WIN_A1
+	ld a,8!0x7f
+	out (c),a
+	
+	RUNSNA_LP5_M	;загрузим заголовок и 5 страницу и ещё чуть	
+	ld hl,0x8000-27
+	ld de,lsna_RI
+	ld bc,27
+	ldir		;копируем заголовок
+	RUNSNA_LP_M 2,0	;загрузим 2 страницу и ещё чуть
+	RUNSNA_LP_M 0,9 ;загрузим 0 страницу и ещё чуть
+	ld a,(FILE_SRC+30)
+	or a
+	jr z,RUNSNA_ENDLOAD	;если файл больше 64к, то снап 128к !!!!нада проверить
+	ld hl,0xc000	;сохраняем заголовок
+	ld de,lsna_RPC
+	ld bc,4
+	ldir	
+	ld de,0xc000	;сдвинем конец сектора
+	ld bc,512-4-27
+	ldir
+	ld a,(lsna_P7FFD)  ;смотрим 7ффд
+	and %111            ;отсекаем лишнее
+	ld (RUNSNA_LP128+1),a
+	jr z,RUNSNA_NOL0	;если нулевая то всё правильно
+	ld bc,WIN_A3		;нет, значит перекинуть куда надо
+	xor 0x7f
+	out (c),a
+	ld hl,0x8000
+	ld de,0xc000
+	ld bc,0x4000
+	ldir
+	ld bc,WIN_A3		
+	ld a,9!0x7f
+	out (c),a
+	RUNSNA_LP128_M 0	;загрузим нулевую снова
+RUNSNA_NOL0	
+	RUNSNA_LP128_M 1
+	RUNSNA_LP128_M 3
+	RUNSNA_LP128_M 4
+	RUNSNA_LP128_M 6
+	RUNSNA_LP128_M 7
+RUNSNA_ENDLOAD
+	ld bc,WIN_P2	;вернём паги на место
+	ld a,00
+	out (c),a
+	ld b,HIGH (WIN_A3)
+	ld a,0!0xff
+	out (c),a
+	ld bc,CONF_128
+	ld a,(lsna_P7FFD)
+	out (c),a
+	ld a,(lsna_BORD)
+	out (0xfe),a ;бордер
+	ld a,(lsna_RI)
+	ld i,a
+	ld a,(lsna_SIM)
+	im 0
+	or a
+	jr z,RUNSNA_ENDIM
+	im 1
+	dec a
+	jr z,RUNSNA_ENDIM
+	im 2
+RUNSNA_ENDIM
+	ld hl,toFFpage
+	ld de,0xA000
+	ld bc,endFFpage-toFFpage
+	ldir
+	ld hl,(0x8066)
+	ld de,(0x8068)
+	ld bc,0xc300
+	ld (0x8066),bc
+	ld bc,0x2000
+	ld (0x8068),bc
+	ld bc,WIN_A2	;вернём паги на место
+	ld a,2!0x7f
+	out (c),a
+	ld a,8
+	out (0xbf),a
+	xor a
+	out (0xbf),a
+	halt
+	
+RUNSNA_LP128
+	cp 0
+	ret z
+	xor 0x7f
+	ld bc,WIN_A2
+	out (c),a
+	ld hl,0xc000	;перекинем  остаток
+	ld de,0x8000
+	ld bc,512-27-4
+	ldir
+	ex de,hl
+	ld iyl,0x4000/512
+	jr RUNSNA_L1P
+	
+RUNSNA_LP
+	ld hl,0x8000+512-27
+	ld iyl,0x4000/512
+RUNSNA_LP5
+	ld bc,WIN_A2
+	out (c),d
+	ld b,HIGH (WIN_A3)
+	out (c),e
+RUNSNA_L1P
+	xor a
+	out (0xbf),a
+	call LD_FILE
+	ld a,1
+	out (0xbf),a
+	ret
+
+
+toFFpage
+	ld (0x0066),hl
+	ld (0x0068),de
+	ld a,1
+	out (0xbf),a
+	ld bc,WIN_A1
+	ld a,5!0x7f
+	out (c),a
+	xor a
+	out (0xbf),a
+	ld a,(fsna+LSNAST_P7FFD)
+	cp 0x30
+	jr z,FFYESRET
+	ld sp,(fsna+LSNAST_RSP)
+	ld hl,(fsna+LSNAST_RPC)
+	push hl
+	ld (fsna+LSNAST_RSP),sp
+FFYESRET
+	ei
+	ld a,(fsna+LSNAST_IFF2)
+	and 4
+	jr nz,FFENDEI
+	di
+FFENDEI
+	ld sp,fsna+LSNAST_AHL ;забираем регистры
+	pop hl
+	pop de 
+	pop bc
+	pop af
+	exx
+	ex af,af'
+	pop hl
+	pop de 
+	pop bc
+	pop iy 
+	pop ix
+	ld sp,fsna+LSNAST_RAF
+	pop af
+	ld sp,(fsna+LSNAST_RSP)
+	out (0xbe),a
+	retn
+ENDFFCODE
+fsna	EQU	$-toFFpage+0x2000
+lsna	LSNAST
+endFFpage

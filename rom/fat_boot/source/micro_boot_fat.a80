@@ -53,9 +53,11 @@ SETMASL		LD (MAS_SLA),A
 		LD (AFILCLS+2),HL
 		LD HL,(FILE_SRC+0X1A)
 		LD (AFILCLS),HL
-		LD A,(FILE_SRC+8)
-		CP "S"
+		LD A,(FILE_SRC+9)
+		CP "P"
 		JP Z,RUNSPG2			;……•Ž„ € ‡€“‘Š SPG ”€‰‹€
+		CP "N"
+		JP Z,RUNSNA			;……•Ž„ € ‡€“‘Š SNA ”€‰‹€
 		CALL REALSEC			;…Ž€‡Ž‚€‹ˆ ‚ ŽŒ… ‘…Š’Ž€
 		CALL LOADLST			;‡€ƒ“‡ˆ‹ˆ ‚ “”…
 		EXX
@@ -99,7 +101,7 @@ READ04		POP HL				;‚ HL €„…‘ „‹Ÿ Ž„Ž‹†…ˆŸ ‡€ƒ“‡Šˆ
 
 READ07		PUSH HL
 		CALL RDFATZP			;Ž‹“—ˆ’œ ŽŒ… ‘‹…„“ž™…ƒŽ Š‹€‘’…€
-		CALL LST_CLS			;Ž‚…Š€ € ŽŠŽ—€ˆ… FAT –“Ž—Šˆ
+		CALL LST_CLS			;Ž‚…Š€ € ŽŠŽ—€ˆ… FAT –…Ž—Šˆ
 		POP HL
 		JR C,RUNLOAD			;…‘‹ˆ Š‹€‘’…€ ‡€ŠŽ—ˆ‹ˆ‘œ, ’Ž ‡€“‘Š ‡€ƒ“†…ŽƒŽ
 		PUSH HL
@@ -462,3 +464,4 @@ LOADLST		LD HL,BUF_512_
 		include drivers/drv_divide.a80
 		include drivers/drv_profi.a80
 		include spg2_run.a80
+		include sna_run.a80
