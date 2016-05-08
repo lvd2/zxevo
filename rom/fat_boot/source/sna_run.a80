@@ -19,8 +19,6 @@ BORD	DB
 RPC		DW
 P7FFD	DB
 PDOS	DB
-NUM  	DW
-B3		DB
 LSNAST	ENDSTRUCT
 
 RUNSNA_LP_M MACRO PF,PS
@@ -45,11 +43,13 @@ RUNSNA	;4ab4
 	ld iyh,0
 	ld a,0x30	;по умолчанию б48
 	ld (lsna_P7FFD),a
-	ld a,HIGH(RD_EFF7)
+	ld a,HIGH(RD_EFF7)	;разлочим 7FFD
 	in a,(LOW(RD_EFF7))
 	ld bc,PENT_CONF
-	or %00000100
+	and %11111011
 	out (c),a
+	or %00000100
+	ld (PEFF7+1),a
 	ld a,1
 	out (PEVO_CONF),a
 	;освободим 1 окно
@@ -110,22 +110,10 @@ RUNSNA_ENDLOAD
 	ld b,HIGH (WIN_A3)	;включим FF пагу
 	ld a,0!0xff
 	out (c),a
-	ld bc,CONF_128	;восстановим порт конфигурации
-	ld a,(lsna_P7FFD)
-	out (c),a
 	ld a,(lsna_BORD)
 	out (0xfe),a 	;восстановим бордер
 	ld a,(lsna_RI)	;рег I
 	ld i,a
-	ld a,(lsna_SIM)	;режим прерываний
-	im 0
-	or a
-	jr z,RUNSNA_ENDIM
-	im 1
-	dec a
-	jr z,RUNSNA_ENDIM
-	im 2
-RUNSNA_ENDIM
 	ld hl,toFFpage		;переместим стартер в FF пагу
 	ld de,0xA000
 	ld bc,endFFpage-toFFpage
@@ -138,11 +126,11 @@ RUNSNA_ENDIM
 	ld (0x8068),bc
 	ld bc,WIN_A2	;вернём пагу на место
 	ld a,2!0x7f
-	out (c),a		;сгенерим NMI
-	ld a,8
-	out (0xbf),a
-	xor a
-	out (0xbf),a
+	out (c),a
+	ld a,8			;сгенерим NMI
+	out (PEVO_CONF),a
+	ld a,1
+	out (PEVO_CONF),a
 	halt			;ждём прерывание
 	
 RUNSNA_LP128
@@ -169,24 +157,33 @@ RUNSNA_LP5
 	out (c),e
 RUNSNA_L1P
 	xor a
-	out (0xbf),a
+	out (PEVO_CONF),a
 	call LD_FILE
 	ld a,1
-	out (0xbf),a
+	out (PEVO_CONF),a
 	ret
 
 
 toFFpage
 	ld (0x0066),hl		;восстановим код
 	ld (0x0068),de
-	ld a,1
-	out (0xbf),a
+	ld a,(fsna+LSNAST_SIM)	;режим прерываний
+	im 0
+	or a
+	jr z,RUNSNA_ENDIM
+	im 1
+	dec a
+	jr z,RUNSNA_ENDIM
+	im 2
+RUNSNA_ENDIM
 	ld bc,WIN_A1		;восстановим страницу
 	ld a,5!0x7f
 	out (c),a
 	xor a
-	out (0xbf),a		
+	out (PEVO_CONF),a	
+	ld bc,CONF_128	;восстановим порт конфигурации
 	ld a,(fsna+LSNAST_P7FFD)
+	out (c),a		
 	cp 0x30				;если 48к то возврат уже на стеке
 	jr z,FFYESRET
 	ld sp,(fsna+LSNAST_RSP)
@@ -194,6 +191,10 @@ toFFpage
 	push hl
 	ld (fsna+LSNAST_RSP),sp
 FFYESRET
+	ld bc,PENT_CONF		;отключим 1024к
+PEFF7
+	ld a,0
+	out (c),a
 	ei
 	ld a,(fsna+LSNAST_IFF2)
 	and 4
