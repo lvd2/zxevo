@@ -201,6 +201,11 @@ PEFF7
 	jr nz,FFENDEI
 	di
 FFENDEI
+	ld a,(fsna+LSNAST_RR)
+	rlca
+	sub 0x15*2
+	rrca
+	ld r,a
 	ld sp,fsna+LSNAST_AHL ;забираем регистры
 	pop hl
 	pop de 
