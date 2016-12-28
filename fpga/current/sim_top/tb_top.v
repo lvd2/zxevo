@@ -521,31 +521,48 @@ module tb;
 
 		int i;
 		int fd;
-		
-		force tb.DUT.zports.atm_turbo = 1'b0;
-		force tb.DUT.zports.atm_pen = 1'b0;
-		force tb.DUT.zports.atm_cpm_n = 1'b1;
-		force tb.DUT.zports.atm_pen2 = 1'b0;
-		force tb.DUT.zports.pent1m_ram0_0 = 1'b0;
-		force tb.DUT.zports.pent1m_1m_on = 1'b0;
-		force tb.DUT.zports.pent1m_page = 'd0;
-		force tb.DUT.zports.pent1m_ROM = 1'b1;
+	
+		wait(res===1'b0);
 
-		force tb.DUT.zdos.dos = 1'b0;
+		#(0.1);
 
-		force tb.DUT.page[0] = 'd0;
-		force tb.DUT.page[1] = 'd5;
-		force tb.DUT.page[2] = 'd2;
-		force tb.DUT.page[3] = 'd0;
-		force tb.DUT.romnram[0] = 1'b1;
-		force tb.DUT.romnram[1] = 1'b0;
-		force tb.DUT.romnram[2] = 1'b0;
-		force tb.DUT.romnram[3] = 1'b0;
+		tb.DUT.zports.atm_turbo = 1'b0;
+		tb.DUT.zports.atm_pen = 1'b0;
+		tb.DUT.zports.atm_cpm_n = 1'b1;
+		tb.DUT.zports.atm_pen2 = 1'b0;
+//		tb.DUT.zports.pent1m_ram0_0 = 1'b0;
+//		tb.DUT.zports.pent1m_1m_on = 1'b0;
+//		tb.DUT.zports.pent1m_page = 'd0;
+//		tb.DUT.zports.pent1m_ROM = 1'b1;
+
+		tb.DUT.zdos.dos = 1'b0;
+
+/*		tb.DUT.page[0] = 'd0;
+		tb.DUT.page[1] = 'd5;
+		tb.DUT.page[2] = 'd2;
+		tb.DUT.page[3] = 'd0;
+		tb.DUT.romnram[0] = 1'b1;
+		tb.DUT.romnram[1] = 1'b0;
+		tb.DUT.romnram[2] = 1'b0;
+		tb.DUT.romnram[3] = 1'b0;*/
+		tb.DUT.instantiate_atm_pagers[0].atm_pager.page = 'd0;
+		tb.DUT.instantiate_atm_pagers[1].atm_pager.page = 'd5;
+		tb.DUT.instantiate_atm_pagers[2].atm_pager.page = 'd2;
+		tb.DUT.instantiate_atm_pagers[3].atm_pager.page = 'd0;
+		tb.DUT.instantiate_atm_pagers[0].atm_pager.romnram = 'd1;
+		tb.DUT.instantiate_atm_pagers[1].atm_pager.romnram = 'd0;
+		tb.DUT.instantiate_atm_pagers[2].atm_pager.romnram = 'd0;
+		tb.DUT.instantiate_atm_pagers[3].atm_pager.romnram = 'd0;
+
+		tb.DUT.zports.atm_scr_mode = 3'b011;
 		
-		force tb.DUT.peff7[5] = 1'b0;
-		force tb.DUT.peff7[0] = 1'b0;
-		force tb.DUT.zports.atm_scr_mode = 3'b011;
-		force tb.DUT.p7ffd[3] = 1'b0;
+/*		tb.DUT.peff7[5] = 1'b0;
+		tb.DUT.peff7[0] = 1'b0;
+		tb.DUT.p7ffd[3] = 1'b0;*/
+		tb.DUT.zports.peff7[7] = 1'b0;
+		tb.DUT.zports.peff7[0] = 1'b0;
+		tb.DUT.zports.p7ffd[3] = 1'b0;
+
 
 		for(i=0;i<512;i=i+1)
 		begin : set_palette //                                            R                               G                              B
