@@ -13,6 +13,12 @@
 extern "C" {
 #endif //__cplusplus
 
+#ifdef __GNUC__
+ #define __in
+ #define __in_z
+ #define __in_z_opt
+#endif
+
 //
 //  DXGetErrorString
 //  

@@ -4,7 +4,7 @@ CXX_COMPILER=clang++
 CXX_LTO=
 !else
 CXX_COMPILER=g++
-CXX_LTO=
+CXX_LTO=-flto
 !endif
 
 CXX=$(CXX_COMPILER) -c
