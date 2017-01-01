@@ -112,8 +112,8 @@ add wave -noupdate /tb/DUT/rfsh_n
 add wave -noupdate /tb/DUT/int_n
 add wave -noupdate /tb/DUT/nmi_n
 add wave -noupdate /tb/DUT/wait_n
-add wave -noupdate /tb/DUT/d
-add wave -noupdate /tb/DUT/a
+add wave -noupdate -radix hexadecimal /tb/DUT/d
+add wave -noupdate -radix hexadecimal /tb/DUT/a
 add wave -noupdate /tb/DUT/csrom
 add wave -noupdate /tb/DUT/romoe_n
 add wave -noupdate /tb/DUT/romwe_n
@@ -126,8 +126,8 @@ add wave -noupdate /tb/DUT/iorqge1
 add wave -noupdate /tb/DUT/iorqge2
 add wave -noupdate /tb/DUT/iorq1_n
 add wave -noupdate /tb/DUT/iorq2_n
-add wave -noupdate /tb/DUT/rd
-add wave -noupdate /tb/DUT/ra
+add wave -noupdate -radix hexadecimal /tb/DUT/rd
+add wave -noupdate -radix hexadecimal /tb/DUT/ra
 add wave -noupdate /tb/DUT/rwe_n
 add wave -noupdate /tb/DUT/rucas_n
 add wave -noupdate /tb/DUT/rlcas_n
@@ -249,9 +249,9 @@ add wave -noupdate /tb/DUT/cpu_req
 add wave -noupdate /tb/DUT/cpu_rnw
 add wave -noupdate /tb/DUT/cpu_wrbsel
 add wave -noupdate /tb/DUT/cpu_strobe
-add wave -noupdate /tb/DUT/cpu_addr
-add wave -noupdate /tb/DUT/cpu_rddata
-add wave -noupdate /tb/DUT/cpu_wrdata
+add wave -noupdate -radix hexadecimal /tb/DUT/cpu_addr
+add wave -noupdate -radix hexadecimal /tb/DUT/cpu_rddata
+add wave -noupdate -radix hexadecimal /tb/DUT/cpu_wrdata
 add wave -noupdate /tb/DUT/cbeg
 add wave -noupdate /tb/DUT/post_cbeg
 add wave -noupdate /tb/DUT/pre_cend
@@ -474,7 +474,7 @@ add wave -noupdate {/tb/DUT/instantiate_atm_pagers[3]/atm_pager/dos_exec_stb}
 add wave -noupdate {/tb/DUT/instantiate_atm_pagers[3]/atm_pager/ram_exec_stb}
 add wave -noupdate {/tb/DUT/instantiate_atm_pagers[3]/atm_pager/stall_count}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {2367400 ps} 0} {{Cursor 2} {116909372 ps} 0}
+WaveRestoreCursors {{Cursor 1} {3150600 ps} 0} {{Cursor 2} {43380556 ps} 0}
 configure wave -namecolwidth 487
 configure wave -valuecolwidth 149
 configure wave -justifyvalue left
@@ -489,4 +489,4 @@ configure wave -griddelta 8
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {13708159 ps}
+WaveRestoreZoom {614439 ps} {4443127 ps}

@@ -514,6 +514,41 @@ module tb;
 
 
 
+`ifdef NMITEST2
+ `define M48K
+
+	initial
+	begin
+		int i,fd;
+		logic [7:0] ldbyte;
+
+		reset_pc=16'h6000;
+		reset_sp=16'h8000;
+
+		fd = $fopen("dimkanmi.bin","rb");
+		if( !fd )
+		begin
+			$display("Can't open 'dimkanmi.bin'!");
+			$stop;
+		end
+
+		i='h6000;
+
+		begin : load_loop
+			while(1)
+			begin
+				if( 1!=$fread(ldbyte,fd) ) disable load_loop;
+				put_byte_48k(i,ldbyte);
+				i=i+1;
+			end
+		end
+		$fclose(fd);
+	end
+
+
+
+`endif
+
 	// start in 48k mode
 `ifdef M48K
 	initial
@@ -687,6 +722,7 @@ module tb;
 
 
 	// init dram
+`ifndef NMITEST2
 	initial
 	begin : init_dram
 		integer i;
@@ -696,7 +732,7 @@ module tb;
 			put_byte(i,(i%257));
 		end
 	end
-
+`endif
 
 
 
