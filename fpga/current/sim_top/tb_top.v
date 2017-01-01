@@ -1,5 +1,5 @@
 // simulate fpga top-level with external dram, rom, z80
-// (c) 2010-2012 NedoPC
+// (c) 2010-2016 NedoPC
 
 `include "../include/tune.v"
 
@@ -182,8 +182,8 @@ module tb;
 
 
 
-	assign zd_dut_to_z80 = tb.DUT.ena_ram ? tb.DUT.dout_ram : ( tb.DUT.ena_ports ? tb.DUT.dout_ports : ( tb.DUT.drive_ff ? 8'hFF : 8'bZZZZZZZZ ) );
-
+//	assign zd_dut_to_z80 = tb.DUT.ena_ram ? tb.DUT.dout_ram : ( tb.DUT.ena_ports ? tb.DUT.dout_ports : ( tb.DUT.drive_ff ? 8'hFF : 8'bZZZZZZZZ ) );
+	assign zd_dut_to_z80 = tb.DUT.d_ena ? tb.DUT.d_pre_out : 8'bZZZZ_ZZZZ;
 
 
 
@@ -543,6 +543,14 @@ module tb;
 			end
 		end
 		$fclose(fd);
+
+		#(100000); // 100 us
+
+		//force nmi_n = 1'b0;
+		@(posedge fclk);
+		force tb.DUT.imm_nmi = 1'b1;
+		@(posedge fclk);
+		release tb.DUT.imm_nmi;
 	end
 
 

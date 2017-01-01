@@ -1,4 +1,4 @@
-// ZX-Evo Base Configuration (c) NedoPC 2008,2009,2010,2011,2012,2013,2014
+// ZX-Evo Base Configuration (c) NedoPC 2008,2009,2010,2011,2012,2013,2014,2015,2016
 //
 // top-level
 
@@ -423,12 +423,16 @@ module top(
 
 
 	// data bus out: either RAM data or internal ports data or 0xFF with unused ports
-	assign d = ena_ram ? dout_ram : ( ena_ports ? dout_ports : ( (drive_ff|drive_00) ? {8{drive_ff}} : 8'bZZZZZZZZ ) );
+//	assign d = ena_ram ? dout_ram : ( ena_ports ? dout_ports : ( (drive_ff|drive_00) ? {8{drive_ff}} : 8'bZZZZZZZZ ) );
 
-/*	wire [7:0] d_pre_out;
-	assign d_pre_out = (({8{ena_ram}} & dout_ram) | ({8{ena_ports}} & dout_ports) | {8{drive_ff}}) & {8{~drive_00}} ;
-	assign d = (ena_ram|ena_ports|drive_ff) ? d_pre_out : 8'bZZZZ_ZZZZ;
-*/
+	wire [7:0] d_pre_out;
+	wire d_ena;
+
+	assign d_pre_out = ({8{ena_ram&(~drive_00)}} & dout_ram) | ({8{ena_ports}} & dout_ports) | {8{drive_ff}} ;
+	assign d_ena = (ena_ram|ena_ports|drive_ff|drive_00);
+	//
+	assign d = d_ena ? d_pre_out : 8'bZZZZ_ZZZZ;
+	//
 	assign csrom = csrom_int && !drive_00;
 
 

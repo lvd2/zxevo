@@ -1,28 +1,5 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate /tb/fclk
-add wave -noupdate /tb/clkz_out
-add wave -noupdate /tb/zrst_n
-add wave -noupdate /tb/clkz_in
-add wave -noupdate -divider <NULL>
-add wave -noupdate /tb/DUT/zclock/clk14_src
-add wave -noupdate /tb/DUT/zclock/zclk_stall
-add wave -noupdate /tb/DUT/zclock/pre_zpos_35
-add wave -noupdate /tb/DUT/zclock/pre_zneg_35
-add wave -noupdate /tb/DUT/zclock/pre_zpos_70
-add wave -noupdate /tb/DUT/zclock/pre_zneg_70
-add wave -noupdate /tb/DUT/zclock/pre_zpos_140
-add wave -noupdate /tb/DUT/zclock/pre_zneg_140
-add wave -noupdate /tb/DUT/zclock/pre_zpos
-add wave -noupdate /tb/DUT/zclock/pre_zneg
-add wave -noupdate /tb/DUT/contend
-add wave -noupdate /tb/DUT/zclock/contend_io
-add wave -noupdate /tb/DUT/zclock/contend_mem
-add wave -noupdate /tb/DUT/zclock/contend_wait
-add wave -noupdate /tb/DUT/zclock/stall
-add wave -noupdate -radix hexadecimal /tb/DUT/zclock/a
-add wave -noupdate /tb/DUT/zclock/r_mreq_n
-add wave -noupdate -divider <NULL>
 add wave -noupdate /tb/DUT/zclock/zpos
 add wave -noupdate /tb/DUT/zclock/zneg
 add wave -noupdate /tb/z80/BUSRQ_n
@@ -46,58 +23,6 @@ add wave -noupdate /tb/csrom
 add wave -noupdate /tb/romoe_n
 add wave -noupdate /tb/romwe_n
 add wave -noupdate -radix hexadecimal /tb/z80/u0/IR
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate /tb/z80/RESET_n
-add wave -noupdate /tb/z80/CLK_n
-add wave -noupdate /tb/z80/RFSH_n
-add wave -noupdate /tb/z80/M1_n
-add wave -noupdate /tb/z80/MREQ_n
-add wave -noupdate /tb/z80/RD_n
-add wave -noupdate /tb/z80/WR_n
-add wave -noupdate -radix hexadecimal /tb/z80/A
-add wave -noupdate -radix hexadecimal /tb/z80/D
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate -divider <NULL>
-add wave -noupdate /tb/DUT/contend
-add wave -noupdate /tb/DUT/video_top/hpix
-add wave -noupdate /tb/DUT/video_top/vpix
-add wave -noupdate /tb/DUT/vvsync
-add wave -noupdate /tb/DUT/vhsync
-add wave -noupdate /tb/DUT/vcsync
-add wave -noupdate /tb/DUT/vred
-add wave -noupdate /tb/DUT/vgrn
-add wave -noupdate /tb/DUT/vblu
-add wave -noupdate -divider <NULL>
 add wave -noupdate -divider <NULL>
 add wave -noupdate /tb/DUT/res
 add wave -noupdate /tb/DUT/fclk
@@ -473,8 +398,42 @@ add wave -noupdate {/tb/DUT/instantiate_atm_pagers[3]/atm_pager/m1_n_reg}
 add wave -noupdate {/tb/DUT/instantiate_atm_pagers[3]/atm_pager/dos_exec_stb}
 add wave -noupdate {/tb/DUT/instantiate_atm_pagers[3]/atm_pager/ram_exec_stb}
 add wave -noupdate {/tb/DUT/instantiate_atm_pagers[3]/atm_pager/stall_count}
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /tb/DUT/znmi/rst_n
+add wave -noupdate /tb/DUT/znmi/fclk
+add wave -noupdate /tb/DUT/znmi/zpos
+add wave -noupdate /tb/DUT/znmi/zneg
+add wave -noupdate /tb/DUT/znmi/int_start
+add wave -noupdate /tb/DUT/znmi/set_nmi
+add wave -noupdate /tb/DUT/znmi/imm_nmi
+add wave -noupdate /tb/DUT/znmi/clr_nmi
+add wave -noupdate /tb/DUT/znmi/rfsh_n
+add wave -noupdate /tb/DUT/znmi/m1_n
+add wave -noupdate /tb/DUT/znmi/mreq_n
+add wave -noupdate /tb/DUT/znmi/csrom
+add wave -noupdate -radix hexadecimal /tb/DUT/znmi/a
+add wave -noupdate /tb/DUT/znmi/drive_00
+add wave -noupdate /tb/DUT/znmi/in_nmi
+add wave -noupdate /tb/DUT/znmi/gen_nmi
+add wave -noupdate /tb/DUT/znmi/set_nmi_r
+add wave -noupdate /tb/DUT/znmi/set_nmi_now
+add wave -noupdate /tb/DUT/znmi/imm_nmi_r
+add wave -noupdate /tb/DUT/znmi/imm_nmi_now
+add wave -noupdate /tb/DUT/znmi/pending_nmi
+add wave -noupdate /tb/DUT/znmi/in_nmi_2
+add wave -noupdate -radix hexadecimal /tb/DUT/znmi/nmi_count
+add wave -noupdate -radix hexadecimal /tb/DUT/znmi/clr_count
+add wave -noupdate /tb/DUT/znmi/pending_clr
+add wave -noupdate /tb/DUT/znmi/last_m1_rom
+add wave -noupdate /tb/DUT/znmi/last_m1_0066
+add wave -noupdate /tb/DUT/znmi/nmi_start
+add wave -noupdate /tb/DUT/znmi/m1_n_reg
+add wave -noupdate /tb/DUT/znmi/mreq_n_reg
+add wave -noupdate /tb/DUT/znmi/rfsh_n_reg
+add wave -noupdate /tb/DUT/znmi/was_m1
+add wave -noupdate /tb/DUT/znmi/was_m1_reg
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {3150600 ps} 0} {{Cursor 2} {43380556 ps} 0}
+WaveRestoreCursors {{Cursor 1} {3150600 ps} 0} {{Cursor 2} {106390600 ps} 0}
 configure wave -namecolwidth 487
 configure wave -valuecolwidth 149
 configure wave -justifyvalue left
@@ -489,4 +448,4 @@ configure wave -griddelta 8
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {614439 ps} {4443127 ps}
+WaveRestoreZoom {102443295 ps} {111540215 ps}

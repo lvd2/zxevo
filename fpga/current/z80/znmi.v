@@ -174,7 +174,7 @@ module znmi
 	end
 
 
-	assign drive_00 = in_nmi_2 && m1_n && mreq_n && last_m1_0066;
+	assign drive_00 = in_nmi_2 && (!m1_n) && (!mreq_n) && last_m1_0066;
 
 
 
