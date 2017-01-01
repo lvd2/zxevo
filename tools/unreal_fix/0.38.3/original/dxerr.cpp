@@ -4,8 +4,20 @@
 #include "vars.h"
 #include "util.h"
 
+#ifdef __GNUC__
+#define DXGetErrorString DXGetErrorString9
+#endif
+
 #ifdef EMUL_DEBUG
-#include "dxerr9.h"
+
+ // lvd {
+ #ifdef __GNUC__
+  #include <dxerr9.h>
+ #else
+  #include "dxerr9.h"
+ #endif
+ // lvd }
+
 void printrdd(const char *pr, HRESULT r)
 {
    color(CONSCLR_ERROR);

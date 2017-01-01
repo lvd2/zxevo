@@ -4,7 +4,7 @@ CXX_COMPILER=clang++
 CXX_LTO=
 !else
 CXX_COMPILER=g++
-CXX_LTO=-flto
+CXX_LTO=#-flto
 !endif
 
 CXX=$(CXX_COMPILER) -c
@@ -22,7 +22,7 @@ CFLAGS_COMMON=$(CFLAGS_COMMON) -DVG_EMUL
 !endif
 
 !ifdef SSE1
-ARCH=-march=pentium3 -msse1
+ARCH=-march=pentium3 -msse
 CFLAGS_COMMON=$(CFLAGS_COMMON) $(ARCH)
 !elseifdef SSE2
 ARCH=-march=pentium4 -msse2
@@ -47,7 +47,7 @@ LFLAGS=$(LFLAGS_DEBUG)
 
 LIBS=$(LIBS) sndrender/snd.a z80/z80.a
 LIBS2=-lcomctl32 -lcomdlg32 -luser32 -lkernel32 -lgdi32 -lwinmm -ldxguid \
-  -lddraw -ldsound -ldinput -ldxerr8 -lsetupapi -lgcc -lstdc++
+  -lddraw -ldsound -ldinput -ldxerr9 -lsetupapi -lgcc -lstdc++ 
 
 SRCS=emul.cpp std.cpp atm.cpp cheat.cpp config.cpp dbgbpx.cpp dbgcmd.cpp dbglabls.cpp \
     dbgmem.cpp dbgoth.cpp dbgpaint.cpp dbgreg.cpp dbgrwdlg.cpp dbgtrace.cpp \
