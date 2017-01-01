@@ -545,23 +545,37 @@ module tb;
 		tb.DUT.romnram[1] = 1'b0;
 		tb.DUT.romnram[2] = 1'b0;
 		tb.DUT.romnram[3] = 1'b0;*/
-		tb.DUT.instantiate_atm_pagers[0].atm_pager.page = 'd0;
-		tb.DUT.instantiate_atm_pagers[1].atm_pager.page = 'd5;
-		tb.DUT.instantiate_atm_pagers[2].atm_pager.page = 'd2;
-		tb.DUT.instantiate_atm_pagers[3].atm_pager.page = 'd0;
-		tb.DUT.instantiate_atm_pagers[0].atm_pager.romnram = 'd1;
-		tb.DUT.instantiate_atm_pagers[1].atm_pager.romnram = 'd0;
-		tb.DUT.instantiate_atm_pagers[2].atm_pager.romnram = 'd0;
-		tb.DUT.instantiate_atm_pagers[3].atm_pager.romnram = 'd0;
+
+		tb.DUT.instantiate_atm_pagers[0].atm_pager.pages[0] = 'd0;
+		tb.DUT.instantiate_atm_pagers[1].atm_pager.pages[0] = 'd5;
+		tb.DUT.instantiate_atm_pagers[2].atm_pager.pages[0] = 'd2;
+		tb.DUT.instantiate_atm_pagers[3].atm_pager.pages[0] = 'd0;
+		tb.DUT.instantiate_atm_pagers[0].atm_pager.pages[1] = 'd0;
+		tb.DUT.instantiate_atm_pagers[1].atm_pager.pages[1] = 'd5;
+		tb.DUT.instantiate_atm_pagers[2].atm_pager.pages[1] = 'd2;
+		tb.DUT.instantiate_atm_pagers[3].atm_pager.pages[1] = 'd0;
+
+		tb.DUT.instantiate_atm_pagers[0].atm_pager.ramnrom[0] = 'd0;
+		tb.DUT.instantiate_atm_pagers[1].atm_pager.ramnrom[0] = 'd1;
+		tb.DUT.instantiate_atm_pagers[2].atm_pager.ramnrom[0] = 'd1;
+		tb.DUT.instantiate_atm_pagers[3].atm_pager.ramnrom[0] = 'd1;
+		tb.DUT.instantiate_atm_pagers[0].atm_pager.ramnrom[1] = 'd0;
+		tb.DUT.instantiate_atm_pagers[1].atm_pager.ramnrom[1] = 'd1;
+		tb.DUT.instantiate_atm_pagers[2].atm_pager.ramnrom[1] = 'd1;
+		tb.DUT.instantiate_atm_pagers[3].atm_pager.ramnrom[1] = 'd1;
 
 		tb.DUT.zports.atm_scr_mode = 3'b011;
 		
 /*		tb.DUT.peff7[5] = 1'b0;
 		tb.DUT.peff7[0] = 1'b0;
 		tb.DUT.p7ffd[3] = 1'b0;*/
-		tb.DUT.zports.peff7[7] = 1'b0;
-		tb.DUT.zports.peff7[0] = 1'b0;
-		tb.DUT.zports.p7ffd[3] = 1'b0;
+//		tb.DUT.zports.peff7[7] = 1'b0;
+//		tb.DUT.zports.peff7[0] = 1'b0;
+//		tb.DUT.zports.p7ffd[3] = 1'b0;
+
+		tb.DUT.zports.peff7_int = 8'h14;
+		tb.DUT.zports.p7ffd_int = 8'h30;
+
 
 
 		for(i=0;i<512;i=i+1)
