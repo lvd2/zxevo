@@ -27,6 +27,9 @@ CFLAGS_COMMON=$(CFLAGS_COMMON) $(ARCH)
 !elseifdef SSE2
 ARCH=-march=pentium4 -msse2
 CFLAGS_COMMON=$(CFLAGS_COMMON) $(ARCH) -D_M_IX86_FP=2
+!elseifdef NATIVE
+ARCH=-march=native
+CFLAGS_COMMON=$(CFLAGS_COMMON) $(ARCH)
 !else
 ARCH=-march=pentium2 -mmmx
 CFLAGS_COMMON=$(CFLAGS_COMMON) $(ARCH)

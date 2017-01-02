@@ -14,6 +14,8 @@ CFLAGS_COMMON=-D_CRT_SECURE_NO_DEPRECATE -DUSE_SND_EXTERNAL_BUFFER -D_PREFIX_ -s
 CFLAGS_COMMON=$(CFLAGS_COMMON) -march=pentium3 -msse
 !elseifdef SSE2
 CFLAGS_COMMON=$(CFLAGS_COMMON) -march=pentium4 -msse2 -D_M_IX86_FP=2
+!elseifdef NATIVE
+CFLAGS_COMMON=$(CFLAGS_COMMON) -march=native
 !else
 CFLAGS_COMMON=$(CFLAGS_COMMON) -march=pentium2 -mmmx
 !endif
