@@ -522,7 +522,7 @@ module tb;
 		int i,fd;
 		logic [7:0] ldbyte;
 
-		reset_pc=16'h6000;
+		reset_pc=16'h8000;
 		reset_sp=16'h8000;
 
 		fd = $fopen("dimkanmi.bin","rb");
@@ -532,7 +532,7 @@ module tb;
 			$stop;
 		end
 
-		i='h6000;
+		i='h8000;
 
 		begin : load_loop
 			while(1)
@@ -553,6 +553,14 @@ module tb;
 		release tb.DUT.imm_nmi;
 	end
 
+	
+	// port #FE monitor
+	wire fe_write;
+	assign fe_write = (za[7:0]==8'hFE) && !wr_n && !iorq_n;
+	always @(negedge fe_write)
+	begin
+		$display("port #FE monitor: border is %d",zd[2:0]);
+	end
 
 
 `endif
