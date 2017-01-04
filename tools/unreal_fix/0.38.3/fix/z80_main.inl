@@ -6,7 +6,7 @@ u8 xm(unsigned addr)
    addr &= 0xFFFF;
 
 #ifdef MOD_GSZ80
-   if ((temp.gsdmaon!=0) && ( (conf.mem_model==MM_PENTAGON) || (conf.mem_model==MM_ATM3) ) && ((addr & 0xc000)==0) && ((comp.pEFF7 & EFF7_ROCACHE)==0))
+   if (temp.gsdmaon && ((addr & 0xc000)==0) && (bankr[0] >= ROM_BASE_M))
     {
      u8 tmp = GSRAM_M[(temp.gsdmaaddr-1) & 0x1FFFFF];
      temp.gsdmaaddr++;
@@ -15,13 +15,13 @@ u8 xm(unsigned addr)
      return tmp;
     }
 #endif
-
-   if((conf.mem_model == MM_ATM3) && (comp.pBF & 4) && ((addr & 0xF800) == 0)) // Ğàçğåøåíà ğàáîòà ñ ÎÇÓ øğèôòà äëÿ ATM3
+/*
+   if((conf.mem_model == MM_ATM3) && (comp.pBF & 4)) // Ğàçğåøåíà ğàáîòà ñ ÎÇÓ øğèôòà äëÿ ATM3
    {
-       unsigned idx = (addr >> 3) | ((addr & 7) << 8);
+       unsigned idx = ((addr&0x07F8) >> 3) | ((addr & 7) << 8);
        return fontatm2[idx];
    }
-
+*/
    return *am_r(addr);
 }
 
@@ -77,7 +77,7 @@ void wm(unsigned addr, unsigned char val)
        unsigned idx = ((addr&0x07F8) >> 3) | ((addr & 7) << 8);
        fontatm2[idx] = val;
        update_screen();
-       return;
+       //return;
    }
 
    unsigned char *a = bankw[(addr >> 14) & 3];
@@ -200,7 +200,7 @@ void z80loop()
       }
 
       if (cpu.int_pend && cpu.iff1 && cpu.t != cpu.eipos && // int enabled in CPU not issued after EI
-			!((conf.mem_model == MM_ATM710/* || conf.mem_model == MM_ATM3*/) && !(comp.pFF77 & 0x20))) // int enabled by ATM hardware -- lvd added no int disabling in pentevo (atm3)
+           !((conf.mem_model == MM_ATM710/* || conf.mem_model == MM_ATM3*/) && !(comp.pFF77 & 0x20))) // int enabled by ATM hardware
       {
          handle_int(&cpu, cpu.IntVec()); // Íà÷àëî îáğàáîòêè int (çàïèñü â ñòåê àäğåñà âîçâğàòà è ò.ï.)
       }
@@ -248,7 +248,7 @@ void z80loop()
 
       if(nmi_pending)
       {
-		if( conf.mem_model==MM_ATM3 && (comp.pBF&0x10) )
+	  if( conf.mem_model==MM_ATM3 && (comp.pBF&0x10) )
 		{
 			nmi_pending = 0;
 			cpu.nmi_in_progress = true;
@@ -256,7 +256,7 @@ void z80loop()
 			m_nmi(RM_NOCHANGE);
 			continue;
 		}
-		else if((conf.mem_model == MM_PROFSCORP || conf.mem_model == MM_SCORP))
+        else if((conf.mem_model == MM_PROFSCORP || conf.mem_model == MM_SCORP))
          {
              nmi_pending--;
              if(cpu.pc >= 0x4000)
