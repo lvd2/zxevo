@@ -1,38 +1,51 @@
 
-;LAST UPDATE: 12.10.2014 savelij
+;LAST UPDATE: 04.02.2016 savelij
 
-_BS_jmpBoot	EQU 0		;3
-_BS_OEMName	EQU 3		;8
-_BPB_BytsPerSec	EQU 0X0B	;2
-_BPB_SecPerClus	EQU 0X0D	;1
-_BPB_RsvdSecCnt	EQU 0X0E	;2
-_BPB_NumFATs	EQU 0X10	;1
-_BPB_RootEntCnt	EQU 0X11	;2
-_BPB_TotSec16	EQU 0X13	;2
-_BPB_Media	EQU 0X15	;1
-_BPB_FATSz16	EQU 0X16	;2
-_BPB_SecPerTrk	EQU 0X18	;2
-_BPB_NumHeads	EQU 0X1A	;2
-_BPB_HiddSec	EQU 0X1C	;4
-_BPB_TotSec32	EQU 0X20	;4
+_BS_jmpBoot		EQU 0		;3
+_BS_OEMName		EQU 3		;8
+_BPB_BytsPerSec		EQU 0X0B	;2 количество байт в секторе
+_BPB_SecPerClus		EQU 0X0D	;1 количество секторов в кластере
+_BPB_RsvdSecCnt		EQU 0X0E	;2 количество зарезервированных секторов
+_BPB_NumFATs		EQU 0X10	;1 количество FAT таблиц
+_BPB_RootEntCnt		EQU 0X11	;2 для FAT12/16 число 32-байтных элементов, для FAT32 = 0
+_BPB_TotSec16		EQU 0X13	;2 количество секторов на разделе
+_BPB_Media		EQU 0X15	;1 медиа байт
+_BPB_FATSz16		EQU 0X16	;2 Для FAT1216 количество секторов одной FAT, для FAT32 = 0
 
-_BS16DrvNum	EQU 0X24	;1
-_BS16Reserved1	EQU 0X25	;1
-_BS16BootSig	EQU 0X26	;1
-_BS16VolID	EQU 0X27	;4
-_BS16VolLab	EQU 0X2B	;B
-_BS16FilSysType	EQU 0X36	;8
+_BPB_SecPerTrk		EQU 0X18	;2 количество секторов на дорожке
+_BPB_NumHeads		EQU 0X1A	;2 количество головок
+_BPB_HiddSec		EQU 0X1C	;4 количество скрытых секторов перед началом раздела
+_BPB_TotSec32		EQU 0X20	;4 общее количество секторов на разделе
 
-_BPB_FATSz32	EQU 0X24	;4
-_BPB_ExtFlags	EQU 0X28	;2
-_BPB_FSVer	EQU 0X2A	;2
-_BPB_RootClus	EQU 0X2C	;4
-_BPB_FSInfo	EQU 0X30	;2
-_BPB_BkBootSec	EQU 0X32	;2
-_BPB_Reserved	EQU 0X34	;C
-_BS32DrvNum	EQU 0X40	;1
-_BS32Reserved1	EQU 0X41	;1
-_BS32BootSig	EQU 0X42	;1
-_BS32VolID	EQU 0X43	;4
-_BS32VolLab	EQU 0X47	;B
-_BS32FilSysType	EQU 0X52	;8
+_BS16DrvNum		EQU 0X24	;1 номер устройства
+_BS16Reserved1		EQU 0X25	;1 зарезервировнно
+_BS16BootSig		EQU 0X26	;1 дополнительная сигнатура
+_BS16VolID		EQU 0X27	;4 серийный номер раздела
+_BS16VolLab		EQU 0X2B	;B имя раздела
+_BS16FilSysType		EQU 0X36	;8 текстовый тип FAT
+
+_BPB_FATSz32		EQU 0X24	;4 количество секторов одной FAT таблицы
+_BPB_ExtFlags		EQU 0X28	;2 флаги FAT32
+_BPB_FSVer		EQU 0X2A	;2 номер версии FAT32
+_BPB_RootClus		EQU 0X2C	;4 номер первого кластера root директории
+_BPB_FSInfo		EQU 0X30	;2 номер сектора со структурой FSINFO
+_BPB_BkBootSec		EQU 0X32	;2 0 или номер сектора в резервной области, где хранится копия boot сектора
+_BPB_Reserved		EQU 0X34	;C всегда 0
+_BS32DrvNum		EQU 0X40	;1 номер устройства
+_BS32Reserved1		EQU 0X41	;1 зарезервированно
+_BS32BootSig		EQU 0X42	;1 дополнительная сигнатура
+_BS32VolID		EQU 0X43	;4 серийный номер раздела
+_BS32VolLab		EQU 0X47	;B имя раздела
+_BS32FilSysType		EQU 0X52	;8 текстовый тип FAT
+
+;[MBR смещения]
+_MBR_ACTIVE_VOL		EQU 0		;1 флаг активности раздела
+_MBR_START_CYL		EQU 1		;1 стартовый цилиндр раздела
+_MBR_START_SEC		EQU 2		;1 стартовый сектор раздела
+_MBR_START_HEAD		EQU 3		;1 стартовая головка раздела
+_MBR_VOL_TYPE		EQU 4		;1 тип раздела
+_MBR_END_CYL		EQU 5		;1 последный цилиндр раздела
+_MBR_END_SEC		EQU 6		;1 последний сектор раздела
+_MBR_END_HEAD		EQU 7		;1 последняя головка раздела
+_MBR_OFFSET_VOL		EQU 8		;4 смещение раздела в секторах
+_MBR_SIZE_VOL		EQU 0X0C	;4 размер раздела в секторах

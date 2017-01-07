@@ -1,0 +1,99 @@
+
+;LAST UPDATE: 24.03.2015 savelij
+
+__TERM0		EQU 0X00		; Program terminate
+__CONIN		EQU 0X01		; Console input
+__CONOUT	EQU 0X02		; Console output
+__AUXIN		EQU 0X03		; Auxiliary input
+__AUXOUT	EQU 0X04		; Auxiliary output
+__LSTOUT	EQU 0X05		; Printer output
+__DIRIO		EQU 0X06		; Direct console I/O
+__DIRIN		EQU 0X07		; Direct console input
+__INNOE		EQU 0X08		; Console input	without	echo
+__STROUT	EQU 0X09		; String output
+__BUFIN		EQU 0X0A		; Buffered line	input
+__CONST		EQU 0X0B		; Console status
+__CPMVER	EQU 0X0C		; Return version number
+__DSKRST	EQU 0X0D		; Disk reset
+__SELDSK	EQU 0X0E		; Select disk
+__FOPEN		EQU 0X0F		; Open file (FCB)
+__FCLOSE	EQU 0X10		; Close	file (FCB)
+__SFIRST	EQU 0X11		; Search for first entry (FCB)
+__SNEXT		EQU 0X12		; Search for next entry	(FCB)
+__FDEL		EQU 0X13		; Delete file (FCB)
+__RDSEQ		EQU 0X14		; Sequential read (FCB)
+__WRSEQ		EQU 0X15		; Sequential write (FCB)
+__FMAKE		EQU 0X16		; Create file (FCB)
+__FREN		EQU 0X17		; Rename file (FCB)
+__LOGIN		EQU 0X18		; Get login vector
+__CURDRV	EQU 0X19		; Get current drive
+__SETDTA	EQU 0X1A		; Set disk transfer address
+__ALLOC		EQU 0X1B		; Get allocation information
+
+__RDRND		EQU 0X21		; Random read (FCB)
+__WRRND		EQU 0X22		; Random write(FCB)
+__FSIZE		EQU 0X23		; Get file size	(FCB)
+__SETRND	EQU 0X24		; Set random record (FCB)
+
+__WRBLK		EQU 0X26		; Random block write (FCB)
+__RDBLK		EQU 0X27		; Random block read (FCB)
+__WRZER		EQU 0X28		; Random write with zero fill (FCB)
+
+__GDATE		EQU 0X2A		; Get date
+__SDATE		EQU 0X2B		; Set date
+__GTIME		EQU 0X2C		; Get time
+__STIME		EQU 0X2D		; Set time
+__VERIFY	EQU 0X2E		; Set/reset verify flag
+__RDABS		EQU 0X2F		; Absolute sector read
+__WRABS		EQU 0X30		; Absolute sector write
+__DPARM		EQU 0X31		; Get disk parameters
+
+__FFIRST	EQU 0X40		; Find first entry
+__FNEXT		EQU 0X41		; Find next entry
+__FNEW		EQU 0X42		; Find new entry
+__OPEN		EQU 0X43		; Open file handle
+__CREATE	EQU 0X44		; Create file handle
+__CLOSE		EQU 0X45		; Close	file handle
+__ENSURE	EQU 0X46		; Ensure file handle
+__DUP		EQU 0X47		; Duplicate file handle
+__READ		EQU 0X48		; Read from file handle
+__WRITE		EQU 0X49		; Write	to file	handle
+__SEEK		EQU 0X4A		; Move file handle pointer
+__IOCTL		EQU 0X4B		; I/O control for devices
+__HTEST		EQU 0X4C		; Test file handle
+__DELETE	EQU 0X4D		; Delete file or subdirectory
+__RENAME	EQU 0X4E		; Rename file or subdirectory
+__MOVE		EQU 0X4F		; Move file or subdirectory
+__ATTR		EQU 0X50		; Get/set file attributes
+__FTIME		EQU 0X51		; Get/set file date and	time
+__HDELETE	EQU 0X52		; Delete file handle
+__HRENAME	EQU 0X53		; Rename file handle
+__HMOVE		EQU 0X54		; Move file handle
+__HATTR		EQU 0X55		; Get/set file handle attributes
+__HFTIME	EQU 0X56		; Get/set file handle date and time
+__GETDTA	EQU 0X57		; Get disk transfer address
+__GETVFY	EQU 0X58		; Get verify flag setting
+__GETCD		EQU 0X59		; Get current directory
+__CHDIR		EQU 0X5A		; Change current directory
+__PARSE		EQU 0X5B		; Parse	pathname
+__PFILE		EQU 0X5C		; Parse	filename
+__CHKCHR	EQU 0X5D		; Check	character
+__WPATH		EQU 0X5E		; Get whole path string
+__FLUSH		EQU 0X5F		; Flush	disk buffers
+__FORK		EQU 0X60		; Fork a child process
+__JOIN		EQU 0X61		; Rejoin parent	process
+__TERM		EQU 0X62		; Terminate with error code
+__DEFAB		EQU 0X63		; Define abort exit routine
+__DEFER		EQU 0X64		; Define disk error handler routine
+__ERROR		EQU 0X65		; Get previous error code
+__EXPLAIN	EQU 0X66		; Explain error	code
+__FORMAT	EQU 0X67		; Format a disk
+__RAMD		EQU 0X68		; Create or destroy RAM	disk
+__BUFFER	EQU 0X69		; Allocate sector buffers
+__ASSIGN	EQU 0X6A		; Logical drive	assignment
+__GENV		EQU 0X6B		; Get environment item
+__SENV		EQU 0X6C		; Set environment item
+__FENV		EQU 0X6D		; Find environment item
+__DSKCHK	EQU 0X6E		; Get/set disk check status
+__DOSVER	EQU 0X6F		; Get MSX-DOS version number
+__REDIR		EQU 0X70		; Get/set redirection status

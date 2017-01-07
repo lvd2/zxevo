@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 21.11.2013 savelij
+;LAST UPDATE: 31.12.2016 savelij
 
 ; „€‰‚… ‹…Š’ŽŽƒŽ „ˆ‘Š€
 
@@ -30,7 +30,7 @@ ED_SEEK: LD     A,(RQCYL)
 ; ‚›—ˆ‘‹…ˆ… €„…‘€
 ED_ADR	BIT ED_INI,(IX-_TST_IS1)
 		CALL NZ,ED_INIT
-		ld		a,~PAGE_RAMDISK
+		ld		a,~RAM_RAMDISK
         RST     18H
         EX      AF,AF'
 		ld		hl,(ED_CYL)
@@ -61,7 +61,7 @@ ED_ADR_END:
 		add a,d
 		ld d,a
 		inc h
-		ld a,PAGE_DATARAMD
+		ld a,RAM_DATARAMD
 		add a,(hl)
 		set 7,d
 		bit 6,d

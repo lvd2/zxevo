@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 19.0.2016 savelij
+;LAST UPDATE: 03.01.2017 savelij
 	
 		include ../../macros.a80
 		include ../../define.a80
@@ -7,7 +7,7 @@
 		include ../../ports_ide.a80
 
 ;VERSION
-VERSBIOS	EQU "0.57b "
+VERSBIOS	EQU "0.57c "
 
 ;BIT 4,(IY+55)
 ;BIT 3,(IY+55)-0-‡€…’ €ˆŒ€–ˆˆ ŠŽ˜€Š€, 1-€‡…˜…ˆ…
@@ -830,7 +830,7 @@ PERFECT		DI
 		LD SP,0XC000
 		PEC_ON SHADOW_BF
 		LD BC,WIN_A0
-		LD A,P_ADDON1
+		LD A,ROM_RST81
 		OUT (C),A
 		LD HL,(ADR_PERFECT)
 		LD DE,0X5B00

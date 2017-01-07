@@ -1,0 +1,37 @@
+
+;LAST UPDATE: 05.09.2016 savelij
+
+;[структура записи директории]
+ INIT_VAR
+ SETVAR _DIR_Name,8			; 8 имя файла
+ SETVAR _DIR_Ext,3			; 3 расширение файла
+ SETVAR _DIR_Attr,BYTE			; 1 аттрибуты файла
+ SETVAR _DIR_NTRes,BYTE			; 1 зарезервированно
+ SETVAR _DIR_CrtTimeTenth,BYTE		; 1 миллисекунды
+ SETVAR _DIR_CrtTime,WORD		; 2
+ SETVAR _DIR_CrtDate,WORD		; 2 время создания файла
+ SETVAR _DIR_LstAccDate,WORD		; 2 дата создания файла
+ SETVAR _DIR_FstClusHI,WORD		; 2 старшее слово номера кластера
+ SETVAR _DIR_WrtTime,WORD		; 2 время последней записи
+ SETVAR _DIR_WrtDate,WORD		; 2 дата последней записи
+ SETVAR _DIR_FstClusLO,WORD		; 2 младшее слово номера кластера
+ SETVAR _DIR_FileSize,DWORD		; 4 размер файла
+ SETVAR _DIR_StructSize,0;0X20		; размер структуры
+;флаги=биты=============
+_DIR_B_AttrReadOnly	EQU 0
+_DIR_B_Hidden		EQU 1
+_DIR_B_System		EQU 2
+_DIR_B_VolumeID		EQU 3
+_DIR_B_Directory	EQU 4
+_DIR_B_Archive		EQU 5
+_DIR_B_Device		EQU 7
+;флаги=маски============
+_DIR_M_AttrReadOnly	EQU 1<<_DIR_B_AttrReadOnly
+_DIR_M_Hidden		EQU 1<<_DIR_B_Hidden
+_DIR_M_System		EQU 1<<_DIR_B_System
+_DIR_M_VolumeID		EQU 1<<_DIR_B_VolumeID
+_DIR_M_Directory	EQU 1<<_DIR_B_Directory
+_DIR_M_Archive		EQU 1<<_DIR_B_Archive
+_DIR_M_Device		EQU 1<<_DIR_B_Device
+_DIR_M_AttrLongName	EQU _DIR_M_AttrReadOnly | _DIR_M_Hidden | _DIR_M_System | _DIR_M_VolumeID
+;=======================

@@ -1,0 +1,51 @@
+
+;LAST UPDATE: 10.10.2016 savelij
+ 
+;[номера битов нажатых клавиш]
+_BIT_KEY	EQU 5					;какая-то клавиша нажата
+_BIT_FKEY	EQU 6					;какая-то функциональная клавиша нажата
+_BIT_MODKEY	EQU 7					;нажата какая-то клавиша модификатор
+
+;[маска битов нажатых клавиш]
+_M_KEY		EQU 1<<_BIT_KEY
+_M_FKEY		EQU 1<<_BIT_FKEY
+_M_MODKEY	EQU 1<<_BIT_MODKEY
+
+;[reg E номера битов нажатых клавиш]
+REG_DE
+;[reg E номера битов нажатых клавиш]
+.B_R_GUI	EQU 7				;нажат правый GUI
+.B_R_ALT	EQU 6				;нажат правый ALT
+.B_R_CTRL	EQU 5				;нажат правый CTRL
+.B_R_SHIFT	EQU 4				;нажат правый SHIFT
+.B_L_GUI	EQU 3				;нажат левый GUI
+.B_L_ALT	EQU 2				;нажат левый ALT
+.B_L_CTRL	EQU 1				;нажат левый CTRL
+.B_L_SHIFT	EQU 0				;нажат левый SHIFT
+;[reg D номера битов нажатых клавиш]
+.B_CAPSLOCK	EQU 7				;режим CAPS LOCK
+.B_NUMLOCK	EQU 6				;режим NUM LOCK
+
+.B_ONOFF_RS	EQU 4				;нажат переключатель RUS/LAT (SHIFT+CTRL)
+.B_RUSLAT	EQU 3				;режим RUS/LAT
+.B_EXTKEY	EQU 2				;нажата кнопка с доп кодом
+.B_UNKEY	EQU 1				;какая-то кнопка отпущена
+.B_PRESSKEY	EQU 0				;что-то было нажато
+;[reg E маски битов установки нажатых клавиш]
+.M_R_GUI	EQU 1<<.B_R_GUI			;нажат правый GUI
+.M_R_ALT	EQU 1<<.B_R_ALT			;нажат правый ALT
+.M_R_CTRL	EQU 1<<.B_R_CTRL		;нажат правый CTRL
+.M_R_SHIFT	EQU 1<<.B_R_SHIFT		;нажат правый SHIFT
+.M_L_GUI	EQU 1<<.B_L_GUI			;нажат левый GUI
+.M_L_ALT	EQU 1<<.B_L_ALT			;нажат левый ALT
+.M_L_CTRL	EQU 1<<.B_L_CTRL		;нажат левый CTRL
+.M_L_SHIFT	EQU 1<<.B_L_SHIFT		;нажат левый SHIFT
+;[reg D маски битов установки нажатых клавиш] 
+.M_CAPSLOCK	EQU 1<<.B_CAPSLOCK		;режим CAPS LOCK
+.M_NUMLOCK	EQU 1<<.B_NUMLOCK		;режим NUM LOCK
+
+.M_ONOFF_RS	EQU 1<<.B_ONOFF_RS		;нажат переключатель RUS/LAT (SHIFT+CTRL)
+.M_RUSLAT	EQU 1<<.B_RUSLAT		;режим RUS/LAT
+.M_EXTKEY	EQU 1<<.B_EXTKEY		;нажата кнопка с доп кодом
+.M_UNKEY	EQU 1<<.B_UNKEY			;какая-то кнопка отпущена
+.M_PRESSKEY	EQU 1<<.B_PRESSKEY		;что-то было нажато

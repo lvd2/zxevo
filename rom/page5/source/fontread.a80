@@ -33,7 +33,7 @@ SCAN_FONT
         LD      BC,0XFF77
         OUT     (C),A     ;включаем новый пентевный текстмод - 1-страничный
                           ; заодно ефф7 и фф77 ставят нам 7 МГц частоту
-		EVOPORT WIN_P1,PAGE_SCR_FONT
+		EVOPORT WIN_P1,RAM_SCR_FONT
         CALL    OUTPAGE   ;выводим все символы на экран
 
 LOOP
@@ -73,10 +73,10 @@ OUTPAGE
 
 		XOR A
 		LD HL,CPU3+LATTR
-		PCALL CLSTXTMD1,P_ADDONS
+		PCALL CLSTXTMD1,ROM_RST82
 		XOR A
 		LD HL,CPU3+RATTR
-		PCALL CLSTXTMD1,P_ADDONS
+		PCALL CLSTXTMD1,ROM_RST82
 
         XOR     A         ; код печатаемого символа
         LD      HL,CPU3+LSYM	;0XC1C0  ; откуда начинаем печатать

@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 09.12.2013 savelij
+;LAST UPDATE: 31.12.2016 savelij
 
 ;        MAIN	"DOSI*",0XC6
 ;        ORG	0X321C
@@ -896,7 +896,7 @@ RED_SAV
         RRCA	
         RRCA	
         AND	0X3F
-       ADD	A,PAGE_DATARAMD;9 ;Savelij RAMDISK
+       ADD	A,RAM_DATARAMD;9 ;Savelij RAMDISK
        ;OR 64 ;Ž‡“, ­¥ 7ffd
         OUT	(C),A
         LD	B,0XF7

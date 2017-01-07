@@ -1,11 +1,9 @@
+
 @ECHO OFF
 
 cd ..\..\fat_boot\source
 
-..\..\..\tools\asw\bin\asw -U -L micro_boot_fat.a80
-..\..\..\tools\asw\bin\p2bin micro_boot_fat.p micro_boot_fat.rom -r $-$ -k
-
-..\..\..\tools\mhmt\mhmt -mlz micro_boot_fat.rom micro_boot_fat_pack.rom
+CALL make.bat
 
 cd ..\..\page5\source
 
@@ -16,9 +14,3 @@ cd ..\..\page5\source
 
 ..\..\..\tools\asw\bin\asw -U -L rst8service.a80
 ..\..\..\tools\asw\bin\p2bin rst8service.p ..\rst8service.rom -r $-$ -k
-
-del 8x8_ar_pack.bin
-del 866_code_pack.bin
-del atm_code_pack.bin
-
-pause

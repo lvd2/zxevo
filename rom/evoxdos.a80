@@ -1,0 +1,26 @@
+
+;LAST UPDATE: 07.10.2016 savelij
+
+SIZE_JUMP	EQU 3					;размер команды JP adr
+
+;[общие переменные]
+ INIT_VAR 0xF800
+ SETVAR BDOS_RAM_JUMPS,0
+ SETVAR _ALLOC_SEGMENT,SIZE_JUMP			;00 выделение 1 страницы памяти
+ SETVAR _FREE_SEGMENT,SIZE_JUMP				;01 освобождение страницы памяти по номеру
+ SETVAR _SET_WIN0,SIZE_JUMP				;02 включение страницы озу в 0 окно
+ SETVAR _SET_WIN1,SIZE_JUMP				;03 включение страницы озу в 1 окно
+ SETVAR _SET_WIN2,SIZE_JUMP				;04 включение страницы озу в 2 окно
+ SETVAR _SET_VIDEOMODE,SIZE_JUMP			;05 включение видеорежима
+ SETVAR _READ_BYTE,SIZE_JUMP				;06 чтение байта из страницы BDOS
+ SETVAR _WRITE_BYTE,SIZE_JUMP				;07 запись байта в страницы BDOS
+ SETVAR _TRANSFER_PAGE0,SIZE_JUMP			;08 передача байт в/из страницы BDOS
+ SETVAR _JMP_BDOS,SIZE_JUMP				;09 вызов BDOS в страницах BDOS
+ SETVAR _BDOS_RAM,SIZE_JUMP				;0A включение конфига BDOS
+ SETVAR _DOS_RAM,SIZE_JUMP				;0B включение конфига DOS
+ SETVAR _GET_VARS_KEYS,SIZE_JUMP			;0C получение адреса переменных клавиатуры
+ SETVAR _GET_ADR_PAGES,SIZE_JUMP			;0D получение адреса номеров страниц конфигурации
+ ADDVAR SIZE_JUMP					;0E резерв
+ ADDVAR SIZE_JUMP					;0F резерв
+
+ SETVAR END_JUMP_TABLE,0
