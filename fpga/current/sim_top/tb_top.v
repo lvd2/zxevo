@@ -547,7 +547,7 @@ module tb;
 
 		wait(res===1'b0);
 		#(0.2);
-		tb.DUT.zports.atm_turbo = 1'b0;
+		tb.DUT.zports.atm_turbo = 1'b1;
 		tb.DUT.zports.peff7_int[4] = 1'b0;
 		
 		
@@ -559,8 +559,60 @@ module tb;
 		@(posedge fclk);
 		release tb.DUT.imm_nmi;
 	end
+`endif
 
-	
+
+
+`ifdef NMITEST3
+ `define M48K
+
+	initial
+	begin
+		int i,fd;
+		logic [7:0] ldbyte;
+
+		reset_pc=16'h0068;
+		reset_sp=16'h8000;
+
+
+		#(0.1); // let M48K rom load execute
+
+		fd = $fopen("dimkarom.bin","rb");
+		if( !fd )
+		begin
+			$display("Can't open 'dimkarom.bin'!");
+			$stop;
+		end
+
+		i='h0066;
+		begin : load_loop
+			while(1)
+			begin
+				if( 1!=$fread(ldbyte,fd) ) disable load_loop;
+				tb.romko.zxevo_rom.mem[i]=ldbyte;
+				i=i+1;
+			end
+		end
+		$fclose(fd);
+
+
+		wait(res===1'b0);
+		#(0.2);
+		tb.DUT.zports.atm_turbo = 1'b1;
+		tb.DUT.zports.peff7_int[4] = 1'b0;
+		
+		
+		#(1000000); // 1 ms
+
+		//force nmi_n = 1'b0;
+		@(posedge fclk);
+		force tb.DUT.imm_nmi = 1'b1;
+		@(posedge fclk);
+		release tb.DUT.imm_nmi;
+	end
+`endif
+
+
 	// port #FE monitor
 	wire fe_write;
 	assign fe_write = (za[7:0]==8'hFE) && !wr_n && !iorq_n;
@@ -571,7 +623,6 @@ module tb;
 
 
 
-`endif
 
 	// start in 48k mode
 `ifdef M48K
@@ -581,8 +632,16 @@ module tb;
 		int i;
 		int fd;
 	
+		fd = $fopen("48.rom","rb");
+		if( 16384!=$fread(tb.romko.zxevo_rom.mem,fd) )
+		begin
+			$display("Couldn't load 48k ROM!\n");
+			$stop;
+		end
+		$fclose(fd);
+		
+		
 		wait(res===1'b0);
-
 		#(0.1);
 
 		tb.DUT.zports.atm_turbo = 1'b0;
@@ -642,15 +701,6 @@ module tb;
 			tb.DUT.video_top.video_palframe.palette[i] = { (i[1]?{1'b1,i[3]}:2'b00), 1'b0, (i[2]?{1'b1,i[3]}:2'b00), 1'b0, (i[0]?{1'b1,i[3]}:2'b00) };
 		end
 
-		#1.0;
-
-		fd = $fopen("48.rom","rb");
-		if( 16384!=$fread(tb.romko.zxevo_rom.mem,fd) )
-		begin
-			$display("Couldn't load 48k ROM!\n");
-			$stop;
-		end
-		$fclose(fd);
 	end
 `endif
 
