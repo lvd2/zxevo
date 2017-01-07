@@ -544,6 +544,13 @@ module tb;
 		end
 		$fclose(fd);
 
+
+		wait(res===1'b0);
+		#(0.2);
+		tb.DUT.zports.atm_turbo = 1'b0;
+		tb.DUT.zports.peff7_int[4] = 1'b0;
+		
+		
 		#(100000); // 100 us
 
 		//force nmi_n = 1'b0;
@@ -558,9 +565,10 @@ module tb;
 	wire fe_write;
 	assign fe_write = (za[7:0]==8'hFE) && !wr_n && !iorq_n;
 	always @(negedge fe_write)
-	begin
-		$display("port #FE monitor: border is %d",zd[2:0]);
-	end
+		$display("port #FE monitor: border is %d at %t",zd[2:0],$time());
+	always @(negedge nmi_n)
+		$display("nmi monitor: negative edge at %t",$time());	
+
 
 
 `endif

@@ -195,6 +195,7 @@ module top(
 	wire in_nmi;
 	wire [1:0] set_nmi;
 	wire imm_nmi;
+	wire nmi_buf_clr;
 
 	// breakpoint signals
 	wire brk_ena;
@@ -603,7 +604,8 @@ module top(
 		.cpu_stall (cpu_stall ),
 		.cpu_next  (cpu_next  ),
 
-		.int_turbo(int_turbo)
+		.int_turbo(int_turbo),
+		.nmi_buf_clr(nmi_buf_clr)
 	);
 
 
@@ -893,7 +895,8 @@ module top(
 		.drive_00(drive_00),
 
 		.in_nmi (in_nmi ),
-		.gen_nmi(gen_nmi)
+		.gen_nmi(gen_nmi),
+		.nmi_buf_clr(nmi_buf_clr)
 	);
 
 
