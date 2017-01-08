@@ -176,7 +176,7 @@ void mon_dump() { mem_dump ^= 1; mem_sz = mem_dump ? 32:8; }
 
 void mon_switch_dump()
 {
-    static const unsigned DumpModes[] = { ED_MEM, ED_PHYS, ED_LOG, ED_CMOS, ED_NVRAM };
+    static const unsigned DumpModes[] = { ED_MEM, ED_PHYS, ED_LOG, ED_CMOS, ED_NVRAM, ED_COMP_PAL };
     static unsigned Idx = 0;
     ++Idx;
     Idx %= ED_MAX;

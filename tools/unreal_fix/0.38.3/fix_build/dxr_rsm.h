@@ -2,7 +2,7 @@
 
 struct RSM_DATA
 {
-   __m64 *colortab; // tables for current frame
+   const __m64 *colortab; // tables for current frame
 
    enum { MAX_MIX_FRAMES = 8, FRAME_TABLES_SIZE = MAX_MIX_FRAMES*0x100*4*8 };
    enum { MAX_LINE_DWORDS = MAX_WIDTH };

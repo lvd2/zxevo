@@ -349,6 +349,7 @@ struct TEMP
    char RomDir[FILENAME_MAX];
    char SnapDir[FILENAME_MAX];
    char HddDir[FILENAME_MAX];
+   char SdDir[FILENAME_MAX];
    char LastSnapName[FILENAME_MAX]; // Имя последнего загруженного файла без расширения
 };
 

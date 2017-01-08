@@ -17,6 +17,8 @@
 #include "tape.h"
 #include "snapshot.h"
 #include "leds.h"
+#include "sdcard.h"
+#include "zc.h"
 
 #include "util.h"
 
@@ -1477,9 +1479,139 @@ reload:
    return 1;
 }
 
+// Ngs=true/Zc=false
+static bool OpenSdImage(bool Ngs)
+{
+   OPENFILENAME fn = { 0 };
+
+   char SdImage[FILENAME_MAX];
+   SdImage[0] = 0;
+
+   fn.lStructSize = (WinVerMajor < 5) ? OPENFILENAME_SIZE_VERSION_400 : sizeof(OPENFILENAME);
+   fn.hwndOwner = dlg;
+   fn.lpstrFilter = "SD card image (*.*)\0*.*\0";
+   fn.lpstrFile = SdImage;
+   fn.nMaxFile = _countof(SdImage);
+   fn.lpstrTitle = "Select SD card image";
+   fn.Flags = OFN_CREATEPROMPT | OFN_NOCHANGEDIR | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST;
+   fn.lpstrInitialDir   = temp.SdDir;
+   if (!GetOpenFileName(&fn))
+       return false;
+   strcpy(temp.SdDir, fn.lpstrFile);
+   char *Ptr = strrchr(temp.SdDir, '\\');
+   if(Ptr)
+    *Ptr = 0;
+
+   int file = open(SdImage, O_RDONLY | O_BINARY, S_IREAD);
+   if(file < 0)
+       return false;
+   __int64 sz = _filelengthi64(file);
+   close(file);
+
+   strcpy(Ngs ? c1.ngs_sd_card_path : c1.zc_sd_card_path, SdImage);
+   return true;
+}
+
+static INT_PTR CALLBACK NgsDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+{
+   ::dlg = dlg;
+    switch(msg)
+    {
+    case WM_INITDIALOG:
+        return TRUE;
+
+    case WM_COMMAND:
+        {
+            unsigned id = LOWORD(wp);
+            if (id == IDB_SD_NGS)
+            {
+                if(OpenSdImage(true))
+                {
+                    SetDlgItemText(dlg, IDE_SD_NGS, c1.ngs_sd_card_path);
+                }
+                return TRUE;
+            }
+        }
+        return FALSE;
+
+    case WM_NOTIFY:
+    break;
+
+    default:
+        return FALSE;
+    }
+
+    // WM_NOTIFY
+    const NMHDR *nm = (const NMHDR *)lp;
+    if(nm->code == PSN_KILLACTIVE)
+    {
+    }
+
+    if(nm->code == PSN_SETACTIVE)
+    {
+        lastpage = "NGS";
+        SetDlgItemText(dlg, IDE_SD_NGS, c1.ngs_sd_card_path);
+        return TRUE;
+    }
+
+    if(nm->code == PSN_APPLY) dlgok = 1;
+    if(nm->code == PSN_RESET) dlgok = 0;
+
+    return TRUE;
+}
+
+static INT_PTR CALLBACK ZcDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+{
+   ::dlg = dlg;
+    switch(msg)
+    {
+    case WM_INITDIALOG:
+        return TRUE;
+
+    case WM_COMMAND:
+        {
+            unsigned id = LOWORD(wp);
+            if (id == IDB_SD_ZC)
+            {
+                if(OpenSdImage(false))
+                {
+                    SetDlgItemText(dlg, IDE_SD_ZC, c1.zc_sd_card_path);
+                }
+                return TRUE;
+            }
+        }
+        return FALSE;
+
+    case WM_NOTIFY:
+    break;
+
+    default:
+        return FALSE;
+    }
+
+    // WM_NOTIFY
+    const NMHDR *nm = (const NMHDR *)lp;
+    if(nm->code == PSN_KILLACTIVE)
+    {
+    }
+
+    if(nm->code == PSN_SETACTIVE)
+    {
+        lastpage = "ZC";
+        SetDlgItemText(dlg, IDE_SD_ZC, c1.zc_sd_card_path);
+        return TRUE;
+    }
+
+    if(nm->code == PSN_APPLY) dlgok = 1;
+    if(nm->code == PSN_RESET) dlgok = 0;
+
+    return TRUE;
+}
+
+
 void setup_dlg()
 {
-   PROPSHEETPAGE psp[16] = { 0 };
+   PROPSHEETPAGE psp[18] = { 0 };
    PROPSHEETPAGE *ps = psp;
 
    ps->pszTemplate   = MAKEINTRESOURCE(IDD_MEM);
@@ -1537,6 +1669,17 @@ void setup_dlg()
    ps->pfnDlgProc    = LedsDlg;
    ps++;
 
+   ps->pszTemplate   = MAKEINTRESOURCE(IDD_SETTINGS_NGS);
+   ps->pszTitle      = "NGS";
+   ps->pfnDlgProc    = NgsDlg;
+   ps++;
+
+   ps->pszTemplate   = MAKEINTRESOURCE(IDD_SETTINGS_ZC);
+   ps->pszTitle      = "ZC";
+   ps->pfnDlgProc    = ZcDlg;
+   ps++;
+
+
    PROPSHEETHEADER psh = { sizeof(PROPSHEETHEADER) };
    psh.dwFlags          = PSH_USEICONID | PSH_PROPSHEETPAGE | PSH_NOAPPLYNOW | (lastpage ? PSH_USEPSTARTPAGE : 0);
    psh.hwndParent       = wnd;
@@ -1557,25 +1700,49 @@ void setup_dlg()
    // temp.rflags = RF_MONITOR; set_video();
 
    bool MemModelChanged = false;
+   bool NgsSdImageChanged = false;
+   bool ZcSdImageChanged = false;
    c1 = conf; PropertySheet(&psh);
    if (dlgok) {
            if(conf.render != c1.render)
                temp.scale = 1;
            if(conf.mem_model != c1.mem_model)
                MemModelChanged = true;
+           if(strcmp(conf.ngs_sd_card_path, c1.ngs_sd_card_path) != 0)
+               NgsSdImageChanged = true;
+           if(strcmp(conf.zc_sd_card_path, c1.zc_sd_card_path) != 0)
+               ZcSdImageChanged = true;
+
            conf = c1;
            frametime = conf.frame; //Alone Coder 0.36.5
    };
 
    eat();
    SendMessage(wnd, WM_SETFOCUS, (WPARAM)wnd, 0); // show cursor for 'kempston on mouse'
-   applyconfig();
+
+   if(dlgok)
+   {
+       applyconfig();
+   }
 
    OnExitGui();
 
    extern void main_reset();
    if(MemModelChanged)
+   {
        main_reset();
+   }
+   else
+   {
+       if(NgsSdImageChanged)
+       {
+           SdCard.Reset();
+       }
+       if(ZcSdImageChanged)
+       {
+           Zc.Reset();
+       }
+   }
 }
 
 #endif

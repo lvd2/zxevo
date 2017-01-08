@@ -40,7 +40,7 @@ char vtxname[200], vtxauthor[200], vtxsoft[200], vtxtracker[200], vtxcomm[200];
 
 void savesnddialog()
 {
-   OnExitGui(); //Alone Coder
+   OnEnterGui(); //Alone Coder
    unsigned end; //Alone Coder 0.36.7
    if (savesndtype) {
       if (savesndtype == 1) { // wave

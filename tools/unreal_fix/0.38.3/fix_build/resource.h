@@ -306,7 +306,9 @@
 #define IDC_VIDEOSCALE                  1250
 #define IDD_FILEPREVIEW                 1251
 #define IDC_PREVIEW_BOX                 1252
+#define IDD_SETTINGS_NGS                1252
 #define IDC_PREVIEW_BASIC               1253
+#define IDD_SETTINGS_ZC                 1253
 #define IDC_PREVIEW_ERASED              1254
 #define IDC_NEW                         1255
 #define IDC_EXACT                       1256
@@ -318,6 +320,13 @@
 #define IDE_VALUE                       1262
 #define IDC_HEX                         1263
 #define IDC_STATUS                      1264
+#define IDE_SD_NGS                      1265
+#define IDB_SD_NGS                      1266
+#define IDC_COMBO_GS_TYPE               1267
+#define IDC_COMBO_GS_RAM_SIZE           1268
+#define IDE_SD_ZC                       1269
+#define IDB_SD_ZC                       1270
+#define IDC_CHECK1                      1271
 #define IDC_PC_LAYOUT                   10050
 #define IDC_WHEEL_NONE                  10252
 #define IDC_WHEEL_KEYBOARD              10254
@@ -327,9 +336,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        139
+#define _APS_NEXT_RESOURCE_VALUE        140
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1265
+#define _APS_NEXT_CONTROL_VALUE         1272
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

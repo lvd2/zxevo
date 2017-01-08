@@ -273,12 +273,23 @@ int writeSNA(FILE *ff)
 void unpack_page(unsigned char *dst, int dstlen, unsigned char *src, int srclen)
 {
    memset(dst, 0, dstlen);
-   while (srclen > 0 && dstlen > 0) {
-      if (srclen >= 4 && *(unsigned short*)src == WORD2(0xED, 0xED)) {
-         for (unsigned char i = src[2]; i; i--)
-            *dst++ = src[3], dstlen--;
-         srclen -= 4; src += 4;
-      } else *dst++ = *src++, dstlen--, srclen--;
+   while (srclen > 0 && dstlen > 0)
+   {
+      if (srclen >= 4 && src[0] == 0xED && src[1] == 0xED)
+      {
+         size_t len = src[2];
+         memset(dst, src[3], len);
+         dstlen -= len;
+         srclen -= 4;
+         src += 4;
+         dst += len;
+      }
+      else
+      {
+          *dst++ = *src++;
+          dstlen--;
+          srclen--;
+      }
    }
 }
 
@@ -297,20 +308,21 @@ int readZ80()
       hdr->pc = hdr->newpc;
       memset(RAM_BASE_M, 0, PAGE*8); // clear 128k - first 8 pages
 
+      unsigned char * const p48[] =
+      {
+             base_sos_rom, 0, 0, 0,
+             RAM_BASE_M+2*PAGE, RAM_BASE_M+0*PAGE, 0, 0,
+             RAM_BASE_M+5*PAGE, 0, 0, 0
+      };
+      unsigned char * const p128[] =
+      {
+             base_sos_rom, base_dos_rom, base_128_rom, RAM_BASE_M+0*PAGE,
+             RAM_BASE_M+1*PAGE, RAM_BASE_M+2*PAGE, RAM_BASE_M+3*PAGE, RAM_BASE_M+4*PAGE,
+             RAM_BASE_M+5*PAGE, RAM_BASE_M+6*PAGE, RAM_BASE_M+7*PAGE, 0
+      };
+
       while (ptr < snbuf+snapsize)
       {
-         unsigned char *p48[] =
-         {
-                base_sos_rom, 0, 0, 0,
-                RAM_BASE_M+2*PAGE, RAM_BASE_M+0*PAGE, 0, 0,
-                RAM_BASE_M+5*PAGE, 0, 0, 0
-         };
-         unsigned char *p128[] =
-         {
-                base_sos_rom, base_dos_rom, base_128_rom, RAM_BASE_M+0*PAGE,
-                RAM_BASE_M+1*PAGE, RAM_BASE_M+2*PAGE, RAM_BASE_M+3*PAGE, RAM_BASE_M+4*PAGE,
-                RAM_BASE_M+5*PAGE, RAM_BASE_M+6*PAGE, RAM_BASE_M+7*PAGE, 0
-         };
          unsigned len = *(unsigned short*)ptr;
          if (ptr[2] > 11)
              return 0;
@@ -319,7 +331,10 @@ int readZ80()
              return 0;
          ptr += 3;
          if (len == 0xFFFF)
-             memcpy(dstpage, ptr, len = PAGE);
+         {
+             len = PAGE;
+             memcpy(dstpage, ptr, len);
+         }
          else
              unpack_page(dstpage, PAGE, ptr, len);
          ptr += len;
@@ -353,6 +368,7 @@ int readZ80()
 
    if (model48k)
        comp.pEFF7 |= EFF7_LOCKMEM; //Alone Coder
+
    set_banks();
 
    return 1;

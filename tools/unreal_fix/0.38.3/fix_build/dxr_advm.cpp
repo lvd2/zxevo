@@ -35,11 +35,11 @@ void lines_scale2(const unsigned char *src, unsigned y, unsigned char *dst1, uns
 
    for (unsigned i = 0; i < nPix; i += 8) {
 
-      __m64 uu = *(__m64*)(u+i);
-      __m64 ll = *(__m64*)(l+i);
-      __m64 cmp = _mm_cmpeq_pi8(uu,ll);
+      __m128i uu = _mm_loadl_epi64((const __m128i*)(u+i));
+      __m128i ll = _mm_loadl_epi64((const __m128i*)(l+i));
+      __m128i cmp = _mm_cmpeq_epi8(uu, ll);
 
-      if (_mm_movemask_pi8(cmp) != 0xFF) {
+      if (_mm_movemask_epi8(cmp) != 0xFFFF) {
 
          __m128i mm = _mm_loadu_si128((__m128i*)(m+i-4));
          __m128i uu = _mm_loadu_si128((__m128i*)(u+i-4));
@@ -88,9 +88,7 @@ void lines_scale2(const unsigned char *src, unsigned y, unsigned char *dst1, uns
          _mm_store_si128((__m128i*)(dst2 + 2*i), _mm_or_si128( _mm_and_si128(e0,v3), _mm_andnot_si128(e0,v1) ) );
 
       } else {
-
-         __m64 v0 = *(__m64*)(m+i);
-         __m128i v1 = _mm_movpi64_epi64(v0);
+         __m128i v1 = _mm_loadl_epi64((const __m128i*)(m + i));
          v1 = _mm_unpacklo_epi8(v1,v1);
          _mm_store_si128((__m128i*)(dst1 + 2*i), v1);
          _mm_store_si128((__m128i*)(dst2 + 2*i), v1);
@@ -475,5 +473,7 @@ void __fastcall render_advmame(unsigned char *dst, unsigned pitch)
    }
    if (conf.noflic)
        memcpy(rbuf_s, rbuf, temp.scy*temp.scx/4);
+#ifndef MOD_SSE2
    _mm_empty();
+#endif
 }

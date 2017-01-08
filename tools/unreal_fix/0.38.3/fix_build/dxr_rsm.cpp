@@ -14,7 +14,7 @@ void RSM_DATA::prepare_line_32(unsigned char *src0)
        line_buffer_d[i] = bias;
 
    unsigned line_size = line_size_d / 2, frame = 0;
-   __m64 *tab = colortab;
+   const __m64 *tab = colortab;
    for (;;)
    {
       unsigned char *src = src0;
@@ -48,7 +48,7 @@ void RSM_DATA::prepare_line_16(unsigned char *src0)
        line_buffer_d[i] = bias;
 
    unsigned line_size = line_size_d / 2, frame = 0;
-   __m64 *tab = colortab;
+   const __m64 *tab = colortab;
    for (;;) {
       unsigned char *src = src0;
       for (i = 0; i < line_size; ) {
@@ -162,7 +162,7 @@ void rend_rsm_32(unsigned char *dst, unsigned pitch, unsigned char *src)
 
 void __fastcall render_rsm(unsigned char *dst, unsigned pitch)
 {
-   rsm.colortab = (__m64*)((int)rsm.tables + rsm.frame * rsm.frame_table_size);
+   rsm.colortab = (const __m64*)(((const u8 *)rsm.tables) + rsm.frame * rsm.frame_table_size);
    unsigned char *src = rbuf_s + rb2_offs * rsm.rbuf_dst;
 
    if (temp.obpp ==  8) rend_rsm_8 (dst, pitch, src);

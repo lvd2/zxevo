@@ -39,16 +39,20 @@ void TSdCard::Reset()
     CidCnt = 0;
     memset(Cid, 0, sizeof(Cid));
 
+    // OEM/Application ID (OID) 
     Cid[1] = 'U';
     Cid[2] = 'S';
+
+    // Product Name (PNM) 
     Cid[3] = 'U';
     Cid[4] = 'S';
-    Cid[5] = '3';
-    Cid[6] = '7';
-    Cid[7] = '3';
-    Cid[8] = 0x37;
-    Cid[14] = 0x04;
-    Cid[15] = 1;
+    Cid[5] = '0' + (VER_HL / 10) % 10;
+    Cid[6] = '0' + VER_HL % 10;
+    Cid[7] = '0' + VER_A % 10;
+
+    Cid[8] = 0x10; // Product Revision (PRV) (BCD)
+    Cid[14] = 0x04; // Manufacture Date Code (MDT) 
+    Cid[15] = 1; // CRC7 | 1
 
     Ocr = 0x80200000;
     OcrCnt = 0;

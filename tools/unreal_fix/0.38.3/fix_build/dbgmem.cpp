@@ -26,6 +26,7 @@ unsigned char *editam(unsigned addr)
    Z80 &cpu = CpuMgr.Cpu();
    if (editor == ED_CMOS) return &cmos[addr & (sizeof(cmos)-1)];
    if (editor == ED_NVRAM) return &nvram[addr & (sizeof(nvram)-1)];
+   if(editor == ED_COMP_PAL) return &comp.comp_pal[addr & (sizeof(comp.comp_pal) - 1)];
    if (editor == ED_MEM) return cpu.DirectMem(addr);
    if (!edited_track.trkd) return 0;
    if (editor == ED_PHYS) return edited_track.trkd + addr;
@@ -38,7 +39,7 @@ void editwm(unsigned addr, unsigned char byte)
    if (editrm(addr) == byte) return;
    unsigned char *ptr = editam(addr);
    if (!ptr) return; *ptr = byte;
-   if (editor == ED_MEM || editor == ED_CMOS || editor == ED_NVRAM) return;
+   if (editor == ED_MEM || editor == ED_CMOS || editor == ED_NVRAM || editor == ED_COMP_PAL) return;
    if (editor == ED_PHYS) { comp.wd.fdd[mem_disk].optype |= 2; return; }
    comp.wd.fdd[mem_disk].optype |= 1;
    // recalc sector checksum
@@ -52,6 +53,7 @@ unsigned memadr(unsigned addr)
    if (editor == ED_MEM) return (addr & 0xFFFF);
    if (editor == ED_CMOS) return (addr & (sizeof(cmos)-1));
    if (editor == ED_NVRAM) return (addr & (sizeof(nvram)-1));
+   if (editor == ED_COMP_PAL) return (addr & (sizeof(comp.comp_pal) - 1));
    // else if (editor == ED_PHYS || editor == ED_LOG)
    if (!mem_max) return 0;
    while ((int)addr < 0) addr += mem_max;
@@ -91,11 +93,16 @@ void showmem()
        mem_max = sizeof(cmos);
    else if(editor == ED_NVRAM)
        mem_max = sizeof(nvram);
+   else if(editor == ED_COMP_PAL)
+       mem_max = sizeof(comp.comp_pal);
 
+   unsigned div = mem_dump ? 32 : 8;
+   unsigned dx = (mem_max + div - 1) / div;
+   unsigned mem_lines = min(dx, mem_size);
 redraw:
    cpu.mem_curs = memadr(cpu.mem_curs);
    cpu.mem_top = memadr(cpu.mem_top);
-   for (ii = 0; ii < mem_size; ii++)
+   for (ii = 0; ii < mem_lines; ii++)
    {
       unsigned ptr = memadr(cpu.mem_top + ii*mem_sz);
       sprintf(line, "%04X ", ptr);
@@ -134,8 +141,10 @@ title:
        MemName = "cmos";
    else if (editor == ED_NVRAM)
        MemName = "nvram";
+   else if(editor == ED_COMP_PAL)
+       MemName = "comppal";
 
-   if(editor == ED_MEM || editor == ED_CMOS || editor == ED_NVRAM)
+   if(editor == ED_MEM || editor == ED_CMOS || editor == ED_NVRAM || editor == ED_COMP_PAL)
    {
        sprintf(line, "%s: %04X gsdma: %06X", MemName, cpu.mem_curs & 0xFFFF, temp.gsdmaaddr);
    }

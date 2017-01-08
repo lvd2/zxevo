@@ -25,7 +25,18 @@ struct CHEATDLG
    unsigned char wordmode, hex;
 
    CHEATDLG() { lastsnap = 0; bitmask = 0; nFound = -1; mode = S_NEW; }
-   ~CHEATDLG() { free(lastsnap); free(bitmask);  }
+   ~CHEATDLG()
+   {
+       if(lastsnap)
+       {
+           free(lastsnap);
+       }
+
+       if(bitmask)
+       {
+           free(bitmask);
+       }
+   }
 
    enum SR_MODE { S_NEW, S_VAL, S_INC, S_DEC } mode;
 

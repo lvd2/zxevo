@@ -255,7 +255,7 @@ struct TCswHdr
             u8 CompressionType;
             u8 Flags;
             u8 Reserved[3];
-            u8 Data[1];
+            u8 Data[];
         } Ver1;
 
         struct
@@ -266,7 +266,7 @@ struct TCswHdr
             u8 Flags;
             u8 HeaderExtLen;
             char EncAppDesc[16];
-            u8 ExtHdr[1];
+            u8 ExtHdr[];
         } Ver2;
     };
 };

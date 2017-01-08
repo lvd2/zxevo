@@ -2154,7 +2154,6 @@ static void StartD3d(HWND Wnd)
     OutputDebugString(__FUNCTION__"\n");
     printf("%s\n", __FUNCTION__);
 #endif
-    HRESULT r;
     if(!D3d9Dll)
     {
         D3d9Dll = LoadLibrary(D3D_DLL_NAME);
@@ -2170,10 +2169,7 @@ static void StartD3d(HWND Wnd)
         typedef IDirect3D9 * (WINAPI *TDirect3DCreate9)(UINT SDKVersion);
         TDirect3DCreate9 Direct3DCreate9 = (TDirect3DCreate9)GetProcAddress(D3d9Dll, "Direct3DCreate9");
         D3d9 = Direct3DCreate9(D3D_SDK_VERSION);
-        if(!D3d9)
-            return;
     }
-
 }
 
 static void CalcWindowSize()

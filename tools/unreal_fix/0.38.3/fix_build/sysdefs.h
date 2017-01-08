@@ -83,15 +83,6 @@ static __inline__ void __debugbreak__(void)
 
 #define __assume(x)
 
-
-
-#ifndef min
- #define min(a,b) (((a)<(b))?(a):(b))
-#endif
-#ifndef max
- #define max(a,b) (((a)>(b))?(a):(b))
-#endif
-
 #endif // __GNUC__
 
 #endif // __SYSDEFS_H_INCLUDED

@@ -361,6 +361,7 @@ void load_config(const char *fname)
    SetCurrentDirectory(line);
    strcpy(temp.RomDir, temp.SnapDir);
    strcpy(temp.HddDir, temp.SnapDir);
+   strcpy(temp.SdDir, temp.SnapDir);
 
    conf.reset_rom = RM_SOS;
    GetPrivateProfileString(misc, "RESET", nil, line, sizeof line, ininame);
