@@ -994,7 +994,9 @@ void apply_memory()
 void applyconfig()
 {
 //   printf("%s\n", __FUNCTION__);
-   load_atm_font();
+   if(conf.mem_model != MM_ATM3){
+      applyconfig();
+   }
 
    //[vv] disable turbo
    comp.pEFF7 |= EFF7_GIGASCREEN;

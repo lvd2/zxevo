@@ -70,6 +70,7 @@ void TSdCard::Wr(u8 Val)
 
     if(!Image)
         return;
+    if(Cmd==CMD_STOP_TRANSMISSION && CurrState==ST_R1b) CurrState = ST_IDLE; //!!!патч временный, нужно думать как правильно сделать
 
     switch(CurrState)
     {
