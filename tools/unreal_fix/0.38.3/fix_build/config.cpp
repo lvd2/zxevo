@@ -995,7 +995,7 @@ void applyconfig()
 {
 //   printf("%s\n", __FUNCTION__);
    if(conf.mem_model != MM_ATM3){
-      applyconfig();
+		load_atm_font();
    }
 
    //[vv] disable turbo
