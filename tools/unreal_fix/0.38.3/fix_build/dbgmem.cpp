@@ -66,6 +66,8 @@ void showmem()
    Z80 &cpu = CpuMgr.Cpu();
    char line[80]; unsigned ii;
    unsigned cursor_found = 0;
+   unsigned div,dx,mem_lines;
+   
    if (mem_dump) mem_ascii = 1, mem_sz = 32; else mem_sz = 8;
 
    if (editor == ED_LOG || editor == ED_PHYS)
@@ -96,9 +98,9 @@ void showmem()
    else if(editor == ED_COMP_PAL)
        mem_max = sizeof(comp.comp_pal);
 
-   unsigned div = mem_dump ? 32 : 8;
-   unsigned dx = (mem_max + div - 1) / div;
-   unsigned mem_lines = min(dx, mem_size);
+   div = mem_dump ? 32 : 8;
+   dx = (mem_max + div - 1) / div;
+   mem_lines = min(dx, mem_size);
 redraw:
    cpu.mem_curs = memadr(cpu.mem_curs);
    cpu.mem_top = memadr(cpu.mem_top);

@@ -47,7 +47,7 @@ LFLAGS=$(LFLAGS_DEBUG)
 
 LIBS=$(LIBS) sndrender/snd.a z80/z80.a
 LIBS2=-lcomctl32 -lcomdlg32 -luser32 -lkernel32 -lgdi32 -lwinmm -ldxguid \
-  -lddraw -ldsound -ldinput -ldxerr8 -lsetupapi -lgcc -lstdc++
+  -lddraw -ldsound -ldinput -ldxerr9 -lsetupapi -lgcc -lstdc++
 
 SRCS=emul.cpp std.cpp atm.cpp cheat.cpp config.cpp dbgbpx.cpp dbgcmd.cpp dbglabls.cpp \
     dbgmem.cpp dbgoth.cpp dbgpaint.cpp dbgreg.cpp dbgrwdlg.cpp dbgtrace.cpp \
