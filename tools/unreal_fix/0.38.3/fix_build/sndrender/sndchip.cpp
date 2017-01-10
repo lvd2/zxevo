@@ -93,7 +93,7 @@ void SNDCHIP::flush(unsigned chiptick) // todo: noaction at (temp.sndblock || !c
             YM2203UpdateOne(Chip2203, FMbufs/*&FMbuf*/, FMBUFSIZE/*1*/);
 			FMbufN = 0;
 		  };
-          if (fmsoundon0 == 0) {
+          if ((comp.tfmstat&CF_TFM_FM) == 0) {
             //FMbufOUT=(int)(FMbuf*conf.sound.ay/8192*0.7f);
 		    FMbufOUT=((((INT16)FMbufs[FMbufN])*FMbufMUL)>>16);
 		  }

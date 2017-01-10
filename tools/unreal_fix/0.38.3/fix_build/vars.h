@@ -224,8 +224,6 @@ extern char trd_loaded[4]; // used to get first free drive with no account of au
 extern unsigned char kbdpc[VK_MAX]; // add cells for mouse & joystick
 
 extern char pressedit; //Alone Coder
-extern int fmsoundon0; //Alone Coder
-extern int tfmstatuson0; //Alone Coder
 
 // for leds
 extern unsigned char trdos_load;

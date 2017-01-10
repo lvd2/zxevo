@@ -559,7 +559,13 @@ void load_config(const char *fname)
    conf.sound.covoxDD_vol = GetPrivateProfileInt(sound, "CovoxDDVol", 4000, ininame);
    conf.sound.sd = GetPrivateProfileInt(sound, "SD", 0, ininame);
    conf.sound.sd_vol = GetPrivateProfileInt(sound, "SDVol", 4000, ininame);
-   conf.sound.saa1099 = GetPrivateProfileInt(sound, "Saa1099", 0, ininame);
+   //conf.sound.saa1099 = GetPrivateProfileInt(sound, "Saa1099", 0, ininame);
+   conf.sound.saa1099 = SAA_NONE;
+   GetPrivateProfileString(sound, "Saa1099", 0, line, sizeof line, ininame);
+   if(!strnicmp(line, "ZXM", 3))
+       conf.sound.saa1099 = SAA_ZXM;
+   else if(!strnicmp(line, "TFMpro", 6))
+       conf.sound.saa1099 = SAA_TFM_PRO;
 
    #ifdef MOD_GS
    conf.sound.gs_vol = GetPrivateProfileInt(sound, "GSVol", 8000, ininame);

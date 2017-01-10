@@ -133,6 +133,7 @@ void reset(ROM_MODE mode)
 
    comp.flags = 0;
    comp.active_ay = 0;
+   comp.tfmstat=0x0e; //read register,fm disable, saa disable
 
    cpu.reset();
    reset_tape();

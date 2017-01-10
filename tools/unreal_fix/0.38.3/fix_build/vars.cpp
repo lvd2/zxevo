@@ -14,9 +14,6 @@ namespace z80fast
 }
 
 #include "sndrender/sndcounter.h"
-
-int fmsoundon0=4; //Alone Coder
-int tfmstatuson0=2; //Alone Coder
 char pressedit = 0; //Alone Coder
 
 void __fastcall wmdbg(u32 addr, u8 val);

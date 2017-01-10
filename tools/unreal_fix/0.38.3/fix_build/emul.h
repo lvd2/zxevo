@@ -55,6 +55,8 @@ enum IDE_SCHEME
 
 enum MOUSE_WHEEL_MODE { MOUSE_WHEEL_NONE, MOUSE_WHEEL_KEYBOARD, MOUSE_WHEEL_KEMPSTON }; //0.36.6 from 0.35b2
 
+enum SAA_SCHEME { SAA_NONE = 0, SAA_ZXM,SAA_TFM_PRO };
+
 enum MEM_MODEL
 {
    MM_PENTAGON = 0,
@@ -436,6 +438,7 @@ struct COMPUTER
 
    unsigned aFF77;
    unsigned active_ay;
+   unsigned char tfmstat;
    u8 pBF; // ATM3
    u8 pBE; // ATM3
    u16 brk_addr; // pentevo
@@ -481,6 +484,12 @@ struct COMPUTER
 #define CF_CACHEON      0x20    // cache active
 #define CF_Z80FBUS      0x40    // unstable data bus
 #define CF_PROFROM      0x80    // PROF-ROM active
+
+// bits for COMPUTER::tfmstat
+#define CF_TFM_REG      0x02    // YM stat reg select ( 1 - read register, 0 - read status )
+#define CF_TFM_FM       0x04    // YM fm part disable ( 0 - enable, 1 - disable )
+#define CF_TFM_SAA      0x08    // SAA enable ( 0 - enable, 1 - disable )
+
 
 #define TAPE_QUANTUM 64
 struct tzx_block

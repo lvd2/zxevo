@@ -549,26 +549,32 @@ set1FFD:
 
       if ((port & 0xC0FF) == 0xC0FD)
       { // A15=A14=1, FxFD - AY select register
-         if ((conf.sound.ay_scheme == AY_SCHEME_CHRV) && ((val & 0xF8) == 0xF8)) //Alone Coder
+         if ((conf.sound.ay_scheme == AY_SCHEME_CHRV) && ((val & 0xF0) == 0xF0)) //Alone Coder
          {
-             if (conf.sound.ay_chip == (SNDCHIP::CHIP_YM2203))
-             {
-                 fmsoundon0 = val & 4;
-                 tfmstatuson0 = val & 2;
-             } //Alone Coder 0.36.6
-             comp.active_ay = val & 1;
+            if (conf.sound.ay_chip == (SNDCHIP::CHIP_YM2203))
+			   comp.tfmstat = val;
+            comp.active_ay = val & 1;
+			return;
          };
-         unsigned n_ay = (conf.sound.ay_scheme == AY_SCHEME_QUADRO)? (port >> 12) & 1 : comp.active_ay;
-         ay[n_ay].select(val);
+		 if((conf.sound.saa1099 == SAA_TFM_PRO)&&((comp.tfmstat&CF_TFM_SAA)==0)){
+		    Saa1099.WrCtl(val);
+		 }else{
+            unsigned n_ay = (conf.sound.ay_scheme == AY_SCHEME_QUADRO)? (port >> 12) & 1 : comp.active_ay;
+            ay[n_ay].select(val);
+		 }
          return;
       }
 
       if ((port & 0xC000)==0x8000 && conf.sound.ay_scheme)
       {  // BFFD - AY data register
-         unsigned n_ay = (conf.sound.ay_scheme == AY_SCHEME_QUADRO)? (port >> 12) & 1 : comp.active_ay;
-         ay[n_ay].write(temp.sndblock? 0 : cpu.t, val);
-         if (conf.input.mouse == 2 && ay[n_ay].get_activereg() == 14)
-             input.aymouse_wr(val);
+		 if((conf.sound.saa1099 == SAA_TFM_PRO)&&((comp.tfmstat&CF_TFM_SAA)==0)){
+		    Saa1099.WrData(temp.sndblock ? 0 : cpu.t, val);
+		 }else{
+		    unsigned n_ay = (conf.sound.ay_scheme == AY_SCHEME_QUADRO)? (port >> 12) & 1 : comp.active_ay;
+            ay[n_ay].write(temp.sndblock? 0 : cpu.t, val);
+            if (conf.input.mouse == 2 && ay[n_ay].get_activereg() == 14)
+                input.aymouse_wr(val);
+		 }
          return;
       }
       return;
@@ -594,7 +600,7 @@ set1FFD:
       return;
    }
 
-   if (conf.sound.saa1099 && ((port & 0xFF) == 0xFF)) // saa1099
+   if (conf.sound.saa1099 == SAA_ZXM && ((port & 0xFF) == 0xFF)) // saa1099
    {
        if(port & 0x100)
            Saa1099.WrCtl(val);
@@ -980,7 +986,7 @@ __inline unsigned char in1(unsigned port)
 
    if ((unsigned char)port == 0xFD && conf.sound.ay_scheme)
    {
-      if((conf.sound.ay_scheme == AY_SCHEME_CHRV) && (conf.sound.ay_chip == (SNDCHIP::CHIP_YM2203)) && (tfmstatuson0 == 0))
+      if((conf.sound.ay_scheme == AY_SCHEME_CHRV) && (conf.sound.ay_chip == (SNDCHIP::CHIP_YM2203)) && ((comp.tfmstat&CF_TFM_REG) == 0))
           return 0x7f /*always ready*/; //Alone Coder 0.36.6
       if ((port & 0xC0FF) != 0xC0FD) return 0xFF;
       unsigned n_ay = (conf.sound.ay_scheme == AY_SCHEME_QUADRO)? (port >> 12) & 1 : comp.active_ay;
