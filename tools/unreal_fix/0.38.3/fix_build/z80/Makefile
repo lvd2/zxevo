@@ -50,4 +50,4 @@ z80.lib: daa_tabs.obj op_cb.obj op_dd.obj op_ddcb.obj op_ed.obj \
 	op_fd.obj op_noprefix.obj tables.obj
 	$(LIB) $(LIBFLAGS) -out:$@ $**
 clean:
-	-del *.obj *.lib
+	-del *.obj *.lib *.pdb

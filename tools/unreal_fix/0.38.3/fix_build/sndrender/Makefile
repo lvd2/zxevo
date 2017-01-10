@@ -51,4 +51,4 @@ all: snd.lib
 snd.lib: sndbuffer.obj sndchip.obj saa1099.obj sndcounter.obj sndrender.obj
     $(LIB) $(LIBFLAGS) -out:$@ $**
 clean:
-    -del *.obj *.lib
+    -del *.obj *.lib *.pdb
