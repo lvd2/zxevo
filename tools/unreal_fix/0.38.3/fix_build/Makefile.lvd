@@ -124,7 +124,7 @@ settings.o: settings.res
 	$(RC) -o$@ -i$<
 
 $(EXE): $(OBJS) settings.o
-	$(LINK) $(LFLAGS) -o$@ $(OBJS) $(LIBS2)
+	$(LINK) $(LFLAGS) -o$@ $(OBJS) settings.o $(LIBS2)
 	strip $(EXE)
 
 clean:
