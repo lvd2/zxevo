@@ -57,7 +57,7 @@ struct TRKCACHE
    // generic track data
    unsigned trklen;
     // pointer to data inside UDI
-   u8 *trkd; // данные
+   u8 *trkd; // даннvе (может бvть NULL, если трэк без даннvх)
    u8 *trki; // битовая карта синхроимпульсов
    u8 *trkwp; // битовая карта сбойных байтов
    unsigned ts_byte;                 // cpu.t per byte

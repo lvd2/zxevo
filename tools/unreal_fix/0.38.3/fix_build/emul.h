@@ -271,6 +271,7 @@ struct CONFIG
 
    unsigned char zc;
    char zc_sd_card_path[FILENAME_MAX];
+   unsigned int sd_delay;
 
    char atariset[64]; // preset for atari mode
    char zxkeymap[64]; // name of ZX keys map

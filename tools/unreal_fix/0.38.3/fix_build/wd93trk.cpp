@@ -13,7 +13,7 @@ void TRKCACHE::seek(FDD *d, unsigned cyl, unsigned side, SEEK_MODE fs)
 
    drive = d; sf = fs; s = 0;
    TRKCACHE::cyl = cyl; TRKCACHE::side = side;
-   if (cyl >= d->cyls || !d->rawdata)
+   if (cyl >= d->cyls || side >= d->sides || !d->rawdata)
    {
        trkd = 0;
        return;
@@ -88,6 +88,10 @@ void TRKCACHE::seek(FDD *d, unsigned cyl, unsigned side, SEEK_MODE fs)
 
 void TRKCACHE::format()
 {
+   if(!trkd) // Tрэк без даннvх (форматирование не нужно)
+   {
+      return;
+   }
    memset(trkd, 0, trklen);
    memset(trki, 0, unsigned(trklen + 7U) >> 3);
    memset(trkwp, 0, unsigned(trklen + 7U) >> 3);

@@ -1,5 +1,4 @@
-#ifndef SDCARD_H
-#define SDCARD_H
+#pragma once
 
 const u8 _SDNCS = 1;
 const u8 _SDDET = 2;
@@ -38,43 +37,36 @@ class TSdCard
         CMD_READ_OCR = CMD58,
         CMD59 = 59,
         CMD_CRC_ON_OFF = CMD59,
-        ACMD23 = 23,
-        CMD_SET_WR_BLK_ERASE_COUNT = ACMD23,
         ACMD41 = 41,
-        CMD_SD_SEND_OP_COND = ACMD41
+        CMD_SD_SEND_OP_COND = ACMD41,
     };
     enum TState
     {
         ST_IDLE, ST_RD_ARG, ST_RD_CRC, ST_R1, ST_R1b, ST_R2, ST_R3, ST_R7,
-        ST_WR_DATA_SIG, ST_WR_DATA, ST_WR_CRC16_1, ST_WR_CRC16_2,
+        ST_STARTBLOCK, ST_DELAY_S,
+        /* ST_WR_DATA_SIG, */ ST_WR_DATA, ST_WR_CRC16_1, ST_WR_CRC16_2,
         ST_RD_DATA_SIG, ST_RD_DATA, ST_RD_DATA_MUL, ST_RD_CRC16_1, ST_RD_CRC16_2,
         ST_WR_DATA_RESP, ST_RD_DATA_SIG_MUL
     };
     enum TDataStatus
     {
-    	STAT_DATA_ACCEPTED = 2, STAT_DATA_CRC_ERR = 5, STAT_DATA_WR_ERR = 6
+        STAT_DATA_ACCEPTED = 2, STAT_DATA_CRC_ERR = 5, STAT_DATA_WR_ERR = 6
     };
     TState CurrState;
 
 #pragma pack(push, 1)
     union
     {
-    	u8 ArgArr[4];
-    	u32 Arg;
+        u8 ArgArr[4];
+        u32 Arg;
     };
 #pragma pack(pop)
 
     u32 ArgCnt;
 
-#pragma pack(push, 1)
-    union
-    {
-    	u8 OcrArr[4];
-    	u32 Ocr;
-    };
-#pragma pack(pop)
-
     u32 OcrCnt;
+
+    u32 R7_Cnt;
 
     u8 Cid[16];
     u8 Csd[16];
@@ -86,13 +78,13 @@ class TSdCard
     TCmd Cmd;
     u32 DataBlockLen;
     u32 DataCnt;
+    u32 InitialCPUt;
 
-    u8 Buf[512];
+    u8 Buf[4096];
 
     FILE *Image;
-    u32 ImageSize; // размер SD карты в 512 б блоках - 1
 public:
-    TSdCard() { Image = 0; ImageSize = 0; Reset(); }
+    TSdCard() { Image = 0; Reset(); }
     void Reset();
     void Open(const char *Name);
     void Close();
@@ -100,7 +92,5 @@ public:
     u8 Rd();
 private:
     TState GetRespondType();
-    void UpdateCsdImageSize();
 };
 extern TSdCard SdCard;
-#endif

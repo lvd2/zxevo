@@ -800,6 +800,7 @@ void load_config(const char *fname)
        addpath(conf.zc_sd_card_path);
        if(conf.zc_sd_card_path[0])
            printf("ZC SDCARD=`%s'\n", conf.zc_sd_card_path);
+       conf.sd_delay = GetPrivateProfileInt(zc, "SDDelay", 1000, ininame);
    }
 
    GetPrivateProfileString("AUTOLOAD", "DefaultDrive", nil, line, sizeof(line), ininame);
