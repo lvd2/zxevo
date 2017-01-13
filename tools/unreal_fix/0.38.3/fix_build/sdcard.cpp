@@ -333,11 +333,15 @@ u8 TSdCard::Rd()
         {
         case ST_R1:
             DataCnt = 0;
-            CurrState = ST_R1b;
+            CurrState = ST_IDLE;
             return 0;
         case ST_R1b:
-            CurrState = ST_IDLE;
-            return 0xFF;
+            DataCnt = 0;
+            CurrState = ST_R1;
+            return 0x7F;
+		case ST_RD_ARG:
+		case ST_RD_CRC:
+            return 0;
         }
     break;
 
@@ -572,7 +576,6 @@ TSdCard::TState TSdCard::GetRespondType()
         case CMD_READ_SINGLE_BLOCK:
         case CMD_READ_MULTIPLE_BLOCK:
         case CMD_CRC_ON_OFF:
-        case CMD_STOP_TRANSMISSION:
         case CMD_SEND_CSD:
         case CMD_SEND_CID:
             return ST_R1;
@@ -580,6 +583,8 @@ TSdCard::TState TSdCard::GetRespondType()
             return ST_R3;
         case CMD_SEND_IF_COND:
             return ST_R7;
+        case CMD_STOP_TRANSMISSION:
+            return ST_R1b;
 
         case CMD_WRITE_BLOCK:
         case CMD_WRITE_MULTIPLE_BLOCK:
