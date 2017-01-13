@@ -1,7 +1,11 @@
 #include "std.h"
+
+#include <io.h>
+
 #include "emul.h"
 #include "vars.h"
 #include "sdcard.h"
+
 #include "util.h"
 
 //-----------------------------------------------------------------------------
@@ -18,41 +22,40 @@ void TSdCard::Reset()
 
     CsdCnt = 0;
     //memset(Csd, 0, sizeof(Csd));
-    Csd[0] = 0x00;
-    Csd[1] = 0x0E;
-    Csd[2] = 0x00;
-    Csd[3] = 0x32;
-    Csd[4] = 0x5B;
-    Csd[5] = 0x59;
-    Csd[6] = 0x03;
-    Csd[7] = 0xFF;
-    Csd[8] = 0xED;
-    Csd[9] = 0xB7;
-    Csd[10] = 0xBF;
-    Csd[11] = 0xBF;
-    Csd[12] = 0x06;
-    Csd[13] = 0x40;
-    Csd[14] = 0x00;
-    Csd[15] = 0xF5;
+    Csd[0] = (1 << 6); // CSD structure (SDHC)
+    Csd[1] = 0xE;  // TACC
+    Csd[2] = 0x00; // NSAC
+    Csd[3] = 0x32; // TRAN_SPEED
+    Csd[4] = 0x5B; // CCC x1x11011
+    Csd[5] = 0x59; // CCC 0101 | READ_BL_LEN 9
+    Csd[6] = 0x00; // READ_BL_PARTIAL | WRITE_BLK_MISALIGN | READ_BLK_MISALIGN | DSR_IMP
+
+    UpdateCsdImageSize();
+
+    Csd[10] = (1 << 6) | (0x3F << 1); // ERASE_BLK_EN | SECTOR_SIZE
+    Csd[11] = (1 << 7); // SECTOR_SIZE | WP_GRP_SIZE
+    Csd[12] = (2 << 2) | 2; // R2W_FACTOR | WRITE_BL_LEN 9
+    Csd[13] = (1 << 6); // WRITE_BL_LEN 9 | WRITE_BL_PARTIAL
+    Csd[14] = 0x00; // FILE_FORMAT_GRP | COPY | PERM_WRITE_PROTECT | TMP_WRITE_PROTECT | FILE_FORMAT
+    Csd[15] = 1; // CRC | 1
 
     CidCnt = 0;
-    //memset(Cid, 0, sizeof(Cid));
-    Cid[0] = 0x00;
+    memset(Cid, 0, sizeof(Cid));
+
+    // OEM/Application ID (OID) 
     Cid[1] = 'U';
     Cid[2] = 'S';
+
+    // Product Name (PNM) 
     Cid[3] = 'U';
     Cid[4] = 'S';
-    Cid[5] = '3';
-    Cid[6] = '7';
-    Cid[7] = '6';
-    Cid[8] = 0x03;
-    Cid[9] = 0x12;
-    Cid[10] = 0x34;
-    Cid[11] = 0x56;
-    Cid[12] = 0x78;
-    Cid[13] = 0x00;
-    Cid[14] = 0xC1;
-    Cid[15] = 0x0F;
+    Cid[5] = '0' + (VER_HL / 10) % 10;
+    Cid[6] = '0' + VER_HL % 10;
+    Cid[7] = '0' + VER_A % 10;
+
+    Cid[8] = 0x10; // Product Revision (PRV) (BCD)
+    Cid[14] = 0x04; // Manufacture Date Code (MDT) 
+    Cid[15] = 1; // CRC7 | 1
 
     OcrCnt = 0;
 
@@ -61,6 +64,12 @@ void TSdCard::Reset()
     AppCmd = false;
 }
 
+void TSdCard::UpdateCsdImageSize()
+{
+    Csd[7] = (ImageSize >> 16) & 0x3F; // C_SIZE
+    Csd[8] = (ImageSize >> 8) & 0xFF; // C_SIZE
+    Csd[9] = ImageSize & 0xFF; // C_SIZE 
+}
 //-----------------------------------------------------------------------------
 
 void TSdCard::Wr(u8 Val)
@@ -608,15 +617,22 @@ TSdCard::TState TSdCard::GetRespondType()
 
 //-----------------------------------------------------------------------------
 
+
 void TSdCard::Open(const char *Name)
 {
 //    printf(__FUNCTION__"\n");
     assert(!Image);
     Image = fopen(Name, "r+b");
-    if (!Image && Name[0])
+    if(!Image)
     {
-        errmsg("can't find SD card image `%s'", Name);
+        if(Name[0])
+        {
+            errmsg("can't find SD card image `%s'", Name);
+        }
+        return;
     }
+    ImageSize = u32(_filelengthi64(fileno(Image)) / (512 * 1024)) - 1;
+    UpdateCsdImageSize();
 }
 
 //-----------------------------------------------------------------------------

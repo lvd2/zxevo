@@ -83,6 +83,7 @@ class TSdCard
     u8 Buf[4096];
 
     FILE *Image;
+    u32 ImageSize; // размер SD карты в 512Кб блоках - 1
 public:
     TSdCard() { Image = 0; Reset(); }
     void Reset();
@@ -92,5 +93,6 @@ public:
     u8 Rd();
 private:
     TState GetRespondType();
+    void UpdateCsdImageSize();
 };
 extern TSdCard SdCard;
