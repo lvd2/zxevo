@@ -111,6 +111,14 @@ void out(unsigned port, unsigned char val)
        // Порт разблокировки RAM0 АТМ3
        if((port & 0xFF) == 0xBE)
        {
+		   if(cpu.nmi_in_progress&&(cpu.nmi_in_progress==conf.trdos_IORam))
+		   {
+			  if(trdos_in_nmi)
+			      comp.flags |= CF_SETDOSROM|CF_TRDOS;
+              cpu.nmi_in_progress = false;
+              set_banks();
+			  return;
+		   }
            comp.pBE = 2; // счетчик для выхода из nmi
            return;
        }
@@ -141,7 +149,7 @@ void out(unsigned port, unsigned char val)
           // 4F = 010|01111b
           // 6F = 011|01111b
           // 8F = 100|01111b
-          comp.wd_shadow[(p1 >> 5) - 1] = val;
+		     comp.wd_shadow[(p1 >> 5) - 1] = val;
       }
       if (conf.ide_scheme == IDE_ATM && (port & 0x1F) == 0x0F)
       {
@@ -325,7 +333,13 @@ void out(unsigned port, unsigned char val)
       } // quorum
       else if ((p1 & 0x1F) == 0x1F) // 1F, 3F, 5F, 7F, FF
       {
-          comp.wd.out(p1, val);
+		  if((comp.flags & CF_TRDOS)&&conf.trdos_IORam&&(cpu.pc<=0x3fff)&&(bankr[0]==base_dos_rom)){
+		     trdos_in_nmi = comp.flags&CF_TRDOS;
+			 cpu.nmi_in_progress=conf.trdos_IORam;
+			 set_banks();
+		  }else{
+		      comp.wd.out(p1, val);
+		  }
           return;
       }
       // don't return - out to port #FE works in trdos!
@@ -794,9 +808,9 @@ __inline unsigned char in1(unsigned port)
           // 4F = 010|01111b
           // 6F = 011|01111b
           // 8F = 100|01111b
-
-          return comp.wd_shadow[(p1 >> 5) - 1];
-      }
+		  return comp.wd_shadow[(p1 >> 5) - 1];
+			
+     }
 
 
       if (conf.ide_scheme == IDE_ATM && (port & 0x1F) == 0x0F)
@@ -896,8 +910,16 @@ __inline unsigned char in1(unsigned port)
           // 7F = 0111|1111b
           // DF = 1101|1111b порт мыши
           // FF = 1111|1111b
-      else if ((p1 & 0x9F) == 0x1F || p1 == 0xFF) // 1F, 3F, 5F, 7F, FF
-          return comp.wd.in(p1);
+      else if ((p1 & 0x9F) == 0x1F || p1 == 0xFF) {// 1F, 3F, 5F, 7F, FF
+		  if((comp.flags & CF_TRDOS)&&conf.trdos_IORam&&(cpu.pc<=0x3fff)&&(bankr[0]==base_dos_rom)){
+		      cpu.nmi_in_progress=conf.trdos_IORam;
+			  trdos_in_nmi = comp.flags&CF_TRDOS;
+			  set_banks();
+			  return 0xff;
+		  }else{
+		      return comp.wd.in(p1);
+		  }
+	  }
    }
    else // не dos
    {

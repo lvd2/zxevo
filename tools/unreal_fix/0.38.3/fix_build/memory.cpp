@@ -203,7 +203,7 @@ void set_banks()
 		if( conf.mem_model==MM_ATM3 ) // lvd added pentevo RAM0 to bank0 feature if EFF7_ROCACHE is set
 		{
 			if( cpu.nmi_in_progress )
-				bank0 = RAM_BASE_M + PAGE * 0xFF;
+				bank0 = RAM_BASE_M + PAGE * cpu.nmi_in_progress;
 			else if( comp.pEFF7 & EFF7_ROCACHE )
 				bank0 = RAM_BASE_M + PAGE * 0x00;
 		}
@@ -316,7 +316,6 @@ void set_banks()
          if (bank < MAX_PAGES) used_banks[bank] = 1;
       }
    }
-
 /*
     if ((unsigned)(bankr[0] - ROM_BASE_M) < PAGE*MAX_ROM_PAGES)
     {

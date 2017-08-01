@@ -34,8 +34,21 @@ unsigned char in(unsigned port);
 
 Z80INLINE unsigned char m1_cycle(Z80 *cpu)
 {
+   unsigned char temp_op_code;
    cpu->r_low++; cpu->t += 4;
-   return cpu->MemIf->xm(cpu->pc++);
+   temp_op_code = cpu->MemIf->xm(cpu->pc++);
+   if((conf.mem_model==MM_ATM3)&&(comp.pBE)&&cpu->nmi_in_progress)
+      {
+          if(comp.pBE == 1)
+          {
+			  if(trdos_in_nmi)
+			      comp.flags |= CF_SETDOSROM|CF_TRDOS;
+              cpu->nmi_in_progress = false;
+              set_banks();
+          }
+          comp.pBE--;
+      }
+   return temp_op_code;
 }
 
 /*
@@ -77,8 +90,8 @@ void TMainZ80::CheckNextFrame()
 
 void TMainZ80::retn()
 {
-    nmi_in_progress = false;
-    set_banks();
+    //nmi_in_progress = false;
+    //set_banks();
 }
 
 static const TMemIf FastMemIf = { Xm, Rm, Wm };

@@ -169,7 +169,7 @@ struct TZ80State
     unsigned eipos, haltpos;
     /*------------------------------*/
     unsigned char im;
-    bool nmi_in_progress;
+    unsigned char nmi_in_progress;
 };
 
 typedef u8 (__fastcall * TXm)(u32 addr);

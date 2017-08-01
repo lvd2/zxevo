@@ -160,6 +160,7 @@ struct CONFIG
    unsigned char trdos_present, trdos_interleave;
    unsigned char trdos_traps, wd93_nodelay;
    unsigned char trdos_wp[4];
+   unsigned char trdos_IORam; //временный параметр, потом надо удалить
 
    unsigned char cache;
    unsigned char cmos;

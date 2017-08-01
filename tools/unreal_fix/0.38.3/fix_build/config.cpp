@@ -496,7 +496,8 @@ void load_config(const char *fname)
    conf.fdd_noise = GetPrivateProfileInt(beta128, "Noise", 0, ininame);
    GetPrivateProfileString(beta128, "BOOT", nil, conf.appendboot, sizeof conf.appendboot, ininame);
    addpath(conf.appendboot);
-
+   conf.trdos_IORam=GetPrivateProfileInt(beta128, "RamPageFddIO", 0, ininame); //временный код, потом надо удалить
+   
    conf.led.enabled = GetPrivateProfileInt(leds, "leds", 1, ininame);
    conf.led.flash_ay_kbd = GetPrivateProfileInt(leds, "KBD_AY", 1, ininame);
    conf.led.perf_t = GetPrivateProfileInt(leds, "PerfShowT", 0, ininame);

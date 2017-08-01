@@ -79,7 +79,7 @@ void wm(unsigned addr, unsigned char val)
        update_screen();
        //return;
    }
-
+   //if(cpu.nmi_in_progress&&(cpu.nmi_in_progress==conf.trdos_IORam)&&(cpu.pc & 0xc000)) return;
    unsigned char *a = bankw[(addr >> 14) & 3];
 #ifndef TRASH_PAGE
    if (!a)
@@ -97,6 +97,7 @@ void wm(unsigned addr, unsigned char val)
 
 Z80INLINE unsigned char m1_cycle(Z80 *cpu)
 {
+   unsigned char temp_op_code;
    if ((conf.mem_model == MM_PENTAGON) &&
        ((comp.pEFF7 & (EFF7_CMOS | EFF7_4BPP)) == (EFF7_CMOS | EFF7_4BPP)))
        temp.offset_vscroll++;
@@ -112,7 +113,19 @@ Z80INLINE unsigned char m1_cycle(Z80 *cpu)
 
    cpu->r_low++;// = (cpu->r & 0x80) + ((cpu->r+1) & 0x7F);
    cpu->t += 4;
-   return xm(cpu->pc++);
+   temp_op_code = xm(cpu->pc++);
+   if((conf.mem_model==MM_ATM3)&&(comp.pBE))
+      {
+          if(comp.pBE == 1)
+          {
+			  if(trdos_in_nmi)
+			      comp.flags |= CF_SETDOSROM|CF_TRDOS;
+              cpu->nmi_in_progress = false;
+              set_banks();
+          }
+          comp.pBE--;
+      }
+   return temp_op_code;
 }
 
 //#include "z80/cmd.cpp"
@@ -193,7 +206,7 @@ void z80loop()
       if(conf.mem_model == MM_ATM3 && nmi_pending)
       {
           nmi_pending = 0;
-          cpu.nmi_in_progress = true;
+          cpu.nmi_in_progress = 255;
           set_banks();
           m_nmi(RM_NOCHANGE);
           continue;
@@ -236,22 +249,12 @@ void z80loop()
 */
       step();
 
-      if(comp.pBE)
-      {
-          if(comp.pBE == 1)
-          {
-              cpu.nmi_in_progress = false;
-              set_banks();
-          }
-          comp.pBE--;
-      }
-
       if(nmi_pending)
       {
 	  if( conf.mem_model==MM_ATM3 && (comp.pBF&0x10) )
 		{
 			nmi_pending = 0;
-			cpu.nmi_in_progress = true;
+			cpu.nmi_in_progress = 0xff;
 			set_banks();
 			m_nmi(RM_NOCHANGE);
 			continue;
