@@ -1,0 +1,887 @@
+
+;LAST UPDATE: 23.07.2017 savelij
+
+;        MAIN	"CASH2_0.H",0x47
+
+DISASM  EQU	$
+
+;-------------
+;DISASSEMBLER;
+;-------------
+
+;        ORG	DISASM;,CSH_BNK
+        LDA (J1DEASM+1),C       ;DE,C - DISASM AT VID. (B LINES)
+        PUSH	DE
+        PUSH IX              ;IX - DISASM ADDR.
+        POP	DE                  ;HL - CODE WAS TAKEN FROM HERE
+        OR	A                    ;IF IX=HL IT'S REAL DISASM
+        SBC	HL,DE
+        LD	(A_DEASM+1),HL
+        POP	HL
+
+J1DEASM LDA (SYMOUT5+1),0
+        LD	(SYMOUT5+3),HL
+        PUSH	BC
+        PUSH HL
+
+        CALL	A_DEASM
+        CALL	NUM5_HL
+        LD	A," "
+        CALL	SYMOUT5
+
+        LD	HL,E_DEASM   ;AFTER PRINT CODE => RET = JP E_DEASM
+        PUSH	HL
+S_DEASM LD	H,HIGH (T1DEASM);'T1DEASM
+        LD	L,(IX)       ;IX - DISASM ADDR.
+        LD	L,(HL)       ;HL - JP TABLE
+        DEC	H
+        LD	E,(HL)
+        INC	L
+        LD	D,(HL)
+        EX	DE,HL        ;D*256 - JP TABLE /prefix 237 CODE
+        JP	(HL)
+
+E_DEASM INC	IX
+        CALL	SYM5CLR
+        POP	HL
+        madd L,0x20
+        JR	NC,E2DEASM
+        madd H,8
+E2DEASM POP	BC
+        DJNZ	J1DEASM
+
+A_DEASM LD	DE,0         ;HL=VIRTUAL DISASM ADDR. FROM IX
+        PUSH	IX
+        POP	HL
+        ADD	HL,DE
+        RET	
+
+;----------------------
+;CODE SKIPPING PROGRAMM
+;----------------------
+
+DISASM0 PUSH	HL         ;IX=DEASM ADDR.; HL=REAL CODE ADDR.
+;        LOCAL	
+        LD	H,HIGH (T3DEASM);'T3DEASM   ;HL=TABLE OF CODE LEN.
+        LD	L,(IX)
+        LD	A,(HL)       ;IF bit1,0 = 1,2,3 TH ITS CODE LEN.
+        AND	3
+        JR	Z,.L1
+.E0      POP	HL          ;EXIT: A=CODE LEN.; IX=IX+A; HL=HL+A
+        LD	B,A
+.J0      INC	HL
+        INC	IX
+        DJNZ	.J0
+        RET	
+
+.L1      LD	A,L          ;ELSE
+        CP	237
+        JR	NZ,.L2
+        LD	L,(IX+1)     ;PREFIX 237; CODE LEN.=2 OR 4
+        LD	A,2
+        BIT	3,(HL)
+        JR	Z,.E0
+        LD	A,4
+        JR	.E0
+
+.L2      INC	H           ;INDEX PREFIX
+        LD	L,(IX+1)
+        LD	A,(HL)
+        DEC	H
+        CP	0x86          ;IF INDEX PREFIX USELESS TH CODE LEN.=1
+        LD	A,1
+        JR	Z,.E0
+        LD	A,(HL)       ;ELSE CODE LEN.=(NEXT CODE LEN.)+1 OR +2
+        AND	3
+        INC	A
+        BIT	2,(HL)
+        JR	Z,.E0
+        INC	A
+        JR	.E0
+;        ENDL	
+
+;-------
+
+DASM_00 LD	HL,NOP_T     ;NOP
+        JP	TXTOUT5
+
+DASM_02 LD	HL,LD_T      ;LD BC/DE/HL/SP,NN
+        CALL	TXTOUT5
+        CALL	S_REGC
+NUM5jNN LD	A,","
+        CALL	SYMOUT5
+NUM5_NN INC	IX
+        LD	L,(IX)
+        INC	IX
+        LD	H,(IX)
+        JP	NUM5_HL
+
+DASM_04 LD	HL,LD_T      ;LD (BC)/(DE),A
+        CALL	TXTOUT5
+        LD	A,"("
+        CALL	SYMOUT5
+        LD	A,(IX)
+        LD	BC,"CB";"BC"
+        CP	2
+        JR	Z,$+5
+        LD	BC,"ED";"DE"
+        CALL	SYM5_BC
+        LD	HL,djA_T
+        JP	TXTOUT5
+
+DASM_06 LD	HL,INC_T     ;INC/DEC BC/DE/HL/SP
+        BIT	3,(IX)
+        JR	Z,$+5
+        LD	HL,DEC_T
+        CALL	TXTOUT5
+
+S_REGC  LD	HL,REGC_T-2  ;PRINT BC/DE/HL/SP
+        LD	A,(IX)
+        AND	0x3F
+J1SREGC INC	HL
+        INC	HL
+        SUB	0x10
+        JR	NC,J1SREGC
+        LD	C,(HL)
+        INC	HL
+        LD	B,(HL)
+
+SYM5_BC PUSH	BC         ;PRINT 2 SYMBOLS BY reg_BC
+        LD	A,C
+        CALL	SYMOUT5
+        POP	BC
+        LD	A,B
+        JP	SYMOUT5
+
+DASM_08 LD	HL,INC_T     ;INC/DEC B/C/D/E/H/L/(HL)/A
+        BIT	0,(IX)
+        JR	Z,$+5
+        LD	HL,DEC_T
+        CALL	TXTOUT5
+        LD	BC,0x3F08
+
+S_REG   LD	A,(IX)       ;PRINT B/C/D/E/H/L/(HL)/A
+        AND	B
+        LD	HL,REGC_T-1
+        INC	HL
+        SUB	C
+        JR	NC,$-2
+        LD	A,(HL)
+        CP	"P"
+        JP	C,SYMOUT5
+        LD	A,"A"
+        JP	Z,SYMOUT5
+        LD	HL,bHLd_T
+        JP	TXTOUT5
+
+DASM_0A LD	HL,LD_T      ;LD B/C/D/E/H/L/(HL)/A,N
+        CALL	TXTOUT5
+        LD	BC,0x3F08
+        CALL	S_REG
+NUM5jN  LD	A,","
+        CALL	SYMOUT5
+        INC	IX
+        LD	L,(IX)
+        JP	NUM5_L
+
+DASM_0C LD	A,"R"        ;RLCA,RRCA,RLA,RRA
+        CALL	SYMOUT5    ;R
+        LD	A,"L"
+        BIT	3,(IX)
+        JR	Z,$+4
+        LD	A,"R"
+        CALL	SYMOUT5    ;L/R
+        LD	A,"C"
+        BIT	4,(IX)
+        CALL	Z,SYMOUT5  ;C/_
+        LD	A,"A"
+        JP	SYMOUT5      ;A
+
+DASM_0E LD	HL,EXA_T     ;EX AF,AF'
+        JP	TXTOUT5
+
+DASM_10 LD	HL,ADDHL_T   ;ADD HL,BC/DE/HL/SP
+        CALL	TXTOUT5
+        JP	S_REGC
+
+DASM_12 LD	HL,LDAjb_T   ;LD A,(BC)/(DE)
+        CALL	TXTOUT5
+        LD	A,(IX)
+        LD	BC,"CB";"BC"
+        CP	10
+        JR	Z,$+5
+        LD	BC,"ED";"DE"
+        CALL	SYM5_BC
+        LD	A,")"
+        JP	SYMOUT5
+
+DASM_14 LD	HL,DJNZ_T    ;DJNZ D
+        CALL	TXTOUT5
+E0JR    INC	IX
+        CALL	A_DEASM
+        INC	HL
+        LD	D,0
+        LD	E,(IX)
+        ADD	HL,DE
+        BIT	7,E
+        JR	Z,$+3
+        DEC	H
+        JP	NUM5_HL
+
+DASM_16 LD	HL,JR_T      ;JR D / JR NZ/Z/NC/C,D
+        CALL	TXTOUT5
+        BIT	5,(IX)
+        JR	Z,E0JR       ;JR D
+        LD	A,"N"
+        BIT	3,(IX)
+        CALL	Z,SYMOUT5  ;N
+        LD	BC,",Z";"Z,"
+        BIT	4,(IX)
+        JR	Z,$+4
+        LD	C,"C"
+        CALL	SYM5_BC
+        JR	E0JR
+
+DASM_18 LD	HL,LDb_T     ;LD (NN),HL
+        CALL	DASM_1C+3
+        LD	HL,jHL_T
+        JP	TXTOUT5
+
+DASM_1A LD	HL,DAA_T     ;DAA/CPL/SCF/CCF
+        LD	A,(IX)       ;A=(CODE-39)/2
+        SUB	39
+        RRCA	
+TXT_HLA LD	D,0
+        LD	E,A
+        ADD	HL,DE
+        JP	TXTOUT5
+
+DASM_1C LD	HL,LDHLb_T   ;LD HL,(NN)
+        CALL	TXTOUT5
+        CALL	NUM5_NN
+        LD	A,")"
+        JP	SYMOUT5
+
+DASM_1E LD	HL,LDb_T     ;LD (NN),A
+        CALL	DASM_1C+3
+        LD	BC,"A,";",A"
+        JP	SYM5_BC
+
+DASM_20 LD	HL,LDAjb_T   ;LD A,(NN)
+        JP	DASM_1C+3
+
+DASM_22 LD	HL,LD_T      ;LD REG,REG
+        CALL	TXTOUT5
+        LD	BC,0x3F08
+        CALL	S_REG
+S_REGj1 LD	A,","
+        CALL	SYMOUT5
+S_REG1  LD	BC,0x701
+        JP	S_REG
+
+DASM_24 LD	HL,HALT_T    ;HALT
+        JP	TXTOUT5
+
+DASM_26 LD	HL,ADDA_T    ;ADD A,REG
+E0SREG  CALL	TXTOUT5
+        JR	S_REG1
+DASM_28 LD	HL,ADCA_T    ;ADC A,REG
+        JR	E0SREG
+DASM_2A LD	HL,SUB_T     ;SUB REG
+        JR	E0SREG
+DASM_2C LD	HL,SBCA_T    ;SBC A,REG
+        JR	E0SREG
+DASM_2E LD	HL,AND_T     ;AND REG
+        JR	E0SREG
+DASM_30 LD	HL,XOR_T     ;XOR REG
+        JR	E0SREG
+DASM_32 LD	HL,OR_T      ;OR REG
+        JR	E0SREG
+DASM_34 LD	HL,CP_T      ;CP REG
+        JR	E0SREG
+
+DASM_36 LD	HL,RET_T     ;RET / RET FLAG
+        CALL	TXTOUT5
+        BIT	0,(IX)
+        RET	NZ
+        JP	S_FLAG
+
+DASM_38 LD	HL,POP_T     ;POP BC/DE/HL/AF
+        CALL	TXTOUT5
+        LD	HL,REGC_T2-2 ;PRINT BC/DE/HL/AF
+        JP	S_REGC+3
+
+DASM_3A LD	HL,JP_T      ;JP NN / JP FLAG,NN
+        CALL	TXTOUT5
+        BIT	0,(IX)
+        JP	NZ,NUM5_NN
+        CALL	S_FLAG2
+        JP	NUM5jNN
+
+DASM_3C LD	HL,CALL_T    ;CALL NN / CALL FLAG,NN
+        JR	DASM_3A+3
+
+DASM_3E LD	HL,PUSH_T    ;PUSH BC/DE/HL/AF
+        JR	DASM_38+3
+
+DASM_40 LD	HL,ADDA_T    ;ADD A,N
+        JR	DASM_46+3
+
+DASM_42 LD	HL,RST_T     ;RST 0/8/16/24/32/40/48/56
+        CALL	TXTOUT5
+        LD	A,(IX)       ;A=(CODE-BASE CODE)
+        AND	0x38
+        LD	L,A
+        JP	NUM5_L
+
+DASM_44 INC	IX          ;!!! PREFIX 203 !!!
+        LD	A,(IX)
+        SUB	64
+        JR	NC,S1_P203
+        LD	HL,P203_T1   ;RLC/RRC/RL/RR/SLA/SRA/SLI_SRL
+        AND	0x38         ;A=CODE/4
+        RRCA	
+        CALL	TXT_HLA
+        LD	A," "
+        CALL	SYMOUT5
+        JP	S_REG1
+
+S1_P203 LD	HL,P203_T2   ;BIT/RES/SET
+        PUSH	AF
+        AND	0xC0
+        RRCA	           ;64*CODE => 4*CODE
+        RRCA	
+        RRCA	
+        RRCA	
+        CALL	TXT_HLA
+        LD	A," "
+        CALL	SYMOUT5
+        POP	AF
+        AND	0x38         ;A=(CODE/8)
+        RRCA	
+        RRCA	
+        RRCA	
+        ADD	A,"0"       ;bt,reg
+        CALL	SYMOUT5
+        LD	A,","
+        CALL	SYMOUT5
+        JP	S_REG1
+
+DASM_46 LD	HL,ADCA_T    ;ADC A,N
+        CALL	TXTOUT5
+        INC	IX
+        LD	L,(IX)
+        JP	NUM5_L
+
+DASM_48 LD	HL,OUTb_T    ;OUT (N),A
+        CALL	DASM_40+3
+        LD	HL,djA_T
+        JP	TXTOUT5
+
+DASM_4A LD	HL,SUB_T     ;SUB N
+        JR	DASM_46+3
+
+DASM_4C LD	HL,EXX_T     ;EXX
+        JP	TXTOUT5
+
+DASM_4E LD	HL,INAjb_T   ;IN A,(N)
+        CALL	DASM_46+3
+        LD	A,")"
+        JP	SYMOUT5
+
+DASM_50 LD	HL,SBCA_T    ;SBC A,N
+        JR	DASM_46+3
+
+DASM_52 LD	HL,EXSP_T    ;EX (SP),HL
+        JP	TXTOUT5
+
+DASM_54 LD	HL,AND_T     ;AND N
+        JR	DASM_46+3
+
+DASM_56 LD	HL,JPHL_T    ;JP (HL)
+        JP	TXTOUT5
+
+DASM_58 LD	HL,EXDE_T    ;EX DE,HL
+        JP	TXTOUT5
+
+DASM_5A LD	HL,XOR_T     ;XOR N
+        JR	DASM_46+3
+
+DASM_5C LD	BC,"ID";"DI"      ;DI/EI
+        BIT	3,(IX)
+        JR	Z,$+3
+        INC	C
+        JP	SYM5_BC
+
+DASM_5E LD	HL,OR_T      ;OR N
+        JR	DASM_46+3
+
+DASM_60 LD	HL,LDSP_T    ;LD SP,HL
+        JP	TXTOUT5
+
+DASM_62 LD	HL,CP_T      ;CP N
+        JR	DASM_46+3
+
+DASM_64 INC	IX          ;!!! PREFIX 237 !!!
+        LD	A,(IX)
+        SUB	64
+        JR	C,DASM_66    ;CODES [00;63] = NOP*
+        ADD	A,192
+        JR	NC,E_DAS64   ;CODES [64;128] = PREFIX 237 MAIN CODES
+        CP	60
+        JR	NC,DASM_66   ;CODES [188;255] = NOP*
+        SUB	32
+        JR	C,DASM_66    ;CODES [128;159] = NOP*
+        BIT	2,A
+        JR	NZ,DASM_66
+        LD	C,A          ;C=[0;3],[8;11],[16;19],[24;27]
+        AND	3           ;A=[0;15]
+        LD	B,A
+        LD	A,C
+        AND	0x10
+        RRCA	
+        OR	B
+        LD	C,A          ;A=A*5
+        ADD	A,A
+        ADD	A,A
+        ADD	A,C
+        LD	HL,P237_T    ;PRINT LDIR AND 15 OTHER CODES
+        JP	TXT_HLA
+
+E_DAS64 EX	DE,HL        ;HL=JP TABLE237
+        LD	L,A
+        LD	L,(HL)
+        LD	E,(HL)
+        INC	L
+        LD	D,(HL)
+        EX	DE,HL
+        JP	(HL)
+
+DASM_66 LD	HL,NOPN_T    ;NOP* (N)
+        DEC	IX
+        JP	DASM_4E+3
+
+DASM_68 LD	HL,IN_T      ;IN B/C/D/E/H/L/A,(C)
+        CALL	TXTOUT5
+        LD	BC,0x3F08
+        CALL	S_REG
+        LD	HL,jbCd_T
+        JP	TXTOUT5
+
+DASM_6A LD	HL,OUTC_T    ;OUT (C),B/C/D/E/H/L/A
+        CALL	TXTOUT5
+        LD	BC,0x3F08
+        JP	S_REG
+
+DASM_6C LD	HL,SBCHL_T   ;SBC HL,BC/DE/HL/SP
+        CALL	TXTOUT5
+        JP	S_REGC
+
+DASM_6E LD	HL,LDb_T     ;LD (NN),BC/DE/HL/SP
+        CALL	DASM_1C+3
+        LD	A,","
+        CALL	SYMOUT5
+        LD	HL,REGC_T-2  ;PRINT BC/DE/HL/SP
+        LD	A,(IX-2)
+        JP	S_REGC+6
+
+DASM_70 LD	HL,NEG_T     ;NEG (N)
+        JR	DASM_66+3
+
+DASM_72 LD	HL,RET_T     ;RETN / RETI
+        CALL	TXTOUT5
+        LD	A,"N"
+        BIT	3,(IX)
+        JR	Z,$+4
+        LD	A,"I"
+        CALL	SYMOUT5
+E_bNd   LD	BC,"( ";" ("
+        CALL	SYM5_BC
+        LD	L,(IX)
+        CALL	NUM5_L
+        LD	A,")"
+        JP	SYMOUT5
+
+DASM_74 LD	HL,IM_T      ;IM 0,0*,1,2
+        CALL	TXTOUT5
+;        LOCAL	
+        LD	A,"0"
+        BIT	4,(IX)
+        JR	NZ,.L1
+        CALL	SYMOUT5
+        LD	A,"*"
+        BIT	3,(IX)      ;IM 0/0*
+        CALL	NZ,SYMOUT5
+        JR	E_bNd
+
+.L1      INC	A           ;IM 1/2
+        BIT	3,(IX)
+        JR	Z,$+3
+        INC	A
+        CALL	SYMOUT5
+        JR	E_bNd
+;        ENDL	
+
+DASM_76 LD	HL,LD_T      ;LD I/R,A
+        CALL	TXTOUT5
+        CALL	SYM5_IR
+        LD	BC,"A,";",A"
+        JP	SYM5_BC
+
+DASM_78 LD	HL,LDAj_T    ;LD A,I/R
+        CALL	TXTOUT5
+SYM5_IR LD	A,"I"
+        BIT	3,(IX)
+        JR	Z,$+4
+        LD	A,"R"
+        JP	SYMOUT5
+
+DASM_7A LD	A,"R"        ;RRD/RLD
+        CALL	SYMOUT5
+        LD	BC,"DR";"RD"
+        BIT	3,(IX)
+        JR	Z,$+4
+        LD	C,"L"
+        JP	SYM5_BC
+
+DASM_7C LD	HL,ADCHL_T   ;ADC HL,BC/DE/HL/SP
+        JP	DASM_6C+3
+
+DASM_7E LD	HL,LD_T      ;LD BC/DE/HL/SP,(NN)
+        CALL	TXTOUT5
+        CALL	S_REGC
+NUMbNNd LD	BC,"(,";",("
+        CALL	SYM5_BC
+        JP	DASM_1C+6
+
+DASM_80 LD	HL,INF_T
+        JP	TXTOUT5
+
+DASM_82 LD	HL,OUTHL_T
+        JP	TXTOUT5
+
+DASM_84 INC	IX          ;!!! PREFIX 221,253 (INDEX) !!!
+        LD	HL,"XI";"IX"
+        BIT	5,(IX-1)
+        JR	Z,$+5
+        LD	HL,"YI";"IY"
+        LD	(S_INDEX+1),HL
+        LD	H,HIGH (T2DEASM);'T2DEASM
+        LD	L,(IX)
+        LD	L,(HL)
+        INC	H
+        LD	E,(HL)
+        INC	L
+        LD	D,(HL)
+        EX	DE,HL
+        JP	(HL)
+
+DASM_86 LD	HL,INDEX_T   ;prefix IX/IY
+        CALL	TXTOUT5
+        DEC	IX
+
+S_INDEX LD	BC,0
+        JP	SYM5_BC
+
+DASM_88 LD	HL,ADD_T     ;ADD IX/IY,BC/DE/HL/SP
+        CALL	TXTOUT5
+        CALL	S_INDEX
+        LD	A,","
+        CALL	SYMOUT5
+        JP	S_REGC
+
+DASM_8A LD	HL,LD_T      ;LD IX/IY,NN
+        CALL	TXTOUT5
+        CALL	S_INDEX
+        JP	NUM5jNN
+
+DASM_8C LD	HL,LDb_T     ;LD (NN),IX/IY
+        CALL	DASM_1C+3
+        LD	A,","
+        CALL	SYMOUT5
+        JP	S_INDEX
+
+DASM_8E LD	HL,INC_T     ;INC/DEC IX/IY
+        BIT	3,(IX)
+        JR	Z,$+5
+        LD	HL,DEC_T
+        CALL	TXTOUT5
+        JP	S_INDEX
+
+DASM_90 CALL	S_DEASM    ;ANY CODE + X/Y
+        LD	A,(S_INDEX+2)
+        JP	SYMOUT5
+
+DASM_92 LD	HL,LD_T      ;LD HX/LX/HY/LY,N
+        CALL	TXTOUT5
+        LD	E,8
+        CALL	S_HILI
+        JP	NUM5jN
+
+DASM_94 LD	HL,ADD_T     ;ADD IX/IY,IX/IY
+        CALL	TXTOUT5
+        CALL	S_INDEX
+        LD	A,","
+        CALL	SYMOUT5
+        JP	S_INDEX
+
+DASM_96 LD	HL,LD_T      ;LD IX/IY,(NN)
+        CALL	TXTOUT5
+        CALL	S_INDEX
+        JP	NUMbNNd
+
+DASM_98 LD	HL,INC_T     ;INC/DEC (IX/IY+D)
+        BIT	0,(IX)
+        JR	Z,$+5
+        LD	HL,DEC_T
+        CALL	TXTOUT5
+bINDEXd LD	A,"("
+        CALL	SYMOUT5
+        CALL	S_INDEX
+        CALL	INDEX_D
+        LD	A,")"
+        JP	SYMOUT5
+
+INDEX_D INC	IX
+        LD	A,(IX)
+        OR	A
+        RET	Z           ;IF (IX/IY+0) TH RET
+        LD	C,"+"        ;PRINT +/-
+        BIT	7,A
+        JR	Z,$+4
+        LD	C,"-"
+        PUSH	AF
+        LD	A,C
+        CALL	SYMOUT5
+        POP	AF
+        JR	Z,$+4
+        DEC	A
+        CPL	
+        LD	L,A
+        JP	NUM5_L
+
+DASM_9A LD	HL,LD_T      ;LD (IX/IY+D),N
+        CALL	bINDEXd-3
+        JP	NUM5jN
+
+DASM_9C LD	HL,LD_T      ;LD REG,(IX/IY+D)
+        CALL	TXTOUT5
+        LD	BC,0x3F08
+        CALL	S_REG
+        LD	A,","
+        CALL	SYMOUT5
+        JR	bINDEXd
+
+DASM_9E LD	HL,LD_T      ;LD H/L-X/Y,REG
+        CALL	TXTOUT5
+        LD	D,8
+        CALL	S_HILI
+        JP	S_REGj1
+
+DASM_A0 LD	HL,LD_T      ;LD HX/LX/HY/LY,HX/LX/HY/LY
+        CALL	TXTOUT5
+        LD	E,8
+        CALL	S_HILI
+        LD	A,","
+        CALL	SYMOUT5
+        LD	E,1
+
+S_HILI  LDA B,(S_INDEX+2)       ;PRINT HX/LX/HY/LY
+        LD	C,"H"
+        LD	A,(IX)
+        AND	E
+        JR	Z,$+4
+        LD	C,"L"
+        JP	SYM5_BC
+
+DASM_A2 LD	HL,LD_T      ;LD (IX/IY+D),REG
+        CALL	bINDEXd-3
+        LD	A,","
+        CALL	SYMOUT5
+        LD	A,(IX-1)
+        LD	BC,0x701
+        JP	S_REG+3
+
+DASM_A4 LD	H,HIGH (T1DEASM);'T1DEASM   ;ADD/ADC/SUB/SBC/AND/XOR/OR/CP (IX/IY+D)
+        LD	L,(IX)
+        LD	L,(HL)       ;HL - JP TABLE
+        DEC	H
+        LD	E,(HL)
+        INC	L
+        LD	D,(HL)
+        EX	DE,HL        ;HL - DISASM CODE N PROG: LD HL,CODE_T
+        INC	HL
+        LD	E,(HL)
+        INC	HL
+        LD	D,(HL)
+        EX	DE,HL        ;HL -
+        CALL	TXTOUT5
+        JP	bINDEXd
+
+DASM_A6 INC	IX          ;!!! PREFIX 221/253 + PREFIX 203 !!!
+        INC	IX
+        LD	A,(IX)
+        SUB	64
+        JR	NC,S1_I203
+        LD	HL,P203_T1   ;RLC/RRC/RL/RR/SLA/SRA/SLI_SRL
+        AND	0x38         ;A=CODE/4
+        RRCA	
+        CALL	TXT_HLA
+        LD	A," "
+        CALL	SYMOUT5
+
+L2_I203 LD	A,(IX)
+        AND	7
+        CP	6
+        JR	Z,L1_I203
+        CALL	S_REG1
+        LD	A,","
+        CALL	SYMOUT5
+L1_I203 DEC	IX
+        DEC	IX
+        CALL	bINDEXd
+        INC	IX
+        RET	
+
+S1_I203 LD	HL,P203_T2   ;BIT/RES/SET
+        PUSH	AF
+        PUSH AF
+        AND	0xC0
+        RRCA	           ;64*CODE => 4*CODE
+        RRCA	
+        RRCA	
+        RRCA	
+        CALL	TXT_HLA
+        LD	A," "
+        CALL	SYMOUT5
+        POP	AF
+        AND	0x38         ;A=(CODE/8)
+        RRCA	
+        RRCA	
+        RRCA	
+        ADD	A,"0"       ;bt,reg
+        CALL	SYMOUT5
+        LD	A,","
+        CALL	SYMOUT5
+        POP	AF
+        CP	64
+        JR	C,L1_I203    ;IF BIT TH NOT PRINT REG
+        JR	L2_I203      ;IF RES/SET TH PRINT REG
+
+DASM_A8 LD	HL,POP_T     ;POP IX/IY
+        CALL	TXTOUT5
+        JP	S_INDEX
+
+DASM_AA LD	HL,EXSP_T2   ;EX (SP),IX/IY
+        JR	DASM_A8+3
+
+DASM_AC LD	HL,PUSH_T    ;PUSH IX/IY
+        JR	DASM_A8+3
+
+DASM_AE LD	HL,JP_T      ;JP (IX/IY)
+        CALL	TXTOUT5
+        LD	A,"("
+        CALL	SYMOUT5
+        CALL	S_INDEX
+        LD	A,")"
+        JP	SYMOUT5
+
+DASM_B0 LD	HL,LDSP_T2   ;LD SP,IX/IY
+        JR	DASM_A8+3
+
+;-------
+
+S_FLAG  LD	A," "
+        CALL	SYMOUT5
+S_FLAG2 LD	HL,FLAG_T
+        LD	A,(IX)       ;A=(CODE-BASE CODE)/4 (/8*2)
+        AND	0x38
+        RRCA	
+        RRCA	
+        LD	D,0
+        LD	E,A
+        ADD	HL,DE
+        LD	A,(HL)
+        INC	HL
+        PUSH	HL
+        CALL	SYMOUT5
+        POP	HL
+        LD	A,(HL)
+        OR	A
+        RET	Z
+        JP	SYMOUT5
+
+;-------
+
+NOP_T   DB	"NOP",0
+LD_T    DB	"LD ",0
+LDb_T   DB	"LD (",0
+INC_T   DB	"INC ",0
+DEC_T   DB	"DEC ",0
+EXA_T   DB	"EX AF,AF'",0
+ADDHL_T DB	"ADD HL,",0
+LDAjb_T DB	"LD A,(",0
+DJNZ_T  DB	"DJNZ ",0
+JR_T    DB	"JR ",0
+DAA_T   DB	"DAA",0,"CPL",0,"SCF",0,"CCF",0
+LDHLb_T DB	"LD HL,(",0
+HALT_T  DB	"HALT",0
+
+ADDA_T  DB	"ADD A,",0
+ADCA_T  DB	"ADC A,",0
+SUB_T   DB	"SUB ",0
+SBCA_T  DB	"SBC A,",0
+AND_T   DB	"AND ",0
+XOR_T   DB	"XOR ",0
+OR_T    DB	"OR ",0
+CP_T    DB	"CP ",0
+
+RET_T   DB	"RET",0
+POP_T   DB	"POP ",0
+JP_T    DB	"JP ",0
+CALL_T  DB	"CALL ",0
+PUSH_T  DB	"PUSH ",0
+RST_T   DB	"RST ",0
+OUTb_T  DB	"OUT (",0
+EXX_T   DB	"EXX",0
+INAjb_T DB	"IN A,(",0
+EXSP_T  DB	"EX (SP),HL",0
+JPHL_T  DB	"JP (HL)",0
+EXDE_T  DB	"EX DE,HL",0
+LDSP_T  DB	"LD SP,HL",0
+
+P203_T1 DB	"RLC",0,"RRC",0,"RL",0,0,"RR",0,0
+        DB	"SLA",0,"SRA",0,"SLI",0,"SRL",0
+P203_T2 DB	"BIT",0,"RES",0,"SET",0
+
+NOPN_T  DB	"NOP* (",0
+IN_T    DB	"IN ",0
+OUTC_T  DB	"OUT (C),",0
+SBCHL_T DB	"SBC HL,",0
+NEG_T   DB	"NEG (",0
+IM_T    DB	"IM ",0
+LDAj_T  DB	"LD A,",0
+ADCHL_T DB	"ADC HL,",0
+INF_T   DB	"INF",0
+OUTHL_T DB	"OUT (C),*",0
+
+P237_T  DB	"LDI",0,0,"CPI",0,0,"INI",0,0,"OUTI",0
+        DB	"LDD",0,0,"CPD",0,0,"IND",0,0,"OUTD",0
+        DB	"LDIR",0,"CPIR",0,"INIR",0,"OTIR",0
+        DB	"LDDR",0,"CPDR",0,"INDR",0,"OTDR",0
+
+INDEX_T DB	"prefix ",0
+ADD_T   DB	"ADD ",0
+EXSP_T2 DB	"EX (SP),",0
+LDSP_T2 DB	"LD SP,",0
+
+REGC_T  DB	"BCDEHLSP"
+REGC_T2 DB	"BCDEHLAF"
+FLAG_T  DB	"NZZ",0,"NCC",0,"POPEP",0,"M",0
+djA_T   DB	"),A",0
+bHLd_T  DB	"(HL)",0
+jHL_T   DB	",HL",0
+jbCd_T  DB	",(C)",0
+
+eDISASM EQU	$-DISASM
+

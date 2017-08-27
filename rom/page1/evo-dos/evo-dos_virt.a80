@@ -1,7 +1,0 @@
-
-;LAST UPDATE: 15.09.2014 savelij
-
-EMU3D2F		EQU 1
-P2666		EQU 0
-
-		include evo-dos.a80

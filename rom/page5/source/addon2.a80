@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 31.12.2016 savelij
+;LAST UPDATE: 31.07.2017 savelij
 
 		PHASE CPU0
 		JP $
@@ -46,7 +46,7 @@ UNPACK_STS	EVOPORT WIN_P3,RAM_STS
 		LD DE,CPU3
 		JP UNPACK
 
-PACK_STS	binclude ../../sts/sts_pack.rom
+PACK_STS	binclude ../../sts6/sts_pack.rom
 
 UNP_MICRO_BOOT	LD HL,MICRO_BOOT
 		LD DE,DRV_VAR+0X300
@@ -60,6 +60,9 @@ UNP_MICRO_BOOT	LD HL,MICRO_BOOT
 		include fontread.a80
 
 MICRO_BOOT	binclude ../../fat_boot/source/micro_boot_fat_pack.rom
+
+CP866_FONT	binclude 866_code_pack.bin
+ATM_FONT	binclude atm_code_pack.bin
 
 		DUPL 0X3FF8-$,0XFF
 		DB "ADDON2"

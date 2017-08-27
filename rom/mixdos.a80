@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 07.10.2016 savelij
+;LAST UPDATE: 31.03.2017 savelij
 
 SIZE_JUMP	EQU 3					;размер команды JP adr
 
@@ -17,10 +17,27 @@ SIZE_JUMP	EQU 3					;размер команды JP adr
  SETVAR _TRANSFER_PAGE0,SIZE_JUMP			;08 передача байт в/из страницы BDOS
  SETVAR _JMP_BDOS,SIZE_JUMP				;09 вызов BDOS в страницах BDOS
  SETVAR _BDOS_RAM,SIZE_JUMP				;0A включение конфига BDOS
- SETVAR _DOS_RAM,SIZE_JUMP				;0B включение конфига DOS
+ SETVAR _USER_RAM,SIZE_JUMP				;0B включение конфига пользователя
  SETVAR _GET_VARS_KEYS,SIZE_JUMP			;0C получение адреса переменных клавиатуры
  SETVAR _GET_ADR_PAGES,SIZE_JUMP			;0D получение адреса номеров страниц конфигурации
  ADDVAR SIZE_JUMP					;0E резерв
  ADDVAR SIZE_JUMP					;0F резерв
 
  SETVAR END_JUMP_TABLE,0
+
+ INIT_VAR 0X4200
+ SETVAR _ADD_OFFSET_VOL,SIZE_JUMP			;добавление смещения раздела
+ SETVAR _DETECT_DEVICES,SIZE_JUMP			;обнаружение устройств
+ 
+
+;[номера функций вызова дискового драйвера]
+ INIT_VAR
+ SETVAR _DSKIO_READ					;00
+ SETVAR _DSKIO_WRITE					;01
+ SETVAR _DSKIO_DSKCHG					;02
+ SETVAR _DSKIO_GETDPB					;03
+ SETVAR _DSKIO_CHOICE					;04
+ SETVAR _DSKIO_DSKFMT					;05
+ SETVAR _DSKIO_ABSREAD					;06
+ SETVAR _DSKIO_ABSWRITE					;07
+ SETVAR _DSKIO_INIT					;08

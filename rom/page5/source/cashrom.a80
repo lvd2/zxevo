@@ -1,0 +1,48 @@
+
+;LAST UPDADE: 02.08.2017 savelij
+
+		PHASE CPU0
+		JP $
+
+		DUPL 0X0008-$,0XFF
+		JP $
+
+		DUPL 0X0010-$,0XFF
+		JP $
+
+		DUPL ADR_SEL_ROM-$,0XFF
+		OUT (C),A			;0014
+		NOP
+		RET
+
+		DUPL 0X0018-$,0XFF
+		JP $
+
+		DUPL 0X0020-$,0XFF
+		JP $
+
+		DUPL 0X0028-$,0XFF
+		JP $
+
+		DUPL 0X0030-$,0XFF
+		JP CALL2PAGE
+
+		DUPL 0X0038-$,0XFF		;0038
+		EI
+		RET
+
+		DUPL 0X003E-$,0XFF
+		EI
+		RET
+
+		DUPL 0X0080-$,0XFF
+		binclude ../../dec40.bin
+
+		DUPL 0X00FF-$,0XFF
+		DW 0X0038
+
+CASHREMEMBER	binclude ../../cashremember/cashrm_pack.rom
+
+		DUPL 0X3FF8-$,0XFF
+		DB "CASHRM"
+		DW DATA_VERS

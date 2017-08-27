@@ -1,16 +1,31 @@
 
-;LAST UPDATE: 03.10.2013 savelij
+;LAST UPDATE: 07.08.2017 savelij
 
-;ADR=>0412
-DISCERROR_7	LD A,7
-		JP PRINT_TXTERR
+	IF 0
+;[0x0325 ENDCOMAND]
+ENDCOMAND	LD A,D
+		CP "."
+		JP NZ,END_COMAND
+		cp __RETURN
+		call nz,CREATE_BUF		; ‘Ž‡„€ˆ… “”…€
+		ld a,9
+		ld (TRD_5D06),a			; ŠŽ‹ˆ—…‘’‚Ž ‘ˆŒ‚Ž‹Ž‚ ˆŒ…ˆ ”€‰‹€ ˆ Žˆ‘Š…
+		xor a
+		ld (TRD_5D0F),a			; ŽŒ…	Ž˜ˆŠˆ TR-DOS
+		ld (TRD_5CD6),a			; #FF-ŠŽŒ€„€ ˆŸ’€ ‘ˆ’€Š‘ˆ—…‘ŠˆŒ €€‹ˆ‡€’ŽŽŒ
+		ld (TRD_5D10),a			; ‘’€˜ˆ‰ €‰’ Ž˜ˆŠˆ
+		ld hl,FLAGS
+		res 7,(hl)
+		LD HL,COM_DOT
+		JP LOC_353
+	ENDIF
 
 ;ADR=>18B7
 ADR_START_COM	LD (TRD_5CC6),HL
 		LD DE,(TRD_5CEB)		;’…Š ˆ ‘…Š’Ž Œ…‘’ŽŽ‹Ž†…ˆŸ ”€‰‹€
 		RET
 ;ADR=>1CFE
-DELETE_BUF_	CALL DELETE_BUF
+DELETE_BUFFER	CALL DELETE_BUF
 		JP CLRBUF_EDITOR
 
 ;ADR=>1D56
@@ -28,11 +43,14 @@ RUN_CODE	CALL RESTORE_SP
 		PUSH BC
 		RET
 
-;ADR=>20D2,20DE
-FORMAT_TREK_	CALL PRINT_NUM_TRK
-		CALL FORMAT_TREK
-		LD A,(TRD_5CDA)
-		RET
+;ADR=>20D1
+FORMAT_TREK_A0	AND A
+FORMAT_TREK_A	CALL PRINT_NUM_TRK
+		JP FORMAT_TREK
+
+;ADR=>20D1
+FORMAT_TREK_A1	SCF
+		JR FORMAT_TREK_A
 
 ;…—€’œ ’…Š“™…ƒŽ ”ŽŒ€’ˆ“…ŒŽƒŽ ’…Š€ ˆ ‘’ŽŽ›
 PRINT_NUM_TRK	PUSH DE
@@ -64,13 +82,22 @@ TXT_FORMAT_TRK	DC "FORMAT TRACK: "
 TXT_FSIDE	DC "  SIDE: "
 
 ;ADR=>211E
-CLRBUF_EDITOR_	LD HL,(K_CUR)
-		LD DE,(E_LINE)
+CLRBUF_EDITOR2	POP HL
+		RES 7,(IY+1)
 		RST 0X20
-		DW 0X19E5
+		DW 0X19FB
+		XOR A
+		LD (SUBPPC),A
+		DEC A
+		LD (ERR_NR),A
+		LD HL,(E_LINE)
+		LD (CH_ADD),HL
 		RST 0X20
-		DW 0X16BF
-		LD HL,(E_LINE)		; €„…‘	€—€‹€ …„€Š’ˆ“…ŒŽ‰ ‘’ŽŠˆ
+		DW 0X19FB
+		RST 0X20
+		DW 0X18
+		RST 0X20
+		DW 0X16B0
 		RET
 
 ;ADR=>3057

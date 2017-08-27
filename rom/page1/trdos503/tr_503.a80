@@ -1,8 +1,8 @@
 
-;LAST UPDATE: 05.06.2014 savelij
+;LAST UPDATE: 06.08.2017 savelij
 
 		include ../../macros.a80
-		include bas_trd_vars.a80
+		include ../../bas_trd_vars.a80
 
 		ORG 0
 		di
@@ -5814,4 +5814,6 @@ RD_DATAPORT1	ini
 		IN A,(C)
 		RET
 
-		DUPL 0X4000-$,0FFh
+		DUPL 0X3FF8-$,0FFh
+		DB "TRD503"
+		DW DATA_VERS

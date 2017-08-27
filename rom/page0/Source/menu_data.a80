@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 05.12.2014 savelij
+;LAST UPDATE: 11.08.2017 savelij
 
 ;Žˆ‘€’…‹œ ŽŠ€ (€„…‘ ‚ IX)
 ;+00 X ŠŽŽ„ˆ€’€
@@ -84,10 +84,8 @@ MKILLSTXT	DB 0X17,0XFF,"Services"
 		DB 0X0D," R.Reset NeoGS"		;r
 		DB 0X0D," E.Reset CMOS"			;e
 		DB 0X0D," K.Format ramdisk 640k"	;k
-		IF TMP_FITCHA=1
 		DB 0X0D," V.Basic 48 standart"		;v
 		DB 0X0D," B.Basic 128 standart"		;b
-		ENDIF
 		DB 0X0D," M.Edit CMOS"			;m
 		DB 0X0D," S.Test PC keyboard"		;s
 		DB 0X0D," C.ATM CP/M"			;c
@@ -96,19 +94,13 @@ MKILLSTXT	DB 0X17,0XFF,"Services"
 		DB 0X0D," U.Update custom ROM"		;u
 		DB 0X0D," N.Dismount image"		;n
 		DB 0X0D," X.Exit",0			;x
-		IF TMP_FITCHA=1
 MKILLS_KEY	DB LOW (KILL1-$-1),"rekvbmsctfunx"
-		ELSE
-MKILLS_KEY	DB LOW (KILL1-$-1),"rekmsctfunx"
-		ENDIF
 
 KILL1		DW RESETNGS			;r
 		DW RESET_CMOS			;e
 		DW RAM_640			;k
-		IF TMP_FITCHA=1
 		DW BAS48STD			;v
 		DW BAS128STD			;b
-		ENDIF
 		DW EDIT_CMOS			;m
 		DW PC_KEYS_TEST			;s
 		DW ATM_CPM			;c
@@ -224,7 +216,6 @@ MAIN2		DW CHNGTURBO			;w ˆ‡Œ……ˆ… ’“Ž
 		DW EN_LOADFONT			;e €‡…˜…ˆ… ……‡€ƒ“‡Šˆ ˜ˆ”’€ Ž ‘Ž‘“
 		DW SET_TYPEFONT			;j ‚›Ž ’ˆ€ ˜ˆ”’€
 		DW EN_AUTOMNT			;n ‚Š‹/‚›Š‹ €‚’ŽŒŽ’ˆŽ‚€ˆŸ ˆ‡ ”€‰‹€
-;		DW SONGLN			;0XAC SONG IN LINES
 ;===============ƒ‹€‚Ž… Œ…ž===============================
 
 ;[„‹Ÿ ‡€ƒ“‡Šˆ ‘ ‹…’›]
@@ -439,10 +430,8 @@ MNT_DRV_B	DB "NONE        "
 MNT_DRV_C	DB "NONE        "
 		DB 0X16,0X15,0X00,0X17,GREEN,"Mount D: ",0X17,YELLOW
 MNT_DRV_D	DB "NONE        "
-		IF BUILD_DEBUG=1
 		DB 0X16,0X11,0X00,0X17,GREEN,"Ramdisk: ",0X17,YELLOW
 IN_RAMDISK	DB "NONE        "
-		ENDIF
 		DB 0X17,0XFF,0
 
 ;[’…Š‘’ €‘’Ž…Š ƒ‹€‚ŽƒŽ Œ…ž]
@@ -510,19 +499,11 @@ TXT_DATA	DB "00.00.00",0X17,0XFF
 ;110	128K	TV	70908
 ;111	128K	VGA	70908
 TXT_VMODE	DB 0X16,2,0XD0,0X17,GREEN+BR_INK
-		IF TMP_FITCHA=1
 		DB "        ",0
-		ELSE
-		DB "VGA 50Hz",0
-		ENDIF
 TV_VGA		EQU $-9
 
 TXT_TVVGA	DB "TV VGA"
-		IF TMP_FITCHA=1
 TXT_HZ		DB "PENT60Hz 48K128K"
-		ELSE
-TXT_HZ		DB "50Hz60Hz"
-		ENDIF
 
 TIME_OFF	DB 0X16,0X00,0XD0,0X17,WHITE,"        ",0X16,0X01,0XD0,"        ",0X17,0XFF,0
 
@@ -584,8 +565,43 @@ DSK_END
 TXT_EDITCMOS1	DB "Press cursor keys, 0..9, A..F for edit,  X.Exit",0
 TXT_EDITCMOS2	DB "CMOS Editor",0
 
-BR_ATM		DB 0X99,0X9D,0X8B,0X8A,0X98,0X9D,0X8C
-BR_866		DB 0XC9,0XCD,0XBB,0XBA,0XC8,0XCD,0XBC
+;		    0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
+;80		    €        ‚    ƒ    „    …    †    ‡    ˆ    ‰    Š    ‹    Œ        Ž    
+CONV_CP866_ATM	DB 0XC1,0XC2,0XD7,0XC7,0XC4,0XC5,0XD6,0XDA,0XC9,0XCA,0XCB,0XCC,0XCD,0XCE,0XCF,0XD0
+;90		        ‘    ’    “    ”    •    –    —    ˜    ™    š    ›    œ        ž    Ÿ
+		DB 0XD2,0XD3,0XD4,0XD5,0XC6,0XC8,0XC3,0XDE,0XDB,0XDD,0XDF,0XD9,0XD8,0XDC,0XC0,0XD1
+;A0		         ¡    ¢    £    ¤    ¥    ¦    §    ¨    ©    ª    «    ¬    ­    ®    ¯
+		DB 0XE1,0XE2,0XF7,0XE7,0XE4,0XE5,0XF6,0XFA,0XE9,0XEA,0XEB,0XEC,0XED,0XEE,0XEF,0XF0
+;B0		    °    ±    ²    ³    ´    µ    ¶    ·    ¸    ¹    º    »    ¼    ½    ¾    ¿
+		DB 0X80,0X81,0X82,0X83,0X84,0X85,0X86,0X87,0X88,0X89,0X8A,0X8B,0X8C,0X8D,0X8E,0X8F
+;C0		    À    Á    Â    Ã    Ä    Å    Æ    Ç    È    É    Ê    Ë    Ì    Í    Î    Ï
+		DB 0X90,0X91,0X92,0X93,0X94,0X95,0X96,0X97,0X98,0X99,0X9A,0X9B,0X9C,0X9D,0X9E,0X9F
+;D0		    Ð    Ñ    Ò    Ó    Ô    Õ    Ö    ×    Ø    Ù    Ú    Û    Ü    Ý    Þ    ß
+		DB 0XA0,0XA1,0XA2,0XA3,0XA4,0XA5,0XA6,0XA7,0XA8,0XA9,0XAA,0XAB,0XAC,0XAD,0XAE,0XAF
+;E0		    à    á    â    ã    ä    å    æ    ç    è    é    ê    ë    ì    í    î    ï
+		DB 0XF2,0XF3,0XF4,0XF5,0XE6,0XE8,0XE3,0XFE,0XFB,0XFD,0XFF,0XF9,0XF8,0XFC,0XE0,0XF1
+;F0		    ð    ñ    ò    ó    ô    õ    ö    ÷    ø    ù    ú    û    ü    ý    þ
+		DB 0XB0,0XB1,0XB2,0XB3,0XB4,0XB5,0XB6,0XB7,0XB8,0XB9,0XBA,0XBB,0XBC,0XBD,0XBE,0XBF
+
+	if 0
+;		    0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
+;80		    °    ±    ²    ³    ´    µ    ¶    ·    ¸    ¹    º    »    ¼    ½    ¾    ¿
+CONV_ATM_CP866	DB 0XB0,0XB1,0XB2,0XB3,0XB4,0XB5,0XB6,0XB7,0XB8,0XB9,0XBA,0XBB,0XBC,0XBD,0XBE,0XBF
+;90		    À    Á    Â    Ã    Ä    Å    Æ    Ç    È    É    Ê    Ë    Ì    Í    Î    Ï
+		DB 0XC0,0XC1,0XC2,0XC3,0XC4,0XC5,0XC6,0XC7,0XC8,0XC9,0XCA,0XCB,0XCC,0XCD,0XCE,0XCF
+;A0		    Ð    Ñ    Ò    Ó    Ô    Õ    Ö    ×    Ø    Ù    Ú    Û    Ü    Ý    Þ    ß
+		DB 0XD0,0XD1,0XD2,0XD3,0XD4,0XD5,0XD6,0XD7,0XD8,0XD9,0XDA,0XDB,0XDC,0XDD,0XDE,0XDF
+;B0		    ð    ñ    ò    ó    ô    õ    ö    ÷    ø    ù    ú    û    ü    ý    þ    ÿ
+		DB 0XF0,0XF1,0XF2,0XF3,0XF4,0XF5,0XF6,0XF7,0XF8,0XF9,0XFA,0XFB,0XFC,0XFD,0XFE,0XFF
+;C0		    ž    €        –    „    …    ”    ƒ    •    ˆ    ‰    Š    ‹    Œ        Ž
+		DB 0X9E,0X80,0X81,0X96,0X84,0X85,0X94,0X83,0X95,0X88,0X89,0X8A,0X8B,0X8C,0X8D,0X8E
+;D0		        Ÿ        ‘    ’    “    †    ‚    œ    ›    ‡    ˜        ™    —    š
+		DB 0X8F,0X9F,0X90,0X91,0X92,0X93,0X86,0X82,0X9C,0X9B,0X87,0X98,0X9D,0X99,0X97,0X9A
+;E0		    î         ¡    æ    ¤    ¥    ä    £    å    ¨    ©    ª    «    ¬    ­    ®
+		DB 0XEE,0XA0,0XA1,0XE6,0XA4,0XA5,0XE4,0XA3,0XE5,0XA8,0XA9,0XAA,0XAB,0XAC,0XAD,0XAE
+;F0		    ¯    ï    à    á    â    ã    ¦    ¢    ì    ë    §    è    í    é    ç    ê
+		DB 0XAF,0XEF,0XE0,0XE1,0XE2,0XE3,0XA6,0XA2,0XEC,0XEB,0XA7,0XE8,0XED,0XE9,0XE7,0XEC
+	endif
 
 ;[TXT_HELP]
 ;		    0123456789ABCDEF0123456789ABCDEF
@@ -618,6 +634,7 @@ MSTUPID		DB 3,8,3,26,0XEA
 
 TXT_BETA	DB " beta"
 TXT_NONE	DB "NONE        "
+ETXT_NONE
 
 T_ALL		DB "off"	;0
 T_128		DB "128"	;2
@@ -631,21 +648,22 @@ DRV_SYM		DB 0	;ŽŒ… ‚›€ŽƒŽ „ˆ‘ŠŽ‚Ž„€
 MEMMODE		DB 0	;…†ˆŒ €ŒŸ’ˆ
 SYSREG1		DB 0	;ŠŽˆŸ „‹Ÿ ‚›‚Ž„€ ‚ Ž’ EFF7
 TURBO_NUM	DB 0	;ŽŒ… ’“Ž…†ˆŒ€
-FLAGS		DB 0	;BIT 7
-			;BIT 6
-			;BIT 5-=1-ŽŠ€‡ ‘Ž„…†ˆŒŽƒŽ Ž€‡€ (SCL TRD ONLY),=0-Ž›—€Ÿ €Ž’€
-			;BIT 4-=1-Œ“‹Ÿ–ˆŸ ‡€ƒ“‡Šˆ ‘ ‹…’›, =0-‡€ƒ“‡Š€ —……‡ Œ€ƒˆ’Ž”Ž›‰ ‚•Ž„
-			;BIT 3-=1-‡€“‘Š ‘ ”€’€, =0-‡€“‘Š ‘ „ˆ‘Š…’›
-			;BIT 2-=1-—€‘› €‰„…›, =0-…’
-			;BIT 1-=1-Œ›˜œ …‘’œ, =0-…’
-			;BIT 0-=Š€ŠŽ‰ Š“‘Ž ˆ‘Ž‚€’œ, „‹Ÿ Œˆƒ€ˆŸ
+FLAGS		DB 0
+			;BIT 7
+ BITMASK LOAD_IMG,6	;BIT 6-=1-‡€ƒ“‡Š€ Ž€‡€ ‚ €Œ„ˆ‘Š
+ BITMASK VIEW_IMG,5	;BIT 5-=1-ŽŠ€‡ ‘Ž„…†ˆŒŽƒŽ Ž€‡€ (SCL TRD ONLY),=0-Ž›—€Ÿ €Ž’€
+ BITMASK EMU_TAPE,4	;BIT 4-=1-Œ“‹Ÿ–ˆŸ ‡€ƒ“‡Šˆ ‘ ‹…’›, =0-‡€ƒ“‡Š€ —……‡ Œ€ƒˆ’Ž”Ž›‰ ‚•Ž„
+ BITMASK RUN_FAT,3	;BIT 3-=1-‡€“‘Š ‘ ”€’€, =0-‡€“‘Š ‘ „ˆ‘Š…’›
+ BITMASK CLOCK_ON,2	;BIT 2-=1-—€‘› €‰„…›, =0-…’
+ BITMASK MOUSE_ON,1	;BIT 1-=1-Œ›˜œ …‘’œ, =0-…’
+ BITMASK NUM_CURSOR,0	;BIT 0-=Š€ŠŽ‰ Š“‘Ž ˆ‘Ž‚€’œ, „‹Ÿ Œˆƒ€ˆŸ
 
 ;[RUN_BASIC]
 RUN_BASIC	DW 1					;ŽŒ… ‘’ŽŠˆ …‰‘ˆŠ Žƒˆ
 		DW ERUN_BASIC-RUN_BASIC-5		;„‹ˆ€ …‰‘ˆŠ ‘’ŽŠˆ
-		DB 0XFD,0XB0,0X22,"65368",0X22,0X3A
-		DB 0XF9,0XC0,0XB0,0X22,"15619"
-		DB 0X22,0X3A,0XEA,0X3A,0XF7,0X22
+		DB __CLEAR,__VAL,"\"65368\":"
+		DB __RANDOMIZE,__USR,__VAL,"\"15619\":"
+		DB __REM,":",__RUN,"\""
 RUNNAM		DUPL 8,0				;Œ…‘’Ž Ž„ 8 ‘ˆŒ‚Ž‹Ž‚ ˆŒ…ˆ „‹Ÿ ‡€“‘Š€ ”€‰‹€
 		DB 0X22,0X0D,0X80
 ERUN_BASIC
@@ -653,7 +671,7 @@ ERUN_BASIC
 ;[RUN_CODE]
 RUN_CODE	DW 0X100
 		DW ERUN_CODE-RUN_CODE-5
-		DB 0XF9,0XC0,"0",0X0E,0,0,0,0,0,0X0D,0X80
+		DB __RANDOMIZE,__USR,"0",0X0E,0,0,0,0,0,0X0D,0X80
 ERUN_CODE
 
 OUT_NAME_FILE	DB 0X16,0,0,0X17,0XFF

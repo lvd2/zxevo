@@ -1,0 +1,515 @@
+
+;LAST UPDATE: 28.07.2017 savelij
+
+START1
+	PHASE 0X0066		;DISP	102
+        PUSH	AF
+        LD	(0X64),SP
+        LD	SP,0X64
+        LD	A,R
+        LD	A,251        ;EI
+        JP	PE,$+5
+        LD	A,243        ;DI
+        LD	(XX_DI),A
+        DI	
+        LDA (0X38),0XC9    ;(IM1),RET
+
+        LD	A,I                  ;!!! REGS STORE
+        PUSH	AF
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        PUSH IX
+        PUSH IY
+        EXX	
+        EXA
+        PUSH	AF
+        PUSH BC
+        PUSH DE
+        PUSH HL
+
+        LD	HL,0xC000             ;!!! BANK DETECTOR
+        LD	DE,0x7F0
+        LD	BC,0x10
+        PUSH	HL
+        PUSH DE
+        PUSH BC
+        PUSH HL
+        PUSH BC
+        LDIR	           ;STORE 16 BYTES OF BANK
+        LD	HL,0X66
+        POP	BC
+        POP DE
+        LDIR	           ;MARK BANK BY 16 BYTES
+;        LOCAL	
+        LD	A,0X10         ;SCAN BANKS [16;23]+64n (n=0,1,2,3)
+.J1      LD	BC,0X7FFD     ;IS THAT BANK MARKED BEFORE?
+        OUT	(C),A
+        LD	C,A
+        LD	HL,0xC000
+        LD	DE,0X66
+        LD	B,0X10
+.J2      LD	A,(DE)
+        CP	(HL)
+        JR	Z,.L1
+        LD	A,C          ;NO, CHECK NEXT BANK
+        INC	A
+        BIT	3,A
+        JR	Z,.J1
+        ADD	A,0x40-8
+        JR	.J1
+
+.L1      INC	L
+        INC	E
+        DJNZ	.J2
+;        ENDL	
+
+        LDA (XX_BANK+1),C   ;YES, A = MARKED BANK
+        POP	BC
+        POP HL
+        POP DE
+        LDIR	           ;RESTORE 16 BYTES OF MARKED BANK
+
+        bank CSH_BNK    ;IS IT 512K MODE OR 48K/128K?
+        LD	HL,TYTLE_T
+        LD	DE,TYTLE_c
+        LD	B,0X34
+XXXXX
+;        LOCAL	
+.J1      LD	A,(DE)
+        CP	(HL)
+        JR	NZ,.L1
+        DJNZ	.J1
+        JR	.L2
+
+.L1      bord 2          ;RED
+        CALL	KEYSPAC
+        JR	ESCAPER
+
+.L2      bord 4          ;GREEN
+        CALL	KEYSPAC
+;        ENDL	
+
+        bank STS_BNK            ;!!! INT TYPE DETECTOR
+        LD	HL,0xC000     ;IM 2 VECTOR FORMING
+        LD	DE,0xC001
+        LD	B,E
+        LD	C,E
+        LD	(HL),0xC1
+        LDIR	
+        LDA I,0xC0
+        LD	HL,0xC1C1     ;ORG 0xC1C1: LD A,1:RET
+        LD	(HL),0X3E
+        INC	L
+        LD	(HL),1
+        INC	L
+        LD	(HL),0XC9
+        XOR	A
+        EI	
+        HALT	
+        DI	
+        IM	1
+        LD	C,0x56        ;IM 1
+        OR	A
+        JR	Z,$+4
+        LD	C,0x5E        ;IM 2
+        LDA (XX_IM+1),C
+
+AFTECOP CALL	STO_SCR    ;STORE SCREEN   ;!!! CASHER CALLER
+
+        CALL	XX_BANK
+        LD	HL,(0X64)     ;ORG1,ORG2 STORING
+        INC	HL
+        INC	HL
+        LD	E,(HL)
+        INC	HL
+        LD	D,(HL)
+        INC	HL
+        PUSH	DE
+        LD	E,(HL)
+        INC	HL
+        LD	D,(HL)
+
+        bank CSH_BNK
+        LD	(XX_ORG1+1),DE
+        POP	HL
+        LD	(XX_ORG0+1),HL
+
+        CALL	0xC000
+        CALL	REM_SCR
+
+ESC_COM LD	A,0                ;EXIT CODE
+        OR	A
+        JR	Z,ESCAPER    ;IF 0 THEN ESCAPE
+        DEC	A
+        JR	Z,SAVER      ;IF 1 THEN SAVE 128K
+        DEC	A
+        JR	Z,LOADER     ;IF 2 THEN LOAD 128K
+        DEC	A
+        JP	Z,STSER      ;IF 3 THEN CALL STS4.3i
+        DEC	A
+        JP	Z,UTILER     ;IF 4 THEN CALL EXTERNAL UTILITE
+
+ESCAPER CALL	XX_BANK
+        LD	HL,123*256+219       ;ORG 0x552 (CASH):  IN A,(123)
+        LD	(0x552),HL            ;ORG 0x554 (BASIC): POP AF:RET
+
+        POP	HL
+        POP DE
+        POP BC
+        POP AF         ;!!! REGS RESTORE
+        EXX	
+        EXA
+        POP	IY
+        POP IX
+        POP HL
+        POP DE
+        POP BC
+        POP AF
+        LD	I,A
+        LD	SP,(0X64)
+        CALL	halt
+
+XX_IM   IM	1
+XX_DI   NOP	
+        JP	0x552
+
+halt    LDA (0X38),201
+        IM	1
+        EI	
+        HALT	
+        DI	
+        RET	
+
+;----
+;SAVE
+;~~~~
+
+SAVER   LD	D,0x10        ;SAVE 128K (8 BANKS x 16 KB)
+XX_POS  LD	A,0x40        ;TO POSITION 1/2 (A=0x40/0xC0)
+        ADD	A,D                  ;D=SOURSE BANK (128K)
+        LD	E,A                   ;E=DESTIN BANK (512K)
+J1SAVER CALL	COPY_B
+        INC	D
+        INC	E
+        LD	A,D
+        CP	0X18
+        JR	NZ,J1SAVER
+        JP	REGSAVE
+
+;----
+;LOAD
+;~~~~
+
+LOADER  LD	E,0x10        ;LOAD 128K (8 BANKS x 16 KB)
+        LD	A,(XX_POS+1) ;FROM POSITION 1/2 (A=0x40/0xC0)
+        ADD	A,E                  ;E=DESTIN BANK (128K)
+        LD	D,A                   ;D=SOURSE BANK (512K)
+J1LODER CALL	COPY_B
+        INC	D
+        INC	E
+        LD	A,E
+        CP	0X18
+        JR	NZ,J1LODER
+        JP	REGLOAD
+
+;---
+
+COPY_B  LD	BC,0X7FFD
+        PUSH	BC
+        EXX	
+        LD	HL,0xC000
+J1COPYB EXX	            ;LDIR 1K FROM SOURSE BANK TO CASH
+        OUT	(C),D
+        EXX	
+        LD	DE,0x400
+        LD	B,D
+        LD	C,E
+        PUSH	HL
+        PUSH DE
+        PUSH BC
+        LDIR	
+        EXX	            ;LDIR 1K FROM CASH TO DESTINATING BANK
+        OUT	(C),E
+        EXX	
+        POP	BC
+        POP HL
+        POP DE
+        LDIR	
+        LD	H,D          ;NEXT 1K OF 16K
+        LD	A,H
+        OR	A
+        JR	NZ,J1COPYB
+        EXX	
+        POP	BC
+        LD	A,CSH_BNK
+        OUT	(C),A
+        RET	
+
+;-------
+;STS4.3i
+;~~~~~~~
+
+STSER   CALL	XX_BANK
+        OR	8
+        LD	(STSBNK+1),A
+        LD	(XCHSTS+1),SP
+        LD	SP,(0X64)
+        POP	AF
+        LD	(STSAF+1),A
+        POP	HL
+        LD	(STSPC+1),HL
+        LD	(STSSP+1),SP
+XCHSTS  LD	SP,0
+        LD	DE,0x1700+DAT_BNK     ;0x17>MEM
+        CALL	COPY_B
+        LD	DE,STS_BNK*0X100+0x17  ;STS>0x17
+        CALL	COPY_B
+        bank 0x17
+        mldir STS_I1,0xC000,STS_I2-STS_I1
+        LD	HL,0X5B90             ;SAVE RESID.
+        LD	DE,0x400
+        LD	BC,0X22
+        PUSH	HL
+        PUSH DE
+        PUSH BC
+        LDIR	
+        CALL	0xC000              ;CALL STS
+        POP	BC
+        POP HL
+        POP DE            ;LOAD RESID.
+        LDIR	
+        LD	DE,0x1700+STS_BNK     ;0x17>STS
+        CALL	COPY_B
+        LD	DE,DAT_BNK*0X100+0x17  ;MEM>0x17
+        CALL	COPY_B
+        JP	AFTECOP
+
+STS_I1  LD	(0XDF3A),SP
+        CALL	halt
+STSBNK  LD	A,0
+        LD	(0XDC00),A
+        LD	(0XDEEC),A
+STSPC   LD	HL,0
+        LD	(0XFEE4),HL
+        LD	SP,0X66-0X16
+        POP	HL
+        POP DE
+        POP BC
+        POP AF
+        EXX	
+        EXA
+        POP	IY
+        POP IX
+        POP HL
+        POP DE
+        POP BC
+        POP AF
+        LD	I,A
+        CASH_OFF
+STSSP   LD	SP,0
+STSAF   LD	A,0
+        JP	0XDB00
+STS_I2
+
+;-----------
+;INFINITISER 102-PART
+;~~~~~~~~~~~
+
+BPOKE   xout A
+        LD	(HL),E
+        INC	HL
+        LD	(HL),D
+        INC	HL
+        JR	B144RET
+
+BLOD    xout A
+        LD	E,(HL)
+        INC	HL
+        LD	D,(HL)
+        INC	HL
+B144RET LD	A,CSH_BNK
+        xout A
+        RET	
+
+HLIPUSH LD	A,IXH;HX
+        OR	IXL;LX
+        RET	Z
+        xout L
+        LD	(IX),L
+        INC	IX
+        LD	A,H
+HLIPSUB SUB	0
+        LD	(IX),A
+        INC	IX
+        JR	B144RET
+
+READDEC xout D
+        LD	D,(HL)
+        xout E
+        LD	E,(HL)
+        xout H
+        LD	C,(HL)
+        JR	B144RET
+
+CLS_xL  xout L
+        cls 0xC000,0x4000
+        JR	B144RET
+
+INFLDIR xout A
+        LDIR	
+        JR	B144RET
+
+;---
+
+INFCOMP LD	A,C
+        xout A
+;        LOCAL	
+.J1      LD	A,E          ;PEEK (ADDR.)=DE ?
+        CP	(HL)
+        JR	NZ,.L1        ;IF NO TH NEXT ADDR.
+        INC	HL
+        LD	A,D
+        CP	(HL)
+        DEC	HL
+        JR	NZ,.L1
+        DEC	HL          ;IF NOT LINK TH NEXT ADDR.
+        LD	B,(HL)
+        INC	HL
+        LD	A,B
+        AND	0xCF         ;1,17,33,49
+        DEC	A
+        JR	Z,.L2
+        LD	A,B          ;34,42,50,58
+        SUB	0X22
+        AND	0xE7
+        JR	NZ,.L1
+.L2      LD	(IX),L       ;IF YES TH PUT ADDR IN TABLE
+        INC	IXH;HX
+        LD	(IX),H
+        INC	IXH;HX
+        LD	(IX),C
+        DEC	IXH;HX
+        DEC	IXH;HX
+        INC	IXL;LX
+        JR	NZ,.L1
+        DEC	IXL;LX
+.L1      INC	L
+        JR	NZ,.J1
+        INC	H
+        JR	NZ,.J1
+;        ENDL	
+        JP	B144RET
+
+;------
+;UTILER
+;~~~~~~
+
+UTILER  bank 0
+UTILER1 CALL	0xC000
+        CALL	REM_SCR
+        CALL	ANTYKEY
+        JP	AFTECOP
+
+;-------
+
+XX_BANK bank 0
+        RET	
+
+STO_SCR bank STS_BNK            ;STORE SCREEN
+        PUSH	BC
+        LD	HL,0X4000
+        LD	DE,0XC000
+        JR	EREMSC2-5
+
+REM_SCR bank STS_BNK
+        PUSH	BC
+        mldir 0XC000,0X4000,0X1B00   ;RESTORE SCREEN
+EREMSC2 POP	BC
+        LD	A,CSH_BNK
+        OUT	(C),A
+        RET	
+REM_SC2 bank STS_BNK            ;RESTORE RIGHT HALF OF SCREEN
+        PUSH	BC
+        LD	HL,0xC010
+        LD	DE,0x4010
+;        LOCAL	
+        LD	C,0XC0+0X18
+.J2      LD	B,0X10
+.J1      LD	A,(HL)
+        LD	(DE),A
+        INC	HL
+        INC	DE
+        DJNZ	.J1
+        SET	4,L
+        SET	4,E
+        DEC	C
+        JR	NZ,.J2
+;        ENDL	
+        JR	EREMSC2
+
+REM_LIN bank STS_BNK
+        PUSH	HL
+        POP	DE
+        SET	7,H
+        LD	C,0X10
+;        LOCAL	
+.J3      LD	B,8          ;MOVING PNTS
+.J1      LD	A,(HL)
+        LD	(DE),A
+        INC	H
+        INC	D
+        DJNZ	.J1
+        INC	L
+        INC	E
+        LD	B,8
+.J2      DEC	H
+        DEC	D
+        LD	A,(HL)
+        LD	(DE),A
+        DJNZ	.J2
+        INC	L
+        INC	E
+        DEC	C
+        JR	NZ,.J3
+
+        LD	A,D          ;MOVING ATTR
+        SUB	0x40
+        RRCA	
+        RRCA	
+        RRCA	
+        OR	0x58
+        LD	D,A
+        DEC	E
+        OR	0x80
+        LD	H,A
+        DEC	L
+
+        LD	B,0X20
+.J4      LD	A,(HL)
+        LD	(DE),A
+        DEC	L
+        DEC	E
+        DJNZ	.J4
+
+;        ENDL	
+        bank CSH_BNK
+        RET	
+
+;-------
+
+KEYSPAC key 0x7F         ;PRESS SPACE
+        RRA	
+        JR	C,KEYSPAC
+        bord 0
+        RET	
+
+TYTLE_c DZ "\X7F 2013 Flyman512's Cash Remember v2.01 for Pent512K"
+
+;-------
+
+e_CASH  EQU	$-102
+e_CASHe EQU	$
+e_CASHf EQU	0x400
+		DEPHASE		;ENT	
+END1
