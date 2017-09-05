@@ -1,5 +1,7 @@
 
-;LAST UPDATE: 28.04.2015 savelij
+;LAST UPDATE: 05.09.2017 savelij
+
+		TITLE "patch.a80"
 
 ;[0x18B7 “‘’€Ž‚Š€ €„…‘€ ‡€“‘Š€]
 ADR_START_COM	LD (TRD_5CC6),HL

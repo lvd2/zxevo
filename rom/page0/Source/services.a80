@@ -1,9 +1,10 @@
 
-;LAST UPDATE: 08.08.2017 savelij
+;LAST UPDATE: 04.09.2017 savelij
 
 		include ../../macros.a80
 		include ../../define.a80
 		include ../../global_vars.a80
+		include ../../evodos_vars.a80
 
 DEPKADR		EQU 0X6000
 
@@ -68,8 +69,6 @@ INITPAGE1	OUTI
 		JP ADR_SEL_ROM
 
 INITPAGE3	RST8 _CMOS_RW,_INIT_CMOS
-		LD A,0X10
-		RST8 _SET_VIRT_BITS		;‘Ž‘ ‚‘…• Œ“‹ˆ“…Œ›• „ˆ‘ŠŽ‚Ž„Ž‚
 		LD HL,PAGES_CONF
 		LD A,0XEF
 		IN A,(0XFE)
@@ -184,6 +183,8 @@ RSTKEYS2	LD H,CMOS_BYTE_00
 		AND 0XFC			;‘Ž‘ „‹Ÿ Ž‘Ž‚ŽƒŽ ‡“
 		LD L,A
 		RST8 _CMOS_RW,_WRITE_CMOS	;ˆ“„ˆ’…‹œŽ ‚›‘’€‚‹…ˆ… ‚ ŠŒŽ‘ ‘Ž‘€ € EVO SERVICE
+;		LD A,0X80
+;		RST8 _SET_VIRT_BITS
 	if dos_fe
 		LD BC,WIN_A3
 		LD A,ROM_RST82
@@ -191,18 +192,24 @@ RSTKEYS2	LD H,CMOS_BYTE_00
 		LD B,HIGH (WIN_P2)
 		LD A,RAM_EVODOS
 		OUT (C),A
+		LD A,(CPU2+COPY_VIRT_BITS)
+		PUSH AF
 		CALL UNP_DOS_FE+CPU3		;€‘€ŠŽ‚Š€ DOS
+		POP AF
+		LD (CPU2+COPY_VIRT_BITS),A
 	else
 		LD BC,WIN_A3
 		LD A,ROM_ADD_DOS
 		OUT (C),A
 		LD B,HIGH (WIN_P2)
-		LD A,ROM_DOS
+		LD A,RAM_EVODOS
 		OUT (C),A
+		LD A,(CPU2+COPY_VIRT_BITS)
 		LD HL,CPU3
 		LD DE,CPU2
 		LD BC,0X4000
 		LDIR				;……Ž‘ DOS
+		LD (CPU2+COPY_VIRT_BITS),A
 	endif
 		LD BC,WIN_A2
 		LD A,0X7D

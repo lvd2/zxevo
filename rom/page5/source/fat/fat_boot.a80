@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 30.03.2014 savelij
+;LAST UPDATE: 30.08.2017 savelij
 
 LOAD4FLASH	LD HL,ROMS
 		LD DE,CMP4ROMS
@@ -18,7 +18,7 @@ FATBOOT4	DI
 		LD HL,ADRTBLDIRL
 		LD (DIR_LEVEL),HL		;“‘’€Ž‚ˆ‹ˆ „Ž ‘’…Š€ ‘Ž•€…ˆ‰ ŽŠŽ˜…Š
 		LD HL,FLAGS
-		SET 3,(HL)			;€Ž’€’œ “„…Œ ‘ FAT
+		SET B_RUN_FAT_DSK,(HL)		;€Ž’€’œ “„…Œ ‘ FAT
 		CALL COM_DEV
 		DB Devfind			;‘Š€ˆŽ‚€ˆ… “‘’Ž‰‘’‚
 		JP C,_STUPID			;Ž˜ˆŠ€, ˆ Ž„ŽƒŽ €‡„…‹€ … €‰„…Ž

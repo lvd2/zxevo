@@ -1,7 +1,7 @@
 
-;LAST UPDATE: 10.08.2017 savelij
+;LAST UPDATE: 05.09.2017 savelij
 
-;НОМЕРА ФУНКЦИЙ RST 8, ПОРЯДОК МОЖЕТ БЫТЬ ИЗМЕНЕН!
+;номера функций RST 8
 _AY_PRN_INIT	EQU 0X40
 _AY_PRN_A_	EQU 0X41
 _AY_PRN_TOKEN	EQU 0X42
@@ -14,8 +14,7 @@ _PRINT_A	EQU 0X48
 _SCROLL_UP	EQU 0X49
 _SCROLL_DOWN	EQU 0X4A
 _SET_MODE	EQU 0X4B
-_SET_VIRT_BITS	EQU 0X4C
-
+; 4C-4F	RESERVED
 _COM_DEV	EQU 0X50
 _COM_FAT	EQU 0X51
 _SORT_FINDFILES	EQU 0X52
@@ -25,75 +24,77 @@ _CMOS_RW	EQU 0X55
 _SETUP_PAL	EQU 0X56
 _SETUP_FONT	EQU 0X57
 
-;ФУНКЦИИ ИЗМЕНЕНИЯ РЕЖИМОВ РАБОТЫ
-_ZXSCR_MODE	EQU 1				;ZX SCREEN
-_TXTSCR_MODE	EQU 2				;TXT SCREEN
-_TURBO_LOW	EQU 0X10			;XX01XXXX TURBO 3,5 MHZ
-_TURBO_HIGH	EQU 0X20			;XX10XXXX TURBO 7,0 MHZ
-_TURBO_MAX	EQU 0X30			;XX11XXXX TURBO 14,0 MHZ
-_MEM_MODE_48	EQU 0X40			;01XXXXXX MEMORY MODE 48 KB
-_MEM_MODE_128	EQU 0X80			;10XXXXXX MEMORY MODE 128 KB
-_MEM_MODE_PENT	EQU 0XC0			;11XXXXXX MEMORY MODE PENT 1024 KB
+;функции изменения режимов работы
+_ZXSCR_MODE	EQU 1				; ZX SCREEN
+_TXTSCR_MODE	EQU 2				; TXT SCREEN
+_TURBO_LOW	EQU 0X10			; XX01XXXX TURBO 3,5 MHZ
+_TURBO_HIGH	EQU 0X20			; XX10XXXX TURBO 7,0 MHZ
+_TURBO_MAX	EQU 0X30			; XX11XXXX TURBO 14,0 MHZ
+_MEM_MODE_48	EQU 0X40			; 01XXXXXX MEMORY MODE 48 KB
+_MEM_MODE_128	EQU 0X80			; 10XXXXXX MEMORY MODE 128 KB
+_MEM_MODE_PENT	EQU 0XC0			; 11XXXXXX MEMORY MODE PENT 1024 KB
 
-;ФУНКЦИИ РАБОТЫ С CMOS
-_INIT_CMOS	EQU 0
-_READ_CMOS	EQU 1
-_WRITE_CMOS	EQU 2
-_CLEAR_CMOS	EQU 3
+;функции работы с CMOS
+_INIT_CMOS	EQU 0				; проверка CRC CMOS и инициализация при ошибке
+_READ_CMOS	EQU 1				; чтение ячейки CMOS
+_WRITE_CMOS	EQU 2				; запись ячейки CMOS с пересчетом CRC
+_CLEAR_CMOS	EQU 3				; принудительный сброс значений CMOS
 
-;ФУНКЦИИ МОНТИРОВЩИКА ОБРАЗОВ
-_OPEN_MOUNT	EQU 0X00
-_RDWR_MOUNT	EQU 0X01
-_FIND_MOUNTED	EQU 0X02
-_GET_MOUNTED	EQU 0X03
-_CLOSEMOUNT	EQU 0X04
-_LOADIMAGE	EQU 0X05
-_STOR_NAMELOAD	EQU 0X06
-_REST_NAMELOAD	EQU 0X07
-_CMP_DRIVE	EQU 0X08
+;функции монтировщика образов
+_OPEN_MOUNT	EQU 0X00			; монтирование образа
+_RDWR_MOUNT	EQU 0X01			; чтение/запись примонтированных образов
+_FIND_MOUNTED	EQU 0X02			; поиск монтируемых образов прописанных в IMAGE.FNT
+_GET_MOUNTED	EQU 0X03			; получение буфера описателей примонтированных образов
+_CLOSEMOUNT	EQU 0X04			; демонтирование образа
+_LOADIMAGE	EQU 0X05			; загрузка образа в рамдиск
+_STOR_NAMELOAD	EQU 0X06			; сохранение описателя файла загруженного в рамдиск
+_REST_NAMELOAD	EQU 0X07			; получение описателя файла загруженного в рамдиск
+_CMP_DRIVE	EQU 0X08			; проверка примонтированного образа на указанной букве
+_GET_VIRT_BITS	EQU 0X09			; получение битов смонтированных дисков
+_MOUNT_RAMDISK	EQU 0X0A			; монтирование рамдиска
 
-;НОМЕРА ФУНКЦИЙ МЕНЕДЖЕРА УСТРОЙСТВ
-_DEVFIND	EQU 0X00			;00 ПОИСК УСТРОЙСТВ                        
-_SET_VOL	EQU 0X01			;01 ВЫБОР РАЗДЕЛА                          
-_KOL_VOL	EQU 0X02			;02 ЗАПРОС НАЙДЕНОГО                       
-_GET_FNDVOLUME	EQU 0X03			;03 ПОЛУЧИТЬ ТАБЛИЦУ НАЙДЕННЫХ РАЗДЕЛОВ
-_TO_DRV		EQU 0X04			;04 ВЫЗОВ ДРАЙВЕРА ВЫБРАННОГО УСТРОЙСТВА   
-_SET_DEVICE	EQU 0X05			;05 УСТАНОВКА БИТОВ УСТРОЙСТВА И LBA РЕЖИМА
-_CONTROL_SD	EQU 0X06			;06 КОНТРОЛЬ НАЛИЧИЯ SD КАРТ
-_COMHDDN	EQU 0X07			;07 ПРЯМОЙ ВЫЗОВ ДРАЙВЕРА HDD NEMO (ВРЕМЕННАЯ ФУНКЦИЯ)
-_FREINIT_VOL	EQU 0X08			;08 ПОЛНАЯ ПЕРЕИНИЦИАЛИЗАЦИЯ РАЗДЕЛА
+;номера функций менеджера устройств
+_DEVFIND	EQU 0X00			; поиск устройств
+_SET_VOL	EQU 0X01			; выбор раздела
+_KOL_VOL	EQU 0X02			; запрос найденого
+_GET_FNDVOLUME	EQU 0X03			; получить таблицу найденных разделов
+_TO_DRV		EQU 0X04			; вызов драйвера выбранного устройства
+_SET_DEVICE	EQU 0X05			; установка битов устройства и LBA режима
+_CONTROL_SD	EQU 0X06			; контроль наличия SD карт
+_COMHDDN	EQU 0X07			; прямой вызов драйвера HDD NEMO (временная функция)
+_FREINIT_VOL	EQU 0X08			; полная переинициализация раздела
 
-;НОМЕРА ФУНКЦИЙ ВЫЗОВА ДРАЙВЕРА УСТРОЙСТВА
-_DEV_INIT	EQU 0				;00 ПОИСК И ИНИЦИАЛИЗАЦИЯ УСТРОЙСТВА
-_DEV_STATUS	EQU 1				;01 ЗАПРОС СТАТУСА УСТРОЙСТВА. ПОКА ЗАГЛУШЕНА
-_DEV_READ	EQU 2				;02 ЧТЕНИЕ СЕКТОРОВ
-_DEV_WRITE	EQU 3				;03 ЗАПИСЬ СЕКТОРОВ
+;номера функций вызова драйвера устройства
+_DEV_INIT	EQU 0				; поиск и инициализация устройства
+_DEV_STATUS	EQU 1				; запрос статуса устройства. пока заглушена
+_DEV_READ	EQU 2				; чтение секторов
+_DEV_WRITE	EQU 3				; запись секторов
 
-;НОМЕРА ВЫЗЫВАЕМЫХ ФУНКЦИЙ FAT ДРАЙВЕРА
-_INIT_FATVARS	EQU 0X00			;ИНИЦИАЛИЗАЦИЯ ПЕРЕМЕННЫХ FAT
-_READ_DIR	EQU 0X01			;ПОЛУЧЕНИЕ ОПИСАТЕЛЯ ФАЙЛА
-_ENTER_DIR	EQU 0X02			;ВХОД/ВЫХОД В ДИР
-_GET_PATH	EQU 0X03			;ПОЛУЧЕНИЕ ТЕКУЩЕГО ПУТИ
-_GET_LONGNAME	EQU 0X04			;ПОЛУЧЕНИЕ ДЛИННОГО ИМЕНИ ФАЙЛА
-_FIND_NAME	EQU 0X05			;ПОИСК ПО ИМЕНИ
-_FIND_FILEITEM	EQU 0X06			;ПОИСК ВСЕХ ОПИСАТЕЛЕЙ С ВЫДАЧЕЙ НОМЕРОВ НАЙДЕННОГО
-_SET_MASK_EXT	EQU 0X07			;УСТАНОВКА МАСКИ РАСШИРЕНИЙ ДЛЯ ПОИСКА
-_OPEN_FILE	EQU 0X08			;ОТКРЫТИЕ ФАЙЛА
-_READ_FILE	EQU 0X09			;ПОСЛЕДОВАТЕЛЬНОЕ ЧТЕНИЕ ОТКРЫТОГО ФАЙЛА
-_INIT_TEKDIR	EQU 0X0A			;СОЗДАНИЕ ТАБЛИЦЫ КЛАСТЕРОВ ТЕКУЩЕЙ ДИРЕКТОРИИ
-_POS_FILES	EQU 0X0B			;РАБОТА С ТЕКУЩЕЙ ПОЗИЦИЕЙ
+;номера вызываемых функций FAT драйвера
+_INIT_FATVARS	EQU 0X00			; инициализация переменных FAT
+_READ_DIR	EQU 0X01			; получение описателя файла
+_ENTER_DIR	EQU 0X02			; вход/выход в DIR
+_GET_PATH	EQU 0X03			; получение текущего пути
+_GET_LONGNAME	EQU 0X04			; получение длинного имени файла
+_FIND_NAME	EQU 0X05			; поиск по имени
+_FIND_FILEITEM	EQU 0X06			; поиск всех описателей с выдачей номеров найденного
+_SET_MASK_EXT	EQU 0X07			; установка маски расширений для поиска
+_OPEN_FILE	EQU 0X08			; открытие файла
+_READ_FILE	EQU 0X09			; последовательное чтение открытого файла
+_INIT_TEKDIR	EQU 0X0A			; создание таблицы кластеров текущей директории
+_POS_FILES	EQU 0X0B			; работа с текущей позицией
 
-;ПОДФУНКЦИИ ФУНКЦИИ _POS_FILES
-_POSTF00	EQU 0X00			;СОХРАНЕНИЕ ТЕКУЩЕЙ ПОЗИЦИИ ФАЙЛА
-_POSTF01	EQU 0X01			;ВОССТАНОВЛЕНИЕ ТЕКУЩЕЙ ПОЗИЦИИ ФАЙЛА
-_POSTF02	EQU 0X02			;СБРОС ТЕКУЩЕЙ ПОЗИЦИИ В 0 И ПОИСК ПЕРВОЙ "ЛЕГАЛЬНОЙ" ЗАПИСИ
-_POSTF03	EQU 0X03			;ПЕРЕМОТАТЬ НА "B" ФАЙЛОВ НАЗАД
-_POSTF04	EQU 0X04			;ПЕРЕМОТАТЬ НА "B" ФАЙЛОВ ВПЕРЕД
-_POSTF05	EQU 0X05			;ПОДСЧЕТ КОЛИЧЕСТВА "ЛЕГАЛЬНЫХ" ЗАПИСЕЙ
-_POSTF06	EQU 0X06			;УСТАНОВИТЬ НОМЕР "ЛЕГАЛЬНОЙ" ЗАПИСИ ИЗ "BC"
-_POSTF07	EQU 0X07			;ВЕРНУТЬ В "BC" ТЕКУЩИЙ НОМЕР "ЛЕГАЛЬНОЙ" ЗАПИСИ
+;подфункции функции _POS_FILES
+_POSTF00	EQU 0X00			; сохранение текущей позиции файла
+_POSTF01	EQU 0X01			; восстановление текущей позиции файла
+_POSTF02	EQU 0X02			; сброс текущей позиции в 0 и поиск первой "легальной" записи
+_POSTF03	EQU 0X03			; перемотать на "B" файлов назад
+_POSTF04	EQU 0X04			; перемотать на "B" файлов вперед
+_POSTF05	EQU 0X05			; подсчет количества "легальных" записей
+_POSTF06	EQU 0X06			; установить номер "легальной" записи из "BC"
+_POSTF07	EQU 0X07			; вернуть в "BC" текущий номер "легальной" записи
 
-;НОМЕРА ПОДДЕРЖИВАЕМЫХ РАСШИРЕНИЙ ДЛЯ RST 8
+;номера поддерживаемых расширений для RST 8
 _TRD		EQU 1
 _SCL		EQU 2
 _FDI		EQU 3
@@ -105,17 +106,17 @@ _BMP		EQU 8
 _ROM		EQU 9
 
 ;ТИПЫ ДРАЙВЕРОВ
-_DRV_A		EQU 0				;DRIVE A
-_DRV_B		EQU 1				;DRIVE B
-_DRV_C		EQU 2				;DRIVE C
-_DRV_D		EQU 3				;DRIVE D
-_SDZ		EQU 4				;SD КАРТА НА ZC
-_SDG		EQU 5				;SD КАРТА НА NeoGS
-_HDDN		EQU 6				;HDD НА NEMO
-_HDDS		EQU 7				;HDD НА SMUC
-_HDDV		EQU 8				;HDD НА DIVIDE
-_HDDP		EQU 9				;HDD НА PROFI
-_HDDA		EQU 0X0A			;HDD НА TURBO2+
+_DRV_A		EQU 0				; DRIVE A
+_DRV_B		EQU 1				; DRIVE B
+_DRV_C		EQU 2				; DRIVE C
+_DRV_D		EQU 3				; DRIVE D
+_SDZ		EQU 4				; SD КАРТА НА ZC
+_SDG		EQU 5				; SD КАРТА НА NeoGS
+_HDDN		EQU 6				; HDD НА NEMO
+_HDDS		EQU 7				; HDD НА SMUC
+_HDDV		EQU 8				; HDD НА DIVIDE
+_HDDP		EQU 9				; HDD НА PROFI
+_HDDA		EQU 0X0A			; HDD НА TURBO2+
 
 __FAT12		EQU 0
 __FAT16		EQU 1

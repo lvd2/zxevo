@@ -1,0 +1,27 @@
+
+;LAST UPDATE: 01.09.2017 savelij
+
+ INIT_VAR
+;описатель примонтированного файла
+ SETVAR _MOUNT_Name,8			; 8 имя файла
+ SETVAR _MOUNT_Ext,3			; 3 расширение файла
+ SETVAR _MOUNT_Attr,BYTE		; 1 аттрибуты файла
+ SETVAR _MOUNT_NTRes,BYTE		; 1 зарезервированно
+ SETVAR _MOUNT_CrtTimeTenth,BYTE	; 1 миллисекунды времени создания файла
+ SETVAR _MOUNT_CrtTime,WORD		; 2 время создания файла
+ SETVAR _MOUNT_CrtDate,WORD		; 2 дата создания файла
+ SETVAR _MOUNT_LstAccDate,WORD		; 2 дата последнего обращения к файлу
+ SETVAR _MOUNT_FstClusHI,WORD		; 2 старшее слово номера кластера
+ SETVAR _MOUNT_WrtTime,WORD		; 2 время последней записи
+ SETVAR _MOUNT_WrtDate,WORD		; 2 дата последней записи
+ SETVAR _MOUNT_FstClusLO,WORD		; 2 младшее слово номера кластера
+ SETVAR _MOUNT_FileSize,DWORD		; 4 размер файла
+;описатели монтируемого файла
+ SETVAR _MOUNT_Flag,BYTE		; 1 флаговый
+ SETVAR _MOUNT_Ext_Type,BYTE		; 1 тип образа по расширению
+ SETVAR _MOUNT_Cls_Step,BYTE		; 1 шаг кластеров
+ SETVAR _MOUNT_Vol_Type,BYTE		; 1 тип раздела
+ SETVAR _MOUNT_Vol_Num,BYTE		; 1 номер выбранного раздела
+ SETVAR _MOUNT_Adr_Mnt_Drv,WORD		; 2 адрес вызываемого драйвера для работы с примонтированным образом
+ SETVAR _MOUNT_Adr_Sel_Drv,WORD		; 2 адрес вызываемого драйвера для текущего выбранного раздела
+ SETVAR _MOUNT_Mount_Num,BYTE		; 1 номер монтируемого дисковода

@@ -1,5 +1,7 @@
 
-;LAST UPDATE: 31.12.2016 savelij
+;LAST UPDATE: 05.09.2017 savelij
+
+		TITLE "extend.a80"
 
 ;[ˆ”€ „‹Ÿ ‘Ž‡„€ˆŸ 9 ‘…Š’Ž€ Ž‚ŽƒŽ „ˆ‘Š€]
 DSKINFO		DB 0			;+0XE1-ŽŒ… …‚ŽƒŽ ‘‚ŽŽ„ŽƒŽ ‘…Š’Ž€
@@ -181,16 +183,13 @@ SET_VIRT	LD A,(DE)
 		LD A,C
 		CALL NUMDSK2BYTE		;Ž‹“—ˆ‹ˆ Ž‚›‰ ŽŒ… „ˆ‘ŠŽ‚Ž„€ “Š€‡€›‰ ‚ ŠŽŒ€„Ž‰ ‘’ŽŠ…
 		LD D,A				;‘Ž•€ˆ‹ˆ ‚…Œ…Ž ‘„‚ˆ“’›‰ Ž‚›‰ ŽŒ… ‚ˆ’“€‹œŽƒŽ „ˆ‘ŠŽ‚Ž„€
-		IN A,(RW_PORT0)
-		AND %11111100
-		OR D
-		OUT (RW_PORT0),A
 		LD H,VIRT_REAL_DRIVE
 		CALL READCMOS
 		AND %11111100			;‘Ž‘ ‘’€ŽƒŽ ŽŒ…€ ‚ˆ’“€‹œŽƒŽ „ˆ‘ŠŽ‚Ž„€
 		OR D				;„Ž€‚ˆ‹ˆ Ž‚›‰ ŽŒ… ‚ˆ’“€‹œŽƒŽ „ˆ‘ŠŽ‚Ž„€
 		LD L,A
 		RST8D _CMOS_RW,_WRITE_CMOS
+		RST8D _MOUNTER,_MOUNT_RAMDISK
 		RET
 
 ;[…—€’œ ‚…‘ˆˆ „Ž‘€ ˆ „€’› ŠŽŒˆ‹Ÿ–ˆˆ]
@@ -591,7 +590,7 @@ WRRDSECM2	OR C
 		LD A,IXH
 		OUT (C),A
 		LD B,HIGH (WIN_P0)
-		LD A,ROM_DOS
+		LD A,RAM_EVODOS
 		OUT (C),A
 		LD (REG_L),HL			;ŽŽ‚ˆ‹ˆ €„…‘ —’…ˆŸ/‡€ˆ‘ˆ
 		LD HL,SAVED_RAM

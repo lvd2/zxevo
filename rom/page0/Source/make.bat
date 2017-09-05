@@ -1,7 +1,7 @@
 
 @ECHO OFF
 
-..\..\..\tools\asw\bin\asw -U -L -D DELVAR=1 main.a80
+..\..\..\tools\asw\bin\asw -U -L -D DELVAR=0 main.a80
 ..\..\..\tools\asw\bin\p2bin main.p main.rom -r $-$ -k
 
 ..\..\..\tools\asw\bin\asw -U -L make_cmosset.a80
