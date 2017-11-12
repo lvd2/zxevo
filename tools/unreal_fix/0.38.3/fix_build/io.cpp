@@ -333,7 +333,8 @@ void out(unsigned port, unsigned char val)
       } // quorum
       else if ((p1 & 0x1F) == 0x1F) // 1F, 3F, 5F, 7F, FF
       {
-		  if((comp.flags & CF_TRDOS)&&conf.trdos_IORam&&(cpu.pc<=0x3fff)&&(bankr[0]==base_dos_rom)){
+		  if((comp.flags & CF_TRDOS)&&conf.trdos_IORam
+				&&(1<<comp.wd.drive)&comp.fddIO2Ram_mask&&(bankr[0]==base_dos_rom)){
 		     trdos_in_nmi = comp.flags&CF_TRDOS;
 			 cpu.nmi_in_progress=conf.trdos_IORam;
 			 set_banks();
@@ -657,7 +658,9 @@ set1FFD:
       }
       if (port == (0xBFF7 & mask))
       {
-         if (comp.cmos_addr >= 0xF0 && val <= 2 && conf.mem_model == MM_ATM3)
+	     if (comp.cmos_addr >= 0xF0 && (val & 0xf0) == 0x10 && conf.mem_model == MM_ATM3){
+			comp.fddIO2Ram_mask=val;
+		 }else if (comp.cmos_addr >= 0xF0 && val <= 2 && conf.mem_model == MM_ATM3)
          {//thims added
             if (val < 2)
             {
@@ -911,7 +914,8 @@ __inline unsigned char in1(unsigned port)
           // DF = 1101|1111b порт мыши
           // FF = 1111|1111b
       else if ((p1 & 0x9F) == 0x1F || p1 == 0xFF) {// 1F, 3F, 5F, 7F, FF
-		  if((comp.flags & CF_TRDOS)&&conf.trdos_IORam&&(cpu.pc<=0x3fff)&&(bankr[0]==base_dos_rom)){
+		  if((comp.flags & CF_TRDOS)&&conf.trdos_IORam
+				&&(1<<comp.wd.drive)&comp.fddIO2Ram_mask&&(bankr[0]==base_dos_rom)){
 		      cpu.nmi_in_progress=conf.trdos_IORam;
 			  trdos_in_nmi = comp.flags&CF_TRDOS;
 			  set_banks();

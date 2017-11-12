@@ -444,7 +444,7 @@ struct COMPUTER
    u8 pBF; // ATM3
    u8 pBE; // ATM3
    u16 brk_addr; // pentevo
-
+   u8 fddIO2Ram_mask;
    unsigned char flags;
 
    // ÷вет бордюра (то, что выводитс€ в порт бордюра, значение 0..7, или 0..F (дл€ ATM, PROFI))

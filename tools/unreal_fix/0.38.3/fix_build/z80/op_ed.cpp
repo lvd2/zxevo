@@ -178,7 +178,7 @@ Z80OPCODE ope_57(Z80 *cpu)
 { // ld a,i
    cpu->a = cpu->i;
    cpu->f = (log_f[cpu->a] | (cpu->f & CF)) & ~PV;
-   if (cpu->iff1 && (cpu->t+10 < cpu->tpi))
+   if (cpu->iff2 && (cpu->t+10 < cpu->tpi))
        cpu->f |= PV;
    cpu->t++;
 }
