@@ -11,6 +11,7 @@
 #include "zc.h"
 #include "tape.h"
 #include "zxevo.h"
+#include "zxusbnet.h"
 
 void out(unsigned port, unsigned char val)
 {
@@ -45,6 +46,12 @@ void out(unsigned port, unsigned char val)
        return;
    }
 
+   //wiznet
+   if(conf.wiznet && (port & 0xff) == 0xab ){
+		pXXAB_Write(port,val);
+		return;
+   }
+   
    // divide на nemo портах
    if(conf.ide_scheme == IDE_NEMO_DIVIDE)
    {
@@ -718,6 +725,9 @@ __inline unsigned char in1(unsigned port)
       return Zc.Rd(port);
    }
 
+   if(conf.wiznet && (port & 0xff) == 0xab ){
+		return pXXAB_Read(port);
+   }
    if(conf.mem_model == MM_ATM3)
    {
        // Порт расширений АТМ3

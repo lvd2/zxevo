@@ -78,7 +78,7 @@ SRCS=emul.cpp std.cpp atm.cpp cheat.cpp config.cpp dbgbpx.cpp dbgcmd.cpp dbglabl
         emulkeys.cpp emul_2203.cpp fntsrch.cpp font.cpp font14.cpp font16.cpp \
         font8.cpp fontatm2.cpp fontdata.cpp gs.cpp gshlbass.cpp gshle.cpp \
         gsz80.cpp gui.cpp hdd.cpp hddio.cpp iehelp.cpp init.cpp \
-        input.cpp inputpc.cpp io.cpp keydefs.cpp leds.cpp mainloop.cpp \
+        input.cpp inputpc.cpp io.cpp zxusbnet.cpp keydefs.cpp leds.cpp mainloop.cpp \
         memory.cpp modem.cpp opendlg.cpp savesnd.cpp sdcard.cpp snapshot.cpp \
         snd_bass.cpp sound.cpp sshot_png.cpp tape.cpp util.cpp vars.cpp \
         vs1001.cpp wd93cmd.cpp wd93crc.cpp wd93dat.cpp wd93trk.cpp \

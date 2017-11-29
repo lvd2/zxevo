@@ -1,6 +1,4 @@
 
-// Адрес может превышать 0xFFFF
-// (чтобы в каждой команде работы с регистрами не делать &= 0xFFFF)
 u8 xm(unsigned addr)
 {
    addr &= 0xFFFF;
@@ -22,11 +20,22 @@ u8 xm(unsigned addr)
        return fontatm2[idx];
    }
 */
+	if (comp.wiznet.memEna)
+    {
+		unsigned int tmp = (addr & 0xc000)>>14;
+		if((bankr[tmp] >= ROM_BASE_M)&&(tmp==(comp.wiznet.p82 & 0x03))){
+			if(comp.wiznet.p82&0x08)addr^=0x01;
+			if(addr & 0x2000){
+				return Wiz5300::RegRead((0x022e|(addr&0x01)|((addr>>3)&0x1c0))+((addr&0x1000)?2:0));
+			}else{
+				return Wiz5300::RegRead(addr & 0x03ff);
+			}
+			return 0xff;
+		}
+	}
    return *am_r(addr);
 }
 
-// Адрес может превышать 0xFFFF
-// (чтобы в каждой команде работы с регистрами не делать &= 0xFFFF)
 unsigned char rm(unsigned addr)
 {
    addr &= 0xFFFF;
@@ -41,8 +50,6 @@ unsigned char rm(unsigned addr)
    return xm(addr);
 }
 
-// Адрес может превышать 0xFFFF
-// (чтобы в каждой команде работы с регистрами не делать &= 0xFFFF)
 void wm(unsigned addr, unsigned char val)
 {
    addr &= 0xFFFF;
@@ -72,6 +79,19 @@ void wm(unsigned addr, unsigned char val)
    }
 #endif
 
+	if (comp.wiznet.memEna)
+    {
+		unsigned int tmp = (addr & 0xc000)>>14;
+		if((bankr[tmp] >= ROM_BASE_M)&&(tmp==(comp.wiznet.p82 & 0x03))){
+			if(comp.wiznet.p82&0x08)addr^=0x01;
+			if(addr & 0x2000){
+				Wiz5300::RegWrite((0x022e|(addr&0x01)|((addr>>3)&0x1c0))+((addr&0x1000)?2:0),val);
+			}else{
+				Wiz5300::RegWrite(addr & 0x03ff,val);
+			}
+			return;
+		}
+	}
    if((conf.mem_model == MM_ATM3) && (comp.pBF & 4)) // Разрешена загрузка шрифта для ATM3
    {
        unsigned idx = ((addr&0x07F8) >> 3) | ((addr & 7) << 8);

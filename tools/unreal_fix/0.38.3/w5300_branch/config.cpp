@@ -18,6 +18,7 @@
 #include "zc.h"
 #include "util.h"
 #include "init.h"
+#include "w5300/w5300.h"
 
 char load_errors;
 
@@ -263,6 +264,7 @@ void load_config(const char *fname)
    static const char* video = "VIDEO";
    static const char* ula = "ULA";
    static const char* beta128 = "Beta128";
+   static const char* USBZXNET = "USBZXNET";
    static const char* leds = "LEDS";
    static const char* sound = "SOUND";
    static const char* input = "INPUT";
@@ -497,6 +499,7 @@ void load_config(const char *fname)
    GetPrivateProfileString(beta128, "BOOT", nil, conf.appendboot, sizeof conf.appendboot, ininame);
    addpath(conf.appendboot);
    conf.trdos_IORam=GetPrivateProfileInt(beta128, "RamPageFddIO", 0, ininame); //временный код, потом надо удалить
+   conf.wiznet=GetPrivateProfileInt(USBZXNET, "WizNet", 0, ininame);
    
    conf.led.enabled = GetPrivateProfileInt(leds, "leds", 1, ininame);
    conf.led.flash_ay_kbd = GetPrivateProfileInt(leds, "KBD_AY", 1, ininame);
@@ -1050,7 +1053,12 @@ void applyconfig()
        Zc.Close();
        Zc.Open(conf.zc_sd_card_path);
    }
-
+	if(conf.wiznet){
+		comp.wiznet.p83=0;
+		comp.wiznet.p82=0;
+		Wiz5300::Close();
+		Wiz5300::Init();
+	}
    setpal(0);
 }
 

@@ -20,6 +20,7 @@
 #include "emulkeys.h"
 #include "util.h"
 #include "input.h"
+#include "w5300/w5300.h"
 
 void main_pause()
 {
@@ -466,9 +467,10 @@ void main_border_full() { SetBorderSize(2); }
 void correct_exit()
 {
    sound_stop();
+	if(conf.wiznet)
+		Wiz5300::Close();
    if(!done_fdd(true))
        return;
-
    nowait = 1;
    normal_exit = true;
    exit();
