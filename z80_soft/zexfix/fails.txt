@@ -1,0 +1,8 @@
+DDp:
+> Speccy2010 rev64 ( там T80 https://code.google.com/archive/p/speccy2010/ )
+> Режим: RAM=48K, ROM=пзу1982года.
+> Ошибки на cpd<r> и cpi<r>. остальное OK.
+cpd<r>: CRC:75a86767 expected d06b9c15
+cpi<r>: CRC:b9c909cb expected 683e7b2a
+
+
