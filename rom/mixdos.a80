@@ -1,10 +1,12 @@
 
-;LAST UPDATE: 31.03.2017 savelij
+;LAST UPDATE: 07.02.2018 savelij
+
+ORG_SYS		EQU 0XE800;DE00				;адрес работы *dos.sys
 
 SIZE_JUMP	EQU 3					;размер команды JP adr
 
 ;[общие переменные]
- INIT_VAR 0xF800
+ INIT_VAR 0xF000					;адрес таблицы переходов DOS
  SETVAR BDOS_RAM_JUMPS,0
  SETVAR _ALLOC_SEGMENT,SIZE_JUMP			;00 выделение 1 страницы памяти
  SETVAR _FREE_SEGMENT,SIZE_JUMP				;01 освобождение страницы памяти по номеру
@@ -24,12 +26,7 @@ SIZE_JUMP	EQU 3					;размер команды JP adr
  ADDVAR SIZE_JUMP					;0F резерв
 
  SETVAR END_JUMP_TABLE,0
-
- INIT_VAR 0X4200
- SETVAR _ADD_OFFSET_VOL,SIZE_JUMP			;добавление смещения раздела
- SETVAR _DETECT_DEVICES,SIZE_JUMP			;обнаружение устройств
  
-
 ;[номера функций вызова дискового драйвера]
  INIT_VAR
  SETVAR _DSKIO_READ					;00

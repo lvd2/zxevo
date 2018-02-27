@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 04.02.2016 savelij
+;LAST UPDATE: 22.11.2017 savelij
 
 _BS_jmpBoot		EQU 0		;3
 _BS_OEMName		EQU 3		;8
@@ -10,7 +10,7 @@ _BPB_NumFATs		EQU 0X10	;1 количество FAT таблиц
 _BPB_RootEntCnt		EQU 0X11	;2 для FAT12/16 число 32-байтных элементов, для FAT32 = 0
 _BPB_TotSec16		EQU 0X13	;2 количество секторов на разделе
 _BPB_Media		EQU 0X15	;1 медиа байт
-_BPB_FATSz16		EQU 0X16	;2 Для FAT1216 количество секторов одной FAT, для FAT32 = 0
+_BPB_FATSz16		EQU 0X16	;2 Для FAT12/16 количество секторов одной FAT, для FAT32 = 0
 
 _BPB_SecPerTrk		EQU 0X18	;2 количество секторов на дорожке
 _BPB_NumHeads		EQU 0X1A	;2 количество головок

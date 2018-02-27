@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 05.07.2017 savelij
+;LAST UPDATE: 06.10.2017 savelij
 
 ;[структура записи директории]
  INIT_VAR
@@ -16,15 +16,18 @@
  SETVAR _DIR_WrtDate,WORD		; 2 дата последней записи
  SETVAR _DIR_FstClusLO,WORD		; 2 младшее слово номера кластера
  SETVAR _DIR_FileSize,DWORD		; 4 размер файла
- SETVAR _DIR_StructSize,0;0X20		; размер структуры
+ SETVAR _DIR_StructSize,0;0X20		;   размер структуры
 ;флаги=биты=============
-	BITMASK DIR_AttrReadOnly,0
-	BITMASK DIR_Hidden,1
-	BITMASK DIR_System,2
-	BITMASK DIR_VolumeID,3
-	BITMASK DIR_Directory,4
-	BITMASK DIR_Archive,5
-	BITMASK DIR_Device,7
+	BITMASK DIR_AttrReadOnly,	0
+	BITMASK DIR_Hidden,		1
+	BITMASK DIR_System,		2
+	BITMASK DIR_VolumeID,		3
+	BITMASK DIR_Directory,		4
+	BITMASK DIR_Archive,		5
+	BITMASK DIR_Device,		7
 ;флаги=маски============
-M_DIR_AttrLongName	EQU M_DIR_AttrReadOnly | M_DIR_Hidden | M_DIR_System | M_DIR_VolumeID
+M_DIR_AttrLongName	EQU M_DIR_AttrReadOnly | \
+			    M_DIR_Hidden | \
+			    M_DIR_System | \
+			    M_DIR_VolumeID
 ;=======================
