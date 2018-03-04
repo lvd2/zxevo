@@ -5,4 +5,7 @@ DDp:
 cpd<r>: CRC:75a86767 expected d06b9c15
 cpi<r>: CRC:b9c909cb expected 683e7b2a
 
+DDp:
+КР1858ВМ3
+<daa,cpl,scf,ccf>: CRC:99ad83ea expected 6d2dd213
 
