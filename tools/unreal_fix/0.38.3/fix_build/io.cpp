@@ -761,6 +761,10 @@ __inline unsigned char in1(unsigned port)
 		   // breakpoint address readback
 		   case 0x10: return comp.brk_addr&0x00FF;
 		   case 0x11: return (comp.brk_addr>>8)&0x00FF;
+		   
+		   //read scanline
+		   case 0x13: return ((cpu.t / 224)>>1)&0x00FF;
+		   
            }
        }
    }

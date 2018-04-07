@@ -282,10 +282,18 @@ static void script2text(char *dst, const uintptr_t *src)
       }
       if (r >= DB_PCHAR && r <= DB_PFUNC)
       {
+         unsigned sz = 0;
+         switch(r)
+         {
+			case DB_PCHAR: sz = 1; break;
+			case DB_PSHORT: sz = 2; break;
+			case DB_PINT: sz = 4; break;
+			case DB_PFUNC: sz = 0; break;
+         }
          int i; //Alone Coder 0.36.7
          for (/*int*/ i = 0; i < _countof(regs); i++)
          {
-            if (*src == (uintptr_t)regs[i].ptr)
+            if ((*src == (uintptr_t)regs[i].ptr) && (sz == regs[i].size))
                 break;
          }
          *(unsigned*)&(stack[sp++]) = regs[i].reg;
