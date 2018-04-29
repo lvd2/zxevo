@@ -1,0 +1,17 @@
+
+;LAST UPDATE: 12.04.2018 savelij
+
+ INIT_VAR
+
+ SETVAR MBR_VOLUME_ACTIVE,	BYTE	;признак активности раздела
+ SETVAR MBR_START_HEAD,		BYTE	;начало раздела - головка
+ SETVAR MBR_START_SEC_CYL,	BYTE	;начало раздела - сектор (биты 5-0), цилиндр (биты 7-6)
+ SETVAR MBR_START_CYL,		BYTE	;начало раздела - цилиндр (старшие биты 9-8 хранятся в номере сектора)
+ SETVAR MBR_VOLUME_TYPE,	BYTE	;код типа раздела
+ SETVAR MBR_END_HEAD,		BYTE	;конец раздела - головка
+ SETVAR MBR_END_SEC_CYL,	BYTE	;конец раздела - сектор (биты 5-0), цилиндр (биты 7-6)
+ SETVAR MBR_END_CYL,		BYTE	;конец раздела - цилиндр (старшие биты 9-8 хранятся в номере сектора)
+ SETVAR MBR_START_LBA,		DWORD	;смещение первого сектора
+ SETVAR MBR_VOLUME_SIZE,	DWORD	;количество секторов раздела
+
+ SETVAR MBR_REC_SIZE,		0	;размер описателя раздела в MBR

@@ -1,144 +1,174 @@
 
-;LAST UPDATE: 05.09.2017 savelij
+;LAST UPDATE: 12.04.2018 savelij
 
 ;номера функций RST 8
-_AY_PRN_INIT	EQU 0X40
-_AY_PRN_A_	EQU 0X41
-_AY_PRN_TOKEN	EQU 0X42
-_AY_PRN_SCR	EQU 0X43
-_TAPE_INIT	EQU 0X44
-_TAPE_EMUL	EQU 0X45
-_WINW		EQU 0X46
-_PRINT_MESSAGE	EQU 0X47
-_PRINT_A	EQU 0X48
-_SCROLL_UP	EQU 0X49
-_SCROLL_DOWN	EQU 0X4A
-_SET_MODE	EQU 0X4B
-; 4C-4F	RESERVED
-_COM_DEV	EQU 0X50
-_COM_FAT	EQU 0X51
-_SORT_FINDFILES	EQU 0X52
-_MOUNTER	EQU 0X53
-_INST_FATBOOT	EQU 0X54
-_CMOS_RW	EQU 0X55	
-_SETUP_PAL	EQU 0X56
-_SETUP_FONT	EQU 0X57
+ INIT_VAR 0X40
+ SETVAR _AY_PRN_INIT
+ SETVAR _AY_PRN_A_
+ SETVAR _AY_PRN_TOKEN
+ SETVAR _AY_PRN_SCR
+ SETVAR _TAPE_INIT
+ SETVAR _TAPE_EMUL
+ SETVAR _WINW
+ SETVAR _PRINT_MESSAGE
+ SETVAR _PRINT_A
+ SETVAR _SCROLL_UP
+ SETVAR _SCROLL_DOWN
+ SETVAR _SET_MODE
+
+ INIT_VAR 0X4F
+ SETVAR _BIOS
+ SETVAR _COM_DEV
+ SETVAR _COM_FAT
+ SETVAR _SORT_FINDFILES
+ SETVAR _MOUNTER
+ SETVAR _INST_FATBOOT
+ SETVAR _CMOS_RW
+ SETVAR _SETUP_PAL
+ SETVAR _SETUP_FONT
 
 ;функции изменения режимов работы
-_ZXSCR_MODE	EQU 1				; ZX SCREEN
-_TXTSCR_MODE	EQU 2				; TXT SCREEN
-_TURBO_LOW	EQU 0X10			; XX01XXXX TURBO 3,5 MHZ
-_TURBO_HIGH	EQU 0X20			; XX10XXXX TURBO 7,0 MHZ
-_TURBO_MAX	EQU 0X30			; XX11XXXX TURBO 14,0 MHZ
-_MEM_MODE_48	EQU 0X40			; 01XXXXXX MEMORY MODE 48 KB
-_MEM_MODE_128	EQU 0X80			; 10XXXXXX MEMORY MODE 128 KB
-_MEM_MODE_PENT	EQU 0XC0			; 11XXXXXX MEMORY MODE PENT 1024 KB
+_ZXSCR_MODE	EQU %00000001			;ZX SCREEN
+_TXTSCR_MODE	EQU %00000010			;TXT SCREEN
+_TURBO_LOW	EQU %00010000			;TURBO 3,5 MHZ
+_TURBO_HIGH	EQU %00100000			;TURBO 7,0 MHZ
+_TURBO_MAX	EQU %00110000			;TURBO 14,0 MHZ
+_MEM_MODE_48	EQU %01000000			;MEMORY MODE 48 KB
+_MEM_MODE_128	EQU %10000000			;MEMORY MODE 128 KB
+_MEM_MODE_PENT	EQU %11000000			;MEMORY MODE PENT 1024 KB
 
 ;функции работы с CMOS
-_INIT_CMOS	EQU 0				; проверка CRC CMOS и инициализация при ошибке
-_READ_CMOS	EQU 1				; чтение ячейки CMOS
-_WRITE_CMOS	EQU 2				; запись ячейки CMOS с пересчетом CRC
-_CLEAR_CMOS	EQU 3				; принудительный сброс значений CMOS
+ INIT_VAR
+ SETVAR _INIT_CMOS
+ SETVAR _READ_CMOS
+ SETVAR _WRITE_CMOS
+ SETVAR _CLEAR_CMOS
 
 ;функции монтировщика образов
-_OPEN_MOUNT	EQU 0X00			; монтирование образа
-_RDWR_MOUNT	EQU 0X01			; чтение/запись примонтированных образов
-_FIND_MOUNTED	EQU 0X02			; поиск монтируемых образов прописанных в IMAGE.FNT
-_GET_MOUNTED	EQU 0X03			; получение буфера описателей примонтированных образов
-_CLOSEMOUNT	EQU 0X04			; демонтирование образа
-_LOADIMAGE	EQU 0X05			; загрузка образа в рамдиск
-_STOR_NAMELOAD	EQU 0X06			; сохранение описателя файла загруженного в рамдиск
-_REST_NAMELOAD	EQU 0X07			; получение описателя файла загруженного в рамдиск
-_CMP_DRIVE	EQU 0X08			; проверка примонтированного образа на указанной букве
-_GET_VIRT_BITS	EQU 0X09			; получение битов смонтированных дисков
-_MOUNT_RAMDISK	EQU 0X0A			; монтирование рамдиска
+ INIT_VAR
+ SETVAR _OPEN_MOUNT				; монтирование образа
+ SETVAR _RDWR_MOUNT				; чтение/запись примонтированных образов
+ SETVAR _FIND_MOUNTED				; поиск монтируемых образов прописанных в IMAGE.FNT
+ SETVAR _GET_MOUNTED				; получение буфера описателей примонтированных образов
+ SETVAR _CLOSEMOUNT				; демонтирование образа
+ SETVAR _LOADIMAGE				; загрузка образа в рамдиск
+ SETVAR _STOR_NAMELOAD				; сохранение описателя файла загруженного в рамдиск
+ SETVAR _REST_NAMELOAD				; получение описателя файла загруженного в рамдиск
+ SETVAR _CMP_DRIVE				; проверка примонтированного образа на указанной букве
+ SETVAR _GET_VIRT_BITS				; получение битов смонтированных дисков
+ SETVAR _MOUNT_RAMDISK				; монтирование рамдиска
 
 ;номера функций менеджера устройств
-_DEVFIND	EQU 0X00			; поиск устройств
-_SET_VOL	EQU 0X01			; выбор раздела
-_KOL_VOL	EQU 0X02			; запрос найденого
-_GET_FNDVOLUME	EQU 0X03			; получить таблицу найденных разделов
-_TO_DRV		EQU 0X04			; вызов драйвера выбранного устройства
-_SET_DEVICE	EQU 0X05			; установка битов устройства и LBA режима
-_CONTROL_SD	EQU 0X06			; контроль наличия SD карт
-_COMHDDN	EQU 0X07			; прямой вызов драйвера HDD NEMO (временная функция)
-_FREINIT_VOL	EQU 0X08			; полная переинициализация раздела
+ INIT_VAR
+ SETVAR _DEVFIND				;00 ПОИСК УСТРОЙСТВ                        
+ SETVAR _SET_VOL				;01 ВЫБОР РАЗДЕЛА                          
+ SETVAR _KOL_VOL				;02 ЗАПРОС НАЙДЕНОГО                       
+ SETVAR _GET_FNDVOLUME				;03 ПОЛУЧИТЬ ТАБЛИЦУ НАЙДЕННЫХ РАЗДЕЛОВ
+ SETVAR _TO_DRV					;04 ВЫЗОВ ДРАЙВЕРА ВЫБРАННОГО УСТРОЙСТВА   
+ SETVAR _SET_DEVICE				;05 УСТАНОВКА БИТОВ УСТРОЙСТВА И LBA РЕЖИМА
+ SETVAR _CONTROL_SD				;06 КОНТРОЛЬ НАЛИЧИЯ SD КАРТ
+ SETVAR _COMHDDN				;07 ПРЯМОЙ ВЫЗОВ ДРАЙВЕРА HDD NEMO (ВРЕМЕННАЯ ФУНКЦИЯ)
+ SETVAR _FREINIT_VOL				;08 ПОЛНАЯ ПЕРЕИНИЦИАЛИЗАЦИЯ РАЗДЕЛА
 
 ;номера функций вызова драйвера устройства
-_DEV_INIT	EQU 0				; поиск и инициализация устройства
-_DEV_STATUS	EQU 1				; запрос статуса устройства. пока заглушена
-_DEV_READ	EQU 2				; чтение секторов
-_DEV_WRITE	EQU 3				; запись секторов
+ INIT_VAR
+ SETVAR _DEV_INIT				;00 ПОИСК И ИНИЦИАЛИЗАЦИЯ УСТРОЙСТВА
+ SETVAR _DEV_STATUS				;01 ЗАПРОС СТАТУСА УСТРОЙСТВА. ПОКА ЗАГЛУШЕНА
+ SETVAR _DEV_READ				;02 ЧТЕНИЕ СЕКТОРОВ
+ SETVAR _DEV_WRITE				;03 ЗАПИСЬ СЕКТОРОВ
 
 ;номера вызываемых функций FAT драйвера
-_INIT_FATVARS	EQU 0X00			; инициализация переменных FAT
-_READ_DIR	EQU 0X01			; получение описателя файла
-_ENTER_DIR	EQU 0X02			; вход/выход в DIR
-_GET_PATH	EQU 0X03			; получение текущего пути
-_GET_LONGNAME	EQU 0X04			; получение длинного имени файла
-_FIND_NAME	EQU 0X05			; поиск по имени
-_FIND_FILEITEM	EQU 0X06			; поиск всех описателей с выдачей номеров найденного
-_SET_MASK_EXT	EQU 0X07			; установка маски расширений для поиска
-_OPEN_FILE	EQU 0X08			; открытие файла
-_READ_FILE	EQU 0X09			; последовательное чтение открытого файла
-_INIT_TEKDIR	EQU 0X0A			; создание таблицы кластеров текущей директории
-_POS_FILES	EQU 0X0B			; работа с текущей позицией
+ INIT_VAR
+ SETVAR _INIT_FATVARS				;ИНИЦИАЛИЗАЦИЯ ПЕРЕМЕННЫХ FAT
+ SETVAR _READ_DIR				;ПОЛУЧЕНИЕ ОПИСАТЕЛЯ ФАЙЛА
+ SETVAR _ENTER_DIR				;ВХОД/ВЫХОД В ДИР
+ SETVAR _GET_PATH				;ПОЛУЧЕНИЕ ТЕКУЩЕГО ПУТИ
+ SETVAR _GET_LONGNAME				;ПОЛУЧЕНИЕ ДЛИННОГО ИМЕНИ ФАЙЛА
+ SETVAR _FIND_NAME				;ПОИСК ПО ИМЕНИ
+ SETVAR _FIND_FILEITEM				;ПОИСК ВСЕХ ОПИСАТЕЛЕЙ С ВЫДАЧЕЙ НОМЕРОВ НАЙДЕННОГО
+ SETVAR _SET_MASK_EXT				;УСТАНОВКА МАСКИ РАСШИРЕНИЙ ДЛЯ ПОИСКА
+ SETVAR _OPEN_FILE				;ОТКРЫТИЕ ФАЙЛА
+ SETVAR _READ_FILE				;ПОСЛЕДОВАТЕЛЬНОЕ ЧТЕНИЕ ОТКРЫТОГО ФАЙЛА
+ SETVAR _INIT_TEKDIR				;СОЗДАНИЕ ТАБЛИЦЫ КЛАСТЕРОВ ТЕКУЩЕЙ ДИРЕКТОРИИ
+ SETVAR _POS_FILES				;РАБОТА С ТЕКУЩЕЙ ПОЗИЦИЕЙ
 
 ;подфункции функции _POS_FILES
-_POSTF00	EQU 0X00			; сохранение текущей позиции файла
-_POSTF01	EQU 0X01			; восстановление текущей позиции файла
-_POSTF02	EQU 0X02			; сброс текущей позиции в 0 и поиск первой "легальной" записи
-_POSTF03	EQU 0X03			; перемотать на "B" файлов назад
-_POSTF04	EQU 0X04			; перемотать на "B" файлов вперед
-_POSTF05	EQU 0X05			; подсчет количества "легальных" записей
-_POSTF06	EQU 0X06			; установить номер "легальной" записи из "BC"
-_POSTF07	EQU 0X07			; вернуть в "BC" текущий номер "легальной" записи
+ INIT_VAR
+ SETVAR _POSTF00				;СОХРАНЕНИЕ ТЕКУЩЕЙ ПОЗИЦИИ ФАЙЛА
+ SETVAR _POSTF01				;ВОССТАНОВЛЕНИЕ ТЕКУЩЕЙ ПОЗИЦИИ ФАЙЛА
+ SETVAR _POSTF02				;СБРОС ТЕКУЩЕЙ ПОЗИЦИИ В 0 И ПОИСК ПЕРВОЙ "ЛЕГАЛЬНОЙ" ЗАПИСИ
+ SETVAR _POSTF03				;ПЕРЕМОТАТЬ НА "B" ФАЙЛОВ НАЗАД
+ SETVAR _POSTF04				;ПЕРЕМОТАТЬ НА "B" ФАЙЛОВ ВПЕРЕД
+ SETVAR _POSTF05				;ПОДСЧЕТ КОЛИЧЕСТВА "ЛЕГАЛЬНЫХ" ЗАПИСЕЙ
+ SETVAR _POSTF06				;УСТАНОВИТЬ НОМЕР "ЛЕГАЛЬНОЙ" ЗАПИСИ ИЗ "BC"
+ SETVAR _POSTF07				;ВЕРНУТЬ В "BC" ТЕКУЩИЙ НОМЕР "ЛЕГАЛЬНОЙ" ЗАПИСИ
 
 ;номера поддерживаемых расширений для RST 8
-_TRD		EQU 1
-_SCL		EQU 2
-_FDI		EQU 3
-_TAP		EQU 4
-_SPG		EQU 5
-_HOB		EQU 6
-_FNT		EQU 7
-_BMP		EQU 8
-_ROM		EQU 9
+ INIT_VAR 1
+ SETVAR _TRD
+ SETVAR _SCL
+ SETVAR _HOB1		;$??
+ SETVAR _HOB2		;!??
+ SETVAR _SPG
+ SETVAR _FDI
+ SETVAR _TAP
+ SETVAR _HOB
+ SETVAR _FNT
+ SETVAR _BMP
+ SETVAR _ROM
 
-;ТИПЫ ДРАЙВЕРОВ
-_DRV_A		EQU 0				; DRIVE A
-_DRV_B		EQU 1				; DRIVE B
-_DRV_C		EQU 2				; DRIVE C
-_DRV_D		EQU 3				; DRIVE D
-_SDZ		EQU 4				; SD КАРТА НА ZC
-_SDG		EQU 5				; SD КАРТА НА NeoGS
-_HDDN		EQU 6				; HDD НА NEMO
-_HDDS		EQU 7				; HDD НА SMUC
-_HDDV		EQU 8				; HDD НА DIVIDE
-_HDDP		EQU 9				; HDD НА PROFI
-_HDDA		EQU 0X0A			; HDD НА TURBO2+
+;[внутренние номера типов разделов]
+ INIT_VAR
+ SETVAR _NO_INIT
+ SETVAR _FAT12					;00 = 01	FAT12
+ SETVAR _FAT16					;01 = 04,06,0E	FAT16
+ SETVAR _FAT32					;02 = 0B,0C	FAT32
+ SETVAR _TRDOS					;03 		TR-DOS диск
+ SETVAR _UNKNOWN				;		файловая система еще не определена или неизвестна
 
-__FAT12		EQU 0
-__FAT16		EQU 1
-__FAT32		EQU 2
+;описатели для рисования окна
+ INIT_VAR
+ SETVAR _X_COORD
+ SETVAR _Y_COORD
+ SETVAR _V_SIZE
+ SETVAR _H_SIZE
+ SETVAR _COLOR_WIN
+ SETVAR _COLOR_CUR
+ SETVAR _FLAGS
+ SETVAR _NUM_PKT
+ SETVAR _TEK_PKT_L
+ SETVAR _TEK_PKT_H
+ SETVAR _NUM_KOL_L
+ SETVAR _NUM_KOL_H
+ SETVAR _ADR_TXT_L
+ SETVAR _ADR_TXT_H
+ SETVAR _ADR_PRG_L
+ SETVAR _ADR_PRG_H
+ SETVAR _ADR_MOUSE_L
+ SETVAR _ADR_MOUSE_H
+ SETVAR _ADR_HOTKEY_L
+ SETVAR _ADR_HOTKEY_H
 
-_X_COORD	EQU 0
-_Y_COORD	EQU 1
-_V_SIZE		EQU 2
-_H_SIZE		EQU 3
-_COLOR_WIN	EQU 4
-_COLOR_CUR	EQU 5
-_FLAGS		EQU 6
-_NUM_PKT	EQU 7
-_TEK_PKT_L	EQU 8
-_TEK_PKT_H	EQU 9
-_NUM_KOL_L	EQU 0X0A
-_NUM_KOL_H	EQU 0X0B
-_ADR_TXT_L	EQU 0X0C
-_ADR_TXT_H	EQU 0X0D
-_ADR_PRG_L	EQU 0X0E
-_ADR_PRG_H	EQU 0X0F
-_ADR_MOUSE_L	EQU 0X10
-_ADR_MOUSE_H	EQU 0X11
-_ADR_HOTKEY_L	EQU 0X12
-_ADR_HOTKEY_H	EQU 0X13
+JUMP_SIZE	EQU 3
+
+ INIT_VAR 0X100
+ SETVAR _NEMO_RD_ID,JUMP_SIZE			;чтение сектора идентификации HDD с определением его наличия
+ SETVAR _NEMO_RD_SEC,JUMP_SIZE			;чтение секторов HDD
+ SETVAR _NEMO_WR_SEC,JUMP_SIZE			;запись секторов HDD
+
+ SETVAR _ZCSD_RD_ID,JUMP_SIZE			;чтение сектора идентификации набортной SD карты
+ SETVAR _ZCSD_RD_SEC,JUMP_SIZE			;чтение секторов набортной SD карты
+ SETVAR _ZCSD_WR_SEC,JUMP_SIZE			;запись секторов набортной SD карты
+
+ SETVAR _NGSSD_RD_ID,JUMP_SIZE			;чтение сектора идентификации SD карты NeoGS
+ SETVAR _NGSSD_RD_SEC,JUMP_SIZE			;чтение секторов SD карты NeoGS
+ SETVAR _NGSSD_WR_SEC,JUMP_SIZE			;запись секторов SD карты NeoGS
+
+ SETVAR _INIT_KEYB_PS2,JUMP_SIZE		;включение доступа к PS/2 клавиатуре
+ SETVAR _READ_KEYB_PS2,JUMP_SIZE		;считывание и декодирование сканкодов PS/2
+ SETVAR _READ_STAT_PS2,JUMP_SIZE		;чтение статуса и декодированных клавиш PS/2
+
+ SETVAR _INIT_TABLE_MEM,JUMP_SIZE		;получение таблицы занятых/свободных страниц памяти
+ SETVAR _GET_TABLE_MEM,JUMP_SIZE		;сброс всех занятых страницы памяти
+ SETVAR _ALLOC_PAGE,JUMP_SIZE			;получение номера свободной страницы памяти
+ SETVAR _FREE_PAGE,JUMP_SIZE			;освобождение по номеру страницы памяти

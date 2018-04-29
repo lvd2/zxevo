@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 01.12.2014 savelij
+;LAST UPDATE: 12.04.2018 savelij
 
 ;==================óíÖçàÖ ë NEMO HDD=======================
 RD_HDDN		PUSH BC
@@ -9,23 +9,23 @@ RD_HDDN		PUSH BC
 		LD A,(MAS_SLA)
 		OR B
 		LD E,C
-		LD BC,0XFF00+P_1F6
+		LD BC,0XFF00+PN_1F6
 		OUT (C),A
-		LD C,P_1F5
+		LD C,PN_1F5
 		OUT (C),E
 		POP DE
-		LD C,P_1F4
+		LD C,PN_1F4
 		OUT (C),D
-		LD C,P_1F3
+		LD C,PN_1F3
 		OUT (C),E
-		LD C,P_1F2
+		LD C,PN_1F2
 		EX AF,AF'
 		OUT (C),A
 		EX AF,AF'
-		LD C,P_1F7
+		LD C,PN_1F7
 		LD A,0X20
 		OUT (C),A
-		LD C,P_1F7
+		LD C,PN_1F7
 HDDRD1		IN A,(C)
 		AND 0X88
 		CP 8
@@ -33,7 +33,7 @@ HDDRD1		IN A,(C)
 		EX AF,AF'
 HDDRD2		EX AF,AF'
 		LD A,0X40
-		LD C,P_1F0
+		LD C,PN_1F0
 READSC1		IN E,(C)
 		INC C
 		IN D,(C)
@@ -68,7 +68,7 @@ READSC1		IN E,(C)
 		INC HL
 		DEC A
 		JR NZ,READSC1
-		LD C,P_1F7
+		LD C,PN_1F7
 HDDRD3		IN A,(C)
 		AND 0X80
 		JR NZ,HDDRD3

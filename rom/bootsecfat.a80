@@ -1,51 +1,42 @@
 
-;LAST UPDATE: 22.11.2017 savelij
+;LAST UPDATE: 12.04.2018 savelij
 
-_BS_jmpBoot		EQU 0		;3
-_BS_OEMName		EQU 3		;8
-_BPB_BytsPerSec		EQU 0X0B	;2 количество байт в секторе
-_BPB_SecPerClus		EQU 0X0D	;1 количество секторов в кластере
-_BPB_RsvdSecCnt		EQU 0X0E	;2 количество зарезервированных секторов
-_BPB_NumFATs		EQU 0X10	;1 количество FAT таблиц
-_BPB_RootEntCnt		EQU 0X11	;2 для FAT12/16 число 32-байтных элементов, для FAT32 = 0
-_BPB_TotSec16		EQU 0X13	;2 количество секторов на разделе
-_BPB_Media		EQU 0X15	;1 медиа байт
-_BPB_FATSz16		EQU 0X16	;2 Для FAT12/16 количество секторов одной FAT, для FAT32 = 0
+ INIT_VAR
+ SETVAR _BS_jmpBoot,		3;		;3
+ SETVAR _BS_OEMName,		8;		;8
+ SETVAR _BPB_BytsPerSec,	WORD;		;2 количество байт в секторе
+ SETVAR _BPB_SecPerClus,	BYTE;		;1 количество секторов в кластере
+ SETVAR _BPB_RsvdSecCnt,	WORD;		;2 количество зарезервированных секторов
+ SETVAR _BPB_NumFATs,		BYTE;		;1 количество FAT таблиц
+ SETVAR _BPB_RootEntCnt,	WORD;		;2 для FAT12/16 число 32-байтных элементов, для FAT32 = 0
+ SETVAR _BPB_TotSec16,		WORD;		;2 количество секторов на разделе
+ SETVAR _BPB_Media,		BYTE;		;1 медиа байт
+ SETVAR _BPB_FATSz16,		WORD;		;2 Для FAT12/16 количество секторов одной FAT, для FAT32 = 0
 
-_BPB_SecPerTrk		EQU 0X18	;2 количество секторов на дорожке
-_BPB_NumHeads		EQU 0X1A	;2 количество головок
-_BPB_HiddSec		EQU 0X1C	;4 количество скрытых секторов перед началом раздела
-_BPB_TotSec32		EQU 0X20	;4 общее количество секторов на разделе
+ SETVAR _BPB_SecPerTrk,		WORD;		;2 количество секторов на дорожке
+ SETVAR _BPB_NumHeads,		WORD;		;2 количество головок
+ SETVAR _BPB_HiddSec,		DWORD;		;4 количество скрытых секторов перед началом раздела
+ SETVAR _BPB_TotSec32,		DWORD;		;4 общее количество секторов на разделе
 
-_BS16DrvNum		EQU 0X24	;1 номер устройства
-_BS16Reserved1		EQU 0X25	;1 зарезервировнно
-_BS16BootSig		EQU 0X26	;1 дополнительная сигнатура
-_BS16VolID		EQU 0X27	;4 серийный номер раздела
-_BS16VolLab		EQU 0X2B	;B имя раздела
-_BS16FilSysType		EQU 0X36	;8 текстовый тип FAT
+ SETVAR _BS_TEMP,		0
+ SETVAR _BS16DrvNum,		BYTE;		;1 номер устройства
+ SETVAR _BS16Reserved1,		BYTE;		;1 зарезервировнно
+ SETVAR _BS16BootSig,		BYTE;		;1 дополнительная сигнатура
+ SETVAR _BS16VolID,		DWORD;		;4 серийный номер раздела
+ SETVAR _BS16VolLab,		8+3;		;B имя раздела
+ SETVAR _BS16FilSysType,	8;		;8 текстовый тип FAT
 
-_BPB_FATSz32		EQU 0X24	;4 количество секторов одной FAT таблицы
-_BPB_ExtFlags		EQU 0X28	;2 флаги FAT32
-_BPB_FSVer		EQU 0X2A	;2 номер версии FAT32
-_BPB_RootClus		EQU 0X2C	;4 номер первого кластера root директории
-_BPB_FSInfo		EQU 0X30	;2 номер сектора со структурой FSINFO
-_BPB_BkBootSec		EQU 0X32	;2 0 или номер сектора в резервной области, где хранится копия boot сектора
-_BPB_Reserved		EQU 0X34	;C всегда 0
-_BS32DrvNum		EQU 0X40	;1 номер устройства
-_BS32Reserved1		EQU 0X41	;1 зарезервированно
-_BS32BootSig		EQU 0X42	;1 дополнительная сигнатура
-_BS32VolID		EQU 0X43	;4 серийный номер раздела
-_BS32VolLab		EQU 0X47	;B имя раздела
-_BS32FilSysType		EQU 0X52	;8 текстовый тип FAT
-
-;[MBR смещения]
-_MBR_ACTIVE_VOL		EQU 0		;1 флаг активности раздела
-_MBR_START_CYL		EQU 1		;1 стартовый цилиндр раздела
-_MBR_START_SEC		EQU 2		;1 стартовый сектор раздела
-_MBR_START_HEAD		EQU 3		;1 стартовая головка раздела
-_MBR_VOL_TYPE		EQU 4		;1 тип раздела
-_MBR_END_CYL		EQU 5		;1 последный цилиндр раздела
-_MBR_END_SEC		EQU 6		;1 последний сектор раздела
-_MBR_END_HEAD		EQU 7		;1 последняя головка раздела
-_MBR_OFFSET_VOL		EQU 8		;4 смещение раздела в секторах
-_MBR_SIZE_VOL		EQU 0X0C	;4 размер раздела в секторах
+ INIT_VAR _BS_TEMP
+ SETVAR _BPB_FATSz32,		DWORD;		;4 количество секторов одной FAT таблицы
+ SETVAR _BPB_ExtFlags,		WORD;		;2 флаги FAT32
+ SETVAR _BPB_FSVer,		WORD;		;2 номер версии FAT32
+ SETVAR _BPB_RootClus,		DWORD;		;4 номер первого кластера root директории
+ SETVAR _BPB_FSInfo,		WORD;		;2 номер сектора со структурой FSINFO
+ SETVAR _BPB_BkBootSec,		WORD;		;2 0 или номер сектора в резервной области, где хранится копия boot сектора
+ SETVAR _BPB_Reserved,		12;		;C всегда 0
+ SETVAR _BS32DrvNum,		BYTE;		;1 номер устройства
+ SETVAR _BS32Reserved1,		BYTE;		;1 зарезервированно
+ SETVAR _BS32BootSig,		BYTE;		;1 дополнительная сигнатура
+ SETVAR _BS32VolID,		DWORD;		;4 серийный номер раздела
+ SETVAR _BS32VolLab,		8+3;		;B имя раздела
+ SETVAR _BS32FilSysType,	8;		;8 текстовый тип FAT

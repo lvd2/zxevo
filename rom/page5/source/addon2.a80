@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 04.09.2017 savelij
+;LAST UPDATE: 12.04.2018 savelij
 
 	TITLE "addon2.a80 ROM_RST80"
 
@@ -61,7 +61,7 @@ UNP_MICRO_BOOT	LD HL,MICRO_BOOT
 
 		include fontread.a80
 
-MICRO_BOOT	binclude ../../fat_boot/source/micro_boot_fat_pack.rom
+MICRO_BOOT	binclude ../../fat_boot/micro_boot_fat_pack.rom
 
 CP866_FONT	binclude 866_code_pack.bin
 ATM_FONT	binclude atm_code_pack.bin

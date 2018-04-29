@@ -1,75 +1,83 @@
 
-;LAST UPDATE: 23.12.2013 savelij
+;LAST UPDATE: 13.11.2016 savelij
 
-;DIVIDE
-PV1F7		EQU 0XBF			;РЕГИСТР СОСТОЯНИЯ/РЕГИСТР КОМАНД
-PV1F6		EQU 0XBB			;CHS-НОМЕР ГОЛОВЫ И УСТР/LBA АДРЕС 24-27
-PV1F5		EQU 0XB7			;CHS-ЦИЛИНДР 8-15/LBA АДРЕС 16-23
-PV1F4		EQU 0XB3			;CHS-ЦИЛИНДР 0-7/LBA АДРЕС 8-15
-PV1F3		EQU 0XAF			;CHS-НОМЕР СЕКТОРА/LBA АДРЕС 0-7
-PV1F2		EQU 0XAB			;СЧЕТЧИК СЕКТОРОВ
-PV1F1		EQU 0XA7			;ПОРТ ОШИБОК/СВОЙСТВ
-PV1F0		EQU 0XA3			;ПОРТ ДАННЫХ
-PV3F6		EQU 0XC8			;РЕГИСТР СОСТОЯНИЯ/УПРАВЛЕНИЯ (UNUSED ON DIVIDE)
-PVHI		EQU 0XA3			;СТАРШИЕ 8 БИТ
-PRTVRW		EQU PV1F0*256+PVHI		;ПОРТЫ ЧТЕНИЯ/ЗАПИСИ ОДНИМ СЛОВОМ
+;нумерация контроллеров HDD
+ INIT_VAR
+ SETVAR _NEMO
+ SETVAR _SMUC
+ SETVAR _DIVIDE
+ SETVAR _PROFI
+ SETVAR _TURBO2
 
-;NEMO
-P_1F7		EQU 0XF0			;РЕГИСТР СОСТОЯНИЯ/РЕГИСТР КОМАНД
-P_1F6		EQU 0XD0			;CHS-НОМЕР ГОЛОВЫ И УСТР/LBA АДРЕС 24-27
-P_1F5		EQU 0XB0			;CHS-ЦИЛИНДР 8-15/LBA АДРЕС 16-23
-P_1F4		EQU 0X90			;CHS-ЦИЛИНДР 0-7/LBA АДРЕС 8-15
-P_1F3		EQU 0X70			;CHS-НОМЕР СЕКТОРА/LBA АДРЕС 0-7
-P_1F2		EQU 0X50			;СЧЕТЧИК СЕКТОРОВ
-P_1F1		EQU 0X30			;ПОРТ ОШИБОК/СВОЙСТВ
-P_1F0		EQU 0X10			;ПОРТ ДАННЫХ
-P_3F6		EQU 0XC8			;РЕГИСТР СОСТОЯНИЯ/УПРАВЛЕНИЯ
-P_HI		EQU 0X11			;СТАРШИЕ 8 БИТ
-PRT_RW		EQU P_1F0*256+P_HI		;ПОРТЫ ЧТЕНИЯ/ЗАПИСИ ОДНИМ СЛОВОМ
+;порты DIVIDE
+PV_1F7		EQU 0XBF			;регистр состояния/регистр команд
+PV_1F6		EQU 0XBB			;CHS-номер головы и устройства/LBA адрес 24-27
+PV_1F5		EQU 0XB7			;CHS-цилиндр 8-15/LBA адрес 16-23
+PV_1F4		EQU 0XB3			;CHS-цилиндр 0-7/LBA адрес 8-15
+PV_1F3		EQU 0XAF			;CHS-номер сектора/LBA адрес 0-7
+PV_1F2		EQU 0XAB			;счетчик секторов
+PV_1F1		EQU 0XA7			;порт ошибок/свойств
+PV_1F0		EQU 0XA3			;порт данных
+PV_3F6		EQU 0XE3			;регистр состояния/управления
+PV_HI		EQU 0XA3			;старшие 8 бит
+PRTV_RW		EQU PV_1F0*256+PV_HI		;порты чтения/записи одним словом
 
-;PROFI
-PP_1F7W		EQU 0X07EB			;W РЕГИСТР КОМАНД
-PP_1F7R		EQU 0X07CB			;R РЕГИСТР СОСТОЯНИЯ
-PP_1F6W		EQU 0X06EB			;W CHS-НОМЕР ГОЛОВЫ И УСТР/LBA АДРЕС 24-27
-PP_1F6R		EQU 0X06CB			;R CHS-НОМЕР ГОЛОВЫ И УСТР/LBA АДРЕС 24-27
-PP_1F5W		EQU 0X05EB			;W CHS-ЦИЛИНДР 8-15/LBA АДРЕС 16-23
-PP_1F5R		EQU 0X05CB			;R CHS-ЦИЛИНДР 8-15/LBA АДРЕС 16-23
-PP_1F4W		EQU 0X04EB			;W CHS-ЦИЛИНДР 0-7/LBA АДРЕС 8-15
-PP_1F4R		EQU 0X04CB			;R CHS-ЦИЛИНДР 0-7/LBA АДРЕС 8-15
-PP_1F3W		EQU 0X03EB			;W CHS-НОМЕР СЕКТОРА/LBA АДРЕС 0-7
-PP_1F3R		EQU 0X03CB			;R CHS-НОМЕР СЕКТОРА/LBA АДРЕС 0-7
-PP_1F2W		EQU 0X02EB			;W СЧЕТЧИК СЕКТОРОВ
-PP_1F2R		EQU 0X02CB			;R СЧЕТЧИК СЕКТОРОВ
-PP_1F1W		EQU 0X01EB			;W ПОРТ СВОЙСТВ
-PP_1F1R		EQU 0X01CB			;R ПОРТ ОШИБОК
-PP_1F0W		EQU 0X00EB			;W ПОРТ ДАННЫХ МЛАДШИЕ 8 БИТ
-PP_1F0R		EQU 0X00CB			;R ПОРТ ДАННЫХ МЛАДШИЕ 8 БИТ
-PP_3F6		EQU 0X06AB			;W РЕГИСТР СОСТОЯНИЯ/УПРАВЛЕНИЯ
-PP_HIW		EQU 0XFFCB			;W ПОРТ ДАННЫХ СТАРШИЕ 8 БИТ
-PP_HIR		EQU 0XFFEB			;R ПОРТ ДАННЫХ СТАРШИЕ 8 БИТ
+;порты NEMO
+PN_1F7		EQU 0XF0			;регистр состояния/регистр команд
+PN_1F6		EQU 0XD0			;CHS-номер головы и устройства/LBA адрес 24-27
+PN_1F5		EQU 0XB0			;CHS-цилиндр 8-15/LBA адрес 16-23
+PN_1F4		EQU 0X90			;CHS-цилиндр 0-7/LBA адрес 8-15
+PN_1F3		EQU 0X70			;CHS-номер сектора/LBA адрес 0-7
+PN_1F2		EQU 0X50			;счетчик секторов
+PN_1F1		EQU 0X30			;порт ошибок/свойств
+PN_1F0		EQU 0X10			;порт данных
+PN_3F6		EQU 0XC8			;регистр состояния/управления
+PN_HI		EQU 0X11			;старшие 8 бит
+PRTN_RW		EQU PN_1F0*256+PN_HI		;порты чтения/записи одним словом
 
-;SMUC
-PS1F7		EQU 0XFF	;0XFFBE		;РЕГИСТР СОСТОЯНИЯ/РЕГИСТР КОМАНД
-PS1F6		EQU 0XFE	;0XFEBE		;CHS-НОМЕР ГОЛОВЫ И УСТР/LBA АДРЕС 24-27
-PS1F5		EQU 0XFD	;0XFDBE		;CHS-ЦИЛИНДР 8-15/LBA АДРЕС 16-23
-PS1F4		EQU 0XFC	;0XFCBE		;CHS-ЦИЛИНДР 0-7/LBA АДРЕС 8-15
-PS1F3		EQU 0XFB	;0XFBBE		;CHS-НОМЕР СЕКТОРА/LBA АДРЕС 0-7
-PS1F2		EQU 0XFA	;0XFABE		;СЧЕТЧИК СЕКТОРОВ
-PS1F1		EQU 0XF9	;0XF9BE		;ПОРТ ОШИБОК/СВОЙСТВ
-PS1F0		EQU 0XF8	;0XF8BE		;ПОРТ ДАННЫХ
-PS3F6		EQU 0XFE	;0XFEBE		;РЕГИСТР СОСТОЯНИЯ/УПРАВЛЕНИЯ
-PSHI		EQU 0XD8	;0XD8BE		;СТАРШИЕ 8 БИТ
-PRTSRW		EQU PS1F0*256+PSHI		;ПОРТЫ ЧТЕНИЯ/ЗАПИСИ ОДНИМ СЛОВОМ
-LOW_PRT		EQU 0XBE			;МЛАДШИЙ БАЙТ АДРЕСА SMUC IDE
-SMUCSYS		EQU 0XFFBA			;СИСТЕМНЫЙ ПОРТ SMUC
-SMUCVER		EQU 0X5FBA			;ПОРТ ВЕРСИИ SMUC
+;порты PROFI
+PP_1F7W		EQU 0X07EB			;W регистр команд
+PP_1F7R		EQU 0X07CB			;R регистр состояния
+PP_1F6W		EQU 0X06EB			;W CHS-номер головы и устройства/LBA адрес 24-27
+PP_1F6R		EQU 0X06CB			;R CHS-номер головы и устройства/LBA адрес 24-27
+PP_1F5W		EQU 0X05EB			;W CHS-цилиндр 8-15/LBA адрес 16-23
+PP_1F5R		EQU 0X05CB			;R CHS-цилиндр 8-15/LBA адрес 16-23
+PP_1F4W		EQU 0X04EB			;W CHS-цилиндр 0-7/LBA адрес 8-15
+PP_1F4R		EQU 0X04CB			;R CHS-цилиндр 0-7/LBA адрес 8-15
+PP_1F3W		EQU 0X03EB			;W CHS-номер сектора/LBA адрес 0-7
+PP_1F3R		EQU 0X03CB			;R CHS-номер сектора/LBA адрес 0-7
+PP_1F2W		EQU 0X02EB			;W счетчик секторов
+PP_1F2R		EQU 0X02CB			;R счетчик секторов
+PP_1F1W		EQU 0X01EB			;W порт свойств
+PP_1F1R		EQU 0X01CB			;R порт ошибок
+PP_1F0W		EQU 0X00EB			;W порт данных младшие 8 бит
+PP_1F0R		EQU 0X00CB			;R порт данных младшие 8 бит
+PP_3F6		EQU 0X06AB			;W регистр состояния/управления
+PP_HIW		EQU 0XFFCB			;W порт данных старшие 8 бит
+PP_HIR		EQU 0XFFEB			;R порт данных старшие 8 бит
 
-;ATM TURBO 2+
-PA_1F7		EQU 0XFEEF			;РЕГИСТР КОМАНД
-PA_1F6		EQU 0XFECF			;CHS-НОМЕР ГОЛОВЫ И УСТР/LBA АДРЕС 24-27
-PA_1F5		EQU 0XFEAF			;CHS-ЦИЛИНДР 8-15/LBA АДРЕС 16-23
-PA_1F4		EQU 0XFE8F			;CHS-ЦИЛИНДР 0-7/LBA АДРЕС 8-15
-PA_1F3		EQU 0XFE6F			;CHS-НОМЕР СЕКТОРА/LBA АДРЕС 0-7
-PA_1F2		EQU 0XFE4F			;СЧЕТЧИК СЕКТОРОВ
-PA_1F1		EQU 0XFE2F			;ПОРТ СВОЙСТВ
-PA_1F0		EQU 0XFF0F			;ПОРТ ДАННЫХ МЛАДШИЕ 8 БИТ
+;порты SMUC
+PS_1F7		EQU 0XFFBE			;регистр состояния/регистр команд
+PS_1F6		EQU 0XFEBE			;CHS-номер головы и устройства/LBA адрес 24-27
+PS_1F5		EQU 0XFDBE			;CHS-цилиндр 8-15/LBA адрес 16-23
+PS_1F4		EQU 0XFCBE			;CHS-цилиндр 0-7/LBA адрес 8-15
+PS_1F3		EQU 0XFBBE			;CHS-номер сектора/LBA адрес 0-7
+PS_1F2		EQU 0XFABE			;счетчик секторов
+PS_1F1		EQU 0XF9BE			;порт ошибок/свойств
+PS_1F0		EQU 0XF8BE			;порт данных
+;PS3F6						;регистр состояния/управления
+PS_HI		EQU 0XD8BE			;старшие 8 бит
+PRTS_RW		EQU HIGH (PS_1F0)<<8+HIGH (PS_HI)	;порты чтения/записи одним словом
+;SMUCSYS		EQU 0XFFBA			;системный порт SMUC
+;SMUCVER		EQU 0X5FBA			;порт версии SMUC
+
+;порты ATM TURBO 2+
+PA_1F7		EQU 0XFEEF			;регистр команд
+PA_1F6		EQU 0XFECF			;CHS-номер головы и устройства/LBA адрес 24-27
+PA_1F5		EQU 0XFEAF			;CHS-цилиндр 8-15/LBA адрес 16-23
+PA_1F4		EQU 0XFE8F			;CHS-цилиндр 0-7/LBA адрес 8-15
+PA_1F3		EQU 0XFE6F			;CHS-номер сектора/LBA адрес 0-7
+PA_1F2		EQU 0XFE4F			;счетчик секторов
+PA_1F1		EQU 0XFE2F			;порт свойств
+PA_1F0		EQU 0XFF0F			;порт данных младшие 8 бит
+;PS3F6						;регистр состояния/управления

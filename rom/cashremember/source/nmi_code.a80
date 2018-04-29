@@ -1,7 +1,7 @@
 
-;LAST UPDATE: 28.07.2017 savelij
+;LAST UPDATE: 12.04.2018 savelij
 
-		include ../macros.a80
+		include ../../macros.a80
 
 		include macros_b.a80
 		include memormap.a80
