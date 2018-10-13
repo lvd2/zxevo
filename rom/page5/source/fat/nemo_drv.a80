@@ -1,5 +1,13 @@
 
-;LAST UPDATE: 03.12.2014 savelij
+;LAST UPDATE: 13.10.2018 savelij
+
+HDD_TIME_OUT	EQU 0
+
+;ВХОДНЫЕ ПАРАМЕТРЫ ОБЩИЕ:
+;HL-АДРЕС ЗАГРУЗКИ В ПАМЯТЬ
+;BCDE-32-Х БИТНЫЙ НОМЕР СЕКТОРА
+;A-КОЛИЧЕСТВО БЛОКОВ (БЛОК=512 БАЙТ)
+;ТОЛЬКО ДЛЯ МНОГОБЛОЧНОЙ ЗАПИСИ/ЧТЕНИИ
 
 ;ОБЩАЯ ТОЧКА ВХОДА ДЛЯ РАБОТЫ С HDD NEMO
 COMHDDN		EX AF,AF'
@@ -41,29 +49,336 @@ RET4NEMO	PUSH AF
 RET4NEMO1	POP AF
 		RET
 
-TBLHDDN		DW HDDINIT
-		DW HDDOFF
-		DW HDDRDM			;READ MULTI
-		DW HDDWRM			;WRITE MULTI
+TBLHDDN		DW .HDDINIT
+		DW .HDDOFF
+		DW .DRIVER_READ_SECTORS			;READ MULTI
+		DW .DRIVER_WRITE_SECTORS		;WRITE MULTI
+		DW .DRIVER_READ_ID
 
-;ВХОДНЫЕ ПАРАМЕТРЫ ОБЩИЕ:
-;HL-АДРЕС ЗАГРУЗКИ В ПАМЯТЬ
-;BCDE-32-Х БИТНЫЙ НОМЕР СЕКТОРА
-;A-КОЛИЧЕСТВО БЛОКОВ (БЛОК=512 БАЙТ)
-;ТОЛЬКО ДЛЯ МНОГОБЛОЧНОЙ ЗАПИСИ/ЧТЕНИИ
+;Входные параметры общие:
+;HL-адрес загрузки в память
+;BCDE-32-х битный номер сектора
+;A-количество блоков (блок=512 байт)
+;только для многоблочной записи/чтении
+;НА ВЫХОДЕ:
+;H-ДЛЯ MASTER 0-HDD, 1-CDROM, 0XFF-NONE
+;L-ДЛЯ SLAVE  0-HDD, 1-CDROM, 0XFF-NONE
+.HDDINIT	PUSH IX
+		LD IX,0XEC << 8 + 1
+		PUSH HL
+		LD BC,0XE000
+		LD DE,0
+		CALL .DRIVER_READ_ID
+		POP HL
+		AND A
+		JR Z,.HDDINIT_1
+		LD A,0XFF
+.HDDINIT_1	CALL Z,.INIT_91
+		LD D,A
+		PUSH DE
+		LD IX,0XEC << 8 + 1
+		PUSH HL
+		LD BC,0XF000
+		LD DE,0
+		CALL .DRIVER_READ_ID
+		POP HL
+		AND A
+		JR Z,.HDDINIT_2
+		LD A,0XFF
+.HDDINIT_2	CALL Z,.INIT_91
+		POP HL
+		LD L,A
+		XOR A
+		POP IX
+		RET
 
-P_1F7		EQU 0XF0			;РЕГИСТР СОСТОЯНИЯ/РЕГИСТР КОМАНД
-P_1F6		EQU 0XD0			;CHS-НОМЕР ГОЛОВЫ И УСТР/LBA АДРЕС 24-27
-P_1F5		EQU 0XB0			;CHS-ЦИЛИНДР 8-15/LBA АДРЕС 16-23
-P_1F4		EQU 0X90			;CHS-ЦИЛИНДР 0-7/LBA АДРЕС 8-15
-P_1F3		EQU 0X70			;CHS-НОМЕР СЕКТОРА/LBA АДРЕС 0-7
-P_1F2		EQU 0X50			;СЧЕТЧИК СЕКТОРОВ
-P_1F1		EQU 0X30			;ПОРТ ОШИБОК/СВОЙСТВ
-P_1F0		EQU 0X10			;ПОРТ ДАННЫХ
-P_3F6		EQU 0XC8			;РЕГИСТР СОСТОЯНИЯ/УПРАВЛЕНИЯ
-P_HI		EQU 0X11			;СТАРШИЕ 8 БИТ
-PRT_RW		EQU P_1F0*0X100+P_HI		;ПОРТЫ ЧТЕНИЯ/ЗАПИСИ ОДНИМ СЛОВОМ
+.INIT_91	PUSH HL
+		PUSH BC
+		LD A,IYL
+		AND A
+		JR NZ,.INIT91_1
+		EVOPORT WIN_P6,0XFD
+.INIT91_1	LD L,49*2+1
+		LD A,(HL)
+		AND 2
+		JR Z,.INI_912
+		LD BC,0XFF00+PN_1F2
+		LD L,0X0C
+		LD A,(HL)
+ 		OUT (C),A
+ 		LD L,6
+ 		LD C,PN_1F6
+ 		LD A,(HL)
+		DEC A
+		OUT (C),A
+		LD C,PN_1F7
+		LD A,0X91
+		OUT (C),A
+		LD DE,0X4000
+.INI_911	DEC DE
+		LD A,D
+		OR E
+		JR Z,.INI_912
+		IN A,(C)
+		AND 0X80
+		JR NZ,.INI_911
+		LD L,A
+		LD A,IYL
+		AND A
+		LD A,L
+		JR NZ,.INIT91_2
+		LD BC,WIN_P6
+		XOR A
+		OUT (C),A
+.INIT91_2	POP BC
+		POP HL
+		RET
 
+.INI_912	LD BC,WIN_P6
+		XOR A
+		OUT (C),A
+		LD A,0XFF
+		POP BC
+		POP HL
+		RET
+
+.SEND_CMD_TEST	PUSH HL
+		PUSH DE
+		LD E,C
+		LD D,B
+		JR .SEND_CMD_1
+;[установка регистров HDD]
+;на входе:
+;		IXH = команда для HDD
+;		BCDE = LBA номер сектора
+;		A = количество секторов
+;		A' = номер устройства (бит 0 = 0/1 - master/slave)
+.SEND_CMD	LD IXL,A
+		CALL ICOM_DEV
+		DB _SET_DEVICE
+		PUSH HL
+		PUSH DE
+		LD E,C
+		LD D,B
+.SEND_CMD_1	LD BC,0XFF<<8+PN_3F6
+		LD A,%00001010
+		OUT (C),A
+		LD C,PN_1F6
+		LD A,D
+		AND 0XF0
+		OUT (C),A
+		LD C,PN_1F7
+		LD HL,HDD_TIME_OUT
+.SEND_WAIT	DEC HL
+		LD A,H
+		OR L
+		JR Z,.SEND_ERROR1
+		IN A,(C)
+		AND A
+		JR Z,.SEND_ERROR7
+		BIT 7,A
+		JR NZ,.SEND_WAIT
+		BIT 6,A
+		JR Z,.SEND_WAIT
+		LD C,PN_1F6
+		OUT (C),D
+		LD C,PN_1F5
+		OUT (C),E
+		POP DE
+		LD C,PN_1F4
+		OUT (C),D
+		LD C,PN_1F3
+		OUT (C),E
+		LD C,PN_1F2
+		LD A,IXL
+		OUT (C),A
+		LD C,PN_1F1
+		XOR A
+		OUT (C),A
+		LD C,PN_1F7
+		LD A,IXH
+		OUT (C),A
+		POP HL
+.DRIVER_CHECK_DEVICE
+		XOR A
+.HDDOFF		RET
+
+.SEND_ERROR7	LD A,7		;обнаружен CD/DVD
+		JR .SEND_ERROR
+
+.SEND_ERROR1	LD A,1		;ошибка HDD TIMEOUT
+.SEND_ERROR	POP HL
+		POP HL
+		RET
+
+;[чтение сектора идентификации винта]
+;на входе:
+;		HL = адрес буфера для чтения
+;		A' = номер устройства (бит 0 = 0/1 - master/slave)
+.DRIVER_READ_ID
+		PUSH IX
+;		PUSH HL
+		PUSH DE
+		PUSH BC
+		LD IXH,0XEC
+		CALL .SEND_CMD
+		AND A
+		JR NZ,.READID_ERROR
+		LD DE,HDD_TIME_OUT
+.READID_WAIT	DEC DE
+		LD A,D
+		OR E
+		JR Z,.READID_ERROR1
+		LD BC,0XFF<<8+PN_1F7
+		IN A,(C)
+		BIT 7,A
+		JR NZ,.READID_WAIT
+		BIT 1,A
+		JR NZ,.READID_ERROR6
+		BIT 3,A
+		JR Z,.READID_WAIT
+		CALL .READSEC
+		XOR A
+		JR .READID_ERROR
+
+.READID_ERROR6	LD A,6		;ошибка выполнения команды
+		JR .READID_ERROR
+
+.READID_ERROR1	LD A,1
+.READID_ERROR
+		POP BC
+		POP DE
+;		POP HL
+		POP IX
+		RET
+
+;[чтение секторов HDD]
+;на входе:
+;		HL = адрес чтения
+;		BCDE = номер сектора
+;		A = количество секторов
+;		A' = номер устройства (бит 0 = 0/1 - master/slave)
+.DRIVER_READ_SECTORS
+		PUSH IX
+;		PUSH HL
+		PUSH DE
+		PUSH BC
+		LD IXL,A
+		LD IXH,0X20
+		CALL .SEND_CMD
+		AND A
+		JR NZ,.READID_ERROR
+.READ_WAIT1	LD DE,HDD_TIME_OUT
+.READ_WAIT	DEC DE
+		LD A,D
+		OR E
+		JR Z,.READID_ERROR1
+		LD BC,0XFF<<8+PN_1F7
+		IN A,(C)
+		BIT 7,A
+		JR NZ,.READ_WAIT
+		BIT 1,A
+		JR NZ,.READID_ERROR6
+		BIT 3,A
+		JR Z,.READ_WAIT
+		CALL .READSEC
+		DEC IXL
+		JR NZ,.READ_WAIT1
+		XOR A
+		JR .READID_ERROR
+
+;[запись секторов HDD]
+;на входе:
+;		HL = адрес записи
+;		BCDE = номер сектора
+;		A = количество секторов
+;		A' = номер устройства (бит 0 = 0/1 - master/slave)
+.DRIVER_WRITE_SECTORS
+		PUSH IX
+;		PUSH HL
+		PUSH DE
+		PUSH BC
+		LD IXL,A
+		LD IXH,0X30
+		CALL .SEND_CMD
+		AND A
+		JR NZ,.READID_ERROR
+.WRITE_WAIT1	LD DE,HDD_TIME_OUT
+.WRITE_WAIT	DEC DE
+		LD A,D
+		OR E
+		JR Z,.READID_ERROR1
+		LD BC,0XFF<<8+PN_1F7
+		IN A,(C)
+		BIT 7,A
+		JR NZ,.WRITE_WAIT
+		BIT 1,A
+		JR NZ,.READID_ERROR6
+		BIT 3,A
+		JR Z,.WRITE_WAIT
+		CALL .WRITSEC
+		DEC IXL
+		JR NZ,.WRITE_WAIT1
+		XOR A
+		JR .READID_ERROR
+
+;read sector (512 bytes)
+;	switch (HDDTYPE)
+;	case _NEMO
+.READSEC	LD A,IYL
+		BIT 1,A
+		JR NZ,.RD2MEM
+		AND A
+		JR NZ,.RD2MEM2			;ВНУТРЕННИЙ ВЫЗОВ. ЧТЕНИЕ СЕКТОРА ВО ВНУТРЕНННИЙ БУФЕР
+;ВНЕШНИЙ ВЫЗОВ. ЧТЕНИЕ СЕКТОРА В ПАМЯТЬ ВЫЗВАВШЕГО
+.RD2MEM		READ_7FFD
+		AND 0X10
+		LD BC,(B0_CPU2)
+		JR Z,.RD2MEM1
+		LD BC,(B1_CPU2)
+.RD2MEM1	LD A,0X37
+		OR B
+		LD B,A
+		LD A,C
+		LD C,LOW (WIN_A0)
+		OUT (C),A
+.RD2MEM2	LD BC,PN_1F0
+		INIR
+		INIR
+		LD BC,WIN_P6
+		XOR A
+		OUT (C),A
+		RET
+
+;save sector (512 bytes)
+;	switch (HDDTYPE)
+;	case _NEMO
+.WRITSEC	EXX
+		PUSH HL
+		LD HL,0
+		ADD HL,SP
+		EXX
+		LD SP,HL
+		LD A,0X40
+		LD HL,PRTN_RW
+.WR_SEC1	REPT 4
+		POP DE
+		LD C,L
+		OUT (C),D
+		LD C,H
+		OUT (C),E
+		ENDM
+		DEC A
+		JR NZ,.WR_SEC1
+		LD HL,0
+		ADD HL,SP
+		EXX
+		LD SP,HL
+		POP HL
+		EXX
+		RET
+
+	IF 0
 ;НА ВЫХОДЕ:
 ;H-ДЛЯ MASTER 0-HDD, 1-CDROM, 0XFF-NONE
 ;L-ДЛЯ SLAVE  0-HDD, 1-CDROM, 0XFF-NONE
@@ -338,3 +653,4 @@ NO_DEV		LD A,0XFF
 SEND_CMD	PUSH BC
 		PUSH DE
 		
+	ENDIF
