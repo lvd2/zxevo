@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 12.04.2018 savelij
+;LAST UPDATE: 14.10.2018 savelij
 
 ;номера функций RST 8
  INIT_VAR 0X40
@@ -76,6 +76,7 @@ _MEM_MODE_PENT	EQU %11000000			;MEMORY MODE PENT 1024 KB
  SETVAR _DEV_STATUS				;01 ЗАПРОС СТАТУСА УСТРОЙСТВА. ПОКА ЗАГЛУШЕНА
  SETVAR _DEV_READ				;02 ЧТЕНИЕ СЕКТОРОВ
  SETVAR _DEV_WRITE				;03 ЗАПИСЬ СЕКТОРОВ
+ SETVAR _DEV_READID				;04 ЧТЕНИЕ ID СЕКТОРА
 
 ;номера вызываемых функций FAT драйвера
  INIT_VAR

@@ -1,15 +1,21 @@
 
-;LAST UPDATE: 13.10.2018 savelij
+;LAST UPDATE: 14.10.2018 savelij
 
 HDD_TIME_OUT	EQU 0
 
-;ВХОДНЫЕ ПАРАМЕТРЫ ОБЩИЕ:
-;HL-АДРЕС ЗАГРУЗКИ В ПАМЯТЬ
-;BCDE-32-Х БИТНЫЙ НОМЕР СЕКТОРА
-;A-КОЛИЧЕСТВО БЛОКОВ (БЛОК=512 БАЙТ)
-;ТОЛЬКО ДЛЯ МНОГОБЛОЧНОЙ ЗАПИСИ/ЧТЕНИИ
+;входные параметры общие:
+;HL-адрес загрузки в память
+;BCDE-32-х битный номер сектора
+;A-количество секторов (512 байт)
+;только для многоблочной записи/чтении
 
-;ОБЩАЯ ТОЧКА ВХОДА ДЛЯ РАБОТЫ С HDD NEMO
+;выдаваеьые ошибки
+; 0 - ok
+; 1 - ошибка таймаут
+; 6 - ошибка выполнения команды
+; 7 - обнаружен CD/DVD
+
+;общая точка входа для работы с HDD NEMO
 COMHDDN		EX AF,AF'
 		LD A,IYL
 		AND A
@@ -60,35 +66,44 @@ TBLHDDN		DW .HDDINIT
 ;BCDE-32-х битный номер сектора
 ;A-количество блоков (блок=512 байт)
 ;только для многоблочной записи/чтении
-;НА ВЫХОДЕ:
-;H-ДЛЯ MASTER 0-HDD, 1-CDROM, 0XFF-NONE
-;L-ДЛЯ SLAVE  0-HDD, 1-CDROM, 0XFF-NONE
+;на выходе:
+;H-для MASTER 0-HDD, 1-CD-ROM, 0XFF-none
+;L-для SLAVE  0-HDD, 1-CD-ROM, 0XFF-none
 .HDDINIT	PUSH IX
 		LD IX,0XEC << 8 + 1
 		PUSH HL
 		LD BC,0XE000
 		LD DE,0
-		CALL .DRIVER_READ_ID
+		CALL .READ_ID_TEST
 		POP HL
+		CP 7
+		LD D,1
+		JR Z,.HDDINIT_5
 		AND A
 		JR Z,.HDDINIT_1
 		LD A,0XFF
 .HDDINIT_1	CALL Z,.INIT_91
 		LD D,A
-		PUSH DE
+.HDDINIT_5	PUSH DE
 		LD IX,0XEC << 8 + 1
 		PUSH HL
 		LD BC,0XF000
 		LD DE,0
-		CALL .DRIVER_READ_ID
+		CALL .READ_ID_TEST
 		POP HL
-		AND A
+		CP 7
+		JR NZ,.HDDINIT_3
+		POP HL
+		LD L,1
+		JR .HDDINIT_4
+
+.HDDINIT_3	AND A
 		JR Z,.HDDINIT_2
 		LD A,0XFF
 .HDDINIT_2	CALL Z,.INIT_91
 		POP HL
 		LD L,A
-		XOR A
+.HDDINIT_4	XOR A
 		POP IX
 		RET
 
@@ -147,6 +162,7 @@ TBLHDDN		DW .HDDINIT
 		LD E,C
 		LD D,B
 		JR .SEND_CMD_1
+
 ;[установка регистров HDD]
 ;на входе:
 ;		IXH = команда для HDD
@@ -211,25 +227,41 @@ TBLHDDN		DW .HDDINIT
 		POP HL
 		RET
 
+.READ_ID_TEST	PUSH IX
+		PUSH DE
+		PUSH BC
+		LD IXH,0XEC
+		CALL .SEND_CMD_TEST
+		JR .READID_WAIT_
+
 ;[чтение сектора идентификации винта]
 ;на входе:
 ;		HL = адрес буфера для чтения
 ;		A' = номер устройства (бит 0 = 0/1 - master/slave)
 .DRIVER_READ_ID
 		PUSH IX
-;		PUSH HL
 		PUSH DE
 		PUSH BC
 		LD IXH,0XEC
 		CALL .SEND_CMD
-		AND A
+.READID_WAIT_	AND A
 		JR NZ,.READID_ERROR
 		LD DE,HDD_TIME_OUT
 .READID_WAIT	DEC DE
 		LD A,D
 		OR E
 		JR Z,.READID_ERROR1
-		LD BC,0XFF<<8+PN_1F7
+		LD BC,0XFF << 8 + PN_1F7
+		IN E,(C)
+		LD C,PN_1F5
+		IN D,(C)
+		PUSH HL
+		LD HL,0XEB14
+		AND A
+		SBC HL,DE
+		POP HL
+		JR Z,.SEND_ERROR7
+		LD C,PN_1F7
 		IN A,(C)
 		BIT 7,A
 		JR NZ,.READID_WAIT
@@ -244,11 +276,10 @@ TBLHDDN		DW .HDDINIT
 .READID_ERROR6	LD A,6		;ошибка выполнения команды
 		JR .READID_ERROR
 
-.READID_ERROR1	LD A,1
+.READID_ERROR1	LD A,1		;ошибка таймаут
 .READID_ERROR
 		POP BC
 		POP DE
-;		POP HL
 		POP IX
 		RET
 
@@ -260,7 +291,6 @@ TBLHDDN		DW .HDDINIT
 ;		A' = номер устройства (бит 0 = 0/1 - master/slave)
 .DRIVER_READ_SECTORS
 		PUSH IX
-;		PUSH HL
 		PUSH DE
 		PUSH BC
 		LD IXL,A
@@ -273,7 +303,7 @@ TBLHDDN		DW .HDDINIT
 		LD A,D
 		OR E
 		JR Z,.READID_ERROR1
-		LD BC,0XFF<<8+PN_1F7
+		LD BC,0XFF << 8 + PN_1F7
 		IN A,(C)
 		BIT 7,A
 		JR NZ,.READ_WAIT
@@ -295,7 +325,6 @@ TBLHDDN		DW .HDDINIT
 ;		A' = номер устройства (бит 0 = 0/1 - master/slave)
 .DRIVER_WRITE_SECTORS
 		PUSH IX
-;		PUSH HL
 		PUSH DE
 		PUSH BC
 		LD IXL,A
@@ -308,7 +337,7 @@ TBLHDDN		DW .HDDINIT
 		LD A,D
 		OR E
 		JR Z,.READID_ERROR1
-		LD BC,0XFF<<8+PN_1F7
+		LD BC,0XFF << 8 + PN_1F7
 		IN A,(C)
 		BIT 7,A
 		JR NZ,.WRITE_WAIT
@@ -377,280 +406,3 @@ TBLHDDN		DW .HDDINIT
 		POP HL
 		EXX
 		RET
-
-	IF 0
-;НА ВЫХОДЕ:
-;H-ДЛЯ MASTER 0-HDD, 1-CDROM, 0XFF-NONE
-;L-ДЛЯ SLAVE  0-HDD, 1-CDROM, 0XFF-NONE
-HDDINIT		LD A,0XE0
-		PUSH HL
-		CALL ID_DEV
-		POP HL
-		AND A
-		CALL Z,INIT_91
-		LD D,A
-		PUSH DE
-		LD A,0XF0
-		PUSH HL
-		CALL ID_DEV
-		POP HL
-		AND A
-		CALL Z,INIT_91
-		POP HL
-		LD L,0XFF;A
-		XOR A
-HDDOFF		RET
-
-INIT_91		PUSH HL
-		PUSH BC
-		LD A,IYL
-		AND A
-		JR NZ,INIT91_1
-		EVOPORT WIN_P6,0XFD
-INIT91_1	LD L,49*2+1
-		LD A,(HL)
-		AND 2
-		JR Z,INI_912
-		LD BC,0XFF00+P_1F2
-		LD L,0X0C
-		LD A,(HL)
- 		OUT (C),A
- 		LD L,6
- 		LD C,P_1F6
- 		LD A,(HL)
-		DEC A
-		OUT (C),A
-		LD C,P_1F7
-		LD A,0X91
-		OUT (C),A
-		LD DE,0X4000
-INI_911		DEC DE
-		LD A,D
-		OR E
-		JR Z,INI_912
-		IN A,(C)
-		AND 0X80
-		JR NZ,INI_911
-		LD L,A
-		LD A,IYL
-		AND A
-		LD A,L
-		JR NZ,INIT91_2
-		LD BC,WIN_P6
-		XOR A
-		OUT (C),A
-INIT91_2	POP BC
-		POP HL
-		RET
-
-INI_912		LD BC,WIN_P6
-		XOR A
-		OUT (C),A
-		LD A,0XFF
-		POP BC
-		POP HL
-		RET
-
-HDDRDM		PUSH BC
-		PUSH DE
-		CALL SETHREG
-		EX AF,AF'
-		LD C,P_1F7
-		LD A,0X20
-		OUT (C),A
-		LD C,P_1F7
-HDDRD1		IN A,(C)
-		AND 0X88
-		CP 8
-		JR NZ,HDDRD1
-		EX AF,AF'
-HDDRD2		EX AF,AF'
-		CALL READSEC
-		LD C,P_1F7
-HDDRD3		IN A,(C)
-		AND 0X80
-		JR NZ,HDDRD3
-		EX AF,AF'
-		DEC A
-		JR NZ,HDDRD2
-		POP DE
-		POP BC
-		XOR A
-		RET
-
-HDDWRM		PUSH BC
-		PUSH DE
-		CALL SETHREG
-		EX AF,AF'
-		LD C,P_1F7
-		LD A,0X30
-		OUT (C),A
-		LD C,P_1F7
-HDDWR1		IN A,(C)
-		AND 0X88
-		CP 8
-		JR NZ,HDDWR1
-		EX AF,AF'
-HDDWR2		EX AF,AF'
-		CALL WRITSEC
-		LD C,P_1F7
-HDDWR3		IN A,(C)
-		AND 0X80
-		JR NZ,HDDWR3
-		EX AF,AF'
-		DEC A
-		JR NZ,HDDWR2
-		POP DE
-		POP BC
-		LD A,B
-		AND 0X0F
-		LD B,A
-		XOR A
-		RET
-
-READSEC		LD A,IYL
-		BIT 1,A
-		JR NZ,RD2MEM
-		AND A
-		JR NZ,RD2MEM2			;ВНУТРЕННИЙ ВЫЗОВ. ЧТЕНИЕ СЕКТОРА ВО ВНУТРЕНННИЙ БУФЕР
-;ВНЕШНИЙ ВЫЗОВ. ЧТЕНИЕ СЕКТОРА В ПАМЯТЬ ВЫЗВАВШЕГО
-RD2MEM		
-;		LD A,(R_7FFD)
-		READ_7FFD
-		AND 0X10
-		LD BC,(B0_CPU2)
-		JR Z,RD2MEM1
-		LD BC,(B1_CPU2)
-RD2MEM1		LD A,0X37
-		OR B
-		LD B,A
-		LD A,C
-		LD C,LOW (WIN_A0)
-		OUT (C),A
-RD2MEM2		LD BC,P_1F0
-		INIR
-		INIR
-		LD BC,WIN_P6
-		XOR A
-		OUT (C),A
-		RET
-
-WRITSEC		EXX
-		PUSH HL
-		LD HL,0
-		ADD HL,SP
-		EXX
-		LD SP,HL
-		LD A,0X40
-		LD HL,PRT_RW
-WR_SEC1		POP DE
-		LD C,L
-		OUT (C),D
-		LD C,H
-		OUT (C),E
-		POP DE
-		LD C,L
-		OUT (C),D
-		LD C,H
-		OUT (C),E
-		POP DE
-		LD C,L
-		OUT (C),D
-		LD C,H
-		OUT (C),E
-		POP DE
-		LD C,L
-		OUT (C),D
-		LD C,H
-		OUT (C),E
-		DEC A
-		JR NZ,WR_SEC1
-		LD HL,0
-		ADD HL,SP
-		EXX
-		LD SP,HL
-		POP HL
-		EXX
-		RET
-
-SETHREG		PUSH DE
-		CALL ICOM_DEV
-		DB _SET_DEVICE
-		LD D,B
-		LD E,C
-		LD BC,0XFF00+P_1F6
-		OUT (C),D
-		EX AF,AF'
-		LD C,P_1F7
-SETHRE1		IN A,(C)
-		AND 0X80
-		JR NZ,SETHRE1
-		LD C,P_1F5
-		OUT (C),E
-		POP DE
-		LD C,P_1F4
-		OUT (C),D
-		LD C,P_1F3
-		OUT (C),E
-		LD C,P_1F2
-		EX AF,AF'
-		OUT (C),A
-		RET
-
-;HL-АДРЕС БУФЕРА СЕКТОРА ИДЕНТИФИКАЦИИ
-;A=E0-ДЛЯ MASTER, A=F0-ДЛЯ SLAVE
-ID_DEV		LD BC,0XFF00+P_1F6
-		OUT (C),A
-		LD C,P_1F7
-		LD D,8
-ID_DEV3		EI
-		HALT
-		DI
-		DEC D
-		JR Z,NO_DEV
-		IN A,(C)
-		BIT 7,A
-		JR NZ,ID_DEV3
-		AND A
-		JR Z,NO_DEV
-		INC A
-		JR Z,NO_DEV
-		XOR A
-		LD C,P_1F5
-		OUT (C),A
-		LD C,P_1F4
-		OUT (C),A
-		LD A,0XEC
-		LD C,P_1F7
-		OUT (C),A
-		LD C,P_1F7
-ID_DEV1		IN A,(C)
-		AND A
-		JR Z,NO_DEV
-		INC A
-		JR Z,NO_DEV
-		DEC A
-		RRCA
-		JR C,ID_DEV2
-		RLCA
-		AND 0X88
-		CP 8
-		JR NZ,ID_DEV1
-ID_DEV2		LD C,P_1F4
-		IN E,(C)
-		LD C,P_1F5
-		IN D,(C)
-		LD A,D
-		OR E
-		JP Z,RD2MEM2
-		LD HL,0XEB14
-		SBC HL,DE
-		LD A,1
-		RET Z
-NO_DEV		LD A,0XFF
-		RET
-
-SEND_CMD	PUSH BC
-		PUSH DE
-		
-	ENDIF

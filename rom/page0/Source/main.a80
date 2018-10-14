@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 05.09.2017 savelij
+;LAST UPDATE: 14.10.2018 savelij
 
 PAGE
 		TITLE "main.a80"
@@ -873,6 +873,8 @@ ISDOS_BOOT	LD HL,ISDOS_BOOT1
 		LD BC,ISDOS_BOOT2-ISDOS_BOOT1
 		LDIR
 		JP 0X5E00
+
+		include hdd_detect.a80
 
 ISDOS_BOOT1	include isdos_boot.a80
 ISDOS_BOOT2
