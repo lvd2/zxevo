@@ -74,8 +74,8 @@ void FDD::format_trd(unsigned CylCnt)
          t.seek(this, c, side, JUST_SEEK); t.s = 16;
          for (unsigned sn = 0; sn < 16; sn++) {
             unsigned s = lv[conf.trdos_interleave][sn];
-            t.hdr[sn].n = s, t.hdr[sn].l = 1;
-            t.hdr[sn].c = c, t.hdr[sn].s = 0;
+            t.hdr[sn].n = u8(s); t.hdr[sn].l = 1;
+            t.hdr[sn].c = u8(c); t.hdr[sn].s = 0;
             t.hdr[sn].c1 = t.hdr[sn].c2 = 0;
             t.hdr[sn].data = (unsigned char*)1;
          }
@@ -97,7 +97,7 @@ void FDD::emptydisk(unsigned FreeSecCnt)
     TTrdSec9 *Sec9 = (TTrdSec9 *)Sec9Hdr->data;
     Sec9->FirstFreeTrk = 1;           // first free track
     Sec9->DiskType = DS_80;           // 80T,DS
-    Sec9->FreeSecCnt = FreeSecCnt;    // free sec
+    Sec9->FreeSecCnt = u16(FreeSecCnt);    // free sec
     Sec9->TrDosSig = TRD_SIG;         // trdos flag
     memset(Sec9->Label, ' ', 8);      // label
     memset(Sec9->Res2, ' ', 9);       // reserved
@@ -136,7 +136,7 @@ int FDD::addfile(unsigned char *hdr, unsigned char *data)
 
     pos = Sec9->FirstFreeSec + 16*Sec9->FirstFreeTrk;
     Sec9->FirstFreeSec = (pos+len) & 0x0F;
-    Sec9->FirstFreeTrk = (pos+len) >> 4;
+    Sec9->FirstFreeTrk = u8((pos+len) >> 4);
     Sec9->FileCnt++;
     Sec9->FreeSecCnt -= len;
     t.write_sector(9, Sec9Hdr->data);

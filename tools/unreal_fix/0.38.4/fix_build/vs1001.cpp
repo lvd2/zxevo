@@ -6,7 +6,7 @@
 #include "bass.h"
 #include "snd_bass.h"
 
-bool SkipZeroes = true;
+static bool SkipZeroes = true;
 
 void TRingBuffer::Reset()
 {
@@ -89,7 +89,7 @@ BASS_FILEPROCS TVs1001::Procs = { TVs1001::StreamClose, TVs1001::StreamLen, TVs1
 TVs1001::TVs1001() : EventStreamClose(FALSE)
 {
     Mp3Stream = 0;
-    ThreadHandle = 0;
+    ThreadHandle = nullptr;
 
     Regs[VOL] = 0; // max volume on all channels
 
@@ -113,12 +113,11 @@ void TVs1001::Reset()
     if(conf.gs_type != 1)
         return;
 
-    static bool BassInit = false;
-    if(!BassInit)
+    if(!BASS::Initialized)
     {
-        BASS::Init(-1, conf.sound.fq, BASS_DEVICE_LATENCY, wnd, NULL);
-        ThreadHandle = (HANDLE)_beginthreadex(0, 0, Thread, this, 0, 0);
-        BassInit = true;
+        BASS::Init(-1, conf.sound.fq, BASS_DEVICE_LATENCY, wnd, nullptr);
+        ThreadHandle = (HANDLE)_beginthreadex(nullptr, 0, Thread, this, 0, nullptr);
+        BASS::Initialized = true;
     }
 }
 
@@ -223,7 +222,7 @@ void TVs1001::WrCmd(u8 Val)
     case ST_WR_MSB: Msb = Val; NextState = ST_WR_LSB; break;
     case ST_WR_LSB:
         Lsb = Val;
-        Wr(Idx, (Msb << 8U) | Lsb);
+        Wr(Idx, u16((Msb << 8U) | Lsb));
     break;
 
     case ST_RD_MSB:
@@ -310,7 +309,7 @@ void TVs1001::SoftReset()
 
     RingBuffer.Reset();
     SkipZeroes = true;
-    ThreadHandle = (HANDLE)_beginthreadex(0, 0, Thread, this, 0, 0);
+    ThreadHandle = (HANDLE)_beginthreadex(nullptr, 0, Thread, this, 0, nullptr);
 }
 
 void TVs1001::ShutDown()
@@ -321,7 +320,7 @@ void TVs1001::ShutDown()
     {
         WaitForSingleObject(ThreadHandle, INFINITE);
         CloseHandle(ThreadHandle);
-        ThreadHandle = 0;
+        ThreadHandle = nullptr;
     }
 }
 
@@ -375,6 +374,7 @@ DWORD TVs1001::StreamRead(void *Buffer, DWORD Length)
 // bass asynchronous callback
 BOOL TVs1001::StreamSeek(QWORD offset)
 {
+    (void)offset;
     return FALSE;
 }
 

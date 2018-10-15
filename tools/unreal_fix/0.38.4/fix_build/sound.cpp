@@ -5,12 +5,9 @@
 #include "gs.h"
 #include "tape.h"
 #include "config.h"
-
 #include "sndrender/sndcounter.h"
+#include "sound.h"
 
-extern SNDRENDER sound;
-extern SNDCHIP ay[2];
-extern SNDCOUNTER sndcounter;
 
 int spkr_dig = 0, mic_dig = 0, covFB_vol = 0, covDD_vol = 0, sd_l = 0, sd_r = 0;
 
@@ -19,10 +16,10 @@ void flush_dig_snd()
 //   __debugbreak();
    if (temp.sndblock)
        return;
-   unsigned mono = (spkr_dig+mic_dig+covFB_vol+covDD_vol);
+   int mono = spkr_dig+mic_dig+covFB_vol+covDD_vol;
 //   printf("mono=%u\n", mono);
 //[vv]   
-sound.update(cpu.t - temp.cpu_t_at_frame_start, mono + sd_l, mono + sd_r);
+sound.update(cpu.t - temp.cpu_t_at_frame_start, unsigned(mono + sd_l), unsigned(mono + sd_r));
 }
 
 void init_snd_frame()
@@ -30,8 +27,7 @@ void init_snd_frame()
    temp.cpu_t_at_frame_start = cpu.t;
 //[vv]   
    sound.start_frame();
-//   comp.tape.sound.start_frame(); //Alone Coder
-   comp.tape_sound.start_frame(); //Alone Coder
+   comp.tape.sound.start_frame();
 
    if (conf.sound.ay_scheme)
    {
@@ -47,8 +43,8 @@ void init_snd_frame()
    #endif
 }
 
-float y_1[2] = { 0.0 };
-i16 x_1[2] = { 0 };
+static float y_1[2] = { 0.0f };
+static i16 x_1[2] = { 0 };
 
 void flush_snd_frame()
 {
@@ -77,8 +73,11 @@ void flush_snd_frame()
          if (conf.sound.ay_scheme == AY_SCHEME_PSEUDO)
          {
             unsigned char last = ay[0].get_r13_reloaded()? 13 : 12;
-            for (unsigned char r = 0; r <= last; r++)
-               ay[1].select(r), ay[1].write(0, ay[0].get_reg(r));
+            for(unsigned char r = 0; r <= last; r++)
+            {
+                ay[1].select(r);
+                ay[1].write(0, ay[0].get_reg(r));
+            }
          }
       }
 
@@ -110,16 +109,14 @@ void flush_snd_frame()
 
    sound.end_frame(endframe);
    // if (comp.tape.play_pointer) // play tape pulses
-//      comp.tape.sound.end_frame(endframe); //Alone Coder
-   comp.tape_sound.end_frame(endframe); //Alone Coder
+   comp.tape.sound.end_frame(endframe);
    // else comp.tape.sound.end_empty_frame(endframe);
 
    unsigned bufplay, n_samples;
    sndcounter.begin();
 
    sndcounter.count(sound);
-//   sndcounter.count(comp.tape.sound); //Alone Coder
-   sndcounter.count(comp.tape_sound); //Alone Coder
+   sndcounter.count(comp.tape.sound);
    if (conf.sound.ay_scheme)
    {
       sndcounter.count(ay[0]);
@@ -157,7 +154,7 @@ void flush_snd_frame()
           x_1[1] = x[1];
           y_1[0] = y[0];
           y_1[1] = y[1];
-          Y = ((i16(y[1]) & 0xFFFF)<<16) | (i16(y[0]) & 0xFFFF);
+          Y = u32(((i16(y[1]) & 0xFFFF)<<16) | (i16(y[0]) & 0xFFFF));
       }
       else
       {
@@ -213,8 +210,7 @@ void restart_sound()
 
    unsigned cpufq = conf.intfq * conf.frame;
    sound.set_timings(cpufq, conf.sound.fq);
-//   comp.tape.sound.set_timings(cpufq, conf.sound.fq); //Alone Coder
-   comp.tape_sound.set_timings(cpufq, conf.sound.fq); //Alone Coder
+   comp.tape.sound.set_timings(cpufq, conf.sound.fq);
    if (conf.sound.ay_scheme)
    {
       ay[0].set_timings(cpufq, conf.sound.ayfq, conf.sound.fq);
@@ -245,7 +241,7 @@ void apply_sound()
 
    const SNDCHIP_VOLTAB *voltab = (SNDCHIP_VOLTAB*)&conf.sound.ay_voltab;
    const SNDCHIP_PANTAB *stereo = (SNDCHIP_PANTAB*)&conf.sound.ay_stereo_tab;
-   ay[0].set_volumes(conf.sound.ay_vol, voltab, stereo);
+   ay[0].set_volumes(unsigned(conf.sound.ay_vol), voltab, stereo);
 
    SNDCHIP_PANTAB reversed;
    if (conf.sound.ay_scheme == AY_SCHEME_PSEUDO) {
@@ -253,7 +249,7 @@ void apply_sound()
          reversed.raw[i] = stereo->raw[i^1]; // swap left/right
       stereo = &reversed;
    }
-   ay[1].set_volumes(conf.sound.ay_vol, voltab, stereo);
+   ay[1].set_volumes(unsigned(conf.sound.ay_vol), voltab, stereo);
 
 
    #ifdef MOD_GS

@@ -6,6 +6,9 @@
 
 #include "util.h"
 
+//static u8 old_status;
+//static __int64 last_t;
+
 void WD1793::process()
 {
    time = comp.t_states + cpu.t;
@@ -20,7 +23,7 @@ void WD1793::process()
    else
        status |= WDS_NOTRDY;
 
-   if (!(cmd & 0x80) || (cmd & 0xF0) == 0xD0) // seek / step commands
+   if (!(cmd & 0x80) || (cmd & 0xF0) == 0xD0) // seek / step / restore / interrupt commands
    {
       status &= ~WDS_INDEX;
 
@@ -31,7 +34,8 @@ void WD1793::process()
       }
 
       // todo: test spinning
-      if (seldrive->rawdata && seldrive->motor && ((time+tshift) % (Z80FQ/FDD_RPS) < (Z80FQ*4/1000)))
+      // Минимальная ширина индексного импульса 10мкс при f=2МГц, 20мкс при f=1МГц
+      if (seldrive->rawdata && seldrive->motor && ((time + tshift) % (Z80FQ / FDD_RPS) < (Z80FQ * 4 / 1000)))
       {
           // index every turn, len=4ms (if disk present)
          if(state == S_IDLE)
@@ -44,7 +48,18 @@ void WD1793::process()
              status |= WDS_INDEX;
          }
       }
+
+/*
+      if(((old_status ^ status) & WDS_INDEX))
+      {
+          printf("%9lld: %8lld: ip %s, cmd=0x%02x, dat=0x%02x, trk=0x%02x, st=0x%02x\n",
+              (time + tshift), ((time + tshift) - last_t ),
+              (status & WDS_INDEX) ? "0->1" : "1->0", cmd, data, track, status);
+          last_t = time + tshift;
+      }
+*/
    }
+//   old_status = status;
 
    for (;;)
    {
@@ -153,7 +168,7 @@ void WD1793::process()
                 state = S_IDLE;
                 break;
             }
-            if (foundid == -1)
+            if (foundid == -1U)
                 goto nf;
 
             status &= ~WDS_CRCERR;
@@ -173,7 +188,7 @@ void WD1793::process()
 
             if ((cmd & 0xF0) == 0xC0) // read AM
             {
-               rwptr = seldrive->t.hdr[foundid].id - seldrive->t.trkd;
+               rwptr = unsigned(seldrive->t.hdr[foundid].id - seldrive->t.trkd);
                rwlen = 6;
 
          read_first_byte:
@@ -229,8 +244,8 @@ void WD1793::process()
                 status |= WDS_RECORDT;
             else
                 status &= ~WDS_RECORDT;
-            rwptr = seldrive->t.hdr[foundid].data - seldrive->t.trkd; // Смещение зоны данных сектора (в байтах) относительно начала трека
-            rwlen = 128 << (seldrive->t.hdr[foundid].l & 3); // [vv]
+            rwptr = unsigned(seldrive->t.hdr[foundid].data - seldrive->t.trkd); // Смещение зоны данных сектора (в байтах) относительно начала трека
+            rwlen = 128U << (seldrive->t.hdr[foundid].l & 3); // [vv]
             goto read_first_byte;
 
          case S_READ:
@@ -319,21 +334,24 @@ void WD1793::process()
                 break;
             }
             seldrive->optype |= 1;
-            rwptr = seldrive->t.hdr[foundid].id + 6 + 11 + 11 - seldrive->t.trkd;
+            rwptr = unsigned(seldrive->t.hdr[foundid].id + 6 + 11 + 11 - seldrive->t.trkd);
             for (rwlen = 0; rwlen < 12; rwlen++)
                 seldrive->t.write(rwptr++, 0, 0);
             for (rwlen = 0; rwlen < 3; rwlen++)
                 seldrive->t.write(rwptr++, 0xA1, 1);
             seldrive->t.write(rwptr++, (cmd & CMD_WRITE_DEL)? 0xF8 : 0xFB, 0);
-            rwlen = 128 << (seldrive->t.hdr[foundid].l & 3); // [vv]
+            rwlen = 128U << (seldrive->t.hdr[foundid].l & 3); // [vv]
             state = S_WRITE;
             break;
 
          case S_WRITE:
             if (notready())
                 break;
-            if (rqs & DRQ)
-                status |= WDS_LOST, data = 0;
+            if(rqs & DRQ)
+            {
+                status |= WDS_LOST;
+                data = 0;
+            }
             trdos_save = ROMLED_TIME;
             seldrive->t.write(rwptr++, data, 0); rwlen--;
             if (rwptr == seldrive->t.trklen) rwptr = 0;
@@ -346,7 +364,7 @@ void WD1793::process()
             }
             else
             {
-               unsigned len = (128 << (seldrive->t.hdr[foundid].l & 3)) + 1; //[vv]
+               unsigned len = (128U << (seldrive->t.hdr[foundid].l & 3)) + 1; //[vv]
                unsigned char sc[2056];
                if (rwptr < len)
                {
@@ -590,18 +608,21 @@ void WD1793::process()
 
          // ----------------------------------------------------
 
-         case S_RESET: // seek to trk0, but don't be busy
-            if (!seldrive->track)
-                state = S_IDLE;
-            else
-            {
-                seldrive->track--;
-                seldrive->t.clear();
-            }
-            // if (!seldrive->track) track = 0;
-            next += 6*Z80FQ/1000;
-            break;
+         case S_EJECT1:
+             next = time + 10 * (Z80FQ / 1000); // Задержка 10мс
 
+             state2 = S_EJECT2;
+             state = S_WAIT;
+             break;
+
+         case S_EJECT2:
+             status &= ~WDS_WRITEP;
+
+             EjectPending = false;
+             state = S_IDLE;
+             break;
+
+         // ----------------------------------------------------
 
          default:
             errexit("WD1793 in wrong state");
@@ -615,17 +636,17 @@ void WD1793::find_marker()
        seldrive->track = track;
    load();
 
-   foundid = -1;
+   foundid = -1U;
    if (seldrive->motor && seldrive->rawdata)
    {
       unsigned div = seldrive->t.trklen*seldrive->t.ts_byte; // Длина дорожки в тактах cpu
       unsigned i = (unsigned)((next+tshift) % div) / seldrive->t.ts_byte; // Позиция байта соответствующего текущему такту на дорожке
-      unsigned wait = -1;
+      unsigned wait = -1U;
 
       // Поиск заголовка минимально отстоящего от текущего байта
       for (unsigned is = 0; is < seldrive->t.s; is++)
       {
-         unsigned pos = seldrive->t.hdr[is].id - seldrive->t.trkd; // Смещение (в байтах) заголовка относительно начала дорожки
+         unsigned pos = unsigned(seldrive->t.hdr[is].id - seldrive->t.trkd); // Смещение (в байтах) заголовка относительно начала дорожки
          unsigned dist = (pos > i)? pos-i : seldrive->t.trklen+pos-i; // Расстояние (в байтах) от заголовка до текущего байта
          if (dist < wait)
          {
@@ -634,15 +655,15 @@ void WD1793::find_marker()
          }
       }
 
-      if (foundid != -1)
+      if (foundid != -1U)
           wait *= seldrive->t.ts_byte; // Задержка в тактах от текущего такта до такта чтения первого байта заголовка
       else
           wait = 10*Z80FQ/FDD_RPS;
 
-      if (conf.wd93_nodelay && foundid != -1)
+      if (conf.wd93_nodelay && foundid != -1U)
       {
          // adjust tshift, that id appares right under head
-         unsigned pos = seldrive->t.hdr[foundid].id - seldrive->t.trkd + 2;
+         unsigned pos = unsigned(seldrive->t.hdr[foundid].id - seldrive->t.trkd + 2);
          tshift = (unsigned)(((pos * seldrive->t.ts_byte) - (next % div) + div) % div);
          wait = 100; // delay=0 causes fdc to search infinitely, when no matched id on track
       }
@@ -657,7 +678,7 @@ void WD1793::find_marker()
    if (seldrive->rawdata && next > end_waiting_am)
    {
        next = end_waiting_am;
-       foundid = -1;
+       foundid = -1U;
    }
    state = S_WAIT;
    state2 = S_FOUND_NEXT_ID;
@@ -731,8 +752,14 @@ void WD1793::out(unsigned char port, unsigned char val)
 {
    process();
 
+   if(EjectPending)
+   {
+       return;
+   }
+
    if (port == 0x1F)
    { // cmd
+//       printf("%9lld: cmd=0x%02x, dat=0x%02x, trk=0x%02x, st=0x%02x\n", time + tshift, val, data, track, status);
 
       // force interrupt (type 4)
       if ((val & 0xF0) == 0xD0)
@@ -858,18 +885,15 @@ void WD1793::out(unsigned char port, unsigned char val)
 
       if (!(val & 0x04))
       { // reset
-         status = WDS_NOTRDY;
+         status &= ~WDS_NOTRDY;
          rqs = INTRQ;
          seldrive->motor = 0;
-         state = S_IDLE;
          idx_cnt = 0;
 
-         #if 1 // move head to trk00
-//         steptime = 6 * (Z80FQ / 1000); // 6ms
-         next += 1*Z80FQ/1000; // 1ms before command
-         state = S_RESET;
-           //seldrive->track = 0;
-         #endif
+         // Из описания сигнала /MR FD 179X-02 floppy disk formatter/controller (WD may 80)
+         state = S_TYPE1_CMD;
+         cmd = 3; // restore
+         sector = 1;
       }
       else
       {
@@ -877,7 +901,7 @@ void WD1793::out(unsigned char port, unsigned char val)
           {
               if(!(status & WDS_BUSY))
               {
-                  idx_cnt++;
+                  idx_cnt++; // Генерация индексного импульса через диод в контроллере идущий с бита HLT порта FF на /index
               }
           }
       }
@@ -891,6 +915,17 @@ void WD1793::out(unsigned char port, unsigned char val)
    }
 }
 
+void WD1793::Eject(unsigned Drive)
+{
+    if(seldrive == &fdd[Drive]) //Генерация последовательности вынимания дискеты (/WPRT->1->0)
+    {
+        status |= WDS_WRITEP;
+        state = S_EJECT1;
+        EjectPending = true;
+    }
+    fdd[Drive].free();
+}
+
 void WD1793::trdos_traps()
 {
    unsigned pc = (cpu.pc & 0xFFFF);
@@ -901,7 +936,7 @@ void WD1793::trdos_traps()
    if (pc == 0x3DFD && bankr[0][0x3DFD] == 0x3E && bankr[0][0x3DFF] == 0x0E)
    {
        cpu.pc = cpu.DbgMemIf->rm(cpu.sp++);
-       cpu.pc |= (cpu.DbgMemIf->rm(cpu.sp++) << 8);
+       cpu.pc |= unsigned(cpu.DbgMemIf->rm(cpu.sp++) << 8U);
        cpu.a = 0;
        cpu.c = 0;
    }
@@ -910,7 +945,7 @@ void WD1793::trdos_traps()
    if (pc == 0x3EA0 && bankr[0][0x3EA0] == 0x06 && bankr[0][0x3EA2] == 0x3E)
    {
        cpu.pc = cpu.DbgMemIf->rm(cpu.sp++);
-       cpu.pc |= (cpu.DbgMemIf->rm(cpu.sp++) << 8);
+       cpu.pc |= unsigned(cpu.DbgMemIf->rm(cpu.sp++) << 8U);
        cpu.a = 0;
        cpu.b = 0;
    }

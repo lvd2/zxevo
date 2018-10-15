@@ -26,7 +26,7 @@ inline void line_32_any(unsigned char *dst, unsigned char *src)
 
 #ifdef MOD_SSE2
 
-void lines_scale2(const unsigned char *src, unsigned y, unsigned char *dst1, unsigned char *dst2, unsigned nPix)
+static void lines_scale2(const unsigned char *src, unsigned y, unsigned char *dst1, unsigned char *dst2, unsigned nPix)
 {
    const unsigned char
       *u = src + ((y-1) & 7)*sc2lines_width,
@@ -236,16 +236,32 @@ void lines_scale2(const unsigned char *src, unsigned y, unsigned char *dst1, uns
 
 #endif // MMX branched
 
-void lines_scale2_32(const unsigned char *src, unsigned y, unsigned char *dst1, unsigned char *dst2, unsigned nPix)
+static void lines_scale2_32(const unsigned char *src, unsigned y, unsigned char *dst1, unsigned char *dst2, unsigned nPix)
 {
-   const u32 *s = (u32 *)src;
-   const u32 *u = s + ((y-1) & 7)*sc2lines_width;
-   const u32 *m = s + ((y+0) & 7)*sc2lines_width;
-   const u32 *l = s + ((y+1) & 7)*sc2lines_width;
+   const u32 *s = (const u32 *)src;
+   const u32 *u = s + ((y-1) & 7)*sc2lines_width; // upper
+   const u32 *m = s + ((y+0) & 7)*sc2lines_width; // middle
+   const u32 *l = s + ((y+1) & 7)*sc2lines_width; // lower
    u32 *d1 = (u32 *)dst1;
    u32 *d2 = (u32 *)dst2;
 
-   for (unsigned i = 0; i < nPix; i++)
+   // first pixel (left)
+   d1[0] = d1[0 + 1] = d2[0] = d2[0 + 1] = m[0];
+
+   if(u[0] != l[0] && m[0] != m[0 + 1])
+   {
+       if(u[0] == m[0])
+           d1[0] = u[0];
+       if(u[0] == m[0 + 1])
+           d1[0 + 1] = u[0];
+       if(l[0] == m[0])
+           d2[0] = l[0];
+       if(l[0] == m[0 + 1])
+           d2[0 + 1] = l[0];
+   }
+
+   // central pixels
+   for (unsigned i = 1; i < nPix - 1; i++)
    {
       d1[2*i] = d1[2*i+1] = d2[2*i] = d2[2*i+1] = m[i];
 
@@ -261,10 +277,26 @@ void lines_scale2_32(const unsigned char *src, unsigned y, unsigned char *dst1, 
              d2[2*i+1] = l[i];
       }
    }
+
+   // last pixel (right)
+   const unsigned i = (nPix - 1);
+   d1[2 * i] = d1[2 * i + 1] = d2[2 * i] = d2[2 * i + 1] = m[i];
+
+   if(u[i] != l[i] && m[i - 1] != m[i])
+   {
+       if(u[i] == m[i - 1])
+           d1[2 * i] = u[i];
+       if(u[i] == m[i])
+           d1[2 * i + 1] = u[i];
+       if(l[i] == m[i - 1])
+           d2[2 * i] = l[i];
+       if(l[i] == m[i])
+           d2[2 * i + 1] = l[i];
+   }
 }
 
 // 8bpp
-void render_scale2(unsigned char *dst, unsigned pitch)
+static void render_scale2(unsigned char *dst, unsigned pitch)
 {
    unsigned char *src = rbuf; unsigned delta = temp.scx/4;
    line_8_any(t.scale2buf[0], src);
@@ -280,7 +312,7 @@ void render_scale2(unsigned char *dst, unsigned pitch)
 }
 
 // 32bpp
-void render_scale2_32(unsigned char *dst, unsigned pitch)
+static void render_scale2_32(unsigned char *dst, unsigned pitch)
 {
    unsigned char *src = rbuf;
    unsigned delta = temp.scx/4;
@@ -299,7 +331,7 @@ void render_scale2_32(unsigned char *dst, unsigned pitch)
 
 // MMX-vectorized version is not ready yet :(
 // 8bpp
-void lines_scale3(unsigned y, unsigned char *dst, unsigned pitch)
+static void lines_scale3(unsigned y, unsigned char *dst, unsigned pitch)
 {
 
    const unsigned char
@@ -331,11 +363,11 @@ void lines_scale3(unsigned y, unsigned char *dst, unsigned pitch)
       dst[3*i+0+1*pitch+ 9] = dst[3*i+1+1*pitch+ 9] = dst[3*i+2+1*pitch+ 9] = c;
       dst[3*i+0+2*pitch+ 9] = dst[3*i+1+2*pitch+ 9] = dst[3*i+2+2*pitch+ 9] = c;
 
-      unsigned dw = *(unsigned*)(u+i) ^ *(unsigned*)(l+i);
+      unsigned dw = *(const unsigned*)(u+i) ^ *(const unsigned*)(l+i);
       if (!dw) continue;
 
    #define process_pix(n)                                                                              \
-      if ((dw & (0xFF << (8*n))) && m[i+n-1] != m[i+n+1])                                              \
+      if ((dw & (0xFFU << (8U*n))) && m[i+n-1] != m[i+n+1])                                              \
       {                                                                                                \
          if (u[i+n] == m[i+n-1])                                                                       \
              dst[0*pitch+3*(i+n)] = u[i+n];                                                            \
@@ -364,7 +396,7 @@ void lines_scale3(unsigned y, unsigned char *dst, unsigned pitch)
 }
 
 // 8bpp
-void render_scale3(unsigned char *dst, unsigned pitch)
+static void render_scale3(unsigned char *dst, unsigned pitch)
 {
    unsigned char *src = rbuf; unsigned delta = temp.scx/4;
    line_8_any(t.scale2buf[0], src);
@@ -379,15 +411,41 @@ void render_scale3(unsigned char *dst, unsigned pitch)
 }
 
 // 32bpp
-void lines_scale3_32(unsigned y, unsigned char *dst, unsigned pitch)
+static void lines_scale3_32(unsigned y, unsigned char *dst, unsigned pitch)
 {
-   const u32 *u = t.scale2buf32[(y-1) & 3];
-   const u32 *m = t.scale2buf32[(y+0) & 3];
-   const u32 *l = t.scale2buf32[(y+1) & 3];
+   const u32 *u = t.scale2buf32[(y-1) & 3]; // upper
+   const u32 *m = t.scale2buf32[(y+0) & 3]; // middle
+   const u32 *l = t.scale2buf32[(y+1) & 3]; // lower
    u32 *d = (u32 *)dst;
    pitch /= sizeof(u32);
 
-   for (unsigned i = 0; i < temp.scx; i++)
+   // first pixel (left)
+   d[0 * pitch + 3 * 0 + 0] = d[0 * pitch + 3 * 0 + 1] = d[0 * pitch + 3 * 0 + 2] = m[0];
+   d[1 * pitch + 3 * 0 + 0] = d[1 * pitch + 3 * 0 + 1] = d[1 * pitch + 3 * 0 + 2] = m[0];
+   d[2 * pitch + 3 * 0 + 0] = d[2 * pitch + 3 * 0 + 1] = d[2 * pitch + 3 * 0 + 2] = m[0];
+
+   if(u[0] != l[0] && m[0] != m[0 + 1])
+   {
+       if(u[0] == m[0])
+           d[0 * pitch + 3 * 0 + 0] = u[0];
+       if((u[0] == m[0] && m[0] != u[0 + 1]) || (u[0] == m[0 + 1] && m[0] != u[0]))
+           d[0 * pitch + 3 * 0 + 1] = u[0];
+       if(u[0] == m[0 + 1])
+           d[0 * pitch + 3 * 0 + 2] = u[0];
+       if((u[0] == m[0] && m[0] != l[0]) || (l[0] == m[0] && m[0] != u[0]))
+           d[1 * pitch + 3 * 0 + 0] = m[0];
+       if((u[0] == m[0 + 1] && m[0] != l[0 + 1]) || (l[0] == m[0 + 1] && m[0] != u[0 + 1]))
+           d[1 * pitch + 3 * 0 + 2] = m[0 + 1];
+       if(l[0] == m[0])
+           d[2 * pitch + 3 * 0 + 0] = l[0];
+       if((l[0] == m[0] && m[0] != l[0 + 1]) || (l[0] == m[0 + 1] && m[0] != l[0]))
+           d[2 * pitch + 3 * 0 + 1] = l[0];
+       if(l[0] == m[0 + 1])
+           d[2 * pitch + 3 * 0 + 2] = l[0];
+   }
+
+   // central pixels
+   for (unsigned i = 1; i < temp.scx - 1; i++)
    {
       d[0*pitch+3*i+0] = d[0*pitch+3*i+1] = d[0*pitch+3*i+2] = m[i];
       d[1*pitch+3*i+0] = d[1*pitch+3*i+1] = d[1*pitch+3*i+2] = m[i];
@@ -413,10 +471,36 @@ void lines_scale3_32(unsigned y, unsigned char *dst, unsigned pitch)
              d[2*pitch+3*i+2] = l[i];
       }
    }
+
+   // last pixel (right)
+   const unsigned i = temp.scx - 1;
+   d[0 * pitch + 3 * i + 0] = d[0 * pitch + 3 * i + 1] = d[0 * pitch + 3 * i + 2] = m[i];
+   d[1 * pitch + 3 * i + 0] = d[1 * pitch + 3 * i + 1] = d[1 * pitch + 3 * i + 2] = m[i];
+   d[2 * pitch + 3 * i + 0] = d[2 * pitch + 3 * i + 1] = d[2 * pitch + 3 * i + 2] = m[i];
+
+   if(u[i] != l[i] && m[i - 1] != m[i])
+   {
+       if(u[i] == m[i])
+           d[0 * pitch + 3 * i + 0] = u[i];
+       if((u[i] == m[i - 1] && m[i] != u[i]) || (u[i] == m[i] && m[i] != u[i - 1]))
+           d[0 * pitch + 3 * i + 1] = u[i];
+       if(u[i] == m[i])
+           d[0 * pitch + 3 * i + 2] = u[i];
+       if((u[i] == m[i - 1] && m[i] != l[i - 1]) || (l[i] == m[i - 1] && m[i] != u[i - 1]))
+           d[1 * pitch + 3 * i + 0] = m[i - 1];
+       if((u[i] == m[i] && m[i] != l[i]) || (l[i] == m[i] && m[i] != u[i]))
+           d[1 * pitch + 3 * i + 2] = m[i];
+       if(l[i] == m[i - 1])
+           d[2 * pitch + 3 * i + 0] = l[i];
+       if((l[i] == m[i - 1] && m[i] != l[i]) || (l[i] == m[i] && m[i] != l[i - 1]))
+           d[2 * pitch + 3 * i + 1] = l[i];
+       if(l[i] == m[i])
+           d[2 * pitch + 3 * i + 2] = l[i];
+   }
 }
 
 // 32bpp
-void render_scale3_32(unsigned char *dst, unsigned pitch)
+static void render_scale3_32(unsigned char *dst, unsigned pitch)
 {
    unsigned char *src = rbuf; unsigned delta = temp.scx/4;
    line_32_any((u8 *)t.scale2buf32[0], src);
@@ -431,7 +515,7 @@ void render_scale3_32(unsigned char *dst, unsigned pitch)
    }
 }
 
-void render_scale4(unsigned char *dst, unsigned pitch)
+static void render_scale4(unsigned char *dst, unsigned pitch)
 {
    unsigned char *src = rbuf; unsigned delta = temp.scx/4;
 

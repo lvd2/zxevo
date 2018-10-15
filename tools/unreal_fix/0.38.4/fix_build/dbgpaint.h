@@ -23,8 +23,8 @@ void fillattr(unsigned x, unsigned y, unsigned dx, unsigned char color = FFRAME_
 void tprint(unsigned x, unsigned y, const char *str, unsigned char attr);
 void tprint_fg(unsigned x, unsigned y, const char *str, unsigned char attr);
 unsigned inputhex(unsigned x, unsigned y, unsigned sz, bool hex);
-unsigned input2(unsigned x, unsigned y, unsigned val);
-unsigned input4(unsigned x, unsigned y, unsigned val);
+int input2(unsigned x, unsigned y, unsigned val);
+int input4(unsigned x, unsigned y, unsigned val);
 void debugflip();
 char handle_menu(MENUDEF *menu);
 void frame(unsigned x, unsigned y, unsigned dx, unsigned dy, unsigned char attr);

@@ -18,7 +18,7 @@ CACHE_ALIGNED struct T
       // 16bit & 32bit
       unsigned sctab16[2][4*0x100];  //2 bits data+pc-attribute -> 2 pixels
       unsigned sctab16d[2][2*0x100]; //1 bit  data+pc-attribute -> 1 pixel (doubled)
-      unsigned sctab32[2][2*0x100];  //1 bit  data+pc-attribute -> 1 pixel
+      unsigned sctab32[2][2*0x100];  //1 bit  data+pc-attribute -> 1 pixel (sctab32[0] = {pix_off=paper[0..0xFF], pix_on=ink[0x100..0x1FF]})
    };
 
    union { // switch chunks/noflic
@@ -30,7 +30,7 @@ CACHE_ALIGNED struct T
       };
    };
 
-   unsigned char attrtab[0x200]; // pc attribute + bit (pixel on/off) -> palette index
+   unsigned char attrtab[0x200]; // pc attribute + bit (pixel off[0..0xFF]/on[0x100..0x1FF]) -> palette index
 
    CACHE_ALIGNED union {
       unsigned p4bpp8[2][0x100];   // ATM EGA screen. EGA byte -> raw video data: 2 pixels (doubled) (p2p2p1p1)
@@ -47,12 +47,12 @@ CACHE_ALIGNED struct T
          unsigned zctab8ad[2][4*0x100]; // 2 bits data+zx-attribute -> 2 palette pixels (doubled)
       };
       struct {
-         unsigned zctab16[2][4*0x100];  // 2 bits data+pc-attribute -> 2 pixels
-         unsigned zctab16ad[2][2*0x100];// 1 bits data+pc-attribute -> 1 pixel (doubled)
+         unsigned zctab16[2][4*0x100];  // 2 bits data+zx-attribute -> 2 pixels
+         unsigned zctab16ad[2][2*0x100];// 1 bits data+zx-attribute -> 1 pixel (doubled)
       };
       struct {
-         unsigned zctab32[2][2*0x100];  // 1 bit  data+pc-attribute -> 1 pixel
-         unsigned zctab32ad[2][2*0x100];// 1 bit  data+pc-attribute -> 1 pixel
+         unsigned zctab32[2][2*0x100];  // 1 bit  data+zx-attribute -> 1 pixel
+         unsigned zctab32ad[2][2*0x100];// 1 bit  data+zx-attribute -> 1 pixel
       };
    };
 
@@ -78,6 +78,8 @@ CACHE_ALIGNED struct T
    unsigned atrtab[256]; // offset to start of attribute line
    unsigned atrtab_hwmc[256]; // attribute for HWMC
    unsigned atm_pal_map[0x100]; // atm palette port value -> palette index
+   unsigned profi_pal_map[0x100]; // profi palette port value -> palette index
+
    struct {   // for AlCo-384
       unsigned char *s, *a;
    } alco[304][8];
@@ -131,6 +133,8 @@ static const int sizeof_rbuf = rb2_offs*(MAX_BUFFERS+2);
 // Буфер в который рисуется картинка в zx формате (включая бордюр),
 // атрибуты конвертируются в pc формат через colortab
 // из этого буфера картинка далее конвертируется в pc формат (например rgb32) для вывода на экран
+// Формат буфера: pix(8bit), attrs(8bit), ...
+// Атрибуты в формате 8x1 (на каждые 8x1 точек 1 атрибут)
 #ifdef CACHE_ALIGNED
 extern CACHE_ALIGNED unsigned char rbuf[sizeof_rbuf];
 #else // __declspec(align) not available, force QWORD align with old method
@@ -140,8 +144,8 @@ extern unsigned char * const rbuf;
 extern unsigned char * const save_buf;
 // map zx attributes to pc attributes
 // pc атрибут (8бит) имеет формат:
-// старшие 4 бита: paper[3..0]
-// младшие 4 бита: ink[3..0]
+// старшие 4 бита: paper[3..0]  (используется, если pix_off)
+// младшие 4 бита: ink[3..0] (используется, если pix_on)
 // при этом уже учтены все bright и flash
 extern unsigned char colortab[0x100];
 // colortab shifted to 8 and 24

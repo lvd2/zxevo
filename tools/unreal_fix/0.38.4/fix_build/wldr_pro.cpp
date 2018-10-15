@@ -21,8 +21,8 @@ void FDD::format_pro()
          for(unsigned s = 0; s < 5; s++)
          {
             unsigned n = (c == 0 && h == 0) ? sn0[s] : sn[s];
-            t.hdr[s].n = n; t.hdr[s].l = 3;
-            t.hdr[s].c = c; t.hdr[s].s = h;
+            t.hdr[s].n = u8(n); t.hdr[s].l = 3;
+            t.hdr[s].c = u8(c); t.hdr[s].s = u8(h);
             t.hdr[s].c1 = t.hdr[s].c2 = 0;
             t.hdr[s].data = (unsigned char*)1;
          }

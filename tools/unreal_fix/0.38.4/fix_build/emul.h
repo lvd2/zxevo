@@ -95,7 +95,8 @@ struct RENDER
 struct IDE_CONFIG
 {
    char image[512];
-   unsigned c,h,s,lba;
+   unsigned c, h, s;
+   u64 lba;
    unsigned char readonly;
    u8 cd;
 };
@@ -206,6 +207,7 @@ struct CONFIG
       unsigned char altlock, fire, firedelay;
       unsigned char paste_hold, paste_release, paste_newline;
       unsigned char mouse, mouseswap, kjoy, keymatrix, joymouse;
+	  bool fjoy; // fuller joystick
       unsigned char keybpcmode;
       signed char mousescale;
       unsigned char mousewheel; // enum MOUSE_WHEEL_MODE //0.36.6 from 0.35b2
@@ -288,6 +290,7 @@ struct CONFIG
       char vout[VS_MAX_FFVOUT]; // output video file name
       char newcons;             // open new console for ffmpeg
    } ffmpeg;
+   bool ula_plus;
 };
 
 struct TEMP
@@ -408,6 +411,8 @@ enum SNAP
    snNOFILE, snUNKNOWN, snTOOLARGE,
    snSP, snZ80, snSNA_48, snSNA_128,
    snTAP, snTZX, snCSW,
+   snPAL,
+   // Дисковые форматы в конце, для них отдельная проверка по наличию дисковой подсистемы
    snHOB, snSCL, snTRD, snFDI, snTD0, snUDI, snISD, snPRO
 };
 
@@ -469,12 +474,16 @@ struct COMPUTER
       unsigned char *end_of_tape;  // where to stop tape
       unsigned index;    // current tape block
       unsigned tape_bit;
-//      SNDRENDER sound; //Alone Coder
+      bool stopped;
+      SNDRENDER sound;
    } tape;
-   SNDRENDER tape_sound; //Alone Coder
-   unsigned char comp_pal[0x10];
+   unsigned char comp_pal[0x40]; // Формат палитры GggRrrBb (формат ULA+)
    unsigned char ide_hi_byte_r, ide_hi_byte_w, ide_hi_byte_w1, ide_read, ide_write; // high byte in IDE i/o
    unsigned char profrom_bank;
+   
+   u8 ula_plus_group;
+   u8 ula_plus_pal_idx;
+   bool ula_plus_en;
 };
 
 // bits for COMPUTER::flags
@@ -575,8 +584,8 @@ extern TColorConverter ConvBgr24;
 #define RF_2X       0x00000100   // default x2
 #define RF_3X       0x00000001   // default x3
 #define RF_4X       0x00000200   // default x4
-#define RF_64x48    0x00000400   // 64x48  (for chunky 4x4)
-#define RF_128x96   0x00000800   // 128x96 (for chunky 2x2)
+#define RF_64x48    0x00000400U   // 64x48  (for chunky 4x4)
+#define RF_128x96   0x00000800U   // 128x96 (for chunky 2x2)
 
 #define RF_8        0x00000000   // 8 bit (default)
 #define RF_8BPCH    0x00001000   // 8-bit per color channel. GDI mode => 32-bit surface. 8-bit mode => grayscale palette
@@ -595,8 +604,8 @@ extern TColorConverter ConvBgr24;
 #define RF_MONITOR (RF_MON | RF_GDI | RF_2X)
 
 extern unsigned frametime;
-extern int nmi_pending;
+extern unsigned nmi_pending;
 
 bool ConfirmExit();
 BOOL WINAPI ConsoleHandler(DWORD CtrlType);
-void showhelp(const char *anchor = 0);
+void showhelp(const char *anchor = nullptr);

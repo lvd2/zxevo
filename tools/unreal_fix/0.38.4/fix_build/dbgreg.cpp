@@ -56,7 +56,7 @@ void showregs()
    }
    else
    {
-       sprintf(line, "%6d", cpu.t);
+       sprintf(line, "%6u", cpu.t);
        tprint(regs_x+26,regs_y+1,line,atr);
    }
 
@@ -87,7 +87,7 @@ void showregs()
    {
       unsigned ln; unsigned char atr1 = atr;
       if (activedbg == WNDREGS && regs_curs == (unsigned)(q+18)) atr1 = W_CURS;
-      ln = flg[q+((cpu.af & (0x80>>q)) ? 0 : 8)];
+      ln = unsigned(flg[q+((cpu.af & (0x80>>q)) ? 0 : 8)]);
       if ((0x80>>q)&(cpu.f^prevcpu.f)) atr1 |= 0x08;
       tprint(regs_x+24+q,regs_y+3,(char*)&ln,  atr1);
    }
@@ -113,20 +113,20 @@ void renter()
    unsigned short k = 0;
    if (ToAscii(input.lastkey,0,Kbd,&k,0) != 1)
        return;
-   u8 u = toupper(k);
+   u8 u = u8(toupper(k));
    if ((sz == 8 || sz == 16) && ((u >= '0' && u <= '9') || (u >= 'A' && u <= 'F')))
       PostThreadMessage(GetCurrentThreadId(), WM_KEYDOWN, input.lastkey, 1);
    switch (sz)
    {
       case 8:
-         val = input2(regs_x + regs_layout[regs_curs].x, regs_y + regs_layout[regs_curs].y, val);
-         if (val != -1)
-             *ptr = val;
+         val = unsigned(input2(regs_x + regs_layout[regs_curs].x, regs_y + regs_layout[regs_curs].y, val));
+         if (int(val) != -1)
+             *ptr = u8(val);
          break;
       case 16:
-         val = input4(regs_x + regs_layout[regs_curs].x, regs_y + regs_layout[regs_curs].y, val);
-         if (val != -1)
-             *(unsigned short*)ptr = val;
+         val = unsigned(input4(regs_x + regs_layout[regs_curs].x, regs_y + regs_layout[regs_curs].y, val));
+         if (int(val) != -1)
+             *(unsigned short*)ptr = u16(val);
          break;
       case 1:
          *ptr ^= 1; break;

@@ -8,11 +8,11 @@ unsigned wd93_crc(unsigned char *ptr, unsigned size)
 {
    unsigned crc = 0xCDB4;
    while (size--) {
-      crc ^= (*ptr++) << 8;
+      crc ^= unsigned((*ptr++) << 8U);
       for (int j = 8; j; j--) // todo: rewrite with pre-calc'ed table
          if ((crc *= 2) & 0x10000) crc ^= 0x1021; // bit representation of x^12+x^5+1
    }
-   return _byteswap_ushort(crc); // return crc & 0xFFFF;
+   return _byteswap_ushort(u16(crc)); // return crc & 0xFFFF;
 }
 
 static unsigned short crcTab[256] =
@@ -54,7 +54,7 @@ unsigned short crc16(unsigned char *buf, unsigned size)
 {
    unsigned crc = 0;
    while (size--) crc = (crc>>8) ^ crcTab[(crc&0xff) ^ *buf++];
-   return _byteswap_ushort(crc);
+   return _byteswap_ushort(u16(crc));
 }
 
 // for UDI
@@ -63,7 +63,11 @@ void udi_buggy_crc(int &crc, unsigned char *buf, unsigned len)
    while (len--) {
       crc ^= -1 ^ *buf++;
       for(int k = 8; k--; )
-         { int temp = -(crc & 1); crc >>= 1, crc ^= 0xEDB88320 & temp; }
+      {
+          int temp = -(crc & 1);
+          crc >>= 1;
+          crc ^= int(0xEDB88320) & temp;
+      }
       crc ^= -1;
    }
 }

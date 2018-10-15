@@ -2,6 +2,7 @@
 
 #include "emul.h"
 #include "vars.h"
+#include "dxerr.h"
 #include "util.h"
 
 #ifdef __GNUC__
@@ -44,9 +45,9 @@ void printrdi(const char *pr, HRESULT r)
 #endif
 }
 
-void printrmm(const char *pr, HRESULT r)
+void printrmm(const char *pr, MMRESULT r)
 {
-   char buf[200]; sprintf(buf, "unknown error (%08lX)", r);
+   char buf[200]; sprintf(buf, "unknown error (%08X)", r);
    const char *str = buf;
    switch (r)
    {

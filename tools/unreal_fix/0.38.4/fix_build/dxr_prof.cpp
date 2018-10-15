@@ -7,7 +7,7 @@
 #include "dxrcopy.h"
 #include "dxr_prof.h"
 
-void line8_prof(unsigned char *dst, unsigned char *src, unsigned *tab0)
+static void line8_prof(unsigned char *dst, unsigned char *src, unsigned *tab0)
 {
    for (unsigned x = 0; x < 512; x += 64)
    {
@@ -52,7 +52,7 @@ void line8_prof(unsigned char *dst, unsigned char *src, unsigned *tab0)
    }
 }
 
-void line16_prof(unsigned char *dst, unsigned char *src, unsigned *tab0)
+static void line16_prof(unsigned char *dst, unsigned char *src, unsigned *tab0)
 {
    for (unsigned x = 0; x < 1024; x += 128)
    {
@@ -113,7 +113,7 @@ void line16_prof(unsigned char *dst, unsigned char *src, unsigned *tab0)
    }
 }
 
-void line32_prof(unsigned char *dst, unsigned char *src, unsigned *tab0)
+static void line32_prof(unsigned char *dst, unsigned char *src, unsigned *tab0)
 {
    for (unsigned x = 0; x < 512*4; x += 64)
    {
@@ -151,7 +151,7 @@ void line32_prof(unsigned char *dst, unsigned char *src, unsigned *tab0)
    }
 }
 
-void r_profi_8(unsigned char *dst, unsigned pitch, unsigned char *base)
+static void r_profi_8(unsigned char *dst, unsigned pitch, unsigned char *base)
 {
    unsigned max = min(240U, temp.scy);
    for (unsigned y = 0; y < max; y++)
@@ -161,7 +161,7 @@ void r_profi_8(unsigned char *dst, unsigned pitch, unsigned char *base)
    }
 }
 
-void r_profi_8d(unsigned char *dst, unsigned pitch, unsigned char *base)
+static void r_profi_8d(unsigned char *dst, unsigned pitch, unsigned char *base)
 {
    unsigned max = min(240U, temp.scy);
    for (unsigned y = 0; y < max; y++)
@@ -171,7 +171,7 @@ void r_profi_8d(unsigned char *dst, unsigned pitch, unsigned char *base)
    }
 }
 
-void r_profi_16(unsigned char *dst, unsigned pitch, unsigned char *base)
+static void r_profi_16(unsigned char *dst, unsigned pitch, unsigned char *base)
 {
    unsigned max = min(240U, temp.scy);
    for (unsigned y = 0; y < max; y++)
@@ -181,7 +181,7 @@ void r_profi_16(unsigned char *dst, unsigned pitch, unsigned char *base)
    }
 }
 
-void r_profi_16d(unsigned char *dst, unsigned pitch, unsigned char *base)
+static void r_profi_16d(unsigned char *dst, unsigned pitch, unsigned char *base)
 {
    unsigned max = min(240U, temp.scy);
    for (unsigned y = 0; y < max; y++)
@@ -191,7 +191,7 @@ void r_profi_16d(unsigned char *dst, unsigned pitch, unsigned char *base)
    }
 }
 
-void r_profi_32(unsigned char *dst, unsigned pitch, unsigned char *base)
+static void r_profi_32(unsigned char *dst, unsigned pitch, unsigned char *base)
 {
    unsigned max = min(240U, temp.scy);
    for (unsigned y = 0; y < max; y++)
@@ -201,7 +201,7 @@ void r_profi_32(unsigned char *dst, unsigned pitch, unsigned char *base)
    }
 }
 
-void r_profi_32d(unsigned char *dst, unsigned pitch, unsigned char *base)
+static void r_profi_32d(unsigned char *dst, unsigned pitch, unsigned char *base)
 {
    unsigned max = min(240U, temp.scy);
    for (unsigned y = 0; y < max; y++)
@@ -213,7 +213,7 @@ void r_profi_32d(unsigned char *dst, unsigned pitch, unsigned char *base)
 
 void rend_profi(unsigned char *dst, unsigned pitch)
 {
-   static unsigned char dffd = -1;
+   static unsigned char dffd = u8(-1U);
    if ((comp.pDFFD ^ dffd) & 0x80)
    {
       video_color_tables();

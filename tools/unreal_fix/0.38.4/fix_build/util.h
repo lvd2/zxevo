@@ -14,7 +14,7 @@ class TEvent
 {
     HANDLE Event;
 public:
-    TEvent(BOOL InitState) { Event = CreateEvent(0, TRUE, InitState, 0); }
+    TEvent(BOOL InitState) { Event = CreateEvent(nullptr, TRUE, InitState, nullptr); }
     ~TEvent() { CloseHandle(Event); }
     void Set() { SetEvent(Event); }
     void Reset() { ResetEvent(Event); }
@@ -34,7 +34,7 @@ extern const char * const nil;
 
 void eat();
 void trim(char *dst);
-void errmsg(const char *err, const char *str = 0);
+void errmsg(const char *err, const char *str = nullptr);
 void err_printf(const char *format, ...);
 void err_win32(DWORD errcode = 0xFFFFFFFF);
 void color(int ink = CONSCLR_DEFAULT);
@@ -42,7 +42,7 @@ int ishex(char c);
 unsigned char hex(char p);
 unsigned char hex(const char *p);
 
-void __declspec(noreturn) errexit(const char *err, const char *str = 0);
+void __declspec(noreturn) errexit(const char *err, const char *str = nullptr);
 unsigned process_msgs();
 bool dispatch(action *table);
 bool dispatch_more(action *table);
@@ -57,3 +57,4 @@ static forceinline u64 rdtsc()
 }
 
 bool wcmatch(char *string, char *wc);
+void dump1(BYTE *p, unsigned sz);

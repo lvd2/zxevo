@@ -97,128 +97,155 @@ void SNDRENDER::set_timings(unsigned clock_rate, unsigned sample_rate)
    tick = 0; dstpos = dst_start = 0;
    passed_snd_ticks = passed_clk_ticks = 0;
 
-   mult_const = (unsigned) (((uint64_t)sample_rate << (MULT_C+TICK_FF)) / clock_rate);
+//   mult_const = (unsigned) (((uint64_t)sample_rate << (MULT_C+TICK_FF)) / clock_rate);
 }
 
 
-static unsigned filter_diff[TICK_F*2];
+static unsigned filter_diff[TICK_F*2]; // discrete-time step response
 const double filter_sum_full = 1.0, filter_sum_half = 0.5;
 const unsigned filter_sum_full_u = (unsigned)(filter_sum_full * 0x10000),
                filter_sum_half_u = (unsigned)(filter_sum_half * 0x10000);
 
 void SNDRENDER::flush(unsigned endtick)
 {
-   unsigned scale;
-   if (!((endtick ^ tick) & ~(TICK_F-1))) // (endtick / TICK_F) == (tick / TICK_F)
-   {
-      //same discrete as before
-      scale = filter_diff[(endtick & (TICK_F-1)) + TICK_F] - filter_diff[(tick & (TICK_F-1)) + TICK_F];
-      s2_l += mix_l * scale;
-      s2_r += mix_r * scale;
+    unsigned scale;
+    if(!((endtick ^ tick) & ~(TICK_F - 1))) // (endtick / TICK_F) == (tick / TICK_F)
+    {   // Оптимизация, децимация не нужна, т.к. после децимации tick совпадет с endtick
+        // Входной сигнал изменился быстрее чем один период Fs выходного сигнала
+        // s1 - значение выходного сигнала в левом узле децимации
+        // s2 - значение выходного сигнала в правом узле децимации
+        // mix - значение входного сигнала в интервале [tick.. endtick)
 
-      scale = filter_diff[endtick & (TICK_F-1)] - filter_diff[tick & (TICK_F-1)];
-      s1_l += mix_l * scale;
-      s1_r += mix_r * scale;
+        //same discrete as before
+        // Правая точка вычисленная по переходной характеристике
+        scale = filter_diff[(endtick & (TICK_F - 1)) + TICK_F] - filter_diff[(tick & (TICK_F - 1)) + TICK_F];
+        s2_l += mix_l * scale;
+        s2_r += mix_r * scale;
 
-      tick = endtick;
-   }
-   else
-   {
-      scale = filter_sum_full_u - filter_diff[(tick & (TICK_F-1)) + TICK_F];
+        // Левая точка вычисленная по переходной характеристике
+        scale = filter_diff[endtick & (TICK_F - 1)] - filter_diff[tick & (TICK_F - 1)];
+        s1_l += mix_l * scale;
+        s1_r += mix_r * scale;
 
-      unsigned sample_value;
-      if(conf.soundfilter)
-      {
-          /*lame noise reduction by Alone Coder*/
-          int templeft = mix_l*scale + s2_l;
-          /*olduseleft = useleft;
-          if (firstsmp)useleft=oldfrmleft,firstsmp--;
-              else*/ useleft = ((long)templeft + (long)oldleft)/2;
-          oldleft = templeft;
-          int tempright = mix_r*scale + s2_r;
-          /*olduseright = useright;
-          if (firstsmp)useright=oldfrmright,firstsmp--;
-              else*/ useright = ((long)tempright + (long)oldright)/2;
-          oldright = tempright;
-          sample_value = (useleft >> 16) + (useright & 0xFFFF0000);
-          /**/
-      }
-      else
-      {
-          sample_value = ((mix_l*scale + s2_l) >> 16) +
-                         ((mix_r*scale + s2_r) & 0xFFFF0000);
-      }
+        tick = endtick;
+        return;
+    }
 
-      #ifdef SND_EXTERNAL_BUFFER
-      SND_EXTERNAL_BUFFER[dstpos].sample += sample_value;
-      dstpos = (dstpos+1) & (SND_EXTERNAL_BUFFER_SIZE-1);
-      #else
-      dstpos->sample = sample_value;
-      dstpos++;
-      #endif
+    // Отрезок [TICK_F + (tick % TICK_F) ... 2*TICK_F-1]
+    scale = filter_sum_full_u - filter_diff[(tick & (TICK_F - 1)) + TICK_F]; // filter_sum_full_u = filter_diff[(TICK_F - 1) + TICK_F]
 
-      scale = filter_sum_half_u - filter_diff[tick & (TICK_F-1)];
-      s2_l = s1_l + mix_l * scale;
-      s2_r = s1_r + mix_r * scale;
+    unsigned sample_value;
+    if(conf.soundfilter)
+    {
+        /*lame noise reduction by Alone Coder*/
+        int templeft = int(mix_l * scale + s2_l);
+        /*olduseleft = useleft;
+        if (firstsmp)useleft=oldfrmleft,firstsmp--;
+            else*/ useleft = ((long)templeft + (long)oldleft) / 2;
+        oldleft = templeft;
+        int tempright = int(mix_r * scale + s2_r);
+        /*olduseright = useright;
+        if (firstsmp)useright=oldfrmright,firstsmp--;
+            else*/ useright = ((long)tempright + (long)oldright) / 2;
+        oldright = tempright;
+        sample_value = unsigned((useleft >> 16) + int(unsigned(useright) & 0xFFFF0000));
+        /**/
+    }
+    else
+    {
+        sample_value = ((mix_l*scale + s2_l) >> 16) +
+            ((mix_r*scale + s2_r) & 0xFFFF0000);
+    }
 
-      tick = (tick | (TICK_F-1))+1;
+#ifdef SND_EXTERNAL_BUFFER
+    SND_EXTERNAL_BUFFER[dstpos].sample += sample_value;
+    dstpos = (dstpos + 1) & (SND_EXTERNAL_BUFFER_SIZE - 1);
+#else
+    dstpos->sample = sample_value;
+    dstpos++;
+#endif
 
-      // Цикл децимации в TICK_F раз
-      if ((endtick ^ tick) & ~(TICK_F-1)) // (endtick / TICK_F) != (tick / TICK_F)
-      {
-         // assume filter_coeff is symmetric
-         unsigned val_l = mix_l * filter_sum_half_u;
-         unsigned val_r = mix_r * filter_sum_half_u;
-         do
-         {
-            unsigned sample_value;
+    // Отрезок [tick % TICK_F ... TICK_F-1]
+    scale = filter_sum_half_u - filter_diff[tick & (TICK_F - 1)];// filter_sum_half_u = filter_diff[TICK_F - 1]
+    s2_l = s1_l + mix_l * scale;
+    s2_r = s1_r + mix_r * scale;
+
+    // Выравнивание до узла децимации
+    tick = (tick | (TICK_F - 1)) + 1;
+
+    // Цикл децимации в TICK_F раз, tick уже выровнен до сетки с шагом TICK_F
+    // endtick / TICK_F - endtick после децимации в TICK_F раз
+    // tick / TICK_F - tick после децимации в TICK_F раз
+    if((endtick ^ tick) & ~(TICK_F - 1)) // (endtick / TICK_F) != (tick / TICK_F)
+    { // Оптимизация, проверка на несовпадение tick и endtick после децимации
+
+       // assume filter_coeff is symmetric
+        // Отрезок [0 ... TICK_F-1]
+        unsigned val_l = mix_l * filter_sum_half_u;
+        unsigned val_r = mix_r * filter_sum_half_u;
+
+        // Цикл децимации, [tick/TICK_F ... endtick/TICK_F)
+        do
+        {
             if(conf.soundfilter)
             {
                 /*lame noise reduction by Alone Coder*/
-                int templeft = s2_l+val_l;
+                int templeft = int(s2_l + val_l);
                 /*olduseleft = useleft;
                 if (firstsmp)useleft=oldfrmleft,firstsmp--;
-                   else*/ useleft = ((long)templeft + (long)oldleft)/2;
+                   else*/ useleft = ((long)templeft + (long)oldleft) / 2;
                 oldleft = templeft;
-                int tempright = s2_r+val_r;
+                int tempright = int(s2_r + val_r);
                 /*olduseright = useright;
                 if (firstsmp)useright=oldfrmright,firstsmp--;
-                   else*/ useright = ((long)tempright + (long)oldright)/2;
+                   else*/ useright = ((long)tempright + (long)oldright) / 2;
                 oldright = tempright;
-                sample_value = (useleft >> 16) + (useright & 0xFFFF0000);
+                sample_value = unsigned((useleft >> 16) + int(unsigned(useright) & 0xFFFF0000));
                 /**/
             }
             else
             {
                 sample_value = ((s2_l + val_l) >> 16) +
-                               ((s2_r + val_r) & 0xFFFF0000); // save s2+val
+                    ((s2_r + val_r) & 0xFFFF0000); // save s2+val
             }
 
-            #ifdef SND_EXTERNAL_BUFFER
+#ifdef SND_EXTERNAL_BUFFER
             SND_EXTERNAL_BUFFER[dstpos].sample += sample_value;
-            dstpos = (dstpos+1) & (SND_EXTERNAL_BUFFER_SIZE-1);
-            #else
+            dstpos = (dstpos + 1) & (SND_EXTERNAL_BUFFER_SIZE - 1);
+#else
             dstpos->sample = sample_value;
             dstpos++;
-            #endif
+#endif
 
             tick += TICK_F;
-            s2_l = val_l, s2_r = val_r; // s2=s1, s1=0;
+            s2_l = val_l;
+            s2_r = val_r; // s2=s1, s1=0;
 
-         } while ((endtick ^ tick) & ~(TICK_F-1)); // (endtick / TICK_F) != (tick / TICK_F)
-      }
+        } while((endtick ^ tick) & ~(TICK_F - 1)); // (endtick / TICK_F) != (tick / TICK_F)
+    }
 
-      tick = endtick;
+    tick = endtick;
 
-      scale = filter_diff[(endtick & (TICK_F-1)) + TICK_F] - filter_sum_half_u;
-      s2_l += mix_l * scale;
-      s2_r += mix_r * scale;
+    scale = filter_diff[(endtick & (TICK_F - 1)) + TICK_F] - filter_sum_half_u; // filter_sum_half_u = filter_diff[TICK_F - 1]
+    s2_l += mix_l * scale;
+    s2_r += mix_r * scale;
 
-      scale = filter_diff[endtick & (TICK_F-1)];
-      s1_l = mix_l * scale;
-      s1_r = mix_r * scale;
-   }
+    scale = filter_diff[endtick & (TICK_F - 1)];
+    s1_l = mix_l * scale;
+    s1_r = mix_r * scale;
 }
+
+// bw = 1*(10^-2)*pi rad/smp (-3dB)
+// bw = 2*(10^-2)*pi rad/smp (-10dB)
+// bw = 20 kHz (fs=44100 * 64 = 2822400)
+// matlab: fvtool(filter_coeff)
+
+// Параметры синтеза фильтра:
+// matlab: (fdatool/filterDesigner)
+// FIR: Window (Hamming)
+// order: 127
+// Fs: 2822400
+// Fc: 11025
 
 const double filter_coeff[TICK_F*2] =
 {
@@ -257,6 +284,39 @@ const double filter_coeff[TICK_F*2] =
    0.000886460636664257, 0.000844792477531490, 0.000815206499600866, 0.000797243121022152
 };
 
+// h - impulse response
+// s - step response
+// h[n] = s[n] - s[n-1]
+
+// y[n] = sum(x[k]*h[n-k]) = sum(h[k]*x[n-k])
+//         k                  k
+// Для кусочно постоянного сигнала применима оптимизация в вычислениях (нет необходимости вычислять промежуточные точки)
+// y[n] = y[k] + x*(s[n] - s[k])
+// где n и k - концы интервала, на котором сигнал x постоянен
+
+// Общие формулы:
+// u - unit step
+// s - step response
+//                        inf
+// x[n] = x[-inf] + sum((x[k]-x[k-1])u[n-k])
+//                       -inf
+//
+//                        inf
+// y[n] = x[-inf]s[inf] + sum(x[k]-x[k-1])s[n-k]
+//                       -inf
+// Из формкл видно, что значения имеют только фронты сигнала, там где сигнал постоянный слагаеые обращаются в ноль
+// отсюда становится возможна кусочно-постоянная оптимизация
+
+// Для YM (значения берутся из конфига)
+// для примера:
+// clock_rate = 1750000 / 8 = 218750
+//              1774400 / 8 = 221800
+// sample_rate = 44100
+// ПЧ = sample_rate * 64 = 2822400
+// Перенос входного сигнала на ПЧ делается домножением на (sample_rate*64)/clock_rate = 
+// 12.9024 (для clock_rate = 1.7500) и 12.724977 (для clock_rate = 1.7744)
+// На ПЧ делается фильтрация и децимация в 64 раза до sample_rate
+
 SNDRENDER::SNDRENDER()
 {
    set_timings(SNDR_DEFAULT_SYSTICK_RATE, SNDR_DEFAULT_SAMPLE_RATE);
@@ -264,9 +324,10 @@ SNDRENDER::SNDRENDER()
    static char diff_ready = 0;
    if (!diff_ready) {
       double sum = 0;
-      for (int i = 0; i < TICK_F*2; i++) {
-         filter_diff[i] = (int)(sum * 0x10000);
-         sum += filter_coeff[i];
+      for (unsigned i = 0; i < TICK_F*2; i++) { // calculate discrete-time step response
+         filter_diff[i] = unsigned(sum * 0x10000);
+         sum += filter_coeff[i]; // Тут ошибка, сумму надо вычислять до построения переходной характеристики, чтобы filter_diff[0] == filter_coeff[0]
+                                 // filter_diff[TICK_F - 1] == 0.5, filter_diff[2*TICK_F - 1] == 1.0
       }
       diff_ready = 1;
    }

@@ -17,10 +17,10 @@
 #endif
 
 #include <d3d9.h>
-#include "dinput.h"
-#include "dsound.h"
-#include "urlmon.h"
-#include "mshtmhst.h"
+#include "sdk/dinput.h"
+#include "sdk/dsound.h"
+#include <urlmon.h>
+#include <mshtmhst.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -30,6 +30,7 @@
 #include <limits.h>
 #include <malloc.h>
 #include <conio.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <process.h>
 
@@ -86,7 +87,7 @@ using std::max;
 #pragma comment(lib, "legacy_stdio_definitions.lib")
 #endif
 
-#define CACHE_LINE 64
+#define CACHE_LINE 64U
 
 #if _MSC_VER >= 1300
 #define CACHE_ALIGNED __declspec(align(CACHE_LINE))

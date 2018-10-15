@@ -19,15 +19,17 @@
 #include "leds.h"
 #include "sdcard.h"
 #include "zc.h"
+#include "gs.h"
+#include "gui.h"
 
 #include "util.h"
 
-void setcheck(unsigned ID, unsigned char state = 1)
+void setcheck(int ID, unsigned char state)
 {
    CheckDlgButton(dlg, ID, state ? BST_CHECKED : BST_UNCHECKED);
 }
 
-unsigned char getcheck(unsigned ID)
+unsigned char getcheck(int ID)
 {
    return (IsDlgButtonChecked(dlg, ID) == BST_CHECKED);
 }
@@ -35,14 +37,14 @@ unsigned char getcheck(unsigned ID)
 
 #ifdef MOD_SETTINGS
 
-CONFIG c1;
-char dlgok = 0;
+static CONFIG c1;
+static char dlgok = 0;
 
 const char *lastpage;
 
-char rset_list[0x800];
+static char rset_list[0x800];
 
-char compare_rset(char *rname)
+static char compare_rset(char *rname)
 {
    CONFIG c2; load_romset(&c2, rname);
    if (stricmp(c2.sos_rom_path, c1.sos_rom_path)) return 0;
@@ -52,7 +54,7 @@ char compare_rset(char *rname)
    return 1;
 }
 
-void find_romset()
+static void find_romset()
 {
    HWND box = GetDlgItem(dlg, IDC_ROMSET); int cur = -1, i = 0;
    for (char *dst = rset_list; *dst; dst += strlen(dst)+1, i++)
@@ -60,7 +62,7 @@ void find_romset()
    SendMessage(box, CB_SETCURSEL, cur, 0);
 }
 
-char select_romfile(char *dstname)
+static char select_romfile(char *dstname)
 {
    char fname[FILENAME_MAX];
    fname[0] = 0;
@@ -70,7 +72,7 @@ char select_romfile(char *dstname)
    if(x)
        *x = 0;
 */
-   OPENFILENAME ofn = { 0 };
+   OPENFILENAME ofn = { };
    ofn.lStructSize = (WinVerMajor < 5) ? OPENFILENAME_SIZE_VERSION_400 : sizeof(OPENFILENAME);
    ofn.hwndOwner = dlg;
    ofn.lpstrFilter = "ROM image (*.ROM)\0*.ROM\0All files\0*.*\0";
@@ -89,7 +91,7 @@ char select_romfile(char *dstname)
    return 1;
 }
 
-char *MemDlg_get_bigrom()
+static char *MemDlg_get_bigrom()
 {
    if (c1.mem_model == MM_ATM450) return c1.atm1_rom_path;
    if (c1.mem_model == MM_ATM710) return c1.atm2_rom_path;
@@ -101,12 +103,12 @@ char *MemDlg_get_bigrom()
 //   if (c1.mem_model == MM_KAY) return c1.kay_rom_path;
    if (c1.mem_model == MM_PLUS3) return c1.plus3_rom_path;
    if (c1.mem_model == MM_QUORUM) return c1.quorum_rom_path;
-   return 0;
+   return nullptr;
 }
 
-void change_rompage(int dx, int reload)
+static void change_rompage(int dx, int reload)
 {
-   int x = SendDlgItemMessage(dlg, IDC_ROMPAGE, CB_GETCURSEL, 0, 0);
+   int x = int(SendDlgItemMessage(dlg, IDC_ROMPAGE, CB_GETCURSEL, 0, 0));
    static char *pgs[] = { c1.sos_rom_path, c1.zx128_rom_path, c1.dos_rom_path, c1.sys_rom_path };
    char *ptr = pgs[x];
    if (reload)
@@ -114,21 +116,26 @@ void change_rompage(int dx, int reload)
    if (dx) {
       char *x = strrchr(ptr+2, ':');
       unsigned pg = 0;
-      if (!x) x = ptr + strlen(ptr); else { *x = 0; pg = atoi(x+1); }
+      if (!x) x = ptr + strlen(ptr); else { *x = 0; pg = unsigned(atoi(x+1)); }
       FILE *ff = fopen(ptr, "rb");
-      unsigned sz = 0;
-      if (ff) fseek(ff, 0, SEEK_END), sz = ftell(ff)/PAGE, fclose(ff);
-      if ((unsigned)(pg+dx) < sz) {
-         pg += dx;
+      long sz = 0;
+      if(ff)
+      {
+          fseek(ff, 0, SEEK_END);
+          sz = ftell(ff) / PAGE;
+          fclose(ff);
+      }
+      if ((int(pg)+dx) < sz) {
+         pg = unsigned(int(pg) + dx);
          SendDlgItemMessage(dlg, IDC_ROMSET, CB_SETCURSEL, 0, 0);
       }
-      sprintf(x, ":%d", pg);
+      sprintf(x, ":%u", pg);
    }
    SendDlgItemMessage(dlg, IDE_ROMNAME, WM_SETTEXT, 0, (LPARAM)ptr);
    find_romset();
 }
 
-void change_rombank(int dx, int reload)
+static void change_rombank(int dx, int reload)
 {
    char *romname = MemDlg_get_bigrom();
 
@@ -144,7 +151,7 @@ void change_rombank(int dx, int reload)
    else
    {
        *x = 0;
-       pg = atoi(x+1);
+       pg = unsigned(atoi(x+1));
    }
 
    if (reload)
@@ -155,7 +162,7 @@ void change_rombank(int dx, int reload)
    }
 
    FILE *ff = fopen(line, "rb");
-   unsigned sz = 0;
+   long sz = 0;
    if (ff)
    {
        fseek(ff, 0, SEEK_END);
@@ -178,23 +185,23 @@ void change_rombank(int dx, int reload)
    if (c1.mem_model == MM_PROFSCORP && sz != 128 && sz != 256 && sz != 512 && sz != 1024)
        goto err;
 
-   if ((unsigned)(pg+dx) < sz/256)
-       pg += dx;
+   if ((int(pg)+dx) < sz/256)
+       pg = unsigned(int(pg) + dx);
    if (sz > 256)
-       sprintf(x, ":%d", pg);
+       sprintf(x, ":%u", pg);
    strcpy(romname, line);
    SendDlgItemMessage(dlg, IDE_BIGROM, WM_SETTEXT, 0, (LPARAM)romname);
 
-   sprintf(line, "Loaded ROM size: %dK", sz);
+   sprintf(line, "Loaded ROM size: %ldK", sz);
    if (c1.mem_model == MM_PROFSCORP && sz > 256)
-       sprintf(line, "Loaded ROM size: %d*256K", sz/256);
+       sprintf(line, "Loaded ROM size: %ld*256K", sz/256);
    SetDlgItemText(dlg, IDC_TOTAL_ROM, line);
    ShowWindow(GetDlgItem(dlg, IDC_TOTAL_ROM), SW_SHOW);
 }
 
-void reload_roms()
+static void reload_roms()
 {
-   unsigned i = 0, n = SendDlgItemMessage(dlg, IDC_ROMSET, CB_GETCURSEL, 0, 0);
+   unsigned i = 0, n = unsigned(SendDlgItemMessage(dlg, IDC_ROMSET, CB_GETCURSEL, 0, 0));
    char *dst; //Alone Coder 0.36.7
    for (/*char * */dst = rset_list; *dst && i < n; i++, dst += strlen(dst)+1);
    if (!*dst) return;
@@ -202,7 +209,7 @@ void reload_roms()
    change_rompage(0,0);
 }
 
-void MemDlg_set_visible()
+static void MemDlg_set_visible()
 {
    int vis = !c1.use_romset? SW_SHOW : SW_HIDE;
    ShowWindow(GetDlgItem(dlg, IDE_BIGROM), vis);
@@ -218,7 +225,7 @@ void MemDlg_set_visible()
    ShowWindow(GetDlgItem(dlg, IDC_TOTAL_ROM), SW_HIDE);
 }
 
-void mem_set_sizes()
+static void mem_set_sizes()
 {
    unsigned mems = mem_model[c1.mem_model].availRAMs;
    unsigned best = mem_model[c1.mem_model].defaultRAM;
@@ -252,7 +259,12 @@ void mem_set_sizes()
    char *romname = MemDlg_get_bigrom();
    EnableWindow(GetDlgItem(dlg, IDC_SINGLE_ROM), romname? 1 : 0);
    if (romname) SetDlgItemText(dlg, IDE_BIGROM, romname);
-   else c1.use_romset = 1, setcheck(IDC_CUSTOM_ROM,1), setcheck(IDC_SINGLE_ROM,0);
+   else
+   {
+       c1.use_romset = 1;
+       setcheck(IDC_CUSTOM_ROM, 1);
+       setcheck(IDC_SINGLE_ROM, 0);
+   }
 
    int cache_ok = (c1.mem_model == MM_ATM450)? 0 : 1;
    EnableWindow(GetDlgItem(dlg, IDC_CACHE0), cache_ok);
@@ -262,7 +274,7 @@ void mem_set_sizes()
    MemDlg_set_visible();
 }
 
-INT_PTR CALLBACK MemDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK MemDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
    ::dlg = dlg; char bf[0x800];
    static char lock = 0;
@@ -293,17 +305,29 @@ INT_PTR CALLBACK MemDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    if (!lock && msg == WM_COMMAND) {
       unsigned id = LOWORD(wp), code = HIWORD(wp);
       if (code == BN_CLICKED) {
-         if (id == IDC_SINGLE_ROM) c1.use_romset = 0, MemDlg_set_visible();
-         if (id == IDC_CUSTOM_ROM) c1.use_romset = 1, MemDlg_set_visible();
+          if(id == IDC_SINGLE_ROM)
+          {
+              c1.use_romset = 0;
+              MemDlg_set_visible();
+          }
+          if(id == IDC_CUSTOM_ROM)
+          {
+              c1.use_romset = 1;
+              MemDlg_set_visible();
+          }
          if (id == IDB_ROMSEL_P) change_rompage(0,1);
          if (id == IDB_ROMSEL_S) change_rombank(0,1);
       }
       if (code == CBN_SELCHANGE) {
          if (id == IDC_ROMSET) reload_roms();
          if (id == IDC_ROMPAGE) change_rompage(0,0);
-         if (id == IDC_MEM)
-            c1.mem_model = (MEM_MODEL)SendDlgItemMessage(dlg, IDC_MEM, CB_GETCURSEL, 0, 0),
-            lock=1, mem_set_sizes(), lock=0;
+         if(id == IDC_MEM)
+         {
+             c1.mem_model = (MEM_MODEL)SendDlgItemMessage(dlg, IDC_MEM, CB_GETCURSEL, 0, 0);
+             lock = 1;
+             mem_set_sizes();
+             lock = 0;
+         }
       }
       return 1;
    }
@@ -364,22 +388,22 @@ INT_PTR CALLBACK MemDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    return 1;
 }
 
-int getint(unsigned ID) {
+static int getint(int ID) {
    HWND wnd = GetDlgItem(dlg, ID);
    char bf[64]; SendMessage(wnd, WM_GETTEXT, sizeof bf, (LPARAM)bf);
    return atoi(bf);
 }
-void setint(unsigned ID, int num) {
+static void setint(int ID, int num) {
    HWND wnd = GetDlgItem(dlg, ID);
    char bf[64]; sprintf(bf, "%d", num);
    SendMessage(wnd, WM_SETTEXT, 0, (LPARAM)bf);
 }
 
-INT_PTR CALLBACK UlaDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK UlaDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
    ::dlg = dlg;
    NMHDR *nm = (NMHDR*)lp;
-   volatile static char block=0;
+   static volatile char block=0;
    if (msg == WM_INITDIALOG) {
       HWND box = GetDlgItem(dlg, IDC_ULAPRESET);
       for (unsigned i = 0; i < num_ula; i++)
@@ -391,20 +415,26 @@ INT_PTR CALLBACK UlaDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
       if ((code == EN_CHANGE && (id==IDE_FRAME || id==IDE_LINE || id==IDE_INT || id==IDE_INT_LEN || id==IDE_PAPER))
           || (code == BN_CLICKED && (id==IDC_EVENM1 || id==IDC_4TBORDER || id==IDC_FLOAT_BUS || id==IDC_FLOAT_DOS || id==IDC_PORT_FF)))
       {
-         c1.ula_preset = -1;
+         c1.ula_preset = u8(-1U);
          SendDlgItemMessage(dlg, IDC_ULAPRESET, CB_SETCURSEL, num_ula, 0);
       }
       if (code == CBN_SELCHANGE) {
          if (id == IDC_ULAPRESET) {
-            unsigned pre = SendDlgItemMessage(dlg, IDC_ULAPRESET, CB_GETCURSEL, 0, 0);
-            if (pre == num_ula) pre = -1;
+            unsigned pre = unsigned(SendDlgItemMessage(dlg, IDC_ULAPRESET, CB_GETCURSEL, 0, 0));
+            if (pre == num_ula) pre = -1U;
             c1.ula_preset = (unsigned char)pre;
-            if (pre == -1) return 1;
+            if (pre == -1U) return 1;
             CONFIG tmp = conf;
             conf.ula_preset = (unsigned char)pre; load_ula_preset();
-            c1.frame = /*conf.frame*/frametime/*Alone Coder*/, c1.intfq = conf.intfq, c1.intlen = conf.intlen, c1.t_line = conf.t_line,
-            c1.paper = conf.paper, c1.even_M1 = conf.even_M1, c1.border_4T = conf.border_4T;
-            c1.floatbus = conf.floatbus, c1.floatdos = conf.floatdos;
+            c1.frame = /*conf.frame*/frametime/*Alone Coder*/;
+            c1.intfq = conf.intfq;
+            c1.intlen = conf.intlen;
+            c1.t_line = conf.t_line;
+            c1.paper = conf.paper;
+            c1.even_M1 = conf.even_M1;
+            c1.border_4T = conf.border_4T;
+            c1.floatbus = conf.floatbus;
+            c1.floatdos = conf.floatdos;
             c1.portff = conf.portff;
             conf = tmp;
             goto refresh;
@@ -414,12 +444,12 @@ INT_PTR CALLBACK UlaDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    }
    if (msg != WM_NOTIFY) return 0;
    if (nm->code == PSN_KILLACTIVE) {
-      c1.frame = getint(IDE_FRAME);
-      c1.t_line = getint(IDE_LINE);
-      c1.paper = getint(IDE_PAPER);
-      c1.intfq = getint(IDE_INT);
-      c1.intlen = getint(IDE_INT_LEN);
-      c1.nopaper = getcheck(IDC_NOPAPER);
+      c1.frame = unsigned(getint(IDE_FRAME));
+      c1.t_line = unsigned(getint(IDE_LINE));
+      c1.paper = unsigned(getint(IDE_PAPER));
+      c1.intfq = unsigned(getint(IDE_INT));
+      c1.intlen = unsigned(getint(IDE_INT_LEN));
+      c1.nopaper = unsigned(getcheck(IDC_NOPAPER));
       c1.even_M1 = getcheck(IDC_EVENM1);
       c1.border_4T = getcheck(IDC_4TBORDER);
       c1.floatbus = getcheck(IDC_FLOAT_BUS);
@@ -437,31 +467,33 @@ INT_PTR CALLBACK UlaDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
       {
          c1.atm.mem_swap = getcheck(IDC_ATM_SWAP);
       }
+      c1.ula_plus = getcheck(IDC_ULA_PLUS);
    }
    if (nm->code == PSN_SETACTIVE) {
 refresh:
       SendDlgItemMessage(dlg, IDC_ULAPRESET, CB_SETCURSEL, c1.ula_preset<num_ula? c1.ula_preset : num_ula, 0);
       block=1;
-      setint(IDE_FRAME, c1.frame);
-      setint(IDE_LINE, c1.t_line);
-      setint(IDE_PAPER, c1.paper);
-      setint(IDE_INT, c1.intfq);
-      setint(IDE_INT_LEN, c1.intlen);
-      setcheck(IDC_NOPAPER, c1.nopaper);
+      setint(IDE_FRAME, int(c1.frame));
+      setint(IDE_LINE, int(c1.t_line));
+      setint(IDE_PAPER, int(c1.paper));
+      setint(IDE_INT, int(c1.intfq));
+      setint(IDE_INT_LEN, int(c1.intlen));
+      setcheck(IDC_NOPAPER, u8(c1.nopaper));
       setcheck(IDC_EVENM1, c1.even_M1);
       setcheck(IDC_4TBORDER, c1.border_4T);
       setcheck(IDC_FLOAT_BUS, c1.floatbus);
       setcheck(IDC_FLOAT_DOS, c1.floatdos);
       setcheck(IDC_PORT_FF, c1.portff);
 
-      unsigned en_atm =  (c1.mem_model == MM_ATM710 || c1.mem_model == MM_ATM3 || c1.mem_model == MM_ATM450);
-      unsigned en_profi =  (c1.mem_model == MM_PROFI);
+      BOOL en_atm =  (c1.mem_model == MM_ATM710 || c1.mem_model == MM_ATM3 || c1.mem_model == MM_ATM450);
+      BOOL en_profi =  (c1.mem_model == MM_PROFI);
       EnableWindow(GetDlgItem(dlg, IDC_ATM_SWAP), en_atm);
       EnableWindow(GetDlgItem(dlg, IDC_PROFI_MONOCHROME), en_profi);
       EnableWindow(GetDlgItem(dlg, IDC_ATMPAL), en_atm || en_profi);
       setcheck(IDC_PROFI_MONOCHROME, en_profi ? c1.profi_monochrome : 0);
       setcheck(IDC_ATM_SWAP, en_atm ? c1.atm.mem_swap : 0);
       setcheck(IDC_ATMPAL, (en_atm || en_profi) ? c1.use_comp_pal : 0);
+      setcheck(IDC_ULA_PLUS, c1.ula_plus);
 
       block=0;
       lastpage = "ULA";
@@ -472,7 +504,7 @@ refresh:
    return 1;
 }
 
-void HddDlg_set_active()
+static void HddDlg_set_active()
 {
    int enable = (c1.ide_scheme != 0);
    EnableWindow(GetDlgItem(dlg, IDB_HDD0), enable);
@@ -486,7 +518,7 @@ void HddDlg_set_active()
    if (!enable) return;
 }
 
-void HddDlg_show_info(int device)
+static void HddDlg_show_info(int device)
 {
    unsigned c = c1.ide[device].c, h = c1.ide[device].h, s = c1.ide[device].s;
    u64 l = c1.ide[device].lba;
@@ -514,37 +546,38 @@ void HddDlg_show_info(int device)
 
    SetDlgItemText(dlg, device? IDE_HDD1 : IDE_HDD0, c1.ide[device].image);
    char textbuf[512];
-   *textbuf = 0; if (*c1.ide[device].image) sprintf(textbuf, "%I64d", l);
+   *textbuf = 0; if (*c1.ide[device].image) sprintf(textbuf, "%I64u", l);
    SetWindowText(edit_l, textbuf);
-   *textbuf = 0; if (*c1.ide[device].image) sprintf(textbuf, "%d/%d/%d", c,h,s);
+   *textbuf = 0; if (*c1.ide[device].image) sprintf(textbuf, "%u/%u/%u", c,h,s);
    SetWindowText(edit_c, textbuf);
 }
 
-void HddDlg_select_image(int device)
+static void HddDlg_select_image(int device)
 {
    HMENU selmenu = CreatePopupMenu();
    AppendMenu(selmenu, MF_STRING, 1, "Select image file...");
    AppendMenu(selmenu, MF_STRING, 2, "Remove device");
-   int max, drive; char textbuf[512];
+   unsigned max, drive; char textbuf[512];
    for (max = drive = 0; drive < n_phys; drive++) {
 
       if (phys[drive].type == ATA_NTHDD)
-         sprintf(textbuf, "HDD %d: %s, %d Mb", phys[drive].spti_id, phys[drive].viewname, phys[drive].hdd_size / (2*1024));
+         sprintf(textbuf, "HDD %u: %s, %u Mb", phys[drive].spti_id, phys[drive].viewname, phys[drive].hdd_size / (2*1024));
 
       else if (phys[drive].type == ATA_SPTI_CD)
-         sprintf(textbuf, "CD-ROM %d: %s", phys[drive].spti_id, phys[drive].viewname);
+         sprintf(textbuf, "CD-ROM %u: %s", phys[drive].spti_id, phys[drive].viewname);
 
       else if (phys[drive].type == ATA_ASPI_CD)
-         sprintf(textbuf, "CD-ROM %d.%d: %s", phys[drive].adapterid, phys[drive].targetid, phys[drive].viewname);
+         sprintf(textbuf, "CD-ROM %u.%u: %s", phys[drive].adapterid, phys[drive].targetid, phys[drive].viewname);
 
       else continue;
 
-      if (!max) AppendMenu(selmenu, MF_SEPARATOR, 0, 0);
-      max++, AppendMenu(selmenu, MF_STRING, drive+8, textbuf);
+      if (!max) AppendMenu(selmenu, MF_SEPARATOR, 0, nullptr);
+      max++;
+      AppendMenu(selmenu, MF_STRING, drive + 8, textbuf);
    }
 
    RECT rc; GetWindowRect(GetDlgItem(dlg, device? IDB_HDD1 : IDB_HDD0), &rc);
-   int code = TrackPopupMenu(selmenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_NONOTIFY | TPM_RIGHTBUTTON, rc.left, rc.bottom, 0, dlg, 0);
+   int code = TrackPopupMenu(selmenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_NONOTIFY | TPM_RIGHTBUTTON, rc.left, rc.bottom, 0, dlg, nullptr);
    DestroyMenu(selmenu);
    if (!code) return;
 
@@ -565,7 +598,7 @@ void HddDlg_select_image(int device)
    }
 
    // open HDD image
-   OPENFILENAME fn = { 0 };
+   OPENFILENAME fn = { };
 /*
    strcpy(textbuf, c1.ide[device].image);
    if (textbuf[0] == '<') *textbuf = 0;
@@ -600,14 +633,18 @@ void HddDlg_select_image(int device)
    HddDlg_show_info(device);
 }
 
-void HddDlg_show_size(unsigned id, unsigned sectors)
+static void HddDlg_show_size(unsigned id, unsigned sectors)
 {
    unsigned __int64 sz = ((unsigned __int64)sectors) << 9;
    char num[64]; int ptr = 0, tri = 0;
    for (;;) {
-      num[ptr++] = (unsigned char)(sz % 10) + '0';
+      num[ptr++] = char((unsigned char)(sz % 10) + '0');
       sz /= 10; if (!sz) break;
-      if (++tri == 3) num[ptr++] = ',', tri = 0;
+      if(++tri == 3)
+      {
+          num[ptr++] = ',';
+          tri = 0;
+      }
    }
    char dst[64]; dst[0] = '-'; dst[1] = ' ';
    int k; //Alone Coder 0.36.7
@@ -616,11 +653,11 @@ void HddDlg_show_size(unsigned id, unsigned sectors)
    SetDlgItemText(dlg, id, dst);
 }
 
-INT_PTR CALLBACK HddDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK HddDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
    ::dlg = dlg;
    NMHDR *nm = (NMHDR*)lp;
-   volatile static char block=0;
+   static volatile char block=0;
    if (msg == WM_INITDIALOG)
    {
       HWND box = GetDlgItem(dlg, IDC_IDESCHEME);
@@ -658,8 +695,8 @@ INT_PTR CALLBACK HddDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
       {
          char bf[64]; unsigned c=0, h=0, s=0, l=0;
          GetWindowText((HWND)lp, bf, sizeof bf);
-         sscanf(bf, "%d/%d/%d", &c, &h, &s);
-         sscanf(bf, "%d", &l);
+         sscanf(bf, "%u/%u/%u", &c, &h, &s);
+         sscanf(bf, "%u", &l);
          switch (id)
          {
             case IDE_HDD0_CHS: HddDlg_show_size(IDS_HDD0_CHS, c*h*s); break;
@@ -679,11 +716,11 @@ INT_PTR CALLBACK HddDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
       c1.ide[1].readonly = getcheck(IDC_HDD1_RO);
       for (unsigned device = 0; device < 2; device++)
          if (*c1.ide[device].image && *c1.ide[device].image != '<') {
-            char textbuf[64]; unsigned c=0, h=0, s=0, l=0;
+            char textbuf[64];
             GetDlgItemText(dlg, device? IDE_HDD1_LBA : IDE_HDD0_LBA, textbuf, sizeof textbuf);
-            sscanf(textbuf, "%d", &c1.ide[device].lba);
+            sscanf(textbuf, "%llu", &c1.ide[device].lba);
             GetDlgItemText(dlg, device? IDE_HDD1_CHS : IDE_HDD0_CHS, textbuf, sizeof textbuf);
-            sscanf(textbuf, "%d/%d/%d", &c1.ide[device].c, &c1.ide[device].h, &c1.ide[device].s);
+            sscanf(textbuf, "%u/%u/%u", &c1.ide[device].c, &c1.ide[device].h, &c1.ide[device].s);
          }
 
    }
@@ -715,8 +752,10 @@ INT_PTR CALLBACK HddDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    return 1;
 }
 
-INT_PTR CALLBACK EFF7Dlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK EFF7Dlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
+    (void)wp;
+
    ::dlg = dlg;
    NMHDR *nm = (NMHDR*)lp;
    if (msg != WM_NOTIFY) return 0;
@@ -725,12 +764,13 @@ INT_PTR CALLBACK EFF7Dlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    static int lock[] = { IDC_LOCK0, IDC_LOCK1, IDC_LOCK2, IDC_LOCK3,
                          IDC_LOCK4, IDC_LOCK5, IDC_LOCK6, IDC_LOCK7 };
    if (nm->code == PSN_KILLACTIVE) {
-      unsigned mask = 0, eff7 = 0;
+      u8 mask = 0, eff7 = 0;
       for (unsigned i = 0; i < 8; i++) {
          if (getcheck(lock[i])) mask |= (1<<i);
          if (getcheck(bits[i])) eff7 |= (1<<i);
       }
-      c1.EFF7_mask = mask, comp.pEFF7 = eff7;
+      c1.EFF7_mask = mask;
+      comp.pEFF7 = eff7;
    }
    if (nm->code == PSN_SETACTIVE) {
       for (unsigned i = 0; i < 8; i++) {
@@ -745,8 +785,9 @@ INT_PTR CALLBACK EFF7Dlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    return 1;
 }
 
-INT_PTR CALLBACK ChipDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK ChipDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
+    (void)wp;
    ::dlg = dlg;
    if (msg == WM_INITDIALOG) {
       unsigned i; HWND aybox;
@@ -775,7 +816,7 @@ INT_PTR CALLBACK ChipDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    if (msg != WM_NOTIFY) return 0;
    NMHDR *nm = (NMHDR*)lp;
    if (nm->code == PSN_KILLACTIVE) {
-      c1.sound.ayfq = getint(IDC_CHIP_CLK);
+      c1.sound.ayfq = unsigned(getint(IDC_CHIP_CLK));
       c1.sound.ay_chip = (unsigned char)SendDlgItemMessage(dlg, IDC_CHIP_BUS, CB_GETCURSEL, 0, 0);
       c1.sound.ay_scheme = (unsigned char)SendDlgItemMessage(dlg, IDC_CHIP_SCHEME, CB_GETCURSEL, 0, 0);
       c1.sound.ay_vols = (unsigned char)SendDlgItemMessage(dlg, IDC_CHIP_VOL, CB_GETCURSEL, 0, 0);
@@ -783,7 +824,7 @@ INT_PTR CALLBACK ChipDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
       c1.sound.ay_samples = getcheck(IDC_CHIP_DIGITAL);
    }
    if (nm->code == PSN_SETACTIVE) {
-      setint(IDC_CHIP_CLK, c1.sound.ayfq);
+      setint(IDC_CHIP_CLK, int(c1.sound.ayfq));
       SendDlgItemMessage(dlg, IDC_CHIP_BUS, CB_SETCURSEL, c1.sound.ay_chip, 0);
       SendDlgItemMessage(dlg, IDC_CHIP_SCHEME, CB_SETCURSEL, c1.sound.ay_scheme, 0);
       SendDlgItemMessage(dlg, IDC_CHIP_VOL, CB_SETCURSEL, c1.sound.ay_vols, 0);
@@ -796,8 +837,9 @@ INT_PTR CALLBACK ChipDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    return 1;
 }
 
-INT_PTR CALLBACK fir_dlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK fir_dlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
+    (void)lp;
    ::dlg = dlg;
    if (msg == WM_INITDIALOG) {
       setcheck(IDC_SIMPLE, (c1.rsm.mode == RSM_SIMPLE));
@@ -807,7 +849,7 @@ INT_PTR CALLBACK fir_dlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
       SendDlgItemMessage(dlg, IDC_FRAMES, TBM_SETRANGE, 0, MAKELONG(2,8));
       SendDlgItemMessage(dlg, IDC_FRAMES, TBM_SETPOS, 1, c1.rsm.mix_frames);
    enable_slider:
-      DWORD en = !getcheck(IDC_SIMPLE);
+      BOOL en = !getcheck(IDC_SIMPLE);
       EnableWindow(GetDlgItem(dlg, IDC_FRAMES), en);
       EnableWindow(GetDlgItem(dlg, IDC_FRAMES_BOX), en);
       return 0;
@@ -828,7 +870,7 @@ INT_PTR CALLBACK fir_dlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    return 0;
 }
 
-INT_PTR CALLBACK VideoDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK VideoDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
    ::dlg = dlg; unsigned id, code;
    int i; //Alone Coder 0.36.7
@@ -864,17 +906,18 @@ INT_PTR CALLBACK VideoDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
       goto filter_changed;
    }
    if (msg == WM_COMMAND) {
-      id = LOWORD(wp), code = HIWORD(wp);
+      id = LOWORD(wp);
+      code = HIWORD(wp);
       if (id == IDC_FONT) { font_setup(dlg); return 1; }
       if (id == IDC_FIR) { DialogBox(hIn, MAKEINTRESOURCE(IDD_FIR), dlg, fir_dlg); return 1; }
       if ((id == IDC_NOFLIC || id == IDC_FAST_SL) && code == BN_CLICKED) goto filter_changed;
       if (code == CBN_SELCHANGE && id == IDC_VIDEOFILTER) {
    filter_changed:
-         unsigned filt_n = SendDlgItemMessage(dlg, IDC_VIDEOFILTER, CB_GETCURSEL, 0, 0);
+         unsigned filt_n = unsigned(SendDlgItemMessage(dlg, IDC_VIDEOFILTER, CB_GETCURSEL, 0, 0));
          DWORD f = renders[filt_n].flags;
          RENDER_FUNC rend = renders[filt_n].func;
 
-         DWORD sh = (f & (RF_USE32AS16 | RF_USEC32)) ? SW_SHOW : SW_HIDE;
+         int sh = (f & (RF_USE32AS16 | RF_USEC32)) ? SW_SHOW : SW_HIDE;
          ShowWindow(GetDlgItem(dlg, IDC_CH_TITLE), sh);
          ShowWindow(GetDlgItem(dlg, IDC_CH2), sh);
          ShowWindow(GetDlgItem(dlg, IDC_CH4), sh);
@@ -923,20 +966,20 @@ INT_PTR CALLBACK VideoDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 
    if (nm->code == PSN_KILLACTIVE)
    {
-      unsigned index = SendDlgItemMessage(dlg, IDC_FONTHEIGHT, CB_GETCURSEL, 0, 0);
+      unsigned index = unsigned(SendDlgItemMessage(dlg, IDC_FONTHEIGHT, CB_GETCURSEL, 0, 0));
       c1.pixelscroll = (index == 4)? 0 : 1;
       c1.fontsize = (index == 4)? 8 : index + 5;
-      c1.render = SendDlgItemMessage(dlg, IDC_VIDEOFILTER, CB_GETCURSEL, 0, 0);
-      c1.driver = SendDlgItemMessage(dlg, IDC_RENDER, CB_GETCURSEL, 0, 0);
-      c1.frameskip = getint(IDE_SKIP1);
-      c1.minres = getint(IDE_MINX);
-      c1.frameskipmax = getint(IDE_SKIP2);
-      c1.scanbright = getint(IDE_SCBRIGHT);
+      c1.render = unsigned(SendDlgItemMessage(dlg, IDC_VIDEOFILTER, CB_GETCURSEL, 0, 0));
+      c1.driver = unsigned(SendDlgItemMessage(dlg, IDC_RENDER, CB_GETCURSEL, 0, 0));
+      c1.frameskip = u8(getint(IDE_SKIP1));
+      c1.minres = unsigned(getint(IDE_MINX));
+      c1.frameskipmax = u8(getint(IDE_SKIP2));
+      c1.scanbright = unsigned(getint(IDE_SCBRIGHT));
       c1.fast_sl = getcheck(IDC_FAST_SL);
-      c1.scrshot = SendDlgItemMessage(dlg, IDC_SCRSHOT, CB_GETCURSEL, 0, 0);
+      c1.scrshot = int(SendDlgItemMessage(dlg, IDC_SCRSHOT, CB_GETCURSEL, 0, 0));
       c1.flip = (conf.SyncMode == SM_VIDEO) ? 1 : getcheck(IDC_FLIP);
       c1.updateb = getcheck(IDC_UPDB);
-      c1.pal = SendDlgItemMessage(dlg, IDC_PALETTE, CB_GETCURSEL, 0, 0);
+      c1.pal = unsigned(SendDlgItemMessage(dlg, IDC_PALETTE, CB_GETCURSEL, 0, 0));
       c1.flashcolor = getcheck(IDC_FLASH);
       c1.noflic = getcheck(IDC_NOFLIC);
       c1.alt_nf = getcheck(IDC_ALT_NOFLIC);
@@ -953,8 +996,8 @@ INT_PTR CALLBACK VideoDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    {
       setint(IDE_SKIP1, c1.frameskip);
       setint(IDE_SKIP2, c1.frameskipmax);
-      setint(IDE_MINX, c1.minres);
-      setint(IDE_SCBRIGHT, c1.scanbright);
+      setint(IDE_MINX, int(c1.minres));
+      setint(IDE_SCBRIGHT, int(c1.scanbright));
 
       SendDlgItemMessage(dlg, IDC_SCRSHOT, CB_SETCURSEL, c1.scrshot, 0);
 
@@ -983,6 +1026,38 @@ INT_PTR CALLBACK VideoDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    return 1;
 }
 
+#ifdef MOD_GSBASS
+void SaveModDlg(HWND dlg)
+{
+    char fname[FILENAME_MAX];
+    strncpy(fname, (char*)gs.mod, 20);
+    fname[20] = 0;
+    static const char *InvalidChars = "|<>?/\\\":*";
+    for(char *ptr = fname; *ptr; ptr++)
+    {
+        if((*(u8*)ptr < ' ') || (strchr(InvalidChars, *ptr) != nullptr))
+        {
+            *ptr = ' ';
+        }
+    }
+
+    OPENFILENAME ofn = { };
+    ofn.lStructSize = (WinVerMajor < 5) ? OPENFILENAME_SIZE_VERSION_400 : sizeof(OPENFILENAME);
+    ofn.lpstrFilter = "Amiga music module (MOD)\0*.mod\0";
+    ofn.lpstrFile = fname;
+    ofn.nMaxFile = _countof(fname);
+    ofn.lpstrTitle = "Save music from GS";
+    ofn.lpstrDefExt = "mod";
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_EXPLORER | OFN_ENABLESIZING;
+    ofn.hwndOwner = dlg;
+    ofn.nFilterIndex = 1;
+    if(GetSaveFileName(&ofn))
+    {
+        gs.debug_save_mod(fname);
+    }
+}
+#endif // MOD_GSBASS
+
 static struct
 {
    unsigned ID;
@@ -999,26 +1074,26 @@ static struct
    { IDC_SND_GS,      &c1.sound.gs_vol      },
 };
 
-INT_PTR CALLBACK SoundDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK SoundDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
    ::dlg = dlg;
    if (msg == WM_INITDIALOG)
    {
-      unsigned savemod = 0, reset = 0, fx_vol = 0, bass_vol = 0;
+      BOOL savemod = FALSE, reset = FALSE, fx_vol = FALSE, bass_vol = FALSE;
 //      unsigned here_soundfilter = 1; //Alone Coder 0.36.4
       #ifdef MOD_GS
       if (c1.gs_type)
       {
-         reset = 1;
+         reset = TRUE;
 
          #ifdef MOD_GSZ80
-         if (c1.gs_type == 1) fx_vol = 1;
+         if (c1.gs_type == 1) fx_vol = TRUE;
          #endif
 
          #ifdef MOD_GSBASS
          if (c1.gs_type == 2) {
-            fx_vol = bass_vol = 1;
-            if (gs.mod && gs.modsize) savemod = 1;
+            fx_vol = bass_vol = TRUE;
+            if (gs.mod && gs.modsize) savemod = TRUE;
          }
          #endif
       }
@@ -1035,7 +1110,7 @@ INT_PTR CALLBACK SoundDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    }
    if (msg == WM_COMMAND && LOWORD(wp) == IDC_NOSOUND) {
       c1.sound.enabled = !getcheck(IDC_NOSOUND);
-upd:  for (int i = 0; i < sizeof slider/sizeof*slider; i++) {
+upd:  for (size_t i = 0; i < sizeof slider/sizeof*slider; i++) {
          SendDlgItemMessage(dlg, slider[i].ID, TBM_SETRANGE, 0, MAKELONG(0,8192));
          SendDlgItemMessage(dlg, slider[i].ID, TBM_SETPOS, 1, c1.sound.enabled ? *slider[i].value : 0);
          SendDlgItemMessage(dlg, slider[i].ID, WM_ENABLE, c1.sound.enabled, 0);
@@ -1043,39 +1118,20 @@ upd:  for (int i = 0; i < sizeof slider/sizeof*slider; i++) {
       return 1;
    }
 
-   #ifdef MOD_GSBASS
-   if (msg == WM_COMMAND && LOWORD(wp) == IDB_SAVEMOD) {
-      OPENFILENAME ofn = { 0 };
-      char fname[0x200]; strncpy(fname, (char*)gs.mod, 20); fname[20] = 0;
-      for (char *ptr = fname; *ptr; ptr++)
-         if (*ptr == '|' || *ptr == '<' || *ptr == '>' ||
-             *ptr == '?' || *ptr == '/' || *ptr == '\\' ||
-             *ptr == '"' || *ptr == ':' || *ptr == '*' || *(unsigned char*)ptr < ' ')
-            *ptr = ' ';
-      ofn.lStructSize = (WinVerMajor < 5) ? OPENFILENAME_SIZE_VERSION_400 : sizeof(OPENFILENAME);
-      ofn.lpstrFilter = "Amiga music module (MOD)\0*.mod\0";
-      ofn.lpstrFile = fname; ofn.nMaxFile = sizeof fname;
-      ofn.lpstrTitle = "Save music from GS";
-      ofn.lpstrDefExt = "mod";
-      ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
-      ofn.hwndOwner = dlg;
-      if (GetSaveFileName(&ofn)) {
-         FILE *ff = fopen(fname, "wb");
-         if (ff) {
-            fwrite(gs.mod, 1, gs.modsize, ff);
-            fclose(ff);
-         }
-      }
-      return 1;
+#ifdef MOD_GSBASS
+   if((msg == WM_COMMAND) && (LOWORD(wp) == IDB_SAVEMOD) && (HIWORD(wp) == BN_CLICKED))
+   {
+       SaveModDlg(dlg);
+       return 1;
    }
-   #endif
+#endif
 
    if (msg != WM_NOTIFY) return 0;
    NMHDR *nm = (NMHDR*)lp;
    if (nm->code == PSN_KILLACTIVE) {
       if ((c1.sound.enabled = (IsDlgButtonChecked(dlg, IDC_NOSOUND) != BST_CHECKED)))
-         for (int i = 0; i < sizeof slider/sizeof*slider; i++)
-            *slider[i].value = SendDlgItemMessage(dlg, slider[i].ID, TBM_GETPOS, 0, 0);
+         for (size_t i = 0; i < sizeof slider/sizeof*slider; i++)
+            *slider[i].value = int(SendDlgItemMessage(dlg, slider[i].ID, TBM_GETPOS, 0, 0));
       c1.sound.gsreset = getcheck(IDC_GSRESET);
       c1.soundfilter = getcheck(IDC_SOUNDFILTER); //Alone Coder 0.36.4
    }
@@ -1091,32 +1147,46 @@ upd:  for (int i = 0; i < sizeof slider/sizeof*slider; i++) {
    return 1;
 }
 
-INT_PTR CALLBACK TapeDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK TapeDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
-   ::dlg = dlg;
-   if (msg == WM_INITDIALOG) {
-      find_tape_index();
-      for (unsigned i = 0; i < tape_infosize; i++)
-         SendDlgItemMessage(dlg, IDC_TAPE, LB_ADDSTRING, 0, (LPARAM)tapeinfo[i].desc);
-   }
-   if (msg != WM_NOTIFY) return 0;
-   NMHDR *nm = (NMHDR*)lp;
-   if (nm->code == PSN_KILLACTIVE) {
-      comp.tape.index = SendDlgItemMessage(dlg, IDC_TAPE, LB_GETCURSEL, 0, 0);
-      c1.tape_autostart = getcheck(IDC_TAPE_AUTOSTART);
-   }
-   if (nm->code == PSN_SETACTIVE) {
-      SendDlgItemMessage(dlg, IDC_TAPE, LB_SETCURSEL, comp.tape.index, 0);
-      setcheck(IDC_TAPE_AUTOSTART, c1.tape_autostart);
-      lastpage = "TAPE";
-   }
-   if (nm->code == PSN_APPLY) dlgok = 1;
-   if (nm->code == PSN_RESET) dlgok = 0;
-   return 1;
+    (void)wp;
+    ::dlg = dlg;
+    if(msg == WM_INITDIALOG)
+    {
+        find_tape_index();
+        for(unsigned i = 0; i < tape_infosize; i++)
+        {
+            SendDlgItemMessage(dlg, IDC_TAPE, LB_ADDSTRING, 0, (LPARAM)tapeinfo[i].desc);
+        }
+    }
+    if(msg != WM_NOTIFY) return 0;
+    NMHDR *nm = (NMHDR*)lp;
+    if(nm->code == PSN_KILLACTIVE)
+    {
+        unsigned Idx = unsigned(SendDlgItemMessage(dlg, IDC_TAPE, LB_GETCURSEL, 0, 0));
+        if(Idx != -1U && Idx != comp.tape.index)
+        {
+            comp.tape.index = Idx;
+            comp.tape.play_pointer = tape_image + tapeinfo[comp.tape.index].pos;
+        }
+
+        c1.tape_autostart = getcheck(IDC_TAPE_AUTOSTART);
+        c1.tape_traps = getcheck(IDC_TAPE_TRAPS);
+    }
+    if(nm->code == PSN_SETACTIVE)
+    {
+        SendDlgItemMessage(dlg, IDC_TAPE, LB_SETCURSEL, comp.tape.index, 0);
+        setcheck(IDC_TAPE_AUTOSTART, c1.tape_autostart);
+        setcheck(IDC_TAPE_TRAPS, c1.tape_traps);
+        lastpage = "TAPE";
+    }
+    if(nm->code == PSN_APPLY) dlgok = 1;
+    if(nm->code == PSN_RESET) dlgok = 0;
+    return 1;
 }
 
 
-void FillModemList(HWND box)
+static void FillModemList(HWND box)
 {
    ComboBox_AddString(box, "NONE");
    for (unsigned port = 1; port < 256; port++)
@@ -1127,9 +1197,9 @@ void FillModemList(HWND box)
       else
       {
          char portName[11];
-         _snprintf(portName, _countof(portName), "\\\\.\\COM%d", port);
+         _snprintf(portName, _countof(portName), "\\\\.\\COM%u", port);
 
-         hPort = CreateFile(portName, 0, 0, 0, OPEN_EXISTING, 0, 0);
+         hPort = CreateFile(portName, 0, 0, nullptr, OPEN_EXISTING, 0, nullptr);
          if (hPort == INVALID_HANDLE_VALUE)
              continue;
       }
@@ -1147,21 +1217,21 @@ void FillModemList(HWND box)
          MODEMDEVCAPS *mc = (MODEMDEVCAPS*)&b.comm.wcProvChar;
          char vendor[0x100], model[0x100];
 
-         unsigned vsize = mc->dwModemManufacturerSize / sizeof(WCHAR);
-         WideCharToMultiByte(CP_ACP, 0, (WCHAR*)(PCHAR(mc) + mc->dwModemManufacturerOffset), vsize, vendor, sizeof vendor, 0, 0);
+         int vsize = int(mc->dwModemManufacturerSize / sizeof(WCHAR));
+         WideCharToMultiByte(CP_ACP, 0, (WCHAR*)(PCHAR(mc) + mc->dwModemManufacturerOffset), vsize, vendor, sizeof vendor, nullptr, nullptr);
          vendor[vsize] = 0;
 
-         unsigned msize = mc->dwModemModelSize / sizeof(WCHAR);
-         WideCharToMultiByte(CP_ACP, 0, (WCHAR*)(PCHAR(mc) + mc->dwModemModelOffset), msize, model, sizeof model, 0, 0);
+         int msize = int(mc->dwModemModelSize / sizeof(WCHAR));
+         WideCharToMultiByte(CP_ACP, 0, (WCHAR*)(PCHAR(mc) + mc->dwModemModelOffset), msize, model, sizeof model, nullptr, nullptr);
          model[msize] = 0;
          char line[0x200];
-         _snprintf(line, _countof(line), "COM%d: %s %s", port, vendor, model);
+         _snprintf(line, _countof(line), "COM%u: %s %s", port, vendor, model);
          ComboBox_AddString(box, line);
       }
       else
       {
          char portName[11];
-         _snprintf(portName, _countof(portName), "COM%d:", port);
+         _snprintf(portName, _countof(portName), "COM%u:", port);
          ComboBox_AddString(box, portName);
       }
       if (modem.open_port != port)
@@ -1169,7 +1239,7 @@ void FillModemList(HWND box)
    }
 }
 
-void SelectModem(HWND box)
+static void SelectModem(HWND box)
 {
    if (!c1.modem_port)
    {
@@ -1193,7 +1263,7 @@ void SelectModem(HWND box)
    }
 }
 
-int GetModemPort(HWND box)
+static int GetModemPort(HWND box)
 {
    int index = ComboBox_GetCurSel(box);
    if (!index)
@@ -1206,8 +1276,9 @@ int GetModemPort(HWND box)
    return Port;
 }
 
-INT_PTR CALLBACK InputDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK InputDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
+    (void)wp;
    ::dlg = dlg; char names[0x2000];
    if (msg == WM_INITDIALOG) {
       zxkeymap *active_zxk = conf.input.active_zxk;
@@ -1233,20 +1304,21 @@ INT_PTR CALLBACK InputDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
       c1.input.keybpcmode = getcheck(IDC_PC_LAYOUT);
       c1.input.mouseswap = getcheck(IDC_MOUSESWAP);
       c1.input.kjoy = getcheck(IDC_KJOY);
+      c1.input.fjoy = getcheck(IDC_FJOY);
       c1.input.keymatrix = getcheck(IDC_KEYMATRIX);
       c1.input.mousescale = (char)(SendDlgItemMessage(dlg, IDC_MOUSESCALE, TBM_GETPOS, 0, 0) - 3);
       c1.input.joymouse = getcheck(IDC_JOYMOUSE);
-      c1.input.firenum = SendDlgItemMessage(dlg, IDC_FIREKEY, CB_GETCURSEL, 0, 0);
+      c1.input.firenum = unsigned(SendDlgItemMessage(dlg, IDC_FIREKEY, CB_GETCURSEL, 0, 0));
       c1.input.fire = getcheck(IDC_AUTOFIRE);
-      c1.input.firedelay = getint(IDE_FIRERATE);
+      c1.input.firedelay = u8(getint(IDE_FIRERATE));
       c1.input.altlock = getcheck(IDC_ALTLOCK);
-      c1.input.paste_hold = getint(IDE_HOLD_DELAY);
-      c1.input.paste_release = getint(IDE_RELEASE_DELAY);
-      c1.input.paste_newline = getint(IDE_NEWLINE_DELAY);
+      c1.input.paste_hold = u8(getint(IDE_HOLD_DELAY));
+      c1.input.paste_release = u8(getint(IDE_RELEASE_DELAY));
+      c1.input.paste_newline = u8(getint(IDE_NEWLINE_DELAY));
       c1.atm.xt_kbd = getcheck(IDC_ATM_KBD);
       c1.modem_port = GetModemPort(GetDlgItem(dlg, IDC_MODEM));
       GetPrivateProfileSectionNames(names, sizeof names, ininame);
-      int n = SendDlgItemMessage(dlg, IDC_KLAYOUT, CB_GETCURSEL, 0, 0), i = 0;
+      int n = int(SendDlgItemMessage(dlg, IDC_KLAYOUT, CB_GETCURSEL, 0, 0)), i = 0;
       for (char *ptr = names; *ptr; ptr += strlen(ptr)+1)
          if (!strnicmp(ptr, "ZX.KEYS.", sizeof("ZX.KEYS.")-1)) {
             if (i == n) strcpy(c1.keyset, ptr+sizeof("ZX.KEYS.")-1);
@@ -1263,6 +1335,7 @@ INT_PTR CALLBACK InputDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
       setcheck(IDC_WHEEL_KEMPSTON, c1.input.mousewheel == MOUSE_WHEEL_KEMPSTON);
       setcheck(IDC_MOUSESWAP, c1.input.mouseswap);
       setcheck(IDC_KJOY, c1.input.kjoy);
+      setcheck(IDC_FJOY, c1.input.fjoy);
       setcheck(IDC_KEYMATRIX, c1.input.keymatrix);
       setcheck(IDC_JOYMOUSE, c1.input.joymouse);
       setcheck(IDC_AUTOFIRE, c1.input.fire);
@@ -1291,7 +1364,7 @@ INT_PTR CALLBACK InputDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    return 1;
 }
 
-INT_PTR CALLBACK LedsDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK LedsDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
    static int ids[NUM_LEDS][3] = {
      { IDC_LED_AY, IDC_LED_AY_X, IDC_LED_AY_Y },
@@ -1302,7 +1375,7 @@ INT_PTR CALLBACK LedsDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
      { IDC_LED_DEBUG, IDC_LED_DEBUG_X, IDC_LED_DEBUG_Y },
      { IDC_LED_MEMBAND, IDC_LED_MEMBAND_X, IDC_LED_MEMBAND_Y }
    };
-   volatile static char block=0;
+   static volatile char block=0;
    ::dlg = dlg;
    if (msg == WM_USER || (!block && msg == WM_COMMAND && (HIWORD(wp)==EN_CHANGE || HIWORD(wp)==BN_CLICKED)))
    {
@@ -1315,7 +1388,7 @@ INT_PTR CALLBACK LedsDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
          SendDlgItemMessage(dlg, ids[i][1], WM_GETTEXT, sizeof b1, (LPARAM)b1);
          SendDlgItemMessage(dlg, ids[i][2], WM_GETTEXT, sizeof b2, (LPARAM)b2);
          if (!*b1 || !*b2) continue; // skip first notification with empty controls
-         unsigned a = (atoi(b1) & 0xFFFF) + ((atoi(b2) & 0x7FFF) << 16);
+         unsigned a = unsigned(atoi(b1) & 0xFFFF) + unsigned((atoi(b2) & 0x7FFF) << 16);
          if (IsDlgButtonChecked(dlg, ids[i][0]) == BST_CHECKED) a |= 0x80000000;
          unsigned char x = ld_on && (a & 0x80000000);
          EnableWindow(GetDlgItem(dlg, ids[i][0]), ld_on);
@@ -1340,7 +1413,7 @@ INT_PTR CALLBACK LedsDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    if (msg != WM_NOTIFY) return 0;
    NMHDR *nm = (NMHDR*)lp;
    if (nm->code == PSN_KILLACTIVE) {
-      unsigned pos = SendDlgItemMessage(dlg, IDC_LED_BPP, TBM_GETPOS, 0, 0);
+      unsigned pos = unsigned(SendDlgItemMessage(dlg, IDC_LED_BPP, TBM_GETPOS, 0, 0));
       if (pos == 0) c1.led.bandBpp = 64;
       else if (pos == 1) c1.led.bandBpp = 128;
       else if (pos == 2) c1.led.bandBpp = 256;
@@ -1375,7 +1448,7 @@ INT_PTR CALLBACK LedsDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    return 1;
 }
 
-INT_PTR CALLBACK BetaDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK BetaDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
    ::dlg = dlg;
    unsigned ID = LOWORD(wp);
@@ -1385,7 +1458,7 @@ INT_PTR CALLBACK BetaDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    }
    if (msg == WM_COMMAND)
    {
-      int disk;
+      unsigned disk;
       switch (ID)
       {
          case IDB_INS_A: disk = 0; goto load;
@@ -1406,7 +1479,7 @@ INT_PTR CALLBACK BetaDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
          remove:
             if (!comp.wd.fdd[disk].test())
                 return 1;
-            comp.wd.fdd[disk].free();
+            comp.wd.Eject(disk);
             c1.trdos_wp[disk] = conf.trdos_wp[disk];
             goto reload;
 
@@ -1453,7 +1526,7 @@ reload:
    setcheck(IDC_WPB, c1.trdos_wp[1]);
    setcheck(IDC_WPC, c1.trdos_wp[2]);
    setcheck(IDC_WPD, c1.trdos_wp[3]);
-   unsigned on = getcheck(IDC_BETA128);
+   BOOL on = getcheck(IDC_BETA128);
    EnableWindow(GetDlgItem(dlg, IDC_DISK_TRAPS), on);
    EnableWindow(GetDlgItem(dlg, IDC_DISK_NODELAY), on);
 
@@ -1482,7 +1555,7 @@ reload:
 // Ngs=true/Zc=false
 static bool OpenSdImage(bool Ngs)
 {
-   OPENFILENAME fn = { 0 };
+   OPENFILENAME fn = { };
 
    char SdImage[FILENAME_MAX];
    SdImage[0] = 0;
@@ -1512,22 +1585,68 @@ static bool OpenSdImage(bool Ngs)
    return true;
 }
 
+static void NgsDlgSetEnable()
+{
+    bool on = (c1.gs_type != 0);
+    EnableWindow(GetDlgItem(dlg, IDC_COMBO_GS_RAM_SIZE), on);
+    EnableWindow(GetDlgItem(dlg, IDB_SD_NGS), on);
+}
+
 static INT_PTR CALLBACK NgsDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
    ::dlg = dlg;
     switch(msg)
     {
     case WM_INITDIALOG:
+    {
+        HWND CbGsType = GetDlgItem(dlg, IDC_COMBO_GS_TYPE);
+        ComboBox_AddString(CbGsType, "None"); // 0
+        ComboBox_AddString(CbGsType, "Z80"); // 1
+        ComboBox_AddString(CbGsType, "Bass"); // 2
+
+        HWND CbGsRamSize = GetDlgItem(dlg, IDC_COMBO_GS_RAM_SIZE);
+        ComboBox_AddString(CbGsRamSize, "512"); // 0
+        ComboBox_AddString(CbGsRamSize, "2048"); // 1
+        ComboBox_AddString(CbGsRamSize, "4096"); // 2
+
         return TRUE;
+    }
 
     case WM_COMMAND:
         {
             unsigned id = LOWORD(wp);
-            if (id == IDB_SD_NGS)
+            unsigned nc = HIWORD(wp);
+            if ((id == IDB_SD_NGS) && (nc == BN_CLICKED))
             {
                 if(OpenSdImage(true))
                 {
                     SetDlgItemText(dlg, IDE_SD_NGS, c1.ngs_sd_card_path);
+                }
+                return TRUE;
+            }
+
+            if((id == IDC_COMBO_GS_TYPE) && (nc == CBN_SELCHANGE))
+            {
+                c1.gs_type = u8(ComboBox_GetCurSel(HWND(lp)));
+
+                NgsDlgSetEnable();
+                return TRUE;
+            }
+
+            if((id == IDC_COMBO_GS_RAM_SIZE) && (nc == CBN_SELCHANGE))
+            {
+                int GsRamSize = ComboBox_GetCurSel(HWND(lp));
+                switch(GsRamSize)
+                {
+                case 0:
+                    c1.gs_ramsize = 512;
+                    break;
+                case 1:
+                    c1.gs_ramsize = 2048;
+                    break;
+                case 2:
+                    c1.gs_ramsize = 4096;
+                    break;
                 }
                 return TRUE;
             }
@@ -1551,6 +1670,25 @@ static INT_PTR CALLBACK NgsDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
     {
         lastpage = "NGS";
         SetDlgItemText(dlg, IDE_SD_NGS, c1.ngs_sd_card_path);
+
+
+        ComboBox_SetCurSel(GetDlgItem(dlg, IDC_COMBO_GS_TYPE), c1.gs_type);
+
+        switch(c1.gs_ramsize)
+        {
+        case 512:
+            ComboBox_SetCurSel(GetDlgItem(dlg, IDC_COMBO_GS_RAM_SIZE), 0);
+            break;
+        case 2048:
+            ComboBox_SetCurSel(GetDlgItem(dlg, IDC_COMBO_GS_RAM_SIZE), 1);
+            break;
+        case 4096:
+            ComboBox_SetCurSel(GetDlgItem(dlg, IDC_COMBO_GS_RAM_SIZE), 2);
+            break;
+        }
+
+        NgsDlgSetEnable();
+
         return TRUE;
     }
 
@@ -1558,6 +1696,12 @@ static INT_PTR CALLBACK NgsDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
     if(nm->code == PSN_RESET) dlgok = 0;
 
     return TRUE;
+}
+
+static void ZcDlgEnableControls()
+{
+    EnableWindow(GetDlgItem(dlg, IDE_SD_ZC), c1.zc);
+    EnableWindow(GetDlgItem(dlg, IDB_SD_ZC), c1.zc);
 }
 
 static INT_PTR CALLBACK ZcDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
@@ -1571,12 +1715,19 @@ static INT_PTR CALLBACK ZcDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
     case WM_COMMAND:
         {
             unsigned id = LOWORD(wp);
-            if (id == IDB_SD_ZC)
+            unsigned nc = HIWORD(wp);
+            if ((id == IDB_SD_ZC) && (nc == BN_CLICKED)) // Нажатие кнопки [...]
             {
                 if(OpenSdImage(false))
                 {
                     SetDlgItemText(dlg, IDE_SD_ZC, c1.zc_sd_card_path);
                 }
+                return TRUE;
+            }
+            if((id == IDC_ZC_ENABLED) && (nc == BN_CLICKED))
+            {
+                c1.zc = getcheck(IDC_ZC_ENABLED);
+                ZcDlgEnableControls();
                 return TRUE;
             }
         }
@@ -1599,6 +1750,9 @@ static INT_PTR CALLBACK ZcDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
     {
         lastpage = "ZC";
         SetDlgItemText(dlg, IDE_SD_ZC, c1.zc_sd_card_path);
+        setcheck(IDC_ZC_ENABLED, c1.zc);
+
+        ZcDlgEnableControls();
         return TRUE;
     }
 
@@ -1611,7 +1765,7 @@ static INT_PTR CALLBACK ZcDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 
 void setup_dlg()
 {
-   PROPSHEETPAGE psp[18] = { 0 };
+   PROPSHEETPAGE psp[18] = { };
    PROPSHEETPAGE *ps = psp;
 
    ps->pszTemplate   = MAKEINTRESOURCE(IDD_MEM);
@@ -1688,7 +1842,7 @@ void setup_dlg()
    psh.pszCaption       = "Emulation Settings";
    psh.ppsp             = (LPCPROPSHEETPAGE)&psp;
    psh.pStartPage       = lastpage;
-   psh.nPages           = ps - psp;
+   psh.nPages           = UINT(ps - psp);
 
    for (unsigned i = 0; i < psh.nPages; i++) {
       psp[i].dwSize = sizeof(PROPSHEETPAGE);
@@ -1713,6 +1867,20 @@ void setup_dlg()
            if(strcmp(conf.zc_sd_card_path, c1.zc_sd_card_path) != 0)
                ZcSdImageChanged = true;
 
+#ifdef MOD_GSZ80
+           if(conf.gs_type == 1 && c1.gs_type != 1)
+           {
+               done_gs();
+           }
+#endif // MOD_GSZ80
+
+#ifdef MOD_GSBASS
+           if(conf.gs_type == 2 && c1.gs_type != 2)
+           {
+               reset_gs();
+           }
+#endif // MOD_GSBASS
+
            conf = c1;
            frametime = conf.frame; //Alone Coder 0.36.5
    };
@@ -1722,7 +1890,7 @@ void setup_dlg()
 
    if(dlgok)
    {
-       applyconfig();
+       applyconfig(false);
    }
 
    OnExitGui();

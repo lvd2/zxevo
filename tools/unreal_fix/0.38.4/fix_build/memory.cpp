@@ -120,8 +120,12 @@ void set_banks()
       }
 
       case MM_PROFI:
-         bank += ((comp.pDFFD & 0x07) << 3); bank3 = RAM_BASE_M + (bank & temp.ram_mask)*PAGE;
-         if (comp.pDFFD & 0x08) bankr[1] = bankw[1] = bank3, bank3 = RAM_BASE_M+7*PAGE;
+         bank += ((comp.pDFFD & 0x07U) << 3U); bank3 = RAM_BASE_M + (bank & temp.ram_mask)*PAGE;
+         if(comp.pDFFD & 0x08)
+         {
+             bankr[1] = bankw[1] = bank3;
+             bank3 = RAM_BASE_M + 7 * PAGE;
+         }
          if (comp.pDFFD & 0x10) bank0 = RAM_BASE_M+0*PAGE;
          if (comp.pDFFD & 0x20) comp.flags |= CF_DOSPORTS;
          if (comp.pDFFD & 0x40) bankr[2] = bankw[2] = RAM_BASE_M + 6*PAGE;
@@ -131,7 +135,7 @@ void set_banks()
       {
          // RAM
          // original ATM uses D2 as ROM address extension, not RAM
-         bank += ((comp.pFDFD & 0x07) << 3);
+         bank += ((comp.pFDFD & 0x07U) << 3U);
          bank3 = RAM_BASE_M + (bank & temp.ram_mask)*PAGE;
          if (!(comp.aFE & 0x80))
          {
@@ -312,7 +316,7 @@ void set_banks()
    if (temp.led.osw && (trace_rom | trace_ram))
    {
       for (unsigned i = 0; i < 4; i++) {
-         unsigned bank = (bankr[i] - RAM_BASE_M) / PAGE;
+         unsigned bank = unsigned((bankr[i] - RAM_BASE_M) / PAGE);
          if (bank < MAX_PAGES) used_banks[bank] = 1;
       }
    }
@@ -409,7 +413,7 @@ void set_mode(ROM_MODE mode)
    set_banks();
 }
 
-unsigned char cmosBCD(unsigned char binary)
+static unsigned char cmosBCD(unsigned char binary)
 {
    if (!(cmos[11] & 4)) binary = (binary % 10) + 0x10*((binary/10)%10);
    return binary;
@@ -479,7 +483,7 @@ void cmos_write(unsigned char val)
 
 void NVRAM::write(unsigned char val)
 {
-   const int SCL = 0x40, SDA = 0x10, WP = 0x20,
+   const int SCL = 0x40, SDA = 0x10, //WP = 0x20,
              SDA_1 = 0xFF, SDA_0 = 0xBF,
              SDA_SHIFT_IN = 4;
 
@@ -498,8 +502,11 @@ void NVRAM::write(unsigned char val)
          }
 
          if ((1<<state) & ((1<<RCV_ADDR)|(1<<RCV_CMD)|(1<<RCV_DATA))) {
-            if (out_z) // skip nvram ACK before reading
-               datain = 2*datain + ((val >> SDA_SHIFT_IN) & 1), bitsin++;
+             if(out_z) // skip nvram ACK before reading
+             {
+                 datain = 2 * datain + ((val >> SDA_SHIFT_IN) & 1);
+                 bitsin++;
+             }
          }
 
       } else { // nvram sets SDA
@@ -544,7 +551,11 @@ void NVRAM::write(unsigned char val)
    if ((val & SCL) && ((val ^ prev) & SDA)) // start/stop
    {
       if (val & SDA) { idle: state = IDLE; } // stop
-      else state = RCV_CMD, bitsin = 0; // start
+      else // start
+      {
+          state = RCV_CMD;
+          bitsin = 0;
+      }
       out_z = 1;
    }
 

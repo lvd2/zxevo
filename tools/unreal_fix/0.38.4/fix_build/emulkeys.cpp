@@ -8,6 +8,7 @@
 #include "dx.h"
 #include "debug.h"
 #include "memory.h"
+#include "sndrender/sndcounter.h"
 #include "sound.h"
 #include "savesnd.h"
 #include "tape.h"
@@ -18,6 +19,7 @@
 #include "init.h"
 #include "z80.h"
 #include "emulkeys.h"
+#include "funcs.h"
 #include "util.h"
 #include "input.h"
 
@@ -49,7 +51,7 @@ void main_debug()
 }
 
 enum { FIX_FRAME = 0, FIX_LINE, FIX_PAPER, FIX_NOPAPER, FIX_HWNC, FIX_LAST };
-const char *fix_titles[FIX_LAST] = {
+static const char *fix_titles[FIX_LAST] = {
    "%d t-states / int",
    "%d t-states / line",
    "paper starts at %d",
@@ -58,25 +60,26 @@ const char *fix_titles[FIX_LAST] = {
 };
 
 
-unsigned char whatfix = 0, whatsnd = 0;
-unsigned char fixmode = -1;
-int mul0 = 100, mul1 = 1000;
+static unsigned char whatfix = 0, whatsnd = 0;
+static unsigned char fixmode = u8(-1U);
+static int mul0 = 100, mul1 = 1000;
 
-void chfix(int dx)
+static void chfix(int dx)
 {
    if (!fixmode) {
-      int value;
+      unsigned value;
       switch (whatfix) {
-         case FIX_FRAME: value = (conf.frame += dx); break;
-         case FIX_LINE: value = (conf.t_line += dx); break;
-         case FIX_PAPER: value = (conf.paper += dx); break;
+         case FIX_FRAME: value = (conf.frame = unsigned(int(conf.frame) + dx)); break;
+         case FIX_LINE: value = (conf.t_line = unsigned(int(conf.t_line) + dx)); break;
+         case FIX_PAPER: value = (conf.paper = unsigned(int(conf.paper) + dx)); break;
          case FIX_NOPAPER: value = (conf.nopaper ^= dx?1:0); break;
          case FIX_HWNC: value = (comp.pEFF7 ^= dx?EFF7_HWMC:0)? 1 : 0; break;
+         default: return;
       }
       video_timing_tables();
       apply_sound(); // t/frame affects AY engine!
       sprintf(statusline, fix_titles[whatfix], value); statcnt=50;
-      if (dx) conf.ula_preset = -1;
+      if (dx) conf.ula_preset = u8(-1U);
       return;
    }
    if (fixmode != 1) return;
@@ -86,7 +89,7 @@ void chfix(int dx)
    *statusline = 0; statcnt = 50;
    switch (whatsnd) {
       case 0:
-         conf.sound.ay_stereo = (conf.sound.ay_stereo+dx+num_aystereo) % num_aystereo;
+         conf.sound.ay_stereo = u8(int(conf.sound.ay_stereo)+dx+int(num_aystereo)) % num_aystereo;
          sprintf(statusline, "Stereo preset: %s", aystereo[conf.sound.ay_stereo]);
          break;
       case 1:
@@ -94,13 +97,13 @@ void chfix(int dx)
          sprintf(statusline, "Digital Soundchip: %s", conf.sound.ay_samples? "yes" : "no");
          break;
       case 2:
-         conf.sound.ay_vols = (conf.sound.ay_vols+num_ayvols+dx) % num_ayvols;
+         conf.sound.ay_vols = u8(int(conf.sound.ay_vols)+int(num_ayvols)+dx) % num_ayvols;
          sprintf(statusline, "Chip Table: %s", ayvols[conf.sound.ay_vols]);
          break;
       case 3:
-         conf.pal = (conf.pal+dx);
+         conf.pal = unsigned(int(conf.pal)+dx);
          if (conf.pal == conf.num_pals) conf.pal = 0;
-         if (conf.pal == -1) conf.pal = conf.num_pals-1;
+         if (conf.pal == -1U) conf.pal = conf.num_pals-1;
          sprintf(statusline, "Palette: %s", pals[conf.pal].name);
          video_color_tables();
          return;
@@ -111,8 +114,12 @@ void chfix(int dx)
 void main_selectfix()
 {
    if (!fixmode) whatfix = (whatfix+1) % FIX_LAST;
-   fixmode = 0; mul0 = 1, mul1 = 10;
-   if (whatfix == FIX_FRAME) mul0 = 100, mul1 = 1000;
+   fixmode = 0; mul0 = 1; mul1 = 10;
+   if(whatfix == FIX_FRAME)
+   {
+       mul0 = 100;
+       mul1 = 1000;
+   }
    chfix(0);
 }
 
@@ -144,7 +151,7 @@ void main_maxspeed()
 
 // select filter / driver through gui dialog ----------------------------
 
-INT_PTR CALLBACK filterdlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK filterdlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
    if (msg == WM_INITDIALOG)
    {
@@ -171,10 +178,10 @@ INT_PTR CALLBACK filterdlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
       nc_width += 300;
       nc_height += i*SendMessage(box, LB_GETITEMHEIGHT, 0, 0);
       dlg_w += nc_width; dlg_h += nc_height;
-      SetWindowPos(box, 0, 0, 0, nc_width, nc_height, SWP_NOZORDER | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_SHOWWINDOW);
+      SetWindowPos(box, nullptr, 0, 0, nc_width, nc_height, SWP_NOZORDER | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_SHOWWINDOW);
 
       GetWindowRect(wnd, &rcw);
-      SetWindowPos(dlg, 0,
+      SetWindowPos(dlg, nullptr,
          rcw.left + ((rcw.right-rcw.left)-dlg_w)/2,
          rcw.top + ((rcw.bottom-rcw.top)-dlg_h)/2,
          dlg_w, dlg_h, SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_SHOWWINDOW);
@@ -205,7 +212,7 @@ INT_PTR CALLBACK filterdlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 void main_selectfilter()
 {
    OnEnterGui();
-   int index = DialogBoxParam(hIn, MAKEINTRESOURCE(IDD_FILTER_DIALOG), wnd, filterdlg, 0);
+   INT_PTR index = DialogBoxParam(hIn, MAKEINTRESOURCE(IDD_FILTER_DIALOG), wnd, filterdlg, 0);
    eat();
    if (index < 0)
    {
@@ -213,7 +220,7 @@ void main_selectfilter()
        return;
    }
    OnExitGui(false);
-   conf.render = index;
+   conf.render = unsigned(index);
    sprintf(statusline, "Video: %s", renders[index].name); statcnt = 50;
    apply_video(); eat();
 }
@@ -226,7 +233,7 @@ void main_selectdriver()
    }
 
    OnEnterGui();
-   int index = DialogBoxParam(hIn, MAKEINTRESOURCE(IDD_FILTER_DIALOG), wnd, filterdlg, 1);
+   INT_PTR index = DialogBoxParam(hIn, MAKEINTRESOURCE(IDD_FILTER_DIALOG), wnd, filterdlg, 1);
    eat();
 
    if (index < 0)
@@ -235,7 +242,7 @@ void main_selectdriver()
        return;
    }
    OnExitGui(false);
-   conf.driver = index;
+   conf.driver = unsigned(index);
    sprintf(statusline, "Render to: %s", drivers[index].name); statcnt = 50;
    apply_video();
    eat();
@@ -254,13 +261,14 @@ void main_poke()
 void main_starttape()
 {
    //if (comp.tape.play_pointer) stop_tape(); else start_tape();
-   (comp.tape.play_pointer) ? stop_tape() : start_tape();
+   (!comp.tape.stopped) ? stop_tape() : start_tape();
 }
 
 void main_tapebrowser()
 {
 #ifdef MOD_SETTINGS
-   lastpage = "TAPE", setup_dlg();
+    lastpage = "TAPE";
+    setup_dlg();
 #endif
 }
 
@@ -280,8 +288,10 @@ static const char *getrom(ROM_MODE page)
    return "???";
 }
 
-void m_reset(ROM_MODE page)
+static void m_reset(ROM_MODE page)
 {
+   load_atm_font();
+
    sprintf(statusline, "Reset to %s", getrom(page)); statcnt = 50;
    input.buffer_enabled = false;    //DimkaM disable ps/2 access
    input.buffer.Empty();
@@ -335,7 +345,11 @@ static void qsave(const char *fname) {
    char xx[0x200]; addpath(xx, fname);
    FILE *ff = fopen(xx, "wb");
    if (ff) {
-      if (writeSNA(ff)) sprintf(statusline, "Quick save to %s", fname), statcnt = 30;
+       if(writeSNA(ff))
+       {
+           sprintf(statusline, "Quick save to %s", fname);
+           statcnt = 30;
+       }
       fclose(ff);
    }
 }
@@ -345,7 +359,11 @@ void qsave3() { qsave("qsave3.sna"); }
 
 static void qload(const char *fname) {
    char xx[0x200]; addpath(xx, fname);
-   if (loadsnap(xx)) sprintf(statusline, "Quick load from %s", fname), statcnt = 30;
+   if(loadsnap(xx))
+   {
+       sprintf(statusline, "Quick load from %s", fname);
+       statcnt = 30;
+   }
 }
 void qload1() { qload("qsave1.sna"); }
 void qload2() { qload("qsave2.sna"); }
@@ -360,7 +378,8 @@ void main_autofire()
 {
    conf.input.fire ^= 1;
    input.firedelay = 1;
-   sprintf(statusline, "autofire %s", conf.input.fire ? "on" : "off"), statcnt = 30;
+   sprintf(statusline, "autofire %s", conf.input.fire ? "on" : "off");
+   statcnt = 30;
 }
 
 void main_save()
@@ -376,14 +395,20 @@ void main_save()
       optype |= comp.wd.fdd[i].optype;
    }
 
-   if (!optype)
-       sprintf(statusline, "all saved"), statcnt = 30;
+   if(!optype)
+   {
+       sprintf(statusline, "all saved");
+       statcnt = 30;
+   }
 }
 
 void main_fullscr()
 {
-   if (!(temp.rflags & (RF_GDI|RF_OVR|RF_CLIP|RF_D3D)))
-       sprintf(statusline, "only for overlay/gdi/nonexclusive modes"), statcnt = 30;
+    if(!(temp.rflags & (RF_GDI | RF_OVR | RF_CLIP | RF_D3D)))
+    {
+        sprintf(statusline, "only for overlay/gdi/nonexclusive modes");
+        statcnt = 30;
+    }
    else
    {
        conf.fullscr ^= 1;
@@ -395,7 +420,8 @@ void main_mouse()
 {
    conf.lockmouse ^= 1;
    adjust_mouse_cursor();
-   sprintf(statusline, "mouse %slocked", conf.lockmouse? nil:"un"), statcnt = 30;
+   sprintf(statusline, "mouse %slocked", conf.lockmouse ? nil : "un");
+   statcnt = 30;
 }
 
 void main_help() { showhelp(); }
@@ -427,10 +453,10 @@ void wnd_resize(int scale)
    }
 
    ShowWindow(wnd, SW_RESTORE);
-   DWORD style = GetWindowLong(wnd, GWL_STYLE);
-   RECT rc = { 0, 0, LONG(temp.ox * scale), LONG(temp.oy * scale) };
-   AdjustWindowRect(&rc, style, 0);
-   SetWindowPos(wnd, 0, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+   LONG style = GetWindowLong(wnd, GWL_STYLE);
+   RECT rc = { 0, 0, LONG(temp.ox) * scale, LONG(temp.oy) * scale };
+   AdjustWindowRect(&rc, DWORD(style), 0);
+   SetWindowPos(wnd, nullptr, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
    if(temp.rflags & RF_2X)
        scale *= 2;
    else if(temp.rflags & RF_3X)
@@ -454,7 +480,7 @@ static void SetBorderSize(unsigned BorderSize)
    {
        return;
    }
-   conf.bordersize = BorderSize;
+   conf.bordersize = u8(BorderSize);
    apply_video();
 }
 

@@ -10,12 +10,12 @@
 typedef int (__cdecl *GetASPI32SupportInfo_t)();
 typedef int (__cdecl *SendASPI32Command_t)(void *SRB);
 const int ATAPI_CDB_SIZE = 12; // sizeof(CDB) == 16
-const int MAX_INFO_LEN = 48;
+//const int MAX_INFO_LEN = 48;
 
-GetASPI32SupportInfo_t _GetASPI32SupportInfo = 0;
-SendASPI32Command_t _SendASPI32Command = 0;
-HMODULE hAspiDll = 0;
-HANDLE hASPICompletionEvent;
+static GetASPI32SupportInfo_t _GetASPI32SupportInfo = nullptr;
+static SendASPI32Command_t _SendASPI32Command = nullptr;
+static HMODULE hAspiDll = nullptr;
+static HANDLE hASPICompletionEvent;
 
 
 DWORD ATA_PASSER::open(PHYS_DEVICE *dev)
@@ -26,7 +26,7 @@ DWORD ATA_PASSER::open(PHYS_DEVICE *dev)
    hDevice = CreateFile(dev->filename,
                 GENERIC_READ | GENERIC_WRITE, // R/W required!
                 (temp.win9x?0:FILE_SHARE_DELETE) /*Dexus*/ | FILE_SHARE_READ | FILE_SHARE_WRITE,
-                0, OPEN_EXISTING, 0, 0);
+                nullptr, OPEN_EXISTING, 0, nullptr);
 
    if (hDevice == INVALID_HANDLE_VALUE)
    {
@@ -54,11 +54,11 @@ DWORD ATA_PASSER::open(PHYS_DEVICE *dev)
        unsigned i;
        for(; NextVol; NextVol = FindNextVolume(VolEnum, VolName, _countof(VolName)))
        {
-           int l = strlen(VolName);
+           size_t l = strlen(VolName);
            if(VolName[l-1] == '\\')
                VolName[l-1] = 0;
 
-           HANDLE Vol = CreateFile(VolName, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
+           HANDLE Vol = CreateFile(VolName, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
            if(Vol == INVALID_HANDLE_VALUE)
            {
                printf("can't open volume `%s'\n", VolName);
@@ -69,7 +69,7 @@ DWORD ATA_PASSER::open(PHYS_DEVICE *dev)
            PVOLUME_DISK_EXTENTS DiskExt = PVOLUME_DISK_EXTENTS(Buf);
 
            ULONG Junk;
-           if(!DeviceIoControl(Vol, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, 0, 0, Buf, sizeof(Buf), &Junk, 0))
+           if(!DeviceIoControl(Vol, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, nullptr, 0, Buf, sizeof(Buf), &Junk, nullptr))
            {
                Junk = GetLastError();
                CloseHandle(Vol);
@@ -110,13 +110,13 @@ DWORD ATA_PASSER::open(PHYS_DEVICE *dev)
        for(i = 0; i < VolIdx; i++)
        {
            ULONG Junk;
-           if(!DeviceIoControl(Vols[i], FSCTL_LOCK_VOLUME, 0, 0, 0, 0, &Junk, 0))
+           if(!DeviceIoControl(Vols[i], FSCTL_LOCK_VOLUME, nullptr, 0, nullptr, 0, &Junk, nullptr))
            {
                Junk = GetLastError();
                printf("can't lock volume: %lu\n", Junk);
                return Junk;
            }
-           if(!DeviceIoControl(Vols[i], FSCTL_DISMOUNT_VOLUME, 0, 0, 0, 0, &Junk, 0))
+           if(!DeviceIoControl(Vols[i], FSCTL_DISMOUNT_VOLUME, nullptr, 0, nullptr, 0, &Junk, nullptr))
            {
                Junk = GetLastError();
                printf("can't dismount volume: %lu\n", Junk);
@@ -137,21 +137,21 @@ void ATA_PASSER::close()
            for(unsigned i = 0; i < _countof(Vols) && Vols[i]; i++)
            {
                ULONG Junk;
-               DeviceIoControl(Vols[i], FSCTL_UNLOCK_VOLUME, 0, 0, 0, 0, &Junk, 0);
+               DeviceIoControl(Vols[i], FSCTL_UNLOCK_VOLUME, nullptr, 0, nullptr, 0, &Junk, nullptr);
                CloseHandle(Vols[i]);
-               Vols[i] = 0;
+               Vols[i] = nullptr;
            }
        }
 
        CloseHandle(hDevice);
    }
    hDevice = INVALID_HANDLE_VALUE;
-   dev = 0;
+   dev = nullptr;
 }
 
-unsigned ATA_PASSER::identify(PHYS_DEVICE *outlist, int max)
+unsigned ATA_PASSER::identify(PHYS_DEVICE *outlist, unsigned max)
 {
-   int res = 0;
+   unsigned res = 0;
    ATA_PASSER ata;
 
    unsigned HddCount = get_hdd_count();
@@ -163,7 +163,7 @@ unsigned ATA_PASSER::identify(PHYS_DEVICE *outlist, int max)
       dev->type = ATA_NTHDD;
       dev->spti_id = drive;
       dev->usage = ATA_OP_ENUM_ONLY;
-      sprintf(dev->filename, "\\\\.\\PhysicalDrive%d", dev->spti_id);
+      sprintf(dev->filename, "\\\\.\\PhysicalDrive%u", dev->spti_id);
 
       if(drive >= HddCount)
           continue;
@@ -173,7 +173,7 @@ unsigned ATA_PASSER::identify(PHYS_DEVICE *outlist, int max)
           continue;
 
       color(CONSCLR_HARDITEM);
-      printf("hd%d: ", drive);
+      printf("hd%u: ", drive);
 
       if (errcode != NO_ERROR)
       {
@@ -193,13 +193,17 @@ unsigned ATA_PASSER::identify(PHYS_DEVICE *outlist, int max)
       res_buffer.out.cBufferSize = 512;
       DWORD sz;
 
-      DISK_GEOMETRY geo = { 0 };
-      int res1 = DeviceIoControl(ata.hDevice, SMART_RCV_DRIVE_DATA, &in, sizeof in, &res_buffer, sizeof res_buffer, &sz, 0);
+      DISK_GEOMETRY geo = { };
+      int res1 = DeviceIoControl(ata.hDevice, SMART_RCV_DRIVE_DATA, &in, sizeof in, &res_buffer, sizeof res_buffer, &sz, nullptr);
       if(!res1)
       {
           printf("cant get hdd info, %lu\n", GetLastError());
       }
-      int res2 = DeviceIoControl(ata.hDevice, IOCTL_DISK_GET_DRIVE_GEOMETRY, 0, 0, &geo, sizeof geo, &sz, 0);
+      int res2 = DeviceIoControl(ata.hDevice, IOCTL_DISK_GET_DRIVE_GEOMETRY, nullptr, 0, &geo, sizeof geo, &sz, nullptr);
+      if(!res2)
+      {
+          printf("cant get hdd geometry, %lu\n", GetLastError());
+      }
       if (geo.BytesPerSector != 512)
       {
           color(CONSCLR_ERROR);
@@ -225,19 +229,21 @@ unsigned ATA_PASSER::identify(PHYS_DEVICE *outlist, int max)
       unsigned shortsize = dev->hdd_size / 2; char mult = 'K';
       if (shortsize >= 100000)
       {
-         shortsize /= 1024, mult = 'M';
-         if (shortsize >= 100000)
-             shortsize /= 1024, mult = 'G';
+         shortsize /= 1024; mult = 'M';
+         if(shortsize >= 100000)
+         {
+             shortsize /= 1024; mult = 'G';
+         }
       }
 
       color(CONSCLR_HARDINFO);
       printf("%-40s %-20s ", model, serial);
       color(CONSCLR_HARDITEM);
-      printf("%8d %cb\n", shortsize, mult);
+      printf("%8u %cb\n", shortsize, mult);
       if (dev->hdd_size > 0xFFFFFFF)
       {
           color(CONSCLR_WARNING);
-          printf("     drive %d warning! LBA48 is not supported. only first 128GB visible\n", drive); //Alone Coder 0.36.7
+          printf("     drive %u warning! LBA48 is not supported. only first 128GB visible\n", drive); //Alone Coder 0.36.7
       }
 
       print_device_name(dev->viewname, dev);
@@ -253,7 +259,7 @@ unsigned ATA_PASSER::get_hdd_count() // static
     ULONG MemberIndex;
 
     // create a HDEVINFO with all present devices
-    DeviceInfoSet = SetupDiGetClassDevs(&GUID_DEVINTERFACE_DISK, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+    DeviceInfoSet = SetupDiGetClassDevs(&GUID_DEVINTERFACE_DISK, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
     if (DeviceInfoSet == INVALID_HANDLE_VALUE)
     {
         assert(FALSE);
@@ -267,7 +273,7 @@ unsigned ATA_PASSER::get_hdd_count() // static
         // get device interfaces
         SP_DEVICE_INTERFACE_DATA DeviceInterfaceData;
         DeviceInterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
-        if (!SetupDiEnumDeviceInterfaces(DeviceInfoSet, NULL, &GUID_DEVINTERFACE_DISK, MemberIndex, &DeviceInterfaceData))
+        if (!SetupDiEnumDeviceInterfaces(DeviceInfoSet, nullptr, &GUID_DEVINTERFACE_DISK, MemberIndex, &DeviceInterfaceData))
         {
             if (GetLastError() != ERROR_NO_MORE_ITEMS)
             {
@@ -294,14 +300,14 @@ bool ATA_PASSER::seek(u64 nsector)
 {
    LARGE_INTEGER offset;
    offset.QuadPart = ((__int64)nsector) << 9;
-   DWORD code = SetFilePointer(hDevice, offset.LowPart, &offset.HighPart, FILE_BEGIN);
+   DWORD code = SetFilePointer(hDevice, LONG(offset.LowPart), &offset.HighPart, FILE_BEGIN);
    return (code != INVALID_SET_FILE_POINTER || GetLastError() == NO_ERROR);
 }
 
 bool ATA_PASSER::read_sector(unsigned char *dst)
 {
    DWORD sz = 0;
-   if (!ReadFile(hDevice, dst, 512, &sz, 0))
+   if (!ReadFile(hDevice, dst, 512, &sz, nullptr))
        return false;
    if (sz < 512)
        memset(dst+sz, 0, 512-sz); // on EOF, or truncated file, read 00
@@ -311,7 +317,7 @@ bool ATA_PASSER::read_sector(unsigned char *dst)
 bool ATA_PASSER::write_sector(unsigned char *src)
 {
    DWORD sz = 0;
-   return (WriteFile(hDevice, src, 512, &sz, 0) && sz == 512);
+   return (WriteFile(hDevice, src, 512, &sz, nullptr) && sz == 512);
 }
 
 DWORD ATAPI_PASSER::open(PHYS_DEVICE *dev)
@@ -324,7 +330,7 @@ DWORD ATAPI_PASSER::open(PHYS_DEVICE *dev)
    hDevice = CreateFile(dev->filename,
                 GENERIC_READ | GENERIC_WRITE, // R/W required!
                 (temp.win9x?0:FILE_SHARE_DELETE) /*Dexus*/ | FILE_SHARE_READ | FILE_SHARE_WRITE,
-                0, OPEN_EXISTING, 0, 0);
+                nullptr, OPEN_EXISTING, 0, nullptr);
 
    if (hDevice != INVALID_HANDLE_VALUE)
        return NO_ERROR;
@@ -338,12 +344,12 @@ void ATAPI_PASSER::close()
    if (hDevice != INVALID_HANDLE_VALUE)
        CloseHandle(hDevice);
    hDevice = INVALID_HANDLE_VALUE;
-   dev = 0;
+   dev = nullptr;
 }
 
-unsigned ATAPI_PASSER::identify(PHYS_DEVICE *outlist, int max)
+unsigned ATAPI_PASSER::identify(PHYS_DEVICE *outlist, unsigned max)
 {
-   int res = 0;
+   unsigned res = 0;
    ATAPI_PASSER atapi;
 
    if (conf.cd_aspi)
@@ -352,13 +358,13 @@ unsigned ATAPI_PASSER::identify(PHYS_DEVICE *outlist, int max)
       init_aspi();
 
 
-      for (int adapterid = 0; ; adapterid++)
+      for (unsigned adapterid = 0; ; adapterid++)
       {
 
-         SRB_HAInquiry SRB = { 0 };
+         SRB_HAInquiry SRB = { };
          SRB.SRB_Cmd        = SC_HA_INQUIRY;
          SRB.SRB_HaId       = (unsigned char)adapterid;
-         DWORD ASPIStatus = _SendASPI32Command(&SRB);
+         int ASPIStatus = _SendASPI32Command(&SRB);
 
          if (ASPIStatus != SS_COMP) break;
 
@@ -371,10 +377,10 @@ unsigned ATAPI_PASSER::identify(PHYS_DEVICE *outlist, int max)
             color(CONSCLR_WARNING); printf("%s", b1);
             color(CONSCLR_HARDITEM); printf(" %s\n", b2);
          }
-         if (adapterid >= (int)SRB.HA_Count) break;
+         if (adapterid >= SRB.HA_Count) break;
          // int maxTargets = (int)SRB.HA_Unique[3]; // always 8 (?)
 
-         for (int targetid = 0; targetid < 8; targetid++) {
+         for (unsigned targetid = 0; targetid < 8; targetid++) {
 
             PHYS_DEVICE *dev = outlist + res;
             dev->type = ATA_ASPI_CD;
@@ -398,21 +404,21 @@ unsigned ATAPI_PASSER::identify(PHYS_DEVICE *outlist, int max)
    }
    
    // spti
-   for (int drive = 0; drive < MAX_PHYS_CD_DRIVES && res < max; drive++)
+   for (unsigned drive = 0; drive < MAX_PHYS_CD_DRIVES && res < max; drive++)
    {
 
       PHYS_DEVICE *dev = outlist + res;
       dev->type = ATA_SPTI_CD;
       dev->spti_id = drive;
       dev->usage = ATA_OP_ENUM_ONLY;
-      sprintf(dev->filename, "\\\\.\\CdRom%d", dev->spti_id);
+      sprintf(dev->filename, "\\\\.\\CdRom%u", dev->spti_id);
 
       DWORD errcode = atapi.open(dev);
       if (errcode == ERROR_FILE_NOT_FOUND)
           continue;
 
       color(CONSCLR_HARDITEM);
-      printf("cd%d: ", drive);
+      printf("cd%u: ", drive);
       if (errcode != NO_ERROR)
       {
           color(CONSCLR_ERROR);
@@ -440,20 +446,20 @@ unsigned ATAPI_PASSER::identify(PHYS_DEVICE *outlist, int max)
    return res;
 }
 
-int ATAPI_PASSER::pass_through(void *databuf, int bufsize)
+int ATAPI_PASSER::pass_through(void *databuf, size_t bufsize)
 {
    int res = (conf.cd_aspi)? SEND_ASPI_CMD(databuf, bufsize) : SEND_SPTI_CMD(databuf, bufsize);
    return res;
 }
 
-int ATAPI_PASSER::SEND_SPTI_CMD(void *databuf, int bufsize)
+int ATAPI_PASSER::SEND_SPTI_CMD(void *databuf, size_t bufsize)
 {
    memset(databuf, 0, bufsize);
 
    struct {
       SCSI_PASS_THROUGH_DIRECT p;
       unsigned char sense[MAX_SENSE_LEN];
-   } srb = { 0 }, dst;
+   } srb = { }, dst;
 
    srb.p.Length = sizeof(SCSI_PASS_THROUGH_DIRECT);
    *(CDB*)&srb.p.Cdb = cdb;
@@ -461,7 +467,7 @@ int ATAPI_PASSER::SEND_SPTI_CMD(void *databuf, int bufsize)
    srb.p.DataIn = SCSI_IOCTL_DATA_IN;
    srb.p.TimeOutValue = 10;
    srb.p.DataBuffer = databuf;
-   srb.p.DataTransferLength = bufsize;
+   srb.p.DataTransferLength = ULONG(bufsize);
    srb.p.SenseInfoLength = sizeof(srb.sense);
    srb.p.SenseInfoOffset = sizeof(SCSI_PASS_THROUGH_DIRECT);
 
@@ -469,7 +475,7 @@ int ATAPI_PASSER::SEND_SPTI_CMD(void *databuf, int bufsize)
    int r = DeviceIoControl(hDevice, IOCTL_SCSI_PASS_THROUGH_DIRECT,
                            &srb.p, sizeof(srb.p),
                            &dst, sizeof(dst),
-                           &outsize, 0);
+                           &outsize, nullptr);
 
    if (!r) { return 0; }
 
@@ -504,8 +510,8 @@ int ATAPI_PASSER::read_atapi_id(unsigned char *idsector, char prefix)
 
    if (prefix) {
       color(CONSCLR_HARDITEM);
-      if (dev->type == ATA_ASPI_CD) printf("%d.%d: ", dev->adapterid, dev->targetid);
-      if (dev->type == ATA_SPTI_CD) printf("cd%d: ", dev->spti_id);
+      if (dev->type == ATA_ASPI_CD) printf("%u.%u: ", dev->adapterid, dev->targetid);
+      if (dev->type == ATA_SPTI_CD) printf("cd%u: ", dev->spti_id);
    }
 
    trim(vendor); trim(product); trim(revision); trim(id);
@@ -533,7 +539,7 @@ int ATAPI_PASSER::read_atapi_id(unsigned char *idsector, char prefix)
 bool ATAPI_PASSER::read_sector(unsigned char *dst)
 {
    DWORD sz = 0;
-   if (!ReadFile(hDevice, dst, 2048, &sz, 0))
+   if (!ReadFile(hDevice, dst, 2048, &sz, nullptr))
        return false;
    if (sz < 2048)
        memset(dst+sz, 0, 2048-sz); // on EOF, or truncated file, read 00
@@ -544,18 +550,22 @@ bool ATAPI_PASSER::seek(unsigned nsector)
 {
    LARGE_INTEGER offset;
    offset.QuadPart = i64(nsector) * 2048;
-   DWORD code = SetFilePointer(hDevice, offset.LowPart, &offset.HighPart, FILE_BEGIN);
+   DWORD code = SetFilePointer(hDevice, LONG(offset.LowPart), &offset.HighPart, FILE_BEGIN);
    return (code != INVALID_SET_FILE_POINTER || GetLastError() == NO_ERROR);
 }
 
 void make_ata_string(unsigned char *dst, unsigned n_words, const char *src)
 {
    unsigned i; //Alone Coder 0.36.7
-   for (/*unsigned*/ i = 0; i < n_words*2 && src[i]; i++) dst[i] = src[i];
+   for (/*unsigned*/ i = 0; i < n_words*2 && src[i]; i++) dst[i] = u8(src[i]);
    while (i < n_words*2) dst[i++] = ' ';
    unsigned char tmp;
-   for (i = 0; i < n_words*2; i += 2)
-      tmp = dst[i], dst[i] = dst[i+1], dst[i+1] = tmp;
+   for(i = 0; i < n_words * 2; i += 2)
+   {
+       tmp = dst[i];
+       dst[i] = dst[i + 1];
+       dst[i + 1] = tmp;
+   }
 }
 
 void swap_bytes(char *dst, BYTE *src, unsigned n_words)
@@ -563,8 +573,9 @@ void swap_bytes(char *dst, BYTE *src, unsigned n_words)
    unsigned i; //Alone Coder 0.36.7
    for (/*unsigned*/ i = 0; i < n_words; i++)
    {
-      char c1 = src[2*i], c2 = src[2*i+1];
-      dst[2*i] = c2, dst[2*i+1] = c1;
+      char c1 = char(src[2*i]), c2 = char(src[2*i+1]);
+      dst[2 * i] = c2;
+      dst[2 * i + 1] = c1;
    }
    dst[2*i] = 0;
    trim(dst);
@@ -592,21 +603,21 @@ void init_aspi()
    _GetASPI32SupportInfo = (GetASPI32SupportInfo_t)GetProcAddress(hAspiDll, "GetASPI32SupportInfo");
    _SendASPI32Command = (SendASPI32Command_t)GetProcAddress(hAspiDll, "SendASPI32Command");
    if (!_GetASPI32SupportInfo || !_SendASPI32Command) errexit("invalid ASPI32 library");
-   DWORD init = _GetASPI32SupportInfo();
+   int init = _GetASPI32SupportInfo();
    if (((init >> 8) & 0xFF) != SS_COMP)
        errexit("error in ASPI32 initialization");
-   hASPICompletionEvent = CreateEvent(0,0,0,0);
+   hASPICompletionEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 }
 
-int ATAPI_PASSER::SEND_ASPI_CMD(void *buf, int buf_sz)
+int ATAPI_PASSER::SEND_ASPI_CMD(void *buf, size_t buf_sz)
 {
-   SRB_ExecSCSICmd SRB = { 0 };
+   SRB_ExecSCSICmd SRB = { };
    SRB.SRB_Cmd        = SC_EXEC_SCSI_CMD;
    SRB.SRB_HaId       = (unsigned char)dev->adapterid;
    SRB.SRB_Flags      = SRB_DIR_IN | SRB_EVENT_NOTIFY | SRB_ENABLE_RESIDUAL_COUNT;
    SRB.SRB_Target     = (unsigned char)dev->targetid;
    SRB.SRB_BufPointer = (unsigned char*)buf;
-   SRB.SRB_BufLen     = buf_sz;
+   SRB.SRB_BufLen     = DWORD(buf_sz);
    SRB.SRB_SenseLen   = sizeof(SRB.SenseArea);
    SRB.SRB_CDBLen     = ATAPI_CDB_SIZE;
    SRB.SRB_PostProc   = hASPICompletionEvent;
@@ -621,8 +632,8 @@ int ATAPI_PASSER::SEND_ASPI_CMD(void *buf, int buf_sz)
       if (ASPIEventStatus == WAIT_OBJECT_0)
           ResetEvent(hASPICompletionEvent);
    }
-   if (senselen = SRB.SRB_SenseLen)
-       memcpy(sense, SRB.SenseArea, senselen);
+   senselen = SRB.SRB_SenseLen;
+   memcpy(sense, SRB.SenseArea, senselen);
    if (temp.win9x)
        senselen = 0; //Alone Coder //makes possible to read one CD sector in win9x
    if (/*(temp.win9x)&&*/(passed_length >= 0xffff))

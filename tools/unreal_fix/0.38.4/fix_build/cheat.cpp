@@ -8,7 +8,9 @@
 #include "dx.h"
 #include "util.h"
 
-struct CHEATDLG
+#include "cheat.h"
+
+static struct CHEATDLG
 {
    HWND dlg;
    HWND resBox;
@@ -21,10 +23,10 @@ struct CHEATDLG
    unsigned char *lastsnap;
    unsigned char *bitmask;
    unsigned searchSize;
-   unsigned nFound;
+   int nFound;
    unsigned char wordmode, hex;
 
-   CHEATDLG() { lastsnap = 0; bitmask = 0; nFound = -1; mode = S_NEW; }
+   CHEATDLG() { lastsnap = nullptr; bitmask = nullptr; nFound = -1; mode = S_NEW; }
    ~CHEATDLG()
    {
        if(lastsnap)
@@ -80,20 +82,39 @@ void CHEATDLG::Search()
       case S_INC:
       case S_DEC:
       {
-         unsigned char *ptr1, *ptr2;
-         if (mode == S_INC) ptr1 = memory, ptr2 = lastsnap;
-         else ptr2 = memory, ptr1 = lastsnap;
+          unsigned char *ptr1, *ptr2;
+          if(mode == S_INC)
+          {
+              ptr1 = memory;
+              ptr2 = lastsnap;
+          }
+          else
+          {
+              ptr2 = memory;
+              ptr1 = lastsnap;
+          }
 
-         if (wordmode) {
-            for (i = 0; i < searchSize-1; i++)
-               if (*(WORD*)(ptr1+i) <= *(WORD*)(ptr2+i))
-                  bitmask[i/8] &= ~(1 << (i & 7));
-         } else {
-            for (i = 0; i < searchSize; i++)
-               if (ptr1[i] <= ptr2[i])
-                  bitmask[i/8] &= ~(1 << (i & 7));
-         }
-         break;
+          if(wordmode)
+          {
+              for(i = 0; i < searchSize - 1; i++)
+              {
+                  if(*(WORD*)(ptr1 + i) <= *(WORD*)(ptr2 + i))
+                  {
+                      bitmask[i / 8] &= ~(1 << (i & 7));
+                  }
+              }
+          }
+          else
+          {
+              for(i = 0; i < searchSize; i++)
+              {
+                  if(ptr1[i] <= ptr2[i])
+                  {
+                      bitmask[i / 8] &= ~(1 << (i & 7));
+                  }
+              }
+          }
+          break;
       }
 
    }
@@ -174,7 +195,7 @@ void CHEATDLG::ShowResults()
          sprintf(fn, "%04X", base + (i & (PAGE-1)));
          item.iItem = count++;
          item.iSubItem = 0;
-         item.iItem = SendMessage(resBox, LVM_INSERTITEM, 0, (LPARAM) &item);
+         item.iItem = (int)SendMessage(resBox, LVM_INSERTITEM, 0, (LPARAM) &item);
 
          sprintf(fn, "%02X", page);
          item.iSubItem = 1;
@@ -202,8 +223,10 @@ void CHEATDLG::ShowResults()
    }
 }
 
-INT_PTR CALLBACK cheatdlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK cheatdlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
+    (void)lp;
+
    if (msg == WM_INITDIALOG) {
 
       ::dlg = CheatDlg.dlg = dlg;
@@ -245,7 +268,7 @@ INT_PTR CALLBACK cheatdlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 
    if (msg == WM_COMMAND && HIWORD(wp) == BN_CLICKED)
    {
-      DWORD id = LOWORD(wp);
+      int id = LOWORD(wp);
       if (id == IDC_NEW) CheatDlg.mode = CHEATDLG::S_NEW;
       else if (id == IDC_EXACT) CheatDlg.mode = CHEATDLG::S_VAL;
       else if (id == IDC_INC) CheatDlg.mode = CHEATDLG::S_INC;

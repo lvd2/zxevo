@@ -4,6 +4,8 @@
 #include "emul.h"
 #include "vars.h"
 #include "debug.h"
+#include "dbgbpx.h"
+#include "dbgcmd.h"
 #include "config.h"
 #include "util.h"
 
@@ -20,7 +22,7 @@ enum
 
 typedef bool (__cdecl *func_t)();
 
-unsigned calcerr;
+static unsigned calcerr;
 unsigned calc(const Z80 *cpu, uintptr_t *script)
 {
    unsigned stack[64];
@@ -52,7 +54,7 @@ unsigned calc(const Z80 *cpu, uintptr_t *script)
          case '>':             *(sp-1) = (sp[-1]>*sp);goto arith;
          arith:                sp--;  break;
          case DB_CHAR:
-         case DB_SHORT:        x = *script++; goto push;
+         case DB_SHORT:        x = unsigned(*script++); goto push;
          case DB_PCHAR:        x = *(unsigned char*)*script++; goto push;
          case DB_PSHORT:       x = 0xFFFF & *(unsigned*)*script++; goto push;
          case DB_PINT:         x = *(unsigned*)*script++; goto push;
@@ -162,7 +164,7 @@ static unsigned char toscript(char *script, uintptr_t *dst)
    uintptr_t stack[128];
    for (char *p = script; *p; p++)
        if (p[1] != 0x27)
-           *p = toupper(*p);
+           *p = char(toupper(*p));
 
    while (*script)
    {
@@ -175,23 +177,31 @@ static unsigned char toscript(char *script, uintptr_t *dst)
       if (*script == '\'')
       { // char
          *dst++ = DB_CHAR;
-         *dst++ = script[1];
+         *dst++ = uintptr_t(script[1]);
          if (script[2] != '\'') return 0;
          script += 3; continue;
       }
 
       if (isalnum(*script) && *script != 'M')
       {
-         unsigned r = -1, p = *(unsigned*)script;
+         unsigned r = -1U, p = *(unsigned*)script;
          unsigned ln = 0;
-         for (int i = 0; i < _countof(regs); i++)
+         for (unsigned i = 0; i < _countof(regs); i++)
          {
             unsigned mask = 0xFF; ln = 1;
-            if (regs[i].reg & 0xFF00) mask = 0xFFFF, ln = 2;
-            if (regs[i].reg & 0xFF0000) mask = 0xFFFFFF, ln = 3;
+            if(regs[i].reg & 0xFF00)
+            {
+                mask = 0xFFFF;
+                ln = 2;
+            }
+            if(regs[i].reg & 0xFF0000)
+            {
+                mask = 0xFFFFFF;
+                ln = 3;
+            }
             if (regs[i].reg == (p & mask)) { r = i; break; }
          }
-         if (r != -1)
+         if (r != -1U)
          {
             script += ln;
             switch (regs[r].size)
@@ -208,7 +218,7 @@ static unsigned char toscript(char *script, uintptr_t *dst)
          { // number
             if (*script > 'F') return 0;
             for (r = 0; isalnum(*script) && *script <= 'F'; script++)
-               r = r*0x10 + ((*script >= 'A') ? *script-'A'+10 : *script-'0');
+               r = r*0x10 + unsigned((*script >= 'A') ? *script-'A'+10 : *script-'0');
             *dst++ = DB_SHORT;
             *dst++ = r;
          }
@@ -216,10 +226,10 @@ static unsigned char toscript(char *script, uintptr_t *dst)
       }
       // find operation
       unsigned char pr = 0xFF;
-      unsigned r = *script++;
+      unsigned r = (unsigned)*script++;
       if (strchr("<>=&|-!", (char)r) && strchr("<>=&|", *script))
-         r = r + 0x100 * (*script++);
-      for (int i = 0; i < _countof(prio); i++)
+         r += unsigned(0x100 * (*script++));
+      for (unsigned i = 0; i < _countof(prio); i++)
       {
          if (prio[i].op == r)
          {
@@ -254,13 +264,14 @@ static unsigned char toscript(char *script, uintptr_t *dst)
 
    calcerr = 0;
    calc(&cpu, d1);
-   return (1-calcerr);
+   return u8(1-calcerr);
 }
 
 static void script2text(char *dst, const uintptr_t *src)
 {
    char stack[64][0x200], tmp[0x200];
-   unsigned sp = 0, r;
+   unsigned sp = 0;
+   uintptr_t r;
 
    const Z80 &cpu = CpuMgr.Cpu();
 
@@ -270,12 +281,12 @@ static void script2text(char *dst, const uintptr_t *src)
    {
       if (r == DB_CHAR)
       {
-         sprintf(stack[sp++], "'%c'", *src++);
+         sprintf(stack[sp++], "'%c'", int(*src++));
          continue;
       }
       if (r == DB_SHORT)
       {
-         sprintf(stack[sp], "0%X", *src++);
+         sprintf(stack[sp], "0%X", unsigned(*src++));
          if (isdigit(stack[sp][1])) strcpy(stack[sp], stack[sp]+1);
          sp++;
          continue;
@@ -285,13 +296,13 @@ static void script2text(char *dst, const uintptr_t *src)
          unsigned sz = 0;
          switch(r)
          {
-			case DB_PCHAR: sz = 1; break;
-			case DB_PSHORT: sz = 2; break;
-			case DB_PINT: sz = 4; break;
-			case DB_PFUNC: sz = 0; break;
+         case DB_PCHAR: sz = 1; break;
+         case DB_PSHORT: sz = 2; break;
+         case DB_PINT: sz = 4; break;
+         case DB_PFUNC: sz = 0; break;
          }
-         int i; //Alone Coder 0.36.7
-         for (/*int*/ i = 0; i < _countof(regs); i++)
+         unsigned i;
+         for (i = 0; i < _countof(regs); i++)
          {
             if ((*src == (uintptr_t)regs[i].ptr) && (sz == regs[i].size))
                 break;
@@ -302,7 +313,7 @@ static void script2text(char *dst, const uintptr_t *src)
       }
       if (r == 'M' || r == '~' || r == '!')
       { // unary operators
-         sprintf(tmp, "%c(%s)", r, stack[sp-1]);
+         sprintf(tmp, "%c(%s)", int(r), stack[sp-1]);
          strcpy(stack[sp-1], tmp);
          continue;
       }
@@ -316,26 +327,38 @@ static void script2text(char *dst, const uintptr_t *src)
        strcpy(dst, stack[sp-1]);
 }
 
-void SetBpxButtons(HWND dlg)
+static void SetBpxButtons(HWND dlg)
 {
    int focus = -1, text = 0, box = 0;
    HWND focusedWnd = GetFocus();
-   if (focusedWnd == GetDlgItem(dlg, IDE_CBP) || focusedWnd == GetDlgItem(dlg, IDC_CBP))
-      focus = 0, text = IDE_CBP, box = IDC_CBP;
-   if (focusedWnd == GetDlgItem(dlg, IDE_BPX) || focusedWnd == GetDlgItem(dlg, IDC_BPX))
-      focus = 1, text = IDE_BPX, box = IDC_BPX;
-   if (focusedWnd == GetDlgItem(dlg, IDE_MEM) || focusedWnd == GetDlgItem(dlg, IDC_MEM) ||
+   if(focusedWnd == GetDlgItem(dlg, IDE_CBP) || focusedWnd == GetDlgItem(dlg, IDC_CBP))
+   {
+       focus = 0;
+       text = IDE_CBP;
+       box = IDC_CBP;
+   }
+   if(focusedWnd == GetDlgItem(dlg, IDE_BPX) || focusedWnd == GetDlgItem(dlg, IDC_BPX))
+   {
+       focus = 1;
+       text = IDE_BPX;
+       box = IDC_BPX;
+   }
+   if(focusedWnd == GetDlgItem(dlg, IDE_MEM) || focusedWnd == GetDlgItem(dlg, IDC_MEM) ||
        focusedWnd == GetDlgItem(dlg, IDC_MEM_R) || focusedWnd == GetDlgItem(dlg, IDC_MEM_W))
-      focus = 2, text = IDE_MEM, box = IDC_MEM;
+   {
+       focus = 2;
+       text = IDE_MEM;
+       box = IDC_MEM;
+   }
 
    SendDlgItemMessage(dlg, IDE_CBP, EM_SETREADONLY, (BOOL)(focus != 0), 0);
    SendDlgItemMessage(dlg, IDE_BPX, EM_SETREADONLY, (BOOL)(focus != 1), 0);
    SendDlgItemMessage(dlg, IDE_MEM, EM_SETREADONLY, (BOOL)(focus != 2), 0);
 
    int del0 = 0, add0 = 0, del1 = 0, add1 = 0, del2 = 0, add2 = 0;
-   unsigned max = SendDlgItemMessage(dlg, box, LB_GETCOUNT, 0, 0),
-            cur = SendDlgItemMessage(dlg, box, LB_GETCURSEL, 0, 0),
-            len = SendDlgItemMessage(dlg, text, WM_GETTEXTLENGTH, 0, 0);
+   unsigned max = unsigned(SendDlgItemMessage(dlg, box, LB_GETCOUNT, 0, 0)),
+            cur = unsigned(SendDlgItemMessage(dlg, box, LB_GETCURSEL, 0, 0)),
+            len = unsigned(SendDlgItemMessage(dlg, text, WM_GETTEXTLENGTH, 0, 0));
 
    if (max && cur >= max) SendDlgItemMessage(dlg, box, LB_SETCURSEL, cur = 0, 0);
 
@@ -360,13 +383,13 @@ void SetBpxButtons(HWND dlg)
    if (defid) SendMessage(dlg, DM_SETDEFID, defid, 0);
 }
 
-void ClearListBox(HWND box)
+static void ClearListBox(HWND box)
 {
    while (SendMessage(box, LB_GETCOUNT, 0, 0))
       SendMessage(box, LB_DELETESTRING, 0, 0);
 }
 
-void FillCondBox(HWND dlg, unsigned cursor)
+static void FillCondBox(HWND dlg, unsigned cursor)
 {
    HWND box = GetDlgItem(dlg, IDC_CBP);
    ClearListBox(box);
@@ -380,7 +403,7 @@ void FillCondBox(HWND dlg, unsigned cursor)
    SendMessage(box, LB_SETCURSEL, cursor, 0);
 }
 
-void FillBpxBox(HWND dlg, unsigned address)
+static void FillBpxBox(HWND dlg, unsigned address)
 {
    HWND box = GetDlgItem(dlg, IDC_BPX);
    ClearListBox(box);
@@ -398,13 +421,13 @@ void FillBpxBox(HWND dlg, unsigned address)
       else sprintf(tmp, "%04X-%04X", start, end);
       SendMessage(box, LB_ADDSTRING, 0, (LPARAM)tmp);
       if (start <= address && address <= end)
-         selection = SendMessage(box, LB_GETCOUNT, 0, 0);
+         selection = unsigned(SendMessage(box, LB_GETCOUNT, 0, 0));
       start = end+1;
    }
    if (selection) SendMessage(box, LB_SETCURSEL, selection-1, 0);
 }
 
-void FillMemBox(HWND dlg, unsigned address)
+static void FillMemBox(HWND dlg, unsigned address)
 {
    HWND box = GetDlgItem(dlg, IDC_MEM);
    ClearListBox(box);
@@ -424,25 +447,33 @@ void FillMemBox(HWND dlg, unsigned address)
       if (active & MEMBITS_BPW) strcat(tmp, "W");
       SendMessage(box, LB_ADDSTRING, 0, (LPARAM)tmp);
       if (start <= address && address <= end)
-         selection = SendMessage(box, LB_GETCOUNT, 0, 0);
+         selection = unsigned(SendMessage(box, LB_GETCOUNT, 0, 0));
       start = end+1;
    }
    if (selection) SendMessage(box, LB_SETCURSEL, selection-1, 0);
 }
 
-char MoveBpxFromBoxToEdit(HWND dlg, unsigned box, unsigned edit)
+static char MoveBpxFromBoxToEdit(HWND dlg, unsigned box, unsigned edit)
 {
-   HWND hBox = GetDlgItem(dlg, box);
-   unsigned max = SendDlgItemMessage(dlg, box, LB_GETCOUNT, 0, 0),
-            cur = SendDlgItemMessage(dlg, box, LB_GETCURSEL, 0, 0);
+   HWND hBox = GetDlgItem(dlg, int(box));
+   unsigned max = unsigned(SendDlgItemMessage(dlg, box, LB_GETCOUNT, 0, 0)),
+            cur = unsigned(SendDlgItemMessage(dlg, box, LB_GETCURSEL, 0, 0));
    if (cur >= max) return 0;
    char tmp[0x200];
    SendMessage(hBox, LB_GETTEXT, cur, (LPARAM)tmp);
    if (box == IDC_MEM && *tmp) {
       char *last = tmp + strlen(tmp);
       unsigned r = BST_UNCHECKED, w = BST_UNCHECKED;
-      if (last[-1] == 'W') w = BST_CHECKED, last--;
-      if (last[-1] == 'R') r = BST_CHECKED, last--;
+      if(last[-1] == 'W')
+      {
+          w = BST_CHECKED;
+          last--;
+      }
+      if(last[-1] == 'R')
+      {
+          r = BST_CHECKED;
+          last--;
+      }
       if (last[-1] == ' ') last--;
       *last = 0;
       CheckDlgButton(dlg, IDC_MEM_R, r);
@@ -454,7 +485,7 @@ char MoveBpxFromBoxToEdit(HWND dlg, unsigned box, unsigned edit)
 
 struct MEM_RANGE { unsigned start, end; };
 
-int GetMemRamge(char *str, MEM_RANGE &range)
+static int GetMemRamge(char *str, MEM_RANGE &range)
 {
    while (*str == ' ') str++;
    for (range.start = 0; ishex(*str); str++)
@@ -471,8 +502,10 @@ int GetMemRamge(char *str, MEM_RANGE &range)
 }
 
 
-INT_PTR CALLBACK conddlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK conddlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
+    (void)lp;
+
    if (msg == WM_INITDIALOG)
    {
       FillCondBox(dlg, 0);
@@ -509,7 +542,7 @@ set_buttons_and_return:
       SetFocus(GetDlgItem(dlg, IDE_CBP));
       Z80 &cpu = CpuMgr.Cpu();
       if (!toscript(tmp, cpu.cbp[cpu.cbpn])) {
-         MessageBox(dlg, "Error in expression\nPlease do RTFM", 0, MB_ICONERROR);
+         MessageBox(dlg, "Error in expression\nPlease do RTFM", nullptr, MB_ICONERROR);
          return 1;
       }
       SendDlgItemMessage(dlg, IDE_CBP, WM_SETTEXT, 0, 0);
@@ -525,7 +558,7 @@ set_buttons_and_return:
       MEM_RANGE range;
       if (!GetMemRamge(tmp, range))
       {
-         MessageBox(dlg, "Invalid breakpoint address / range", 0, MB_ICONERROR);
+         MessageBox(dlg, "Invalid breakpoint address / range", nullptr, MB_ICONERROR);
          return 1;
       }
 
@@ -545,7 +578,7 @@ set_buttons_and_return:
       MEM_RANGE range;
       if (!GetMemRamge(tmp, range))
       {
-         MessageBox(dlg, "Invalid watch address / range", 0, MB_ICONERROR);
+         MessageBox(dlg, "Invalid watch address / range", nullptr, MB_ICONERROR);
          return 1;
       }
       unsigned char mask = 0;
@@ -567,7 +600,7 @@ set_buttons_and_return:
    {
 del_cond:
       SetFocus(GetDlgItem(dlg, IDE_CBP));
-      unsigned cur = SendDlgItemMessage(dlg, IDC_CBP, LB_GETCURSEL, 0, 0);
+      unsigned cur = unsigned(SendDlgItemMessage(dlg, IDC_CBP, LB_GETCURSEL, 0, 0));
       Z80 &cpu = CpuMgr.Cpu();
       if (cur >= cpu.cbpn)
           return 0;
@@ -585,10 +618,10 @@ del_cond:
    {
 del_bpx:
       SetFocus(GetDlgItem(dlg, IDE_BPX));
-      id = IDC_BPX; mask = ~MEMBITS_BPX;
+      id = IDC_BPX; mask = u8(~MEMBITS_BPX);
 del_range:
-      unsigned cur = SendDlgItemMessage(dlg, id, LB_GETCURSEL, 0, 0),
-               max = SendDlgItemMessage(dlg, id, LB_GETCOUNT, 0, 0);
+      unsigned cur = unsigned(SendDlgItemMessage(dlg, id, LB_GETCURSEL, 0, 0)),
+               max = unsigned(SendDlgItemMessage(dlg, id, LB_GETCOUNT, 0, 0));
       if (cur >= max) return 0;
       SendDlgItemMessage(dlg, id, LB_GETTEXT, cur, (LPARAM)tmp);
       unsigned start, end;
@@ -610,7 +643,7 @@ del_range:
    {
 del_mem:
       SetFocus(GetDlgItem(dlg, IDE_MEM));
-      id = IDC_MEM; mask = ~(MEMBITS_BPR | MEMBITS_BPW);
+      id = IDC_MEM; mask = u8(~(MEMBITS_BPR | MEMBITS_BPW));
       goto del_range;
    }
 
@@ -622,8 +655,10 @@ void mon_bpdialog()
    DialogBox(hIn, MAKEINTRESOURCE(IDD_COND), wnd, conddlg);
 }
 
-INT_PTR CALLBACK watchdlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK watchdlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
+    (void)lp;
+
    char tmp[0x200]; unsigned i;
    static const int ids1[] = { IDC_W1_ON, IDC_W2_ON, IDC_W3_ON, IDC_W4_ON };
    static const int ids2[] = { IDE_W1, IDE_W2, IDE_W3, IDE_W4 };
@@ -651,8 +686,8 @@ reinit:
          if (watch_enabled[i]) {
             SendDlgItemMessage(dlg, ids2[i], WM_GETTEXT, sizeof tmp, (LPARAM)tmp);
             if (!toscript(tmp, watch_script[i])) {
-               sprintf(tmp, "Watch %d: error in expression\nPlease do RTFM", i+1);
-               MessageBox(dlg, tmp, 0, MB_ICONERROR); watch_enabled[i] = 0;
+               sprintf(tmp, "Watch %u: error in expression\nPlease do RTFM", i+1);
+               MessageBox(dlg, tmp, nullptr, MB_ICONERROR); watch_enabled[i] = 0;
                SetFocus(GetDlgItem(dlg, ids2[i]));
                return 0;
             }
@@ -700,7 +735,7 @@ static void LoadBpx()
         default: continue;
         }
 
-        Z80 &cpu = CpuMgr.Cpu(CpuIdx);
+        Z80 &cpu = CpuMgr.Cpu(u32(CpuIdx));
         for (unsigned i = unsigned(Start); i <= unsigned(End); i++)
             cpu.membits[i] |= mask;
         cpu.dbgchk = isbrk(cpu);
@@ -740,9 +775,9 @@ static void SaveBpx()
                if(active & Mask[i])
                {
                    if (Start == End)
-                       fprintf(BpxFile, "%c%1d=0x%04X\n", Type[i], CpuIdx, Start);
+                       fprintf(BpxFile, "%c%1u=0x%04X\n", Type[i], CpuIdx, Start);
                    else
-                       fprintf(BpxFile, "%c%1d=0x%04X-0x%04X\n", Type[i], CpuIdx, Start, End);
+                       fprintf(BpxFile, "%c%1u=0x%04X-0x%04X\n", Type[i], CpuIdx, Start, End);
                }
 
                Start = End + 1;

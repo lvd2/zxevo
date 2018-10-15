@@ -38,7 +38,7 @@ all: snd.a
 .cpp.o::
     $(CXX) $(CXXFLAGS) $<
 
-snd.a: sndbuffer.o sndchip.o saa1099.o sndcounter.o sndrender.o
+snd.a: sndbuffer.o sndchip.o emul_2203.o saa1099.o sndcounter.o sndrender.o
     $(LIB) $(LIBFLAGS) $@ $**
 clean:
     -del *.o *.a

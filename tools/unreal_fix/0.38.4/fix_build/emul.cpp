@@ -1,6 +1,8 @@
 #include "std.h"
 #pragma hdrstop
 
+#include "emul.h"
+
 #define SND_TEST_FAILURES
 //#define SND_TEST_SHOWSTAT
 #include "mods.h"
@@ -24,12 +26,12 @@ typedef signed char INT8;
 unsigned frametime = 111111; //Alone Coder (GUI value for conf.frame)
 //~------- Alone Coder ---------
 
-int nmi_pending = 0;
+unsigned nmi_pending = 0;
 
 bool ConfirmExit();
 BOOL WINAPI ConsoleHandler(DWORD CtrlType);
 
-#include "emul_2203.h" //Dexus
+#include "sndrender/emul_2203.h" //Dexus
 #include "sndrender/sndrender.h"
 #include "emul.h"
 #include "sndrender/sndchip.h"
@@ -52,7 +54,7 @@ void showhelp(const char *anchor)
    OnExitGui(); //Alone Coder 0.36.6
 }
 
-LONG __stdcall filter(EXCEPTION_POINTERS *pp)
+static LONG __stdcall filter(EXCEPTION_POINTERS *pp)
 {
    color(CONSCLR_ERROR);
    printf("\nexception %08lX at eip=%p\n",
@@ -78,7 +80,7 @@ LONG __stdcall filter(EXCEPTION_POINTERS *pp)
    return EXCEPTION_CONTINUE_SEARCH;
 }
 
-static bool Exit = false;
+static volatile bool Exit = false;
 
 bool ConfirmExit()
 {
@@ -133,7 +135,7 @@ int __cdecl main(int argc, char **argv)
    SetUnhandledExceptionFilter(filter);
 #endif
 
-   SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
+   _set_error_mode(_OUT_TO_MSGBOX);
    load_spec_colors();
    init_all(argc-1, argv+1);
 //   applyconfig();

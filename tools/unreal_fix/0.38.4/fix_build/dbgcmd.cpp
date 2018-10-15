@@ -8,13 +8,14 @@
 #include "dbgpaint.h"
 #include "dbgmem.h"
 #include "dbgrwdlg.h"
+#include "dbgcmd.h"
 #include "memory.h"
 #include "gui.h"
 #include "util.h"
 
 void out(unsigned port, unsigned char val);
 
-unsigned find1dlg(unsigned start)
+int find1dlg(unsigned start)
 {
    static char ftext[12] = "";
    strcpy(str, ftext);
@@ -23,12 +24,12 @@ unsigned find1dlg(unsigned start)
    tprint(11,12,"text:", FFRAME_INSIDE);
    if (!inputhex(17,12,8,false)) return -1;
    strcpy(ftext, str);
-   unsigned len = strlen(ftext);
+   size_t len = strlen(ftext);
    unsigned i; //Alone Coder 0.36.7
    for (unsigned ptr = memadr(start+1); ptr != start; ptr = memadr(ptr+1)) {
       for (/*unsigned*/ i = 0; i < len; i++)
          if (editrm(memadr(ptr+i)) != ftext[i]) break;
-      if (i == len) return ptr;
+      if (i == len) return int(ptr);
    }
    tprint(11,12,"  not found   ", FFRAME_ERROR);
    debugflip();
@@ -36,7 +37,7 @@ unsigned find1dlg(unsigned start)
    return -1;
 }
 
-unsigned find2dlg(unsigned start)
+int find2dlg(unsigned start)
 {
    static unsigned code = 0xF3, mask = 0xFF; char ln[64];
    filledframe(10,10,16,5);
@@ -55,7 +56,7 @@ unsigned find2dlg(unsigned start)
       unsigned char *cd = (unsigned char*)&code, *ms = (unsigned char*)&mask;
       for (/*unsigned*/ i = 0; i < 4; i++)
          if ((editrm(memadr(ptr+i)) & ms[i]) != (cd[i] & ms[i])) break;
-      if (i == 4) return ptr;
+      if (i == 4) return int(ptr);
    }
    tprint(11,12,"  not found   ", FFRAME_ERROR);
    tprint(11,13,"              ", FFRAME_ERROR);
@@ -85,20 +86,24 @@ void mon_fill()
        strcpy(fillpattern, "00");
 
    for (fillsize = 0; fillpattern[2*fillsize]; fillsize++) {
-      if (!fillpattern[2*fillsize+1]) fillpattern[2*fillsize+1] = '0', fillpattern[2*fillsize+2] = 0;
+       if(!fillpattern[2 * fillsize + 1])
+       {
+           fillpattern[2 * fillsize + 1] = '0';
+           fillpattern[2 * fillsize + 2] = 0;
+       }
       pattern[fillsize] = hex(fillpattern + 2*fillsize);
    }
    tprint(22,12,"        ", FFRAME_INSIDE);
    tprint(22,12,fillpattern, FFRAME_INSIDE);
 
-   unsigned a1 = input4(14,13,addr); if (a1 == -1) return;
-   addr = a1; tprint(14,13,str,FFRAME_INSIDE);
+   int a1 = input4(14,13,addr); if (a1 == -1) return;
+   addr = unsigned(a1); tprint(14,13,str,FFRAME_INSIDE);
    a1 = input4(24,13,end); if (a1 == -1) return;
-   end = a1;
+   end = unsigned(a1);
 
    unsigned pos = 0;
-   for (a1 = addr; a1 <= end; a1++) {
-      cpu.DirectWm(a1, pattern[pos]);
+   for (a1 = int(addr); a1 <= int(end); a1++) {
+      cpu.DirectWm(unsigned(a1), pattern[pos]);
       if (++pos == fillsize) pos = 0;
    }
 }
@@ -115,7 +120,7 @@ void mon_emul()
    dbgbreak = 0;
 }
 
-void mon_scr(char alt)
+static void mon_scr(char alt)
 {
    temp.scale = temp.mon_scale;
    apply_video();
@@ -147,19 +152,19 @@ void mon_exitsub()
 
 void editbank()
 {
-   unsigned x = input2(ports_x+5, ports_y+1, comp.p7FFD);
+   int x = input2(ports_x+5, ports_y+1, comp.p7FFD);
    if (x != -1)
    {
-       comp.p7FFD = x;
+       comp.p7FFD = u8(x);
        set_banks();
    }
 }
 
 void editextbank()
 {
-   if(dbg_extport == -1)
+   if(dbg_extport == -1U)
        return;
-   unsigned x = input2(ports_x+5, ports_y+2, dgb_extval);
+   int x = input2(ports_x+5, ports_y+2, dbg_extval);
    if (x != -1)
        out(dbg_extport, (unsigned char)x);
 }
@@ -176,7 +181,7 @@ void mon_dump() { mem_dump ^= 1; mem_sz = mem_dump ? 32:8; }
 
 void mon_switch_dump()
 {
-    static const unsigned DumpModes[] = { ED_MEM, ED_PHYS, ED_LOG, ED_CMOS, ED_NVRAM, ED_COMP_PAL };
+    static const u8 DumpModes[] = { ED_MEM, ED_PHYS, ED_LOG, ED_CMOS, ED_NVRAM, ED_COMP_PAL };
     static unsigned Idx = 0;
     ++Idx;
     Idx %= ED_MAX;
@@ -191,7 +196,7 @@ void mon_tool()
    Z80 &cpu = CpuMgr.Cpu();
    static unsigned char unref = 0xCF;
    if (ripper) {
-      OPENFILENAME ofn = { 0 };
+      OPENFILENAME ofn = {  };
       char savename[0x200]; *savename = 0;
       ofn.lStructSize = (WinVerMajor < 5) ? OPENFILENAME_SIZE_VERSION_400 : sizeof(OPENFILENAME);
       ofn.lpstrFilter = "Memory dump\0*.bin\0";
@@ -205,7 +210,11 @@ void mon_tool()
          for (unsigned i = 0; i < 0x10000; i++)
             snbuf[i] = (cpu.membits[i] & ripper) ? cpu.DirectRm(i) : unref;
          FILE *ff = fopen(savename, "wb");
-         if (ff) fwrite(snbuf, 1, 0x10000, ff), fclose(ff);
+         if(ff)
+         {
+             fwrite(snbuf, 1, 0x10000, ff);
+             fclose(ff);
+         }
       }
       ripper = 0;
    } else {
@@ -222,7 +231,7 @@ void mon_tool()
       tprint(tool_x+15,tool_y+3,str,FFRAME_INSIDE);
       if (*str == 'Y' || *str == 'y' || *str == '1') ripper |= MEMBITS_W;
       tprint(tool_x+1,tool_y+4, "unref. byte:", FFRAME_INSIDE);
-      unsigned ub;
+      int ub;
       if ((ub = input2(tool_x+14,tool_y+4,unref)) == -1) { ripper = 0; return; }
       unref = (unsigned char)ub;
       if (ripper)
@@ -250,11 +259,11 @@ void mon_switch_cpu()
     CpuMgr.SwitchCpu();
     Z80 &cpu1 = CpuMgr.Cpu();
 
-    if(cpu1.trace_curs == -1)
+    if(cpu1.trace_curs == -1U)
         cpu1.trace_curs = cpu1.pc;
-    if(cpu1.trace_top == -1)
+    if(cpu1.trace_top == -1U)
         cpu1.trace_top = cpu1.pc;
-    if(cpu1.trace_mode == -1)
+    if(cpu1.trace_mode == -1U)
         cpu1.trace_mode = 0;
 
     debugscr();

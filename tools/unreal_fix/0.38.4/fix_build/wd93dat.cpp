@@ -3,12 +3,13 @@
 #include "emul.h"
 #include "vars.h"
 #include "snapshot.h"
+#include "wd93dat.h"
 
 #include "util.h"
 
 int FDD::index()
 {
-   return this - comp.wd.fdd;
+   return int(this - comp.wd.fdd);
 }
 
 // return: 0 - CANCEL, 1 - YES/SAVED, 2 - NOT SAVED
@@ -16,7 +17,7 @@ char FDD::test()
 {
    if (!optype) return 1;
 
-   static char changed[] = "Disk A: changed. Save ?"; changed[5] = index()+'A';
+   static char changed[] = "Disk A: changed. Save ?"; changed[5] = char(index()+'A');
    int r = MessageBox(GetForegroundWindow(), changed, "Save disk", exitflag? MB_ICONQUESTION | MB_YESNO : MB_ICONQUESTION | MB_YESNOCANCEL);
    if (r == IDCANCEL) return 0;
    if (r == IDNO) return 2;
@@ -39,7 +40,7 @@ void FDD::free()
    motor = 0;
    track = 0;
 
-   rawdata = 0;
+   rawdata = nullptr;
    rawsize = 0;
    cyls = 0;
    sides = 0;
@@ -64,11 +65,11 @@ void FDD::newdisk(unsigned cyls, unsigned sides)
    unsigned len = MAX_TRACK_LEN;
    unsigned bitmap_len = unsigned(len+7U) >> 3;
    unsigned len2 = len + bitmap_len*2;
-   rawsize = align_by(cyls * sides * len2, 4096);
-   rawdata = (unsigned char*)VirtualAlloc(0, rawsize, MEM_COMMIT, PAGE_READWRITE);
+   rawsize = align_by(MAX_CYLS * sides * len2, 4096U);
+   rawdata = (unsigned char*)VirtualAlloc(nullptr, rawsize, MEM_COMMIT, PAGE_READWRITE);
    // ZeroMemory(rawdata, rawsize); // already done by VirtualAlloc
 
-   for (unsigned c = 0; c < cyls; c++)
+   for (unsigned c = 0; c < MAX_CYLS; c++)
    {
       for (unsigned h = 0; h < sides; h++)
       {

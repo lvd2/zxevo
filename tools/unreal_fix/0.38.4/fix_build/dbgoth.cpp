@@ -5,10 +5,13 @@
 #include "vars.h"
 #include "debug.h"
 #include "dbgpaint.h"
+#include "dbgoth.h"
+#include "gui.h"
 #include "util.h"
 
 namespace z80dbg
 {
+__int64 __cdecl delta();
 __int64 __cdecl delta()
 {
     return comp.t_states + cpu.t - cpu.debug_last_t;
@@ -40,7 +43,7 @@ static void wtline(const char *name, unsigned ptr, unsigned y)
       unsigned char c = cpu.DirectRm(ptr++);
       sprintf(line+5+3*dx, "%02X", c);
       line[7+3*dx] = ' ';
-      line[29+dx] = c ? c : '.';
+      line[29+dx] = char(c ? c : '.');
    }
 
    line[37] = 0;
@@ -68,9 +71,9 @@ void showwatch()
       wtline("BC'", cpu.alt.bc, 7);
       wtline("DE'", cpu.alt.de, 8);
       wtline("HL'", cpu.alt.hl, 9);
-      wtline(0, user_watches[0], 10);
-      wtline(0, user_watches[1], 11);
-      wtline(0, user_watches[2], 12);
+      wtline(nullptr, user_watches[0], 10);
+      wtline(nullptr, user_watches[1], 11);
+      wtline(nullptr, user_watches[2], 12);
    }
    const char *text = "watches";
    if (show_scrshot == 1) text = "screen memory";
@@ -86,9 +89,9 @@ void mon_setwatch()
    if (show_scrshot) show_scrshot = 0;
    for (unsigned i = 0; i < 3; i++) {
       debugscr();
-      unsigned addr = input4(wat_x, wat_y+wat_sz-3+i, user_watches[i]);
+      int addr = input4(wat_x, wat_y+wat_sz-3+i, user_watches[i]);
       if (addr == -1) return;
-      user_watches[i] = addr;
+      user_watches[i] = unsigned(addr);
    }
 }
 
@@ -114,15 +117,19 @@ void show_ay()
 {
    if (!conf.sound.ay_scheme) return;
    const char *ayn = comp.active_ay ? "AY1" : "AY0";
-   if (conf.sound.ay_scheme < AY_SCHEME_QUADRO) ayn = "AY:", comp.active_ay = 0;
+   if(conf.sound.ay_scheme < AY_SCHEME_QUADRO)
+   {
+       ayn = "AY:";
+       comp.active_ay = 0;
+   }
    tprint(ay_x-3, ay_y, ayn, W_TITLE);
    SNDCHIP *chip = &ay[comp.active_ay];
    char line[32];
-   for (int i = 0; i < 16; i++) {
+   for (unsigned i = 0; i < 16; i++) {
       line[0] = "0123456789ABCDEF"[i]; line[1] = 0;
       tprint(ay_x + i*3, ay_y, line, W_AYNUM);
       sprintf(line, "%02X", chip->get_reg(i));
-      tprint(ay_x + i*3 + 1, ay_y, line, i == (chip->get_activereg()) ? W_AYON : W_AYOFF);
+      tprint(unsigned(ay_x + i*3 + 1), unsigned(ay_y), line, i == (chip->get_activereg()) ? W_AYON : W_AYOFF);
    }
    frame(ay_x, ay_y, 48, 1, FRAME);
 }
@@ -175,10 +182,10 @@ void showbanks()
    for (int i = 0; i < 4; i++)
    {
       char ln[64]; sprintf(ln, "%d:", i);
-      tprint(banks_x, banks_y+i+1, ln, W_OTHEROFF);
+      tprint(unsigned(banks_x), unsigned(banks_y+i+1), ln, W_OTHEROFF);
       strcpy(ln, "?????");
       cpu.BankNames(i, ln);
-      tprint(banks_x+2, banks_y+i+1, ln, bankr[i]!=bankw[i] ? W_BANKRO : W_BANK);
+      tprint(unsigned(banks_x+2), unsigned(banks_y+i+1), ln, bankr[i]!=bankw[i] ? W_BANKRO : W_BANK);
    }
    frame(banks_x, banks_y+1, 7, 4, FRAME);
    tprint(banks_x, banks_y, "pages", W_TITLE);
@@ -200,27 +207,27 @@ void showports()
       case MM_SCORP:
       case MM_PROFSCORP:
       case MM_PLUS3:
-         dbg_extport = 0x1FFD; dgb_extval = comp.p1FFD;
+         dbg_extport = 0x1FFD; dbg_extval = comp.p1FFD;
       break;
       case MM_PROFI:
-         dbg_extport = 0xDFFD; dgb_extval = comp.pDFFD;
+         dbg_extport = 0xDFFD; dbg_extval = comp.pDFFD;
       break;
       case MM_ATM450:
-         dbg_extport = 0xFDFD; dgb_extval = comp.pFDFD;
+         dbg_extport = 0xFDFD; dbg_extval = comp.pFDFD;
       break;
       case MM_ATM710:
       case MM_ATM3:
          dbg_extport = (comp.aFF77 & 0xFFFF);
-         dgb_extval = comp.pFF77;
+         dbg_extval = comp.pFF77;
       break;
       case MM_QUORUM:
-         dbg_extport = 0x0000; dgb_extval = comp.p00;
+         dbg_extport = 0x0000; dbg_extval = comp.p00;
       break;
       default:
-         dbg_extport = -1;
+         dbg_extport = -1U;
    }
-   if (dbg_extport != -1)
-       sprintf(ln, "%04X:%02X", dbg_extport, dgb_extval);
+   if (dbg_extport != -1U)
+       sprintf(ln, "%04X:%02X", dbg_extport, dbg_extval);
    else
        sprintf(ln, "cmos:%02X", comp.cmos_addr);
    tprint(ports_x, ports_y+2, ln, W_OTHER);
@@ -282,56 +289,230 @@ void showdos()
 }
 
 #ifdef MOD_GSBASS
-INT_PTR CALLBACK gsdlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK gsdlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
-   char tmp[0x200];
-   unsigned i; //Alone Coder 0.36.7
-   if (msg == WM_INITDIALOG) {
-repaint:
-      while (SendDlgItemMessage(dlg, IDC_GSLIST, LB_GETCOUNT, 0, 0))
-         SendDlgItemMessage(dlg, IDC_GSLIST, LB_DELETESTRING, 0, 0);
-      if (gs.modsize) {
-         sprintf(tmp, "%-.20s (%s)", gs.mod, gs.mod_playing ? "playing" : "stopped");
-         SendDlgItemMessage(dlg, IDC_GSLIST, LB_ADDSTRING, 0, (LPARAM)tmp);
-      }
-      for (/*unsigned*/ i = 1; i < gs.total_fx; i++) {
-         sprintf(tmp, "%csmp %d: v=%d, n=%d, %d%s",
-            gs.cur_fx == i ? '*':' ', i,
-            gs.sample[i].volume, gs.sample[i].note, gs.sample[i].end,
-            gs.sample[i].loop < gs.sample[i].end ? " (L)":nil);
-         SendDlgItemMessage(dlg, IDC_GSLIST, LB_ADDSTRING, 0, (LPARAM)tmp);
-      }
-      *tmp = 0; for (i = 0; i < 0x100; i++) {
-         if (gs.badgs[i]) sprintf(tmp+strlen(tmp), "%02X ", i);
-      }
-      SendDlgItemMessage(dlg, IDE_GS, WM_SETTEXT, 0, (LPARAM)tmp);
-      return 1;
-   }
-   if (msg == WM_SYSCOMMAND && (wp & 0xFFF0) == SC_CLOSE) EndDialog(dlg, 0);
-   if (msg != WM_COMMAND) return 0;
-   unsigned id = LOWORD(wp);
-   if (id == IDCANCEL || id == IDOK) EndDialog(dlg, 0);
-   if (id == IDB_GS_CLEAR) { memset(gs.badgs, 0, sizeof gs.badgs); SendDlgItemMessage(dlg, IDE_GS, WM_SETTEXT, 0, 0); }
-   if (id == IDB_GS_RESET) { gs.reset(); goto repaint; }
-   if (id == IDB_GS_PLAY || (id == IDC_GSLIST && HIWORD(wp) == LBN_DBLCLK)) {
-      unsigned i = SendDlgItemMessage(dlg, IDC_GSLIST, LB_GETCURSEL, 0, 0);
-      if (i > 0x100) return 1;
-      if (!i && gs.modsize) {
-         gs.mod_playing ^= 1;
-         if (gs.mod_playing) gs.restart_mod(0,0); else gs.stop_mod();
-         goto repaint;
-      }
-      if (!gs.modsize) i++;
-      gs.debug_note(i);
-   }
-   return 0;
+    (void)lp;
+
+    char tmp[0x200];
+    unsigned i; //Alone Coder 0.36.7
+    HWND lv = GetDlgItem(dlg, IDC_GSLIST);
+
+    if(msg == WM_INITDIALOG)
+    {
+        ListView_SetExtendedListViewStyleEx(lv, LVS_EX_FULLROWSELECT, LVS_EX_FULLROWSELECT);
+        LVCOLUMN Col = { };
+
+        static const char *Cols[] = { "", "smp", "v", "n", "p", "f", "l" };
+        static const int Width[] = { 30, 100, 40, 40, 40, 70, 70 };
+
+        Col.mask = LVCF_TEXT | LVCF_WIDTH;
+
+        for(i = 0; i < _countof(Cols); i++)
+        {
+            Col.pszText = LPSTR(Cols[i]);
+            Col.cx = Width[i];
+            ListView_InsertColumn(lv, i, &Col);
+        }
+
+        if(gs.modsize)
+        {
+            sprintf(tmp, "(%s)", gs.mod_playing ? "P" : "S");
+            LVITEM Item = { };
+            Item.mask = LVIF_TEXT;
+            Item.iItem = 0;
+            Item.iSubItem = 0;
+            Item.pszText = tmp;
+            ListView_InsertItem(lv, &Item);
+
+            sprintf(tmp, "%.20s", gs.mod);
+            tmp[20] = 0;
+            Item.iSubItem++;
+            Item.pszText = tmp;
+            ListView_SetItem(lv, &Item);
+        }
+        for(i = 1; i < gs.total_fx; i++)
+        {
+            sprintf(tmp, "%s%s", gs.cur_fx == i ? "*" : "", gs.sample[i].loop < gs.sample[i].end ? "(L)" : "");
+            LVITEM Item = { };
+            Item.mask = LVIF_TEXT;
+            Item.iItem = int(i);
+            Item.iSubItem = 0;
+            Item.pszText = tmp;
+            ListView_InsertItem(lv, &Item);
+
+            sprintf(tmp, "%u", i);
+            Item.iSubItem++;
+            ListView_SetItem(lv, &Item);
+
+            sprintf(tmp, "%u", unsigned(gs.sample[i].volume));
+            Item.iSubItem++;
+            ListView_SetItem(lv, &Item);
+
+            sprintf(tmp, "%u", unsigned(gs.sample[i].note));
+            Item.iSubItem++;
+            ListView_SetItem(lv, &Item);
+
+            sprintf(tmp, "%u", unsigned(gs.sample[i].Priority));
+            Item.iSubItem++;
+            ListView_SetItem(lv, &Item);
+
+            sprintf(tmp, "%.2f", double(gs.note2rate[gs.sample[i].note]));
+            Item.iSubItem++;
+            ListView_SetItem(lv, &Item);
+
+            sprintf(tmp, "%u", gs.sample[i].end);
+            Item.iSubItem++;
+            ListView_SetItem(lv, &Item);
+        }
+        int Sel = ListView_GetItemCount(lv);
+        if(Sel > 0)
+        {
+            LVITEM Item = { };
+            Item.stateMask = LVIS_SELECTED;
+            Item.state = LVIS_SELECTED;
+            SendMessage(lv, LVM_SETITEMSTATE, WPARAM(0), LPARAM(&Item));
+            SetFocus(lv);
+        }
+
+        *tmp = 0;
+        for(i = 0; i < 0x100; i++)
+        {
+            if(gs.badgs[i])
+            {
+                sprintf(tmp + strlen(tmp), "%02X ", i);
+            }
+        }
+        Edit_SetText(GetDlgItem(dlg, IDE_GS), tmp);
+
+        return Sel ? FALSE : TRUE;
+    }
+
+    if(msg == WM_SYSCOMMAND && (wp & 0xFFF0) == SC_CLOSE)
+    {
+        EndDialog(dlg, 0);
+    }
+
+    unsigned id;
+    unsigned nc;
+
+    switch(msg)
+    {
+    case WM_NOTIFY:
+        {
+            LPNMHDR Hdr = LPNMHDR(lp);
+            id = unsigned(Hdr->idFrom);
+            nc = Hdr->code;
+        }
+        break;
+
+    case WM_COMMAND:
+        id = LOWORD(wp);
+        nc = HIWORD(wp);
+        break;
+
+    default:
+        return FALSE;
+    }
+
+    if((id == IDCANCEL || id == IDOK) && (nc == BN_CLICKED))
+    {
+        EndDialog(dlg, 0);
+    }
+
+    if((id == IDB_GS_CLEAR) && (nc == BN_CLICKED))
+    {
+        memset(gs.badgs, 0, sizeof gs.badgs);
+        Edit_SetText(GetDlgItem(dlg, IDE_GS), "");
+        return TRUE;
+    }
+
+    if((id == IDB_GS_RESET) && (nc == BN_CLICKED))
+    {
+        gs.reset();
+        ListView_DeleteAllItems(lv);
+        return TRUE;
+    }
+
+    if(((id == IDB_GS_PLAY) && (nc == BN_CLICKED)) || ((id == IDC_GSLIST) && (nc == NM_DBLCLK)))
+    {
+        unsigned i = unsigned(ListView_GetSelectionMark(lv));
+        if(i > 0x100)
+        {
+            return TRUE;
+        }
+
+        if(!i && gs.modsize)
+        {
+            gs.mod_playing ^= 1;
+            if(gs.mod_playing)
+            {
+                gs.restart_mod(0, 0);
+            }
+            else
+            {
+                gs.stop_mod();
+            }
+
+            sprintf(tmp, "(%s)", gs.mod_playing ? "P" : "S");
+            LVITEM Item = { };
+            Item.mask = LVIF_TEXT;
+            Item.pszText = tmp;
+            ListView_SetItem(lv, &Item);
+
+            return TRUE;
+        }
+
+        if(!gs.modsize)
+        {
+            i++;
+        }
+        gs.debug_note(i);
+        return TRUE;
+    }
+
+    if((id == IDB_GS_SAVE) && (nc == BN_CLICKED))
+    {
+        unsigned i = unsigned(ListView_GetSelectionMark(lv));
+        if((i == 0) && (gs.modsize != 0))
+        {
+            SaveModDlg(wnd);
+            return TRUE;
+        }
+
+        if(i > 0x100)
+        {
+            return TRUE;
+        }
+
+        OPENFILENAME ofn = { };
+        char sndsavename[MAX_PATH];
+        *sndsavename = 0;
+        ListView_GetItemText(lv, i, 1, sndsavename, _countof(sndsavename));
+        strcat(sndsavename, ".pcm");
+
+        ofn.lStructSize = (WinVerMajor < 5) ? OPENFILENAME_SIZE_VERSION_400 : sizeof(OPENFILENAME);
+        ofn.lpstrFilter = "PCM sample (.pcm)\0*.pcm\0";
+        ofn.lpstrFile = sndsavename;
+        ofn.lpstrDefExt = "pcm";
+        ofn.nMaxFile = _countof(sndsavename);
+        ofn.lpstrTitle = "Save Sample";
+        ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_EXPLORER | OFN_ENABLESIZING;
+        ofn.hwndOwner = wnd;
+        ofn.nFilterIndex = 1;
+        if(GetSaveFileName(&ofn))
+        {
+            gs.debug_save_note(i, sndsavename);
+        }
+        return TRUE;
+    }
+    return FALSE;
 }
 
 void mon_gsdialog()
 {
    if (conf.gs_type == 2)
       DialogBox(hIn, MAKEINTRESOURCE(IDD_GS), wnd, gsdlg);
-   else MessageBox(wnd, "high-level GS emulation\nis not initialized", 0, MB_OK | MB_ICONERROR);
+   else MessageBox(wnd, "high-level GS emulation\nis not initialized", nullptr, MB_OK | MB_ICONERROR);
 }
 #else
 void mon_gsdialog() {}

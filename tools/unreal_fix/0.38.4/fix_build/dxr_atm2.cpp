@@ -12,7 +12,7 @@ const int atmh2_ofs = -4*int(PAGE);
 const int atmh3_ofs = -4*int(PAGE)+0x2000;
 
 
-void line_atm2_8(unsigned char *dst, unsigned char *src, unsigned *tab0, int src_offset)
+static void line_atm2_8(unsigned char *dst, unsigned char *src, unsigned *tab0, int src_offset)
 {
     for (unsigned x = 0; x < 640; x += 0x40) {
         src_offset &= 0x1FFF;
@@ -48,8 +48,7 @@ void line_atm2_8(unsigned char *dst, unsigned char *src, unsigned *tab0, int src
     }
 }
 
-
-void line_atm2_16(unsigned char *dst, unsigned char *src, unsigned *tab0, int src_offset)
+static void line_atm2_16(unsigned char *dst, unsigned char *src, unsigned *tab0, int src_offset)
 {
     for (unsigned x = 0; x < 640*2; x += 0x80) {
         src_offset &= 0x1FFF;
@@ -101,9 +100,7 @@ void line_atm2_16(unsigned char *dst, unsigned char *src, unsigned *tab0, int sr
     }
 }
 
-
-
-void line_atm2_32(unsigned char *dst, unsigned char *src, unsigned *tab0, int src_offset)
+static void line_atm2_32(unsigned char *dst, unsigned char *src, unsigned *tab0, int src_offset)
 {
     unsigned *tab; unsigned c;
     for (unsigned x = 0; x < 640*4; x += 0x40) {
@@ -136,7 +133,7 @@ void line_atm2_32(unsigned char *dst, unsigned char *src, unsigned *tab0, int sr
 }
 
 // Hardware Multicolor
-void rend_atm2(unsigned char *dst, unsigned pitch, int y, int Offset)
+void rend_atm2(unsigned char *dst, unsigned pitch, unsigned y, int Offset)
 {
     unsigned char *dst2 = dst + (temp.ox-640)*temp.obpp/16;
     if (temp.scy > 200) 

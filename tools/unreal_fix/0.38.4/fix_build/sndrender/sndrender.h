@@ -71,7 +71,7 @@ class SNDRENDER
 
    uint64_t passed_clk_ticks; // Число тактов входной частоты прошедшее с момента инициализации
    uint64_t passed_snd_ticks; // Число выходных сэмплов на частоте оверсэмплинга прошедшее с момента инициализации
-   unsigned mult_const;
+//   unsigned mult_const;
 
    void flush(unsigned endtick);
 };

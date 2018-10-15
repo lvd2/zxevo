@@ -2,13 +2,18 @@
 
 struct RSM_DATA
 {
-   const __m64 *colortab; // tables for current frame
+#ifdef MOD_SSE2
+    typedef __m128i __m_vec;
+#else
+    typedef __m64 __m_vec;
+#endif // MOD_SSE2
+   const __m_vec *colortab; // tables for current frame
 
    enum { MAX_MIX_FRAMES = 8, FRAME_TABLES_SIZE = MAX_MIX_FRAMES*0x100*4*8 };
    enum { MAX_LINE_DWORDS = MAX_WIDTH };
    unsigned mix_frames, frame_table_size, line_size_d;
    union {
-      __m64 line_buffer[MAX_LINE_DWORDS/2];
+       __m_vec line_buffer[MAX_LINE_DWORDS/(sizeof(__m_vec)/sizeof(DWORD))];
       unsigned line_buffer_d[MAX_LINE_DWORDS];
    };
 
@@ -16,9 +21,9 @@ struct RSM_DATA
 
    unsigned char *data;
    unsigned char *needframes; // new spectrum frames in next pc frame
-   __m64 *tables;
+   __m_vec *tables;
 
-   RSM_DATA() { data = 0; }
+   RSM_DATA() { data = nullptr; }
    ~RSM_DATA() { free(data); }
 
    void prepare_line_8(unsigned char *src0);

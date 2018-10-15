@@ -16,10 +16,10 @@ int disasm_line(unsigned addr, char *line)
 {
    Z80 &cpu = CpuMgr.Cpu();
    unsigned char dbuf[16+129/*Alone Code 0.36.7*/];
-   int i; //Alone Coder 0.36.7
-   for (/*int*/ i = 0; i < 16; i++) dbuf[i] = cpu.DirectRm(addr+i);
+   ptrdiff_t i; //Alone Coder 0.36.7
+   for (/*int*/ i = 0; i < 16; i++) dbuf[i] = cpu.DirectRm(addr+unsigned(i));
    sprintf(line, "%04X ", addr); int ptr = 5;
-   int len = disasm(dbuf, addr, trace_labels) - dbuf;
+   ptrdiff_t len = disasm(dbuf, addr, char(trace_labels)) - dbuf;
    //8000 ..DDCB0106 rr (ix+1)
    if (trace_labels)
    {
@@ -29,26 +29,34 @@ int disasm_line(unsigned addr, char *line)
    }
    else
    {
-      int len1 = len;
-      if (len > 4) len1 = 4, *(short*)(line+ptr) = WORD2('.','.'), ptr+=2;
-      for (i = len-len1; i < len; i++)
-         sprintf(line+ptr, "%02X", dbuf[i]), ptr += 2;
+      ptrdiff_t len1 = len;
+      if(len > 4)
+      {
+          len1 = 4;
+          *(short*)(line + ptr) = WORD2('.', '.');
+          ptr += 2;
+      }
+      for(i = len - len1; i < len; i++)
+      {
+          sprintf(line + ptr, "%02X", dbuf[i]);
+          ptr += 2;
+      }
    }
 
    while (ptr < 16) line[ptr++] = ' ';
    strcpy(line+ptr, asmbuf);
-   return len;
+   return int(len);
 }
 
-#define TWF_BRANCH  0x010000
-#define TWF_BRADDR  0x020000
-#define TWF_LOOPCMD 0x040000
-#define TWF_CALLCMD 0x080000
-#define TWF_BLKCMD  0x100000
-#define TWF_HALTCMD 0x200000
+#define TWF_BRANCH  0x010000U
+#define TWF_BRADDR  0x020000U
+#define TWF_LOOPCMD 0x040000U
+#define TWF_CALLCMD 0x080000U
+#define TWF_BLKCMD  0x100000U
+#define TWF_HALTCMD 0x200000U
 // Ìכאהרטו 16בטע - אהנוס z80
 // סעאנרטו 16בטע - פכאדט TWF_xxxx
-unsigned tracewndflags()
+static unsigned tracewndflags()
 {
    Z80 &cpu = CpuMgr.Cpu();
    unsigned readptr = cpu.pc, base = cpu.hl;
@@ -76,8 +84,8 @@ unsigned tracewndflags()
        }
        else // im2
        {
-           unsigned vec = (cpu.i << 8U) | cpu.IntVec();
-           addr = (cpu.DirectRm(vec+1) << 8U) | cpu.DirectRm(vec);
+           unsigned vec = unsigned(cpu.i << 8U) | cpu.IntVec();
+           addr = u32((cpu.DirectRm(vec+1) << 8U) | cpu.DirectRm(vec));
        }
        return TWF_HALTCMD | addr;
    }
@@ -91,14 +99,14 @@ unsigned tracewndflags()
           return 0; // reti/retn
 
  ret:
-      return (cpu.DirectRm(cpu.sp) | (cpu.DirectRm(cpu.sp+1) << 8U)) | TWF_BRANCH | TWF_BRADDR;
+      return (cpu.DirectRm(cpu.sp) | unsigned(cpu.DirectRm(cpu.sp+1) << 8U)) | TWF_BRANCH | TWF_BRADDR;
    }
 
    if (opcode == 0xC9) // ret
        goto ret;
    if (opcode == 0xC3) // jp
    {
-       jp: return (cpu.DirectRm(readptr) | (cpu.DirectRm(readptr+1) << 8U)) | TWF_BRANCH | fl;
+       jp: return (cpu.DirectRm(readptr) | unsigned(cpu.DirectRm(readptr+1) << 8U)) | TWF_BRANCH | fl;
    }
    if (opcode == 0xCD) // call
    {
@@ -141,7 +149,7 @@ unsigned tracewndflags()
       if (!opcode || opcode == 0x08)
           return 0;
       int offs = (signed char)cpu.DirectRm(readptr++);
-      unsigned addr = (offs + readptr) | TWF_BRANCH;
+      unsigned addr = unsigned(offs + int(readptr)) | TWF_BRANCH;
       if (opcode == 0x18)
           return addr; // jr
       if (opcode == 0x10)
@@ -156,9 +164,9 @@ unsigned tracewndflags()
    return 0;
 }
 
-unsigned trcurs_y;
+static unsigned trcurs_y;
 unsigned asmii;
-char asmpc[64], dumppc[12];
+static char asmpc[64], dumppc[12];
 const unsigned cs[3][2] = { {0,4}, {5,10}, {16,16} };
 
 void showtrace()
@@ -173,9 +181,9 @@ void showtrace()
    cpu.trace_mode = (cpu.trace_mode+3) % 3;
 
    cpu.pc_trflags = tracewndflags();
-   cpu.nextpc = (cpu.pc_trflags & TWF_HALTCMD) ? (cpu.pc_trflags & 0xFFFF): ((cpu.pc + disasm_line(cpu.pc, line)) & 0xFFFF);
+   cpu.nextpc = (cpu.pc_trflags & TWF_HALTCMD) ? (cpu.pc_trflags & 0xFFFF): ((cpu.pc + unsigned(disasm_line(cpu.pc, line))) & 0xFFFF);
    unsigned pc = cpu.trace_top;
-   asmii = -1;
+   asmii = -1U;
    unsigned char atr0 = (activedbg == WNDTRACE) ? W_SEL : W_NORM;
    unsigned ii; //Alone Coder 0.36.7
    for (/*unsigned*/ ii = 0; ii < trace_size; ii++)
@@ -204,7 +212,11 @@ void showtrace()
             unsigned addr = cpu.pc_trflags & 0xFFFF;
             unsigned arr = (addr <= cpu.pc)? 0x18 : 0x19; // up/down arrow
             unsigned char color = (pc == cpu.trace_curs && activedbg == WNDTRACE && cpu.trace_mode == 2)? W_TRACE_JINFO_CURS_FG : W_TRACE_JINFO_NOCURS_FG;
-            if (cpu.pc_trflags & TWF_BRADDR) sprintf(line, "%04X%c", addr, arr), tprint_fg(trace_x+32-5, trace_y+ii, line, color);
+            if(cpu.pc_trflags & TWF_BRADDR)
+            {
+                sprintf(line, "%04X%c", addr, int(arr));
+                tprint_fg(trace_x + 32 - 5, trace_y + ii, line, color);
+            }
             else tprint_fg(trace_x+32-1, trace_y+ii, (char*)&arr, color);
          }
 
@@ -215,19 +227,19 @@ void showtrace()
          }
       }
 
-      pc += len;
+      pc += unsigned(len);
    }
    cpu.trpc[ii] = pc;
 
    unsigned char dbuf[16];
-   int i; //Alone Coder
+   unsigned i; //Alone Coder
    for (/*int*/ i = 0; i < 16; i++) dbuf[i] = cpu.DirectRm(cpu.trace_curs+i);
-   int len = disasm(dbuf, cpu.trace_curs, 0) - dbuf; strcpy(asmpc, asmbuf);
+   ptrdiff_t len = disasm(dbuf, cpu.trace_curs, 0) - dbuf; strcpy(asmpc, asmbuf);
    for (/*int*/ i = 0; i < len && i < 5; i++)
       sprintf(dumppc + i*2, "%02X", cpu.DirectRm(cpu.trace_curs+i));
 
    char cpu_num[10];
-   _snprintf(cpu_num, sizeof(cpu_num), "Z80(%d)", CpuMgr.GetCurrentCpu());
+   _snprintf(cpu_num, sizeof(cpu_num), "Z80(%u)", CpuMgr.GetCurrentCpu());
    tprint(trace_x, trace_y-1, cpu_num, W_TITLE);
 
    char lbr[5];
@@ -242,9 +254,11 @@ void c_lbl_import()
 }
 
       /* ------------------------------------------------------------- */
-unsigned save_pos[8] = { -1U,-1U,-1U,-1U,-1U,-1U,-1U,-1U };
-unsigned save_cur[8] = { -1U,-1U,-1U,-1U,-1U,-1U,-1U,-1U };
-unsigned stack_pos[32] = { -1U }, stack_cur[32] = { -1U };
+static unsigned save_pos[8] = { -1U,-1U,-1U,-1U,-1U,-1U,-1U,-1U };
+static unsigned save_cur[8] = { -1U,-1U,-1U,-1U,-1U,-1U,-1U,-1U };
+static unsigned stack_pos[32] = { -1U }, stack_cur[32] = { -1U };
+
+void push_pos();
 
 void push_pos()
 {
@@ -254,26 +268,26 @@ void push_pos()
    stack_pos[0] = cpu.trace_top; stack_cur[0] = cpu.trace_curs;
 }
 
-unsigned cpu_up(unsigned ip)
+static unsigned cpu_up(unsigned ip)
 {
    Z80 &cpu = CpuMgr.Cpu();
    unsigned char buf1[0x10];
    unsigned p1 = (ip > sizeof buf1) ? ip - sizeof buf1 : 0;
    for (unsigned i = 0; i < sizeof buf1; i++) buf1[i] = cpu.DirectRm(p1+i);
-   unsigned char *dispos = buf1, *prev;
+   const unsigned char *dispos = buf1, *prev;
    do {
       prev = dispos;
       dispos = disasm(dispos, 0, 0);
    } while ((unsigned)(dispos-buf1+p1) < ip);
-   return prev-buf1+p1;
+   return unsigned(prev-buf1+p1);
 }
 
 void cgoto()
 {
    Z80 &cpu = CpuMgr.Cpu();
-   unsigned v = input4(trace_x, trace_y, cpu.trace_top);
+   int v = input4(trace_x, trace_y, cpu.trace_top);
    if (v != -1)
-       cpu.trace_top = cpu.trace_curs = v;
+       cpu.trace_top = cpu.trace_curs = unsigned(v);
 }
 
 void csetpc()
@@ -353,19 +367,19 @@ void cfindtext()
 {
    Z80 &cpu = CpuMgr.Cpu();
    unsigned char oldmode = editor; editor = ED_MEM;
-   unsigned rs = find1dlg(cpu.trace_curs);
+   int rs = find1dlg(cpu.trace_curs);
    editor = oldmode;
    if (rs != -1)
-       cpu.trace_top = cpu.trace_curs = rs;
+       cpu.trace_top = cpu.trace_curs = unsigned(rs);
 }
 void cfindcode()
 {
    Z80 &cpu = CpuMgr.Cpu();
    unsigned char oldmode = editor; editor = ED_MEM;
-   unsigned rs = find2dlg(cpu.trace_curs);
+   int rs = find2dlg(cpu.trace_curs);
    editor = oldmode;
    if (rs != -1)
-       cpu.trace_top = cpu.trace_curs = rs;
+       cpu.trace_top = cpu.trace_curs = unsigned(rs);
 }
 
 void cbpx()
@@ -444,19 +458,19 @@ void cpgup()
 void pop_pos()
 {
    Z80 &cpu = CpuMgr.Cpu();
-   if (stack_pos[0] == -1)
+   if (stack_pos[0] == -1U)
        return;
    cpu.trace_curs = stack_cur[0];
    cpu.trace_top = stack_pos[0];
    memcpy(&stack_pos[0], &stack_pos[1], sizeof stack_pos - sizeof *stack_pos);
    memcpy(&stack_cur[0], &stack_cur[1], sizeof stack_cur - sizeof *stack_cur);
-   stack_pos[(sizeof stack_pos / sizeof *stack_pos)-1] = -1;
+   stack_pos[(sizeof stack_pos / sizeof *stack_pos)-1] = -1U;
 }
 
 void cjump()
 {
    Z80 &cpu = CpuMgr.Cpu();
-   char *ptr = 0;
+   char *ptr = nullptr;
    for (char *p = asmpc; *p; p++)
       if (ishex(p[0]) & ishex(p[1]) & ishex(p[2]) & ishex(p[3])) ptr = p;
    if (!ptr) return;
@@ -468,7 +482,7 @@ void cjump()
 
 void cdjump()
 {
-   char *ptr = 0;
+   char *ptr = nullptr;
    for (char *p = asmpc; *p; p++)
       if (ishex(p[0]) & ishex(p[1]) & ishex(p[2]) & ishex(p[3])) ptr = p;
    if (!ptr) return;
@@ -481,16 +495,16 @@ void cfliplabels()
 {
    trace_labels = !trace_labels; showtrace();
 }
-void csave(unsigned n)
+static void csave(unsigned n)
 {
    Z80 &cpu = CpuMgr.Cpu();
    save_pos[n] = cpu.trace_top;
    save_cur[n] = cpu.trace_curs;
 }
-void crest(unsigned n)
+static void crest(unsigned n)
 {
    Z80 &cpu = CpuMgr.Cpu();
-   if (save_pos[n] == -1)
+   if (save_pos[n] == -1U)
        return;
    push_pos();
    cpu.trace_top = save_pos[n];

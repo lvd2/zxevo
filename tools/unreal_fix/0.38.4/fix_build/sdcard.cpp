@@ -74,7 +74,7 @@ void TSdCard::UpdateCsdImageSize()
 
 void TSdCard::Wr(u8 Val)
 {
-    static u32 WrPos = -1;
+    static u32 WrPos = -1U;
     TState NextState = ST_IDLE;
 //    printf(__FUNCTION__" Val = %X\n", Val);
 
@@ -137,13 +137,13 @@ void TSdCard::Wr(u8 Val)
 
                     case CMD_READ_SINGLE_BLOCK:
 //                        printf(__FUNCTION__" CMD_READ_SINGLE_BLOCK, Addr = 0x%X\n", Arg);
-                        fseek(Image, Arg, SEEK_SET);
+                        fseek(Image, long(Arg), SEEK_SET);
                         fread(Buf, DataBlockLen, 1, Image);
                     break;
 
                     case CMD_READ_MULTIPLE_BLOCK:
 //                        printf(__FUNCTION__" CMD_READ_MULTIPLE_BLOCK, Addr = 0x%X\n", Arg);
-                        fseek(Image, Arg, SEEK_SET);
+                        fseek(Image, long(Arg), SEEK_SET);
                         fread(Buf, DataBlockLen, 1, Image);
                     break;
 
@@ -205,7 +205,7 @@ void TSdCard::Wr(u8 Val)
             {
                 DataCnt = 0;
 //                printf(__FUNCTION__" ST_RD_DATA, Addr = 0x%X, write to disk\n", Arg);
-                fseek(Image, Arg, SEEK_SET);
+                fseek(Image, long(Arg), SEEK_SET);
                 fwrite(Buf, DataBlockLen, 1, Image);
                 NextState = ST_RD_CRC16_1;
             }
@@ -221,7 +221,7 @@ void TSdCard::Wr(u8 Val)
             {
                 DataCnt = 0;
 //                printf(__FUNCTION__" ST_RD_DATA_MUL, Addr = 0x%X, write to disk\n", WrPos);
-                fseek(Image, WrPos, SEEK_SET);
+                fseek(Image, long(WrPos), SEEK_SET);
                 fwrite(Buf, DataBlockLen, 1, Image);
                 WrPos += DataBlockLen;
                 NextState = ST_RD_CRC16_1;

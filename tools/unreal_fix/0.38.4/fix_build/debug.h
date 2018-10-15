@@ -105,7 +105,7 @@ public:
 extern TCpuMgr CpuMgr;
 extern DBGWND activedbg;
 extern unsigned dbg_extport;
-extern unsigned char dgb_extval; // extended memory port like 1FFD or DFFD
+extern unsigned char dbg_extval; // extended memory port like 1FFD or DFFD
 
 extern unsigned mem_sz;
 extern unsigned mem_disk;

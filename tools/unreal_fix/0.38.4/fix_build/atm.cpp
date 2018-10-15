@@ -4,8 +4,9 @@
 #include "vars.h"
 #include "memory.h"
 #include "draw.h"
+#include "atm.h"
 
-void atm_memswap()
+static void atm_memswap()
 {
    if (!conf.atm.mem_swap) return;
    // swap memory address bits A5-A7 and A8-A10
@@ -17,7 +18,7 @@ void atm_memswap()
    }
 }
 
-void AtmApplySideEffectsWhenChangeVideomode(unsigned char val)
+static void AtmApplySideEffectsWhenChangeVideomode(unsigned char val)
 {
     int NewVideoMode = (val & 7);
     int OldVideoMode = (comp.pFF77 & 7);
@@ -48,7 +49,7 @@ void AtmApplySideEffectsWhenChangeVideomode(unsigned char val)
         for(unsigned y = 0; y < 200; y++)
         {
             AtmVideoCtrl.Scanlines[y+56].VideoMode = NewVideoMode;
-            AtmVideoCtrl.Scanlines[y+56].Offset = ((y & ~7) << 3) + 0x01C0;
+			AtmVideoCtrl.Scanlines[y+56].Offset = int(((y & ~7U) << 3) + 0x01C0);
         }
         return;
     }
@@ -109,7 +110,6 @@ void AtmApplySideEffectsWhenChangeVideomode(unsigned char val)
     // Также определим, куда применяем +64 инкременты при переключении видеорежима:
     //  - Если луч на бордюре сверху от растра или на бордюре слева от растра - изменяем оффсет для текущей сканлинии
     //  - Если луч на растре или на бордюре справа от растра - изменяем оффсет для следующей сканлинии
-    bool bRayOnBorder = true;
     if ( iRayLine < iLinesAboveBorder || iRayOffset < tEachBorderWidth )
     {
         // Луч на бордюре. Либо сверху от растра, либо слева от растра.
@@ -297,7 +297,13 @@ void atm_writepal(unsigned char val)
 {
    assert(comp.border_attr < 0x10);
    atm_pal[comp.border_attr] = val;
-   comp.comp_pal[comp.border_attr] = t.atm_pal_map[val];
+
+   // Преобразование палитры в формат ULA+
+   u8 PalIdx = ((comp.border_attr & 8) << 1) | (comp.border_attr & 7);
+   comp.comp_pal[PalIdx + 0*8] =
+   comp.comp_pal[PalIdx + 1*8] =
+   comp.comp_pal[PalIdx + 3*8] =
+   comp.comp_pal[PalIdx + 5*8] = u8(t.atm_pal_map[val]);
    temp.comp_pal_changed = 1;
 }
 

@@ -4,6 +4,7 @@
 #include "vars.h"
 #include "memory.h"
 #include "dbglabls.h"
+#include "z80asm.h"
 
 #include "util.h"
 
@@ -25,7 +26,7 @@ char asmbuf[0x40];
 #define _zr8_ 0x9D
 #define _zr81_ 0x9E
 
-unsigned char asm_tab_z80[] =
+static unsigned char asm_tab_z80[] =
 {
 #if 0
    2,0xED,0xFF,0xFF,0xFF, // call unreal api
@@ -249,25 +250,25 @@ unsigned char asm_tab_z80[] =
 #define abs(x) ((x)>0? (x):(-(x)))
 
 // =======================================================================
-char z80r16_1[] = "bc\0de\0hl\0sp";
-char z80r16_2[] = "bc\0de\0ix\0sp";
-char z80r16_3[] = "bc\0de\0iy\0sp";
-char z80r8_1[] = "b\0\0\0\0c\0\0\0\0d\0\0\0\0e\0\0\0\0h\0\0\0\0l\0\0\0\0(hl)\0a";
-char z80r8_2[] = "b\0\0\0\0c\0\0\0\0d\0\0\0\0e\0\0\0\0xh\0\0\0xl\0\0\0(1x)\0a";
-char z80r8_3[] = "b\0\0\0\0c\0\0\0\0d\0\0\0\0e\0\0\0\0yh\0\0\0yl\0\0\0(1y)\0a";
-char cbtab[] = "rlc \0\0\0rrc \0\0\0rl \0\0\0\0rr \0\0\0\0sla \0\0\0sra \0\0\0sli \0\0\0srl \0\0\0"
+static char z80r16_1[] = "bc\0de\0hl\0sp";
+static char z80r16_2[] = "bc\0de\0ix\0sp";
+static char z80r16_3[] = "bc\0de\0iy\0sp";
+static char z80r8_1[] = "b\0\0\0\0c\0\0\0\0d\0\0\0\0e\0\0\0\0h\0\0\0\0l\0\0\0\0(hl)\0a";
+static char z80r8_2[] = "b\0\0\0\0c\0\0\0\0d\0\0\0\0e\0\0\0\0xh\0\0\0xl\0\0\0(1x)\0a";
+static char z80r8_3[] = "b\0\0\0\0c\0\0\0\0d\0\0\0\0e\0\0\0\0yh\0\0\0yl\0\0\0(1y)\0a";
+static char cbtab[] = "rlc \0\0\0rrc \0\0\0rl \0\0\0\0rr \0\0\0\0sla \0\0\0sra \0\0\0sli \0\0\0srl \0\0\0"
                "bit 0,\0bit 1,\0bit 2,\0bit 3,\0bit 4,\0bit 5,\0bit 6,\0bit 7,\0"
                "res 0,\0res 1,\0res 2,\0res 3,\0res 4,\0res 5,\0res 6,\0res 7,\0"
                "set 0,\0set 1,\0set 2,\0set 3,\0set 4,\0set 5,\0set 6,\0set 7,\0";
-char zjr[] = "xxxxxx\0xxxxxx\0djnz \0\0jr \0\0\0\0jr nz,\0jr z,\0\0jr nc,\0jr c,\0";
+static char zjr[] = "xxxxxx\0xxxxxx\0djnz \0\0jr \0\0\0\0jr nz,\0jr z,\0\0jr nc,\0jr c,\0";
 //char zop[] = "add\0adc\0sub\0sbc\0and\0xor\0or\0\0cp"; lvd
-char zop[] = "add a,\0\0adc a,\0\0sub \0\0\0\0sbc a,\0\0and \0\0\0\0xor \0\0\0\0or \0\0\0\0\0cp \0\0\0\0\0";
-char zf[] = "nz\0z\0\0nc\0c\0\0po\0pe\0p\0\0m";
+static char zop[] = "add a,\0\0adc a,\0\0sub \0\0\0\0sbc a,\0\0and \0\0\0\0xor \0\0\0\0or \0\0\0\0\0cp \0\0\0\0\0";
+static char zf[] = "nz\0z\0\0nc\0c\0\0po\0pe\0p\0\0m";
 // =======================================================================
 
-void disasm_address(char *line, unsigned addr, char labels)
+static void disasm_address(char *line, unsigned addr, char labels)
 {
-   char *label = 0;
+   char *label = nullptr;
    if (labels&&addr) label = mon_labels.find(am_r(addr));
    if (label) {
            //strcpy(line, label);
@@ -278,160 +279,208 @@ void disasm_address(char *line, unsigned addr, char labels)
    else sprintf(line, "%04X", addr & 0xFFFF);
 }
 
-unsigned char *disasm(unsigned char *cmd, unsigned current, char labels)
+const unsigned char *disasm(const unsigned char *cmd, unsigned current, char labels)
 {
-   unsigned char *st = cmd, z80p;
-   char *z80r16, *z80r8;
+    const unsigned char *st = cmd;
+    unsigned char z80p;
+    char *z80r16, *z80r8;
 
-   z80r16 = z80r16_1, z80r8 = z80r8_1, z80p = 0;
-   for (;;) { // z80 prefixes
-      if (*cmd == 0xDD) z80r16 = z80r16_2, z80r8 = z80r8_2, z80p = 0xDD;
-      else if (*cmd == 0xFD) z80r16 = z80r16_3, z80r8 = z80r8_3, z80p = 0xFD;
-      else break;
-      cmd++;
-   }
+    z80r16 = z80r16_1;
+    z80r8 = z80r8_1;
+    z80p = 0;
+    for(;;)
+    { // z80 prefixes
+        if(*cmd == 0xDD)
+        {
+            z80r16 = z80r16_2;
+            z80r8 = z80r8_2;
+            z80p = 0xDD;
+        }
+        else if(*cmd == 0xFD)
+        {
+            z80r16 = z80r16_3;
+            z80r8 = z80r8_3; z80p = 0xFD;
+        }
+        else break;
+        cmd++;
+    }
 
-   for (unsigned char *ptr = asm_tab_z80; *ptr; ) {
-      // cmd - start of command, c1 - mod/rm, cm - current pointer
-      unsigned char *rcmd = cmd;
-      if (*cmd == 0xED) rcmd++, z80r16 = z80r16_1, z80r8 = z80r8_1, z80p = 0;
-      unsigned char *cm = rcmd+1;
+    for(unsigned char *ptr = asm_tab_z80; *ptr; )
+    {
+        // cmd - start of command, c1 - mod/rm, cm - current pointer
+        const unsigned char *rcmd = cmd;
+        if(*cmd == 0xED)
+        {
+            rcmd++;
+            z80r16 = z80r16_1;
+            z80r8 = z80r8_1;
+            z80p = 0;
+        }
+        const unsigned char *cm = rcmd + 1;
 
-      for (int j = 0; j < *ptr; j++) // match mask
-         if ((cmd[j] & ptr[j+*ptr+1]) != ptr[j+1]) goto nextcmd;
-      *asmbuf = 0;
-      unsigned char *pt;
-      for (pt = ptr + (2 * *ptr) + 1; *pt; pt++) { // scan all commands
-         char ln[/*32*/64];
-         const char *l1 = ln;
-         ln[0] = 0; //Alone Coder 0.36.6
-         switch (*pt) {
+        for(int j = 0; j < *ptr; j++) // match mask
+            if((cmd[j] & ptr[j + *ptr + 1]) != ptr[j + 1]) goto nextcmd;
+        *asmbuf = 0;
+        unsigned char *pt;
+        for(pt = ptr + (2 * *ptr) + 1; *pt; pt++)
+        { // scan all commands
+            char ln[/*32*/64];
+            const char *l1 = ln;
+            ln[0] = 0; //Alone Coder 0.36.6
+            switch(*pt)
+            {
             case _zr16: // in rcmd & 0x30
-               l1 = z80r16+3*((*rcmd>>4) & 3);
-               break;
+            l1 = z80r16 + 3 * ((*rcmd >> 4) & 3);
+            break;
             case _zr16a: // in rcmd & 0x30
-               if (((*rcmd>>4)&3) == 3) l1 = "af";
-               else l1 = z80r16+3*((*rcmd>>4) & 3);
-               break;
+            if(((*rcmd >> 4) & 3) == 3) l1 = "af";
+            else l1 = z80r16 + 3 * ((*rcmd >> 4) & 3);
+            break;
             case _hl: // hl/ix/iy
-               l1 = z80r16+3*2;
-               break;
+            l1 = z80r16 + 3 * 2;
+            break;
             case _zjr: // relative jumps
-               l1 = zjr+7*((*rcmd>>3)&7);
-               break;
+            l1 = zjr + 7 * ((*rcmd >> 3) & 7);
+            break;
             case _zop: // z80 operations at rcmd & 0x38
                //l1 = zop+4*((*rcmd>>3)&7); lvd
-               l1 = zop+8*((*rcmd>>3)&7);
-               break;
+            l1 = zop + 8 * ((*rcmd >> 3) & 7);
+            break;
             case _zf: // z80 flags at rcmd & 0x38
-               l1 = zf+3*((*rcmd>>3)&7);
-               break;
+            l1 = zf + 3 * ((*rcmd >> 3) & 7);
+            break;
             case _cb: // all CB-opcodes
             {
-               if (!z80p) {
-                  sprintf(ln, "%s%s", cbtab+(*cm>>3)*7, z80r8_1+(*cm&7)*5);
-                  cm++;
-               } else {
-                  if ((cm[1] & 7) != 6 && ((cm[1] & 0xC0) != 0x40)) // operand is reg,(ix+nn)
-                     sprintf(ln, "%s%s,(i%c%c%02X)", cbtab+(cm[1]>>3)*7, z80r8_1+(cm[1]&7)*5, z80p==0xDD ? 'x':'y', *(char*)cm>=0?'+':'-',abs(*(char*)cm));
-                  else // only (ix+nn)
-                     sprintf(ln, "%s(i%c%c%02X)", cbtab+(cm[1]>>3)*7, z80p==0xDD ? 'x':'y', *(char*)cm>=0?'+':'-',abs(*(char*)cm));
-                  cm += 2;
-               }
-               break;
+                if(!z80p)
+                {
+                    sprintf(ln, "%s%s", cbtab + (*cm >> 3) * 7, z80r8_1 + (*cm & 7) * 5);
+                    cm++;
+                }
+                else
+                {
+                    if((cm[1] & 7) != 6 && ((cm[1] & 0xC0) != 0x40)) // operand is reg,(ix+nn)
+                        sprintf(ln, "%s%s,(i%c%c%02X)", cbtab + (cm[1] >> 3) * 7, z80r8_1 + (cm[1] & 7) * 5, z80p == 0xDD ? 'x' : 'y', *(char*)cm >= 0 ? '+' : '-', abs(*(char*)cm));
+                    else // only (ix+nn)
+                        sprintf(ln, "%s(i%c%c%02X)", cbtab + (cm[1] >> 3) * 7, z80p == 0xDD ? 'x' : 'y', *(char*)cm >= 0 ? '+' : '-', abs(*(char*)cm));
+                    cm += 2;
+                }
+                break;
             }
             case _zr8: // in rcmd & 0x38
-               if (z80p && ((*rcmd & 0x38) == 0x30)) {
-                  sprintf(ln, "(i%c%c%02X)", z80p==0xDD ? 'x':'y', *(char*)cm>=0?'+':'-',abs(*(char*)cm));
-                  cm++;
-               } else l1 = z80r8+5*((*rcmd>>3) & 7);
-               break;
+            if(z80p && ((*rcmd & 0x38) == 0x30))
+            {
+                sprintf(ln, "(i%c%c%02X)", z80p == 0xDD ? 'x' : 'y', *(char*)cm >= 0 ? '+' : '-', abs(*(char*)cm));
+                cm++;
+            }
+            else l1 = z80r8 + 5 * ((*rcmd >> 3) & 7);
+            break;
             case _zr8_: // in rcmd & 0x38, in ld r8,r8
-               if (!z80p || (*rcmd & 7)==6) { l1 = z80r8_1+5*((*rcmd>>3) & 7); break; }
-               if ((*rcmd & 0x38) == 0x30) {
-                  sprintf(ln, "(i%c%c%02X)", z80p==0xDD ? 'x':'y', *(char*)cm>=0?'+':'-',abs(*(char*)cm));
-                  cm++;
-               } else l1 = z80r8+5*((*rcmd>>3) & 7);
-               break;
+            if(!z80p || (*rcmd & 7) == 6) { l1 = z80r8_1 + 5 * ((*rcmd >> 3) & 7); break; }
+            if((*rcmd & 0x38) == 0x30)
+            {
+                sprintf(ln, "(i%c%c%02X)", z80p == 0xDD ? 'x' : 'y', *(char*)cm >= 0 ? '+' : '-', abs(*(char*)cm));
+                cm++;
+            }
+            else l1 = z80r8 + 5 * ((*rcmd >> 3) & 7);
+            break;
             case _zr81: // in rcmd & 7
-               if (z80p && (*rcmd & 7)==6) {
-                  sprintf(ln, "(i%c%c%02X)", z80p==0xDD ? 'x':'y', *(char*)cm>=0?'+':'-',abs(*(char*)cm));
-                  cm++;
-               } else l1 = z80r8+5*(*rcmd & 7);
-               break;
+            if(z80p && (*rcmd & 7) == 6)
+            {
+                sprintf(ln, "(i%c%c%02X)", z80p == 0xDD ? 'x' : 'y', *(char*)cm >= 0 ? '+' : '-', abs(*(char*)cm));
+                cm++;
+            }
+            else l1 = z80r8 + 5 * (*rcmd & 7);
+            break;
             case _zr81_: // in rcmd & 7, in ld r8,r8
-               if (!z80p || ((*rcmd & 0x38) == 0x30)) { l1 = z80r8_1+5*(*rcmd & 7); break; }
-               if ((*rcmd & 7)==6) {
-                  sprintf(ln, "(i%c%c%02X)", z80p==0xDD ? 'x':'y', *(char*)cm>=0?'+':'-',abs(*(char*)cm));
-                  cm++;
-               } else l1 = z80r8+5*(*rcmd & 7);
-               break;
+            if(!z80p || ((*rcmd & 0x38) == 0x30)) { l1 = z80r8_1 + 5 * (*rcmd & 7); break; }
+            if((*rcmd & 7) == 6)
+            {
+                sprintf(ln, "(i%c%c%02X)", z80p == 0xDD ? 'x' : 'y', *(char*)cm >= 0 ? '+' : '-', abs(*(char*)cm));
+                cm++;
+            }
+            else l1 = z80r8 + 5 * (*rcmd & 7);
+            break;
             case _ld:
-               l1 = "ld "; break;
+            l1 = "ld "; break;
             case _shrt: // short jump
-               disasm_address(ln, current+cm-st + *(signed char*)cm + 1, labels);
-               cm++;
-               break;
+            disasm_address(ln, unsigned(current + cm - st + *(signed char*)cm + 1), labels);
+            cm++;
+            break;
             case _ib: // immediate byte at cm
-               sprintf(ln, "%02X", *cm++);
-               break;
+            sprintf(ln, "%02X", *cm++);
+            break;
             case _iw: // immediate word at cm
-               disasm_address(ln, *(unsigned short*)cm, labels); cm += 2;
-               break;
+            disasm_address(ln, *(unsigned short*)cm, labels); cm += 2;
+            break;
             default:
-               *(short*)ln = *pt;
-         }
-         strcat(asmbuf, l1);
-      }
-      // make tabulation between instruction and operands
-          {
-//                        if( !cpu.logena ) //LVD
-                        {
-                                char b1[0x40], *p = asmbuf, *q = b1;
-                                while (*p != ' ' && *p) *q++ = *p++;
-                                *q++ = *p;
-                                if (*p) {
-                                        while (q < b1+5) *q++ = ' '; // +5 - tab size=5, was 4
-                                        while (*++p) *q++ = *p;
-                                }
-                                *q = 0;
-                                strcpy(asmbuf, b1);
-                        }
-         return max(cm, cmd+*ptr);
-      }
-nextcmd:
-      ptr += (2 * *ptr) + 1; while (*ptr++); // skip mask,code and instruction
-   }
-   strcpy(asmbuf, "???"); return cmd+1;
+            *(short*)ln = *pt;
+            }
+            strcat(asmbuf, l1);
+        }
+        // make tabulation between instruction and operands
+        {
+            //                        if( !cpu.logena ) //LVD
+            {
+                char b1[0x40], *p = asmbuf, *q = b1;
+                while(*p != ' ' && *p) *q++ = *p++;
+                *q++ = *p;
+                if(*p)
+                {
+                    while(q < b1 + 5) *q++ = ' '; // +5 - tab size=5, was 4
+                    while(*++p) *q++ = *p;
+                }
+                *q = 0;
+                strcpy(asmbuf, b1);
+            }
+            return max(cm, cmd + *ptr);
+        }
+    nextcmd:
+        ptr += (2 * *ptr) + 1; while(*ptr++); // skip mask,code and instruction
+    }
+    strcpy(asmbuf, "???"); return cmd + 1;
 }
 
-int getindex(unsigned char **ptr, char *table, unsigned width, int size) {
-   int max = 0, imax; // find max match - fdiv and fdivr must be found as fdivr
-   for (int i = 0; i < size; i++) {
-      int ln = strlen(table + i*width);
-      if (!strncmp((char*)*ptr, table + i*width, ln))
-         if (ln > max) max = ln, imax = i;
+static int getindex(unsigned char **ptr, char *table, unsigned width, int size) {
+   unsigned max = 0, imax; // find max match - fdiv and fdivr must be found as fdivr
+   for (unsigned i = 0; i < unsigned(size); i++)
+   {
+       size_t ln = strlen(table + i * width);
+       if(!strncmp((char*)*ptr, table + i * width, ln))
+       {
+           if(ln > max)
+           {
+               max = unsigned(ln);
+               imax = i;
+           }
+       }
    }
    if (max) {
       (*ptr) += strlen(table + imax*width);
-      return imax;
+      return int(imax);
    }
    return -1;
 }
-int scanhex(unsigned char **ptr) {
+static int scanhex(unsigned char **ptr) {
    int r = 0, s = 1;
-   if (**ptr == '-') (*ptr)++, s = -1;
+   if(**ptr == '-')
+   {
+       (*ptr)++;
+       s = -1;
+   }
    if (**ptr == '+') (*ptr)++;
-   while (isdigit(**ptr) || (**ptr >= 'a' && **ptr <= 'f'))
-      r = 16*r + hexdigit(**ptr), (*ptr)++;
+   while(isdigit(**ptr) || (**ptr >= 'a' && **ptr <= 'f'))
+   {
+       r = 16 * r + hexdigit(**ptr);
+       (*ptr)++;
+   }
    return r*s;
 }
-unsigned char cmdb[16];
+static unsigned char cmdb[16];
 unsigned char asmresult[24];
-unsigned char z80p;
-unsigned char a_command[0x40];
+static unsigned char z80p;
+static unsigned char a_command[0x40];
 
-int z80scanr8(unsigned char **ptr, unsigned char **cm) {
+static int z80scanr8(unsigned char **ptr, unsigned char **cm) {
    int in = getindex(ptr, z80r8_1, 5, 8);
    if (in >= 0) return in;
    char *r8 = z80r8_1;
@@ -441,7 +490,7 @@ int z80scanr8(unsigned char **ptr, unsigned char **cm) {
    if (!z80p) return in;
    if (*(unsigned short*)(*ptr) != WORD2('(','i')) return in;
    (*ptr) += 3;
-   char c = *(*ptr - 1);
+   char c = char(*(*ptr - 1));
    if ((z80p == 0xDD && c != 'x') || (z80p == 0xFD && c != 'y')) return -1;
    int ofs = (**ptr == ')') ? 0 : scanhex(ptr);
    if (ofs > 127 || ofs < -128) return -1;
@@ -450,7 +499,7 @@ int z80scanr8(unsigned char **ptr, unsigned char **cm) {
    return 6;
 }
 
-int assemble(unsigned addr)
+static unsigned assemble(unsigned addr)
 {
    char *z80r16 = z80r16_1;
    if (z80p == 0xDD) z80r16 = z80r16_2;
@@ -511,7 +560,7 @@ int assemble(unsigned addr)
                      if (*cc++ != ',' || z80scanr8(&cc, &cm) != 6) goto nextcmd;
                   }
                }
-               *cm++ = in*8+in1;
+               *cm++ = u8(in*8+in1);
                break;
             }
             case _zr8: // r8 in *rcmd & 0x38
@@ -529,23 +578,23 @@ int assemble(unsigned addr)
                cc += 3; break;
             case _shrt: // short jump
             {
-               if (!ishex(*cc)) goto nextcmd;
+               if (!ishex(char(*cc))) goto nextcmd;
                in = scanhex(&cc);
                int x = i16(in-(int)addr+cmdb-cm-1);
                if (x > 0x7F || x < -0x80) goto nextcmd;
-               *(char*)cm = x; cm++;
+               *(char*)cm = char(x); cm++;
                break;
             }
             case _ib: // immediate byte at cm
                if (*cc == '\'' && cc[2] == '\'') { in = cc[1]; cc+=3; goto imm; }
-               if (!ishex(*cc)) goto nextcmd;
+               if (!ishex(char(*cc))) goto nextcmd;
                in = scanhex(&cc);
                if ((unsigned)in > 0xFF) goto nextcmd;
 imm:
                *(char*)cm++ = (char)in;
                break;
             case _iw: // immediate word at cm
-               if (!ishex(*cc)) goto nextcmd;
+               if (!ishex(char(*cc))) goto nextcmd;
                in = scanhex(&cc);
                if ((unsigned)in > 0xFFFF) goto nextcmd;
                *(unsigned short*)cm = (unsigned short)in; cm += 2;
@@ -561,7 +610,7 @@ nextcmd:
    return 0;
 }
 
-int assemble_cmd(unsigned char *cmd, unsigned addr)
+unsigned assemble_cmd(unsigned char *cmd, unsigned addr)
 {
    unsigned char *res = a_command;
    unsigned char bf[0x40]; strcpy((char*)bf, (char*)cmd);
@@ -571,10 +620,10 @@ int assemble_cmd(unsigned char *cmd, unsigned addr)
    }
    res = a_command; cmd = bf;
    while (*cmd == ' ') cmd++;
-   while (*cmd && *cmd != ' ') *res++ = tolower(*cmd++);
+   while (*cmd && *cmd != ' ') *res++ = u8(tolower(*cmd++));
    while (*cmd) {
       while (*cmd == ' ' && (!isalnum(cmd[1]) || !isalnum(res[-1]))) cmd++;
-      *res++ = (cmd[-1] == '\'') ? *cmd : tolower(*cmd);
+      *res++ = (cmd[-1] == '\'') ? *cmd : u8(tolower(*cmd));
       cmd++;
    }
    if (res[-1] == ' ') res[-1] = 0;

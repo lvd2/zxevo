@@ -45,7 +45,7 @@ Z80INLINE void wm(unsigned addr, unsigned char val)
    bank[addr & (PAGE-1)] = val;
 }
 
-void z80loop()
+static void z80loop()
 {
    u64 end = u64((float(cpu.t) * float(GSCPUFQI)) / float(conf.frame) + 0.5f);//((cpu.t * mult_gs2) >> MULT_GS_SHIFT); //; // t*GSCPUFQI/conf.frame;
    end += gscpu_t_at_frame_start;

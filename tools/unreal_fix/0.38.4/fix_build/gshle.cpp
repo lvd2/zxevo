@@ -6,7 +6,9 @@
 #include "snd_bass.h"
 #include "gshle.h"
 #include "gs.h"
+#include "sndrender/sndcounter.h"
 #include "sound.h"
+#include "util.h"
 
 #ifdef MOD_GSBASS
 void GSHLE::set_busy(unsigned char newval)
@@ -16,26 +18,58 @@ void GSHLE::set_busy(unsigned char newval)
 
 void GSHLE::reset()
 {
+//    printf("%s, speed=6\n", __FUNCTION__);
    fxvol = modvol = 0x3F;
+   speed = 6;
    make_gs_volume(fxvol);
    to_ptr = data_in; mod_playing = 0;
-   used = 0; mod = 0; modsize = 0; set_busy(0);
+   used = 0; mod = nullptr; modsize = 0; set_busy(0);
    resetmod(); total_fx = 1;
    memset(sample, 0, sizeof sample);
    memset(chan,  0, sizeof chan);
+   memset(&DebugCh, 0, sizeof(DebugCh));
    out(0xBB, 0x23); // send 'get pages' command
 }
 
 void GSHLE::applyconfig()
 {
-   double period = 6848, mx = 0.943874312682; // mx=1/root(2,12)
-   double basefq = 7093789.0/2;
-   int i; //Alone Coder 0.36.7
-   for (/*int*/ i = 0; i < 96; i++, period *= mx)
-      note2rate[i] = (unsigned)(basefq/period);
-   for (; i < 0x100; i++) note2rate[i] = note2rate[i-1];
-   if (BASS::Bass)
-       setmodvol(modvol);
+    // Пересчет нот в герцы для равномерно темперированного строя
+    // https://ru.wikipedia.org/wiki/Равномерно_темперированный_строй
+    // f = f0 * 2^(i/12)
+    // f0 = 440Hz (A4) - Базовая частота (i=0)
+    // Нота | Индекс степени | Нота GS
+    // -----+----------------+---------
+    // C0:  | i=-9-4*12=-57  | 0
+    // C1:  | i=-9-3*12=-45  | 12
+    // C2:  | i=-9-2*12=-33  | 24
+    // C3:  | i=-9-1*12=-21  | 36
+    // C4:  | i=-9+0*12=-9   | 48
+    // C5:  | i=-9+1*12=3    | 60 // Этой ноте соответствует стандартная скорость проигрывания 214 периодов генератора на Amiga
+    // C6:  | i=-9+2*12=15   | 72
+    // C7:  | i=-9+3*12=27   | 84
+
+
+    // Расчет частот всех нот
+    int i;
+    for(i = -57; i <= 27; i++)
+    {
+        note2rate[i + 57] = float(440.0 * pow(2.0, double(i) / 12.0));
+    }
+    for(; i + 57 < int(_countof(note2rate)); i++)
+    {
+        note2rate[i + 57] = note2rate[57+27];
+    }
+
+    const double C5 = double(note2rate[60]);
+
+    // Пеерсчет частот в sample rate относительно стандартной ноты C5 с индексом 60
+    for(i = 0; i < int(_countof(note2rate)); i++)
+    {
+        // 7093789.2 / 2 - clock rate PAL Amiga
+        // 214.0 (периодов внутреннего генератора) - С3 на Amiga (соответствует C5 на GS)
+        note2rate[i] *= float(7093789.2 / (2.0 * 214.0 * C5));
+    }
+    setmodvol(modvol);
 }
 
 unsigned char GSHLE::in(unsigned char port)
@@ -43,7 +77,11 @@ unsigned char GSHLE::in(unsigned char port)
    if (port == 0xBB) return gsstat;
    if (!resptr) return 0xFF; // no data available
    unsigned char byte = *resptr;
-   if (resmode) resptr++, resmode--; // goto next byte
+   if(resmode)
+   {
+       resptr++;
+       resmode--;
+   } // goto next byte
    return byte;
 }
 
@@ -52,7 +90,11 @@ void GSHLE::out(unsigned char port, unsigned char byte)
    if (port == 0xB3) {
       if (!load_stream) {
          *to_ptr = byte;
-         if (resmod2) to_ptr++, resmod2--;
+         if(resmod2)
+         {
+             to_ptr++;
+             resmod2--;
+         }
          if (!resmod2) {
             if ((gscmd & 0xF8) == 0x88) start_fx(data_in[0], gscmd & 3, 0xFF, data_in[1]);
             if ((gscmd & 0xF8) == 0x90) start_fx(data_in[0], gscmd & 3, data_in[1], 0xFF);
@@ -67,7 +109,7 @@ void GSHLE::out(unsigned char port, unsigned char byte)
          }
          streamstart[streamsize++] = byte;
          if (load_stream == 1) loadmod = 1;
-         else loadfx = cur_fx;
+         else loadfx = u8(cur_fx);
       }
       return;
    }
@@ -97,27 +139,41 @@ void GSHLE::out(unsigned char port, unsigned char byte)
          resmode = 2; gsstat = 0xFE;
          break;
       case 0x23: // get pages
-         *gstmp = ((conf.gs_ramsize*1024)/32768)-1;
+         *gstmp = u8(((conf.gs_ramsize*1024)/32768)-1);
           gsstat = 0xFE;
          break;
       case 0x2A: // set module vol
       case 0x35:
-         *gstmp = modvol;
+         *gstmp = u8(modvol);
          modvol = *data_in;
          setmodvol(modvol);
          break;
       case 0x2B: // set FX vol
       case 0x3D:
-         *gstmp = fxvol;
+         *gstmp = u8(fxvol);
          fxvol = *data_in;
          make_gs_volume(fxvol);
          break;
       case 0x2E: // set FX
-         cur_fx = *data_in;
+          // printf("%u: %s, set fx = %u\n", unsigned(rdtsc()), __FUNCTION__, *data_in);
+          if(*data_in == 0)
+          { // COM_H.a80, COM2E
+              cur_fx = total_fx - 1;
+          }
+          else
+          {
+              if(*data_in > total_fx - 1)
+              {
+                  cur_fx = 0;
+              }
+              else
+              {
+                  cur_fx = *data_in;
+              }
+          }
          break;
       case 0x30: // load MOD
-//         if (mod) break;
-         reset_gs();
+         resetmod();
          streamstart = mod = GSRAM_M + used;
          streamsize = 0;
          *gstmp = 1; load_stream = 1;
@@ -130,14 +186,22 @@ void GSHLE::out(unsigned char port, unsigned char byte)
          stop_mod();
          break;
       case 0x33: // continue MOD
-         if (mod) mod_playing = 1, cont_mod();
+         if (mod)
+         {
+             mod_playing = 1;
+             cont_mod();
+         }
          break;
       case 0x36: // data = #FF
          *gstmp = 0xFF;
          break;
-      case 0x38: // load FX
-      case 0x3E:
-         if (total_fx == 64) break;
+      case 0x38: // load FX (unsigned samples)
+      case 0x3E: // (signed samples)
+          if(total_fx >= 64)
+          {
+              cur_fx = 0; // COM_H.a80, COM38_9
+              break;
+          }
          cur_fx = *gstmp = total_fx;
          load_stream = (byte == 0x38) ? 2 : 3;
          streamstart = GSRAM_M + used;
@@ -145,18 +209,41 @@ void GSHLE::out(unsigned char port, unsigned char byte)
          streamsize = 0;
          break;
       case 0x39: // play FX
+          // printf("%u: %s, start fx = %u\n", unsigned(rdtsc()), __FUNCTION__, *data_in);
          start_fx(*data_in, 0xFF, 0xFF, 0xFF);
          break;
       case 0x3A: // stop fx
-         for (i = 0; i < 4; i++)
-            if (*data_in & (1<<i)) chan[i].start = 0;
+          // printf("%u: %s, stop fx = %u\n", unsigned(rdtsc()), __FUNCTION__, *data_in);
+          for(i = 0; i < 4; i++)
+          {
+              if(*data_in & (1 << i))
+              {
+                  chan[i].start = nullptr;
+              }
+          }
          break;
       case 0x40: // set note
-         sample[cur_fx].note = *data_in;
+          if(cur_fx == 0)
+          {
+              break;
+          }
+         sample[cur_fx].note = *data_in <= 95 ? *data_in : 95;
          break;
       case 0x41: // set vol
          sample[cur_fx].volume = *data_in;
          break;
+      case 0x42: // Set FX Sample Finetune
+          sample[cur_fx].FineTune = *data_in;
+          break;
+      case 0x45: // set fx priority
+          sample[cur_fx].Priority = *data_in;
+          break;
+      case 0x46: // Set FX Sample Seek First parameter
+          sample[cur_fx].SeekFirst = *data_in;
+          break;
+      case 0x47: // Set FX Sample Seek Last parameter
+          sample[cur_fx].SeekLast = *data_in;
+          break;
       case 0x48: // set loop start
          resmod2 = 2;
          *(unsigned char*)&sample[cur_fx].loop = *data_in;
@@ -175,7 +262,7 @@ void GSHLE::out(unsigned char port, unsigned char byte)
          break;
       case 0x62: // get mixed pos
          i = modgetpos();
-         *gstmp = ((i>>16) & 0x3F) | (i << 6);
+         *gstmp = u8(((i>>16) & 0x3F) | (i << 6));
          break;
       case 0x63: // get module notes
         resmode = 3; gsstat = 0xFE;
@@ -187,6 +274,25 @@ void GSHLE::out(unsigned char port, unsigned char byte)
      case 0x65: // jmp to pos
         restart_mod(*data_in,0);
         break;
+     case 0x66: // Set speed/tempo
+         if(*data_in <= 0x1F)
+         {
+             speed = *data_in;
+             //printf("%s, speed=%u\n", __FUNCTION__, speed);
+             SetModSpeed();
+         }
+         else
+         {
+             tempo = *data_in;
+         }
+         break;
+     case 0x67:
+         // Get speed value
+         *gstmp = speed;
+         break;
+     case 0x68: // Get tempo value
+         *gstmp = tempo;
+         break;
      case 0x80: // direct play 1
      case 0x81:
      case 0x82:
@@ -215,12 +321,20 @@ void GSHLE::out(unsigned char port, unsigned char byte)
          // bug?? command #3E loads unsigned samples (REX 1,2)
 //         if (load_stream == 3) // unsigned sample -> convert to unsigned
 //            for (unsigned ptr = 0; ptr < streamsize; sample[total_fx].start[ptr++] ^= 0x80);
-         if (load_stream == 1) { modsize = streamsize, init_mod(); }
+         if(load_stream == 1)
+         {
+             modsize = streamsize;
+             init_mod();
+         }
          else {
             sample[total_fx].end = streamsize;
             sample[total_fx].loop = 0xFFFFFF;
             sample[total_fx].volume = 0x40;
             sample[total_fx].note = 60;
+            sample[total_fx].Priority = 0x80;
+            sample[total_fx].SeekFirst = 0x0F;
+            sample[total_fx].SeekLast = 0x0F;
+            sample[total_fx].FineTune = 0;
             //{char fn[200];sprintf(fn,"s-%d.raw",total_fx); FILE*ff=fopen(fn,"wb");fwrite(sample[total_fx].start,1,streamsize,ff);fclose(ff);}
             total_fx++;
          }
@@ -244,25 +358,77 @@ void GSHLE::start_fx(unsigned fx, unsigned ch, unsigned char vol, unsigned char 
    if (!fx) fx = cur_fx; // fx=0 - use default
    if (vol == 0xFF) vol = sample[fx].volume;
    if (note == 0xFF) note = sample[fx].note;
-   if (ch == 0xFF) { // find free channel
-      for (/*unsigned*/ i = 0; i < 4; i++)
-         if (!chan[i].start) ch = i;
-      if (ch == 0xFF)
-         for (i = 1, ch = 0; i < 4; i++)
-            if (chan[i].ptr > chan[ch].ptr) ch = i;
+   if(ch == 0xFF) // find free channel
+   {
+       unsigned SeekFirst = sample[fx].SeekFirst;
+       for(/*unsigned*/ i = 0; i < 4; i++)
+       {
+           if((SeekFirst & (1 << i)) && !chan[i].start)
+           {
+               ch = i;
+           }
+       }
+
+       if(ch == 0xFF)
+       {
+           unsigned SeekLast = sample[fx].SeekLast;
+           for(i = 0; i < 4; i++)
+           {
+               if((SeekLast & (1 << i)) && !chan[i].start)
+               {
+                   ch = i;
+               }
+           }
+       }
+
+       if(ch == 0xFF)
+       { // Обработка приоритетов
+           unsigned SeekLast = sample[fx].SeekLast;
+           unsigned MinPrio = 0xFF;
+           unsigned MinPrioIdx = 0xFF;
+           for(i = 0; i < 4; i++)
+           {
+               if((SeekLast & (1 << i)) && (chan[i].Priority < MinPrio))
+               {
+                   MinPrio = chan[i].Priority;
+                   MinPrioIdx = i;
+               }
+           }
+
+           if(MinPrioIdx == 0xFF)
+           {
+               return;
+           }
+
+           if(sample[fx].Priority >= MinPrio)
+           {
+               ch = MinPrioIdx;
+           }
+       }
+   }
+
+   if(ch == 0xFF) // Подходящий свободный канал не найден
+   {
+       return;
    }
    chan[ch].volume = vol;
    chan[ch].start = sample[fx].start;
    chan[ch].loop = sample[fx].loop;
    chan[ch].end = sample[fx].end;
+   chan[ch].Priority = sample[fx].Priority;
+   chan[ch].FineTune = sample[fx].FineTune;
    chan[ch].ptr = 0;
    chan[ch].freq = note2rate[note];
    // ch0,1 - left, ch2,3 - right
    startfx(&chan[ch], (ch & 2)? 1.0f : -1.0f);
 }
 
+DWORD CALLBACK gs_render(HSTREAM handle, void *buffer, DWORD length, void *user);
+
 DWORD CALLBACK gs_render(HSTREAM handle, void *buffer, DWORD length, void *user)
 {
+    (void)handle;
+
    GSHLE::CHANNEL *ch = (GSHLE::CHANNEL*)user;
 
    if (!ch->start)
@@ -272,7 +438,6 @@ DWORD CALLBACK gs_render(HSTREAM handle, void *buffer, DWORD length, void *user)
        memset(buffer, 0, length);
        return length;
    }
-   unsigned sample_pos = 0;
    for (unsigned i = 0; i < length; i++)
    {
       ((BYTE*)buffer)[i] = ch->start[ch->ptr++];
@@ -280,7 +445,7 @@ DWORD CALLBACK gs_render(HSTREAM handle, void *buffer, DWORD length, void *user)
       {
          if (ch->end < ch->loop)
          {
-             ch->start = 0;
+             ch->start = nullptr;
              return i + BASS_STREAMPROC_END;
          }
          else

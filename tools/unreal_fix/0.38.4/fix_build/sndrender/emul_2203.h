@@ -215,8 +215,10 @@ int YM2203TimerOver(void *chip, int c);
 /*
 **  State Save
 */
+#ifdef _STATE_H
 void YM2203Postload(void *chip);
 
 void YM2203_save_state(void *chip, int index);
+#endif // _STATE_H
 void OPNPrescaler_w(FM_OPN *OPN , int addr, int pre_divider);
 #endif

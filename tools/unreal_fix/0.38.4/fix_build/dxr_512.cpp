@@ -6,7 +6,7 @@
 #include "dxrframe.h"
 #include "dxr_512.h"
 
-void line8_512(unsigned char *dst, unsigned char *src, unsigned *tab)
+static void line8_512(unsigned char *dst, unsigned char *src, unsigned *tab)
 {
    for (unsigned x = 0; x < 512; x += 64) {
       unsigned s = *(unsigned*)src;
@@ -30,7 +30,7 @@ void line8_512(unsigned char *dst, unsigned char *src, unsigned *tab)
       src += 4;
    }
 }
-void line16_512(unsigned char *dst, unsigned char *src, unsigned *tab)
+static void line16_512(unsigned char *dst, unsigned char *src, unsigned *tab)
 {
    for (unsigned x = 0; x < 1024; x += 128) {
       unsigned s = *(unsigned*)src;
@@ -70,7 +70,7 @@ void line16_512(unsigned char *dst, unsigned char *src, unsigned *tab)
       src += 4;
    }
 }
-void line32_512(unsigned char *dst, unsigned char *src, unsigned *tab)
+static void line32_512(unsigned char *dst, unsigned char *src, unsigned *tab)
 {
    for (unsigned x = 0; x < 512*4; x += 64) {
       unsigned s = src[0];
@@ -96,42 +96,42 @@ void line32_512(unsigned char *dst, unsigned char *src, unsigned *tab)
 }
 
 #define ATTR_512 0x07
-void r512_8s(unsigned char *dst, unsigned pitch)
+static void r512_8s(unsigned char *dst, unsigned pitch)
 {
    for (unsigned y = 0; y < 192; y++) {
       line8_512(dst, temp.base+t.scrtab[y], t.sctab8[0]+ATTR_512*0x10);
       dst += pitch;
    }
 }
-void r512_8d(unsigned char *dst, unsigned pitch)
+static void r512_8d(unsigned char *dst, unsigned pitch)
 {
    for (unsigned y = 0; y < 192; y++) {
       line8_512(dst, temp.base+t.scrtab[y], t.sctab8[0]+ATTR_512*0x10); dst += pitch;
       line8_512(dst, temp.base+t.scrtab[y], t.sctab8[1]+ATTR_512*0x10); dst += pitch;
    }
 }
-void r512_16s(unsigned char *dst, unsigned pitch)
+static void r512_16s(unsigned char *dst, unsigned pitch)
 {
    for (unsigned y = 0; y < 192; y++) {
       line16_512(dst, temp.base+t.scrtab[y], t.sctab16[0]+ATTR_512*4);
       dst += pitch;
    }
 }
-void r512_16d(unsigned char *dst, unsigned pitch)
+static void r512_16d(unsigned char *dst, unsigned pitch)
 {
    for (unsigned y = 0; y < 192; y++) {
       line16_512(dst, temp.base+t.scrtab[y], t.sctab16[0]+ATTR_512*4); dst += pitch;
       line16_512(dst, temp.base+t.scrtab[y], t.sctab16[1]+ATTR_512*4); dst += pitch;
    }
 }
-void r512_32s(unsigned char *dst, unsigned pitch)
+static void r512_32s(unsigned char *dst, unsigned pitch)
 {
    for (unsigned y = 0; y < 192; y++) {
       line32_512(dst, temp.base+t.scrtab[y], t.sctab32[0]+ATTR_512);
       dst += pitch;
    }
 }
-void r512_32d(unsigned char *dst, unsigned pitch)
+static void r512_32d(unsigned char *dst, unsigned pitch)
 {
    for (unsigned y = 0; y < 192; y++) {
       line32_512(dst, temp.base+t.scrtab[y], t.sctab32[0]+ATTR_512); dst += pitch;
@@ -141,12 +141,53 @@ void r512_32d(unsigned char *dst, unsigned pitch)
 
 void rend_512(unsigned char *dst, unsigned pitch)
 {
-   unsigned char *dst2 = dst + temp.b_left*temp.obpp/4 +
-                       temp.b_top*pitch * ((temp.oy > temp.scy)?2:1);
-   if (temp.oy > temp.scy && conf.fast_sl) pitch *= 2;
+    unsigned char *dst2 = dst + temp.b_left*temp.obpp / 4 + temp.b_top*pitch * ((temp.oy > temp.scy) ? 2 : 1);
+    if(temp.oy > temp.scy && conf.fast_sl)
+    {
+        pitch *= 2;
+    }
 
-   if (temp.obpp == 8)  { if (conf.fast_sl) rend_frame_8d1 (dst, pitch), r512_8s (dst2, pitch); else rend_frame_8d (dst, pitch), r512_8d (dst2, pitch); return; }
-   if (temp.obpp == 16) { if (conf.fast_sl) rend_frame_16d1(dst, pitch), r512_16s(dst2, pitch); else rend_frame_16d(dst, pitch), r512_16d(dst2, pitch); return; }
-   if (temp.obpp == 32) { if (conf.fast_sl) rend_frame_32d1(dst, pitch), r512_32s(dst2, pitch); else rend_frame_32d(dst, pitch), r512_32d(dst2, pitch); return; }
+    if(temp.obpp == 8)
+    {
+        if(conf.fast_sl)
+        {
+            rend_frame_8d1(dst, pitch);
+            r512_8s(dst2, pitch);
+        }
+        else
+        {
+            rend_frame_8d(dst, pitch);
+            r512_8d(dst2, pitch);
+        }
+        return;
+    }
+    if(temp.obpp == 16)
+    {
+        if(conf.fast_sl)
+        {
+            rend_frame_16d1(dst, pitch);
+            r512_16s(dst2, pitch);
+        }
+        else
+        {
+            rend_frame_16d(dst, pitch);
+            r512_16d(dst2, pitch);
+        }
+        return;
+    }
+    if(temp.obpp == 32)
+    {
+        if(conf.fast_sl)
+        {
+            rend_frame_32d1(dst, pitch);
+            r512_32s(dst2, pitch);
+        }
+        else
+        {
+            rend_frame_32d(dst, pitch);
+            r512_32d(dst2, pitch);
+        }
+        return;
+    }
 }
 

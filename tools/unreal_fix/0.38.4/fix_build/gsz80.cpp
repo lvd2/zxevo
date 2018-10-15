@@ -14,7 +14,7 @@
 namespace z80gs
 {
 unsigned __int64 gs_t_states; // inc'ed with GSCPUINT every gs int
-unsigned __int64 gscpu_t_at_frame_start; // gs_t_states+gscpu.t when spectrum frame begins
+static unsigned __int64 gscpu_t_at_frame_start; // gs_t_states+gscpu.t when spectrum frame begins
 
 Z80INLINE unsigned char rm(unsigned addr);
 u8 __fastcall dbgrm(u32 addr);
@@ -114,30 +114,30 @@ const u8 M_NOROM = 1;
 const u8 M_RAMRO = 2;
 const u8 M_EXPAG = 8;
 
-u8 *gsbankr[4] = { ROM_GS_M, GSRAM_M + 3 * PAGE, ROM_GS_M, ROM_GS_M + PAGE }; // bank pointers for read
-u8 *gsbankw[4] = { TRASH_M, GSRAM_M + 3 * PAGE, TRASH_M, TRASH_M }; // bank pointers for write
+static u8 *gsbankr[4] = { ROM_GS_M, GSRAM_M + 3 * PAGE, ROM_GS_M, ROM_GS_M + PAGE }; // bank pointers for read
+static u8 *gsbankw[4] = { TRASH_M, GSRAM_M + 3 * PAGE, TRASH_M, TRASH_M }; // bank pointers for write
 
-unsigned gs_v[4];
-unsigned char gsvol[4], gsbyte[4];
-unsigned led_gssum[4], led_gscnt[4];
-unsigned char gsdata_in, gsdata_out, gspage = 0;
-unsigned char gscmd, gsstat;
+static unsigned gs_v[4];
+static unsigned char gsvol[4], gsbyte[4];
+static unsigned led_gssum[4], led_gscnt[4];
+static unsigned char gsdata_in, gsdata_out, gspage = 0;
+static unsigned char gscmd, gsstat;
 
-unsigned long long mult_gs, mult_gs2;
+static unsigned long long mult_gs, mult_gs2;
 
 // ngs
-u8 ngs_mode_pg1; // page ex number
-u8 ngs_cfg0;
-u8 ngs_s_ctrl;
-u8 ngs_s_stat;
-u8 SdRdVal, SdRdValNew;
-u8 ngs_dmamod;
+static u8 ngs_mode_pg1; // page ex number
+static u8 ngs_cfg0;
+static u8 ngs_s_ctrl;
+static u8 ngs_s_stat;
+static u8 SdRdVal, SdRdValNew;
+static u8 ngs_dmamod;
 
 
-bool SdDataAvail = false;
+static bool SdDataAvail = false;
 
-const int GSINTFQ = 37500; // hz
-static int GSCPUFQI;
+const unsigned GSINTFQ = 37500; // hz
+static unsigned GSCPUFQI;
 const unsigned GSCPUINT = GSCPUFQ/GSINTFQ;
 const int MULT_GS_SHIFT = 12; // cpu tick -> gscpu tick precision
 void flush_gs_z80();
@@ -149,6 +149,8 @@ void apply_gs()
    GSCPUFQI = GSCPUFQ / conf.intfq;
    mult_gs = (temp.snd_frame_ticks << MULT_C)/GSCPUFQI;
    mult_gs2 = (GSCPUFQI<<MULT_GS_SHIFT)/conf.frame;
+
+   make_gs_volume();
 }
 
 static inline void flush_gs_sound()
@@ -225,7 +227,6 @@ void out_gs(unsigned port, u8 val)
            return;
        }
        return;
-   break;
    }
 
    flush_gs_z80();
@@ -260,7 +261,7 @@ static void gs_byte_to_dac(unsigned addr, unsigned char byte)
    unsigned chan = (addr>>8) & 3;
    gsbyte[chan] = byte;
 //   gs_v[chan] = (gsbyte[chan] * gs_vfx[gsvol[chan]]) >> 8;
-   gs_v[chan] = ((signed char)(gsbyte[chan]-0x80) * (signed)gs_vfx[gsvol[chan]]) /256 + gs_vfx[33]; //!psb
+   gs_v[chan] = unsigned(((signed char)(gsbyte[chan]-0x80) * (signed)gs_vfx[gsvol[chan]]) /256 + int(gs_vfx[33])); //!psb
    led_gssum[chan] += byte;
    led_gscnt[chan]++;
 }
@@ -282,6 +283,8 @@ namespace z80dbg
    #include "gsz80.inl"
    #undef Z80_DBG
 }
+
+u8 *__fastcall MemDbg(u32 addr);
 
 u8 *__fastcall MemDbg(u32 addr)
 {
@@ -368,11 +371,11 @@ void out(unsigned port, unsigned char val)
          unsigned chan = (port & 0x0F)-6; val &= 0x3F;
          gsvol[chan] = val;
 //         gs_v[chan] = (gsbyte[chan] * gs_vfx[gsvol[chan]]) >> 8;
-         gs_v[chan] = ((signed char)(gsbyte[chan]-0x80) * (signed)gs_vfx[gsvol[chan]]) /256 + gs_vfx[33]; //!psb
+         gs_v[chan] = unsigned(((signed char)(gsbyte[chan]-0x80) * (signed)gs_vfx[gsvol[chan]]) /256 + int(gs_vfx[33])); //!psb
          return;
       }
-      case 0x0A: gsstat = (gsstat & 0x7F) | (gspage << 7); return;
-      case 0x0B: gsstat = (gsstat & 0xFE) | ((gsvol[0] >> 5) & 1); return;
+      case 0x0A: gsstat = u8((gsstat & 0x7F) | (gspage << 7)); return;
+      case 0x0B: gsstat = u8((gsstat & 0xFE) | ((gsvol[0] >> 5) & 1)); return;
 
    }
 
@@ -458,8 +461,8 @@ unsigned char in(unsigned port)
       case 0x03: gsstat |= 0x80; gsdata_in = 0xFF; return 0xFF;
       case 0x04: return gsstat;
       case 0x05: gsstat &= 0xFE; return 0xFF;
-      case 0x0A: gsstat = (gsstat & 0x7F) | (gspage << 7); return 0xFF;
-      case 0x0B: gsstat = (gsstat & 0xFE) | (gsvol[0] >> 5); return 0xFF;
+      case 0x0A: gsstat = u8((gsstat & 0x7F) | (gspage << 7)); return 0xFF;
+      case 0x0B: gsstat = u8((gsstat & 0xFE) | (gsvol[0] >> 5)); return 0xFF;
 
 
       // ngs
@@ -526,6 +529,8 @@ static inline void stepi()
    (::normal_opcode[opcode])(&gscpu);
 }
 
+void Z80FAST step();
+
 void Z80FAST step()
 {
     stepi();
@@ -547,12 +552,12 @@ void flush_gs_z80()
 
 __int64 __cdecl delta()
 {
-    return gs_t_states + gscpu.t - gscpu.debug_last_t;
+    return i64(gs_t_states) + gscpu.t - gscpu.debug_last_t;
 }
 
 void __cdecl SetLastT()
 {
-   gscpu.debug_last_t = gs_t_states + gscpu.t;
+   gscpu.debug_last_t = i64(gs_t_states + gscpu.t);
 }
 
 void nmi()
@@ -568,14 +573,14 @@ void reset()
 {
    gscpu.reset();
    gsbankr[0] = ROM_GS_M; gsbankr[1] = GSRAM_M + 3 * PAGE; gsbankr[2] = ROM_GS_M; gsbankr[3] = ROM_GS_M + PAGE;
-   gsbankw[0] = TRASH_M; gsbankw[1] = GSRAM_M + 3 * PAGE; gsbankw[2] = TRASH_M, gsbankw[3] = TRASH_M;
+   gsbankw[0] = TRASH_M; gsbankw[1] = GSRAM_M + 3 * PAGE; gsbankw[2] = TRASH_M; gsbankw[3] = TRASH_M;
 
    gscpu.t = 0;
    gs_t_states = 0;
    gscpu_t_at_frame_start = 0;
    ngs_cfg0 = 0;
-   ngs_s_stat = u8(rdtsc() & ~7) | _SDDET | _MPDRQ;
-   ngs_s_ctrl = u8(rdtsc() & ~0xF) | _SDNCS;
+   ngs_s_stat = u8(u8(rdtsc() & ~7U) | _SDDET | _MPDRQ);
+   ngs_s_ctrl = u8(u8(rdtsc() & ~0xFU) | _SDNCS);
    SdRdVal = SdRdValNew = 0xFF;
    SdDataAvail = false;
    Vs1001.Reset();

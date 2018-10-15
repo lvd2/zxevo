@@ -3,10 +3,11 @@
 #include "emul.h"
 #include "vars.h"
 #include "draw.h"
+#include "drawnomc.h"
 
-void draw_alco_384()
+static void draw_alco_384()
 {
-   unsigned ofs = (comp.p7FFD & 8) << 12;
+   unsigned ofs = unsigned(comp.p7FFD & 8) << 12;
    unsigned char *dst = rbuf;
    for (unsigned y = 0; y < temp.scy; y++) {
       for (unsigned x = 0; x < 6; x++) {
@@ -17,7 +18,7 @@ void draw_alco_384()
                            ((d << 8) & 0xFF0000) + colortab_s24[(a >> 8) & 0xFF];
          *(unsigned*)(dst+4) = ((d >> 16) & 0xFF) + colortab_s8[(a >> 16) & 0xFF] +
                                ((d >> 8) & 0xFF0000) + colortab_s24[(a >> 24) & 0xFF];
-         d = *(unsigned*)(data+4), a = *(unsigned*)(attr+4);
+         d = *(unsigned*)(data + 4); a = *(unsigned*)(attr + 4);
          *(unsigned*)(dst+8) = (d & 0xFF) + colortab_s8[a & 0xFF] +
                                ((d << 8) & 0xFF0000) + colortab_s24[(a >> 8) & 0xFF];
          *(unsigned*)(dst+12)= ((d >> 16) & 0xFF) + colortab_s8[(a >> 16) & 0xFF] +
@@ -27,9 +28,9 @@ void draw_alco_384()
    }
 }
 
-void draw_alco_320()
+static void draw_alco_320()
 {
-   unsigned ofs = (comp.p7FFD & 8) << 12;
+   unsigned ofs = unsigned(comp.p7FFD & 8) << 12;
    unsigned char *dst = rbuf;
    unsigned base = (304-temp.scy)/2;
    for (unsigned y = 0; y < temp.scy; y++) {
@@ -43,13 +44,16 @@ void draw_alco_320()
       dst += 8;
 
       for (unsigned x = 1; x < 5; x++) {
-         data = t.alco[base+y][x].s+ofs, attr = t.alco[base+y][x].a+ofs;
-         d = *(unsigned*)data, a = *(unsigned*)attr;
+          data = t.alco[base + y][x].s + ofs;
+          attr = t.alco[base + y][x].a + ofs;
+         d = *(unsigned*)data;
+         a = *(unsigned*)attr;
          *(unsigned*)dst = (d & 0xFF) + colortab_s8[a & 0xFF] +
                            ((d << 8) & 0xFF0000) + colortab_s24[(a >> 8) & 0xFF];
          *(unsigned*)(dst+4) = ((d >> 16) & 0xFF) + colortab_s8[(a >> 16) & 0xFF] +
                                ((d >> 8) & 0xFF0000) + colortab_s24[(a >> 24) & 0xFF];
-         d = *(unsigned*)(data+4), a = *(unsigned*)(attr+4);
+         d = *(unsigned*)(data + 4);
+         a = *(unsigned*)(attr + 4);
          *(unsigned*)(dst+8) = (d & 0xFF) + colortab_s8[a & 0xFF] +
                                ((d << 8) & 0xFF0000) + colortab_s24[(a >> 8) & 0xFF];
          *(unsigned*)(dst+12)= ((d >> 16) & 0xFF) + colortab_s8[(a >> 16) & 0xFF] +
@@ -57,8 +61,10 @@ void draw_alco_320()
          dst += 16;
       }
 
-      data = t.alco[base+y][5].s+ofs, attr = t.alco[base+y][5].a+ofs;
-      d = *(unsigned*)data, a = *(unsigned*)attr;
+      data = t.alco[base + y][5].s + ofs;
+      attr = t.alco[base + y][5].a + ofs;
+      d = *(unsigned*)data;
+      a = *(unsigned*)attr;
       *(unsigned*)dst = (d & 0xFF) + colortab_s8[a & 0xFF] +
                         ((d << 8) & 0xFF0000) + colortab_s24[(a >> 8) & 0xFF];
       *(unsigned*)(dst+4) = ((d >> 16) & 0xFF) + colortab_s8[(a >> 16) & 0xFF] +
@@ -68,9 +74,9 @@ void draw_alco_320()
    }
 }
 
-void draw_alco_256()
+static void draw_alco_256()
 {
-   unsigned ofs = (comp.p7FFD & 8) << 12;
+   unsigned ofs = unsigned(comp.p7FFD & 8) << 12;
    unsigned char *dst = rbuf;
    unsigned base = (304-temp.scy)/2;
    for (unsigned y = 0; y < temp.scy; y++) {
@@ -82,7 +88,8 @@ void draw_alco_256()
                            ((d << 8) & 0xFF0000) + colortab_s24[(a >> 8) & 0xFF];
          *(unsigned*)(dst+4) = ((d >> 16) & 0xFF) + colortab_s8[(a >> 16) & 0xFF] +
                                ((d >> 8) & 0xFF0000) + colortab_s24[(a >> 24) & 0xFF];
-         d = *(unsigned*)(data+4), a = *(unsigned*)(attr+4);
+         d = *(unsigned*)(data + 4);
+         a = *(unsigned*)(attr + 4);
          *(unsigned*)(dst+8) = (d & 0xFF) + colortab_s8[a & 0xFF] +
                                ((d << 8) & 0xFF0000) + colortab_s24[(a >> 8) & 0xFF];
          *(unsigned*)(dst+12)= ((d >> 16) & 0xFF) + colortab_s8[(a >> 16) & 0xFF] +

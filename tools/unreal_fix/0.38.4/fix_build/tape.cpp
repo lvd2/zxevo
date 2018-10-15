@@ -11,26 +11,26 @@
 #define Z80FQ 3500000
 
 unsigned tape_pulse[0x100]; // Алфавит из импульсов разной длины (число символов алфавита не более 256, ссылки однобайтовые)
-unsigned max_pulses = 0;
-unsigned tape_err = 0;
+static unsigned max_pulses = 0;
+static unsigned tape_err = 0;
 
-unsigned char *tape_image = 0; // Массив ссылок на алфавит (ссылки однобайтовые)
-unsigned tape_imagesize = 0;
+u8 *tape_image = nullptr; // Массив ссылок на алфавит (ссылки однобайтовые)
+static unsigned tape_imagesize = 0;
 
 TAPEINFO *tapeinfo;
 unsigned tape_infosize;
 
-unsigned appendable;
+static unsigned appendable;
 
 typedef int (__cdecl *inflateInit__ptr)(z_streamp strm, const char *version, int stream_size);
 typedef int (__cdecl *inflate_ptr)(z_streamp strm, int flush);
 typedef int (__cdecl *inflateEnd_ptr)(z_streamp strm);
 
-static inflateInit__ptr inflateInit__p = 0;
-static inflate_ptr inflate_p = 0;
-static inflateEnd_ptr inflateEnd_p = 0;
+static inflateInit__ptr inflateInit__p = nullptr;
+static inflate_ptr inflate_p = nullptr;
+static inflateEnd_ptr inflateEnd_p = nullptr;
 
-static HMODULE ZlibDll = 0;
+static HMODULE ZlibDll = nullptr;
 
 bool ZlibInit()
 {
@@ -58,7 +58,7 @@ void ZlibDone()
 // Ищет длину импульса в алфавите и возвращает индекс найденного элемента
 // Если импульс с такой шириной не найден, он добавляется в конец и возвращается его индекс
 // tape image contains indexes in tape_pulse[]
-unsigned find_pulse(unsigned t)
+static u8 find_pulse(unsigned t)
 {
    if (max_pulses < _countof(tape_pulse))
    {
@@ -67,11 +67,11 @@ unsigned find_pulse(unsigned t)
       {
          if ((t - e) < tape_pulse[i] && tape_pulse[i] <= (t + e))
          {
-             return i;
+             return u8(i);
          }
       }
       tape_pulse[max_pulses] = t;
-      return max_pulses++;
+      return u8(max_pulses++);
    }
    if (!tape_err)
    {
@@ -87,7 +87,7 @@ unsigned find_pulse(unsigned t)
          delta = abs((int)t - (int)tape_pulse[i]);
       }
    }
-   return nearest;
+   return u8(nearest);
 }
 
 void find_tape_index()
@@ -98,7 +98,7 @@ void find_tape_index()
    temp.led.tape_started = -600*3500000;
 }
 
-void find_tape_sizes()
+static void find_tape_sizes()
 {
    for (unsigned i = 0; i < tape_infosize; i++) {
       unsigned end = (i == tape_infosize-1) ? tape_imagesize : tapeinfo[i+1].pos;
@@ -112,89 +112,129 @@ void find_tape_sizes()
 
 void stop_tape()
 {
-   find_tape_index();
-   const char *msg = "tape stopped";
-   if (comp.tape.play_pointer == comp.tape.end_of_tape)
-      comp.tape.index = 0, msg = "end of tape";
-   comp.tape.play_pointer = 0;
-   strcpy(statusline, msg); statcnt = 40;
-   comp.tape.edge_change = 0x7FFFFFFFFFFFFFFFULL;
-   comp.tape.tape_bit = -1;
+    // Условия для выхода их функции tape_bit()
+    comp.tape.edge_change = LLONG_MAX;
+    comp.tape.tape_bit = -1U;
+
+    if(comp.tape.stopped) // Если лента уже остановлена, то ничего не делаем
+    {
+        return;
+    }
+
+    comp.tape.stopped = true;
+
+    find_tape_index();
+
+    const char *msg = "tape stopped";
+    if(comp.tape.play_pointer == comp.tape.end_of_tape) // При достижении конца ленты не делаем автоперемотку
+    {
+        msg = "end of tape";
+    }
+    else
+    {
+        comp.tape.play_pointer = nullptr;
+    }
+    strcpy(statusline, msg); statcnt = 40;
 }
 
 void reset_tape()
 {
    comp.tape.index = 0;
-   comp.tape.play_pointer = 0;
-   comp.tape.edge_change = 0x7FFFFFFFFFFFFFFFULL;
-   comp.tape.tape_bit = -1;
+   comp.tape.stopped = true;
+   comp.tape.play_pointer = nullptr;
+   comp.tape.edge_change = LLONG_MAX;
+   comp.tape.tape_bit = -1U;
 }
 
 void start_tape()
 {
-   if (!tape_image) return;
-   strcpy(statusline, "tape started"); statcnt = 40;
+    if(!tape_image)
+    {
+        return;
+    }
+
    comp.tape.play_pointer = tape_image + tapeinfo[comp.tape.index].pos;
    comp.tape.end_of_tape = tape_image + tape_imagesize;
+
+   if(comp.tape.play_pointer >= comp.tape.end_of_tape) // Конец ленты, игнорируем запуск
+   {
+       return;
+   }
+   comp.tape.stopped = false;
    comp.tape.edge_change = comp.t_states + cpu.t;
    temp.led.tape_started = -600*3500000;
-   comp.tape.tape_bit = -1;
+   comp.tape.tape_bit = -1U;
+   strcpy(statusline, "tape started"); statcnt = 40;
 }
 
 void closetape()
 {
-   if (tape_image) free(tape_image), tape_image = 0;
-   if (tapeinfo) free(tapeinfo), tapeinfo = 0;
-   comp.tape.play_pointer = 0; // stop tape
+    if(tape_image)
+    {
+        free(tape_image);
+        tape_image = nullptr;
+    }
+    if(tapeinfo)
+    {
+        free(tapeinfo);
+        tapeinfo = nullptr;
+    }
+   comp.tape.play_pointer = nullptr; // stop tape
    comp.tape.index = 0; // rewind tape
    tape_err = max_pulses = tape_imagesize = tape_infosize = 0;
-   comp.tape.edge_change = 0x7FFFFFFFFFFFFFFFULL;
-   comp.tape.tape_bit = -1;
+   comp.tape.edge_change = LLONG_MAX;
+   comp.tape.tape_bit = -1U;
 }
 
-void reserve(unsigned datasize)
+static void reserve(unsigned datasize)
 {
-   const int blocksize = 16384;
+   const unsigned blocksize = 16384;
    unsigned newsize = align_by(datasize+tape_imagesize+1, blocksize);
    if (!tape_image) tape_image = (unsigned char*)malloc(newsize);
    if (align_by(tape_imagesize, blocksize) < newsize) tape_image = (unsigned char*)realloc(tape_image, newsize);
 }
 
-void makeblock(const unsigned char *data, unsigned size, unsigned pilot_t,
+static void makeblock(const unsigned char *data, unsigned size, unsigned pilot_t,
       unsigned s1_t, unsigned s2_t, unsigned zero_t, unsigned one_t,
       unsigned pilot_len, unsigned pause, unsigned char last = 8)
 {
    reserve(size*16 + pilot_len + 3);
-   if (pilot_len != -1) {
-      unsigned t = find_pulse(pilot_t);
+   if (pilot_len != -1U) {
+      u8 t = find_pulse(pilot_t);
       for (unsigned i = 0; i < pilot_len; i++)
          tape_image[tape_imagesize++] = t;
       tape_image[tape_imagesize++] = find_pulse(s1_t);
       tape_image[tape_imagesize++] = find_pulse(s2_t);
    }
-   unsigned t0 = find_pulse(zero_t), t1 = find_pulse(one_t);
-   for (; size>1; size--, data++)
-      for (unsigned char j = 0x80; j; j >>= 1)
-         tape_image[tape_imagesize++] = (*data & j) ? t1 : t0,
-         tape_image[tape_imagesize++] = (*data & j) ? t1 : t0;
-   for (unsigned char j = 0x80; j != (unsigned char)(0x80 >> last); j >>= 1) // last byte
-      tape_image[tape_imagesize++] = (*data & j) ? t1 : t0,
-      tape_image[tape_imagesize++] = (*data & j) ? t1 : t0;
+   u8 t0 = find_pulse(zero_t), t1 = find_pulse(one_t);
+   for(; size > 1; size--, data++)
+   {
+       for(unsigned char j = 0x80; j; j >>= 1)
+       {
+           tape_image[tape_imagesize++] = (*data & j) ? t1 : t0;
+           tape_image[tape_imagesize++] = (*data & j) ? t1 : t0;
+       }
+   }
+   for(unsigned char j = 0x80; j != (unsigned char)(0x80 >> last); j >>= 1) // last byte
+   {
+       tape_image[tape_imagesize++] = (*data & j) ? t1 : t0;
+       tape_image[tape_imagesize++] = (*data & j) ? t1 : t0;
+   }
    if (pause) tape_image[tape_imagesize++] = find_pulse(pause*3500);
 }
 
-void desc(const unsigned char *data, unsigned size, char *dst)
+static void desc(const unsigned char *data, unsigned size, char *dst)
 {
    unsigned char crc = 0; char prg[10];
    unsigned i; //Alone Coder 0.36.7
    for (/*unsigned*/ i = 0; i < size; i++) crc ^= data[i];
    if (!*data && size == 19 && (data[1] == 0 || data[1] == 3)) {
-      for (i = 0; i < 10; i++) prg[i] = (data[i+2] < ' ' || data[i+2] >= 0x80) ? '?' : data[i+2];
+      for (i = 0; i < 10; i++) prg[i] = (data[i+2] < ' ' || data[i+2] >= 0x80) ? '?' : char(data[i+2]);
       for (i = 9; i && prg[i] == ' '; prg[i--] = 0);
       sprintf(dst, "%s: \"%s\" %d,%d", data[1] ? "Bytes":"Program", prg,
-         *(unsigned short*)(data+14), *(unsigned short*)(data+12));
-   } else if (*data == 0xFF) sprintf(dst, "data block, %d bytes", size-2);
-   else sprintf(dst, "#%02X block, %d bytes", *data, size-2);
+         *(const unsigned short*)(data+14), *(const unsigned short*)(data+12));
+   } else if (*data == 0xFF) sprintf(dst, "data block, %u bytes", size-2);
+   else sprintf(dst, "#%02X block, %u bytes", *data, size-2);
    sprintf(dst + strlen(dst), ", crc %s", crc ? "bad":"ok");
 }
 
@@ -211,7 +251,7 @@ static bool alloc_infocell()
    return true;
 }
 
-bool named_cell(const void *nm, unsigned sz = 0)
+static bool named_cell(const void *nm, unsigned sz = 0)
 {
    if(!alloc_infocell())
        return false;
@@ -255,7 +295,7 @@ struct TCswHdr
             u8 CompressionType;
             u8 Flags;
             u8 Reserved[3];
-            u8 Data[1];
+            u8 Data[];
         } Ver1;
 
         struct
@@ -266,7 +306,7 @@ struct TCswHdr
             u8 Flags;
             u8 HeaderExtLen;
             char EncAppDesc[16];
-            u8 ExtHdr[1];
+            u8 ExtHdr[];
         } Ver2;
     };
 };
@@ -378,13 +418,13 @@ int readCSW()
    return 1;
 }
 
-void create_appendable_block()
+static void create_appendable_block()
 {
    if (!tape_infosize || appendable) return;
    named_cell("set of pulses"); appendable = 1;
 }
 
-void parse_hardware(const unsigned char *ptr)
+static void parse_hardware(const unsigned char *ptr)
 {
    unsigned n = *ptr++;
    if (!n) return;
@@ -527,7 +567,7 @@ void parse_hardware(const unsigned char *ptr)
       unsigned j; //Alone Coder 0.36.7
       for (/*unsigned*/ j = 0; j < type_n; j++) {
          if (!*type) break;
-         while (*(short*)type) type++;
+         while (*(const short*)type) type++;
          type += 2;
       }
       if (!*type) type = id = "??"; else {
@@ -552,14 +592,14 @@ void parse_hardware(const unsigned char *ptr)
 
 int readTZX()
 {
-   const unsigned char *ptr = snbuf;
+   unsigned char *ptr = snbuf;
    closetape();
    unsigned size, pause, i, j, n, t, t0;
    unsigned char pl, last;
-   const unsigned char *end;
+   unsigned char *end;
    char *p;
    unsigned loop_n = 0, loop_p;
-   unsigned TzxVer = (ptr[8] << 8) | ptr[9];
+   unsigned TzxVer = (unsigned(ptr[8]) << 8U) | unsigned(ptr[9]);
    char nm[512];
 
    ptr += 10; // Пропуск заголовка
@@ -593,7 +633,7 @@ int readTZX()
             break;
          case 0x12: // pure tone
             create_appendable_block();
-            pl = find_pulse(*(unsigned short*)ptr);
+            pl = u8(find_pulse(*(unsigned short*)ptr));
             n = *(unsigned short*)(ptr+2);
             reserve(n);
             for (i = 0; i < n; i++) tape_image[tape_imagesize++] = pl;
@@ -610,7 +650,7 @@ int readTZX()
             create_appendable_block();
             size = 0xFFFFFF & *(unsigned*)(ptr+7);
             makeblock(ptr + 0x0A, size, 0, 0, 0, *(unsigned short*)ptr,
-                      *(unsigned short*)(ptr+2), -1, *(unsigned short*)(ptr+5), ptr[4]);
+                      *(unsigned short*)(ptr+2), -1U, *(unsigned short*)(ptr+5), ptr[4]);
             ptr += size + 0x0A;
             break;
          case 0x15: // direct recording
@@ -621,9 +661,17 @@ int readTZX()
             named_cell("direct recording");
             ptr += 8;
             pl = 0; n = 0;
-            for (i = 0; i < size; i++) // count number of pulses
-               for (j = 0x80; j; j >>= 1)
-                  if ((ptr[i] ^ pl) & j) n++, pl ^= -1;
+            for(i = 0; i < size; i++) // count number of pulses
+            {
+                for(j = 0x80; j; j >>= 1)
+                {
+                    if((ptr[i] ^ pl) & j)
+                    {
+                        n++;
+                        pl ^= -1;
+                    }
+                }
+            }
             t = 0; pl = 0;
             reserve(n+2);
             for (i = 1; i < size; i++, ptr++) // find pulses
@@ -653,7 +701,7 @@ int readTZX()
             reserve(2); ptr += 2;
             if (!pause) { // at least 1ms pulse as specified in TZX 1.13
                tape_image[tape_imagesize++] = find_pulse(3500);
-               pause = -1;
+               pause = -1U;
             } else pause *= 3500;
             tape_image[tape_imagesize++] = find_pulse(pause);
             break;
@@ -726,12 +774,12 @@ int readTZX()
             break;
          case 0x31: // message block
             named_cell("- MESSAGE BLOCK ");
-            end = ptr + 2 + ptr[1]; pl = *end; *(char *)end = 0;
-            for (p = (char*)ptr+2; p < (char*)end; p++)
+            end = ptr + 2 + ptr[1]; pl = *end; *end = 0;
+            for (p = (char*)ptr+2; p < (const char*)end; p++)
                if (*p == 0x0D) *p = 0;
-            for (p = (char*)ptr+2; p < (char*)end; p += strlen(p)+1)
+            for (p = (char*)ptr+2; p < (const char*)end; p += strlen(p)+1)
                named_cell(p);
-            *(char *)end = pl; ptr = end;
+            *end = pl; ptr = end;
             named_cell("-");
             break;
          case 0x32: // archive info
@@ -788,7 +836,12 @@ int readTZX()
                   named_cell(nm);
                }
                *(unsigned*)nm = '-';
-            } else sprintf(nm, "* custom info: %s", ptr), nm[15+16] = 0;
+            }
+            else
+            {
+                sprintf(nm, "* custom info: %s", ptr);
+                nm[15 + 16] = 0;
+            }
             named_cell(nm);
             ptr += 0x14 + *(unsigned*)(ptr+0x10);
             break;
@@ -824,10 +877,14 @@ int readTZX()
          while (strlen(tapeinfo[i].desc) < sizeof(tapeinfo[i].desc)-1)
             strcat(tapeinfo[i].desc, "-");
    }
-   if (tape_imagesize && tape_pulse[tape_image[tape_imagesize-1]] < 350000)
-      reserve(1), tape_image[tape_imagesize++] = find_pulse(350000); // small pause [rqd for 3ddeathchase]
+   if(tape_imagesize && tape_pulse[tape_image[tape_imagesize - 1]] < 350000)
+   {
+       // small pause [rqd for 3ddeathchase]
+       reserve(1);
+       tape_image[tape_imagesize++] = find_pulse(350000);
+   }
    find_tape_sizes();
-   return (ptr == snbuf+snapsize);
+   return ptr == snbuf+snapsize;
 }
 
 unsigned char tape_bit() // used in io.cpp & sound.cpp
@@ -842,14 +899,13 @@ unsigned char tape_bit() // used in io.cpp & sound.cpp
          unsigned t = (unsigned)(comp.tape.edge_change - comp.t_states - temp.cpu_t_at_frame_start);
          if ((int)t >= 0)
          {
-            unsigned tape_in = conf.sound.micin_vol & comp.tape.tape_bit;
-//            comp.tape.sound.update(t, tape_in, tape_in); //Alone Coder
-            comp.tape_sound.update(t, tape_in, tape_in); //Alone Coder
+            unsigned tape_in = unsigned(conf.sound.micin_vol) & comp.tape.tape_bit;
+            comp.tape.sound.update(t, tape_in, tape_in);
          }
       }
-      unsigned pulse; comp.tape.tape_bit ^= -1;
+      unsigned pulse; comp.tape.tape_bit ^= -1U;
       if (comp.tape.play_pointer == comp.tape.end_of_tape ||
-          (pulse = tape_pulse[*comp.tape.play_pointer++]) == -1)
+          (pulse = tape_pulse[*comp.tape.play_pointer++]) == -1U)
               stop_tape();
       else
           comp.tape.edge_change += pulse;
@@ -954,88 +1010,137 @@ void fast_tape()
    }
 }
 
+// Перехват стоит на адресе 0x56B (для поддержки нестандартных загрузчиков)
 void tape_traps()
 {
-   unsigned pulse;
-   do
-   {
-       if(comp.tape.play_pointer>=comp.tape.end_of_tape ||
-          (pulse=tape_pulse[*comp.tape.play_pointer++])==-1)
-       {
-           stop_tape();
-           return;
-       }
-   }while(pulse > 770);
-   comp.tape.play_pointer++;
+    unsigned pulse;
 
-   // loading header
-   cpu.l=0;
-   cpu.h = 0;
-   for(unsigned bit=0x80;bit;bit>>=1)
-   {
-       if(comp.tape.play_pointer>=comp.tape.end_of_tape||
-         (pulse=tape_pulse[*comp.tape.play_pointer++])==-1)
-       {
-         stop_tape();
-         cpu.pc = 0x05DF;
-         return;
-       }
-       cpu.l |= (pulse>1240) ? bit : 0;
-       comp.tape.play_pointer++;
-   }
-   cpu.h ^= cpu.l;
+    // Вход (для адреса 0x0556, для 0x56B значения уже испорчены):
+    // A - флаговый байт (должен совпадать с флаговым байтом записанным на ленте)
+    // IX - адрес загрузки
+    // DE - длина загружаемого блока
+    // CF - 0 - verify, 1 - load
+    //
+    // Выход:
+    // CF - 0 - ошибок нет, 1 - ошибка загрузки
 
-   // loading data
-   do
-   {
-     cpu.l = 0;
-     for(unsigned bit=0x80; bit; bit >>= 1)
-     {
-       if(comp.tape.play_pointer >= comp.tape.end_of_tape ||
-          (pulse = tape_pulse[*comp.tape.play_pointer++])==-1)
-       {
-         stop_tape();
-         cpu.pc = 0x05DF;
-         return;
-       }
-       cpu.l |= (pulse > 1240) ? bit : 0;
-       comp.tape.play_pointer++;
-     }
-     cpu.h ^= cpu.l;
-     cpu.DbgMemIf->wm(cpu.ix++, cpu.l);
-     cpu.de--;
-   }while(cpu.de & 0xFFFF);
+    /*
+    0x0556 inc    d                   ; Не меняет CF
+           ex     af, af'             ; A и CF сохраняются в af'
+           dec    d
+           di
+           ld     a,0xF
+           out    (0xFE),a
+           ld     hl, 0x53F
+           push   hl
+           in     a,(0xFE)
+    0x0564 rra
+           and    0x20
+           or     2
+    0x056A ld     c,a
+    0x056B ret    nz
+    */
 
-   // loading CRC
-   cpu.l = 0;
-   for(unsigned bit = 0x80; bit; bit >>= 1)
-   {
-     if(comp.tape.play_pointer>=comp.tape.end_of_tape||
-       (pulse=tape_pulse[*comp.tape.play_pointer++])==-1)
-     {
-       stop_tape();
-       cpu.pc = 0x05DF;
-       return;
-     }
-     cpu.l |= (pulse > 1240) ? bit : 0;
-     comp.tape.play_pointer++;
-   }
-   cpu.h ^= cpu.l;
-   cpu.pc = 0x05DF; // ld a,h / cp 01 / ret
-   cpu.bc = 0xB001;
+    bool IsLoad = ((cpu.alt.f & CF) != 0);
+    u8 Flag = cpu.alt.a;
 
-   comp.tape.play_pointer++;
-   stop_tape();
+    // Для загрузчиков которые не проходят через адрес 0x0564 делается принудительный запуск ленты
+    // Пример таких загрузчиков - загрузчики от Bill Gilbert (устанавливают нестандартные цвета бордюра и
+    // делают переход на 0x056A)
+    if(!comp.tape.play_pointer)
+    {
+        start_tape();
+    }
 
-     /*cpu.pc=0x0604; // the old one
-     unsigned pulse;
-     pulse = tape_pulse[*comp.tape.play_pointer++];
-     if(pulse == -1) stop_tape();
-     else{
-       comp.t_states+=pulse;
-       comp.tape.edge_change = comp.t_states + cpu.t + 520;
+    do
+    {
+        if(comp.tape.play_pointer >= comp.tape.end_of_tape ||
+            (pulse = tape_pulse[*comp.tape.play_pointer++]) == -1U)
+        {
+            stop_tape();
+            return;
+        }
+    } while(pulse > 770);
+    comp.tape.play_pointer++;
 
-       cpu.b+=(pulse-520)/56;
-       cpu.f|=CF;
-     }*/
+    // loading flag byte
+    cpu.l = 0;
+    cpu.h = 0;
+    for(unsigned bit = 0x80; bit; bit >>= 1)
+    {
+        if(comp.tape.play_pointer >= comp.tape.end_of_tape ||
+            (pulse = tape_pulse[*comp.tape.play_pointer++]) == -1U)
+        {
+            stop_tape();
+            cpu.pc = 0x05DF;
+            return;
+        }
+        cpu.l |= (pulse > 1240) ? bit : 0;
+        comp.tape.play_pointer++;
+    }
+
+    if(cpu.l != Flag) // При несовпадении флагового байта пропускаем блок данных
+    {
+        IsLoad = false;
+    }
+
+    cpu.h ^= cpu.l;
+
+    // loading data
+    do
+    {
+        cpu.l = 0;
+        for(unsigned bit = 0x80; bit; bit >>= 1)
+        {
+            if(comp.tape.play_pointer >= comp.tape.end_of_tape ||
+                (pulse = tape_pulse[*comp.tape.play_pointer++]) == -1U)
+            {
+                stop_tape();
+                cpu.pc = 0x05DF;
+                return;
+            }
+            cpu.l |= (pulse > 1240) ? bit : 0;
+            comp.tape.play_pointer++;
+        }
+        cpu.h ^= cpu.l;
+        if(IsLoad)
+        {
+            cpu.DbgMemIf->wm(cpu.ix, cpu.l);
+        }
+        cpu.ix++;
+        cpu.de--;
+    } while(cpu.de & 0xFFFF);
+
+    // loading CRC
+    cpu.l = 0;
+    for(unsigned bit = 0x80; bit; bit >>= 1)
+    {
+        if(comp.tape.play_pointer >= comp.tape.end_of_tape ||
+            (pulse = tape_pulse[*comp.tape.play_pointer++]) == -1U)
+        {
+            stop_tape();
+            cpu.pc = 0x05DF;
+            return;
+        }
+        cpu.l |= (pulse > 1240) ? bit : 0;
+        comp.tape.play_pointer++;
+    }
+    cpu.h ^= cpu.l;
+    cpu.pc = 0x05DF; // ld a,h / cp 01 / ret
+    cpu.bc = 0xB001;
+
+    comp.tape.play_pointer++;
+    stop_tape();
+
+    /*cpu.pc=0x0604; // the old one
+    unsigned pulse;
+    pulse = tape_pulse[*comp.tape.play_pointer++];
+    if(pulse == -1) stop_tape();
+    else{
+      comp.t_states+=pulse;
+      comp.tape.edge_change = comp.t_states + cpu.t + 520;
+
+      cpu.b+=(pulse-520)/56;
+      cpu.f|=CF;
+    }*/
 }

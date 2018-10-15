@@ -28,6 +28,7 @@ TChannelStop         ChannelStop;
 TChannelGetPosition  ChannelGetPosition;
 TChannelSetPosition  ChannelSetPosition;
 TChannelSetAttribute ChannelSetAttribute;
+TChannelGetAttribute ChannelGetAttribute;
 TChannelGetLevel     ChannelGetLevel;
 TErrorGetCode        ErrorGetCode;
 TChannelFlags        ChannelFlags;
@@ -40,7 +41,8 @@ TStreamCreate        StreamCreate;
 TStreamCreateFileUser StreamCreateFileUser;
 TStreamFree          StreamFree;
 
-HMODULE Bass = 0;
+HMODULE Bass = nullptr;
+bool Initialized = false;
 
 void Load()
 {
@@ -74,6 +76,7 @@ void Load()
    ChannelGetPosition = (TChannelGetPosition)GetProcAddress(Bass, "BASS_ChannelGetPosition");
    ChannelSetPosition = (TChannelSetPosition)GetProcAddress(Bass, "BASS_ChannelSetPosition");
    ChannelSetAttribute = (TChannelSetAttribute)GetProcAddress(Bass, "BASS_ChannelSetAttribute");
+   ChannelGetAttribute = (TChannelGetAttribute)GetProcAddress(Bass, "BASS_ChannelGetAttribute");
    ChannelFlags = (TChannelFlags)GetProcAddress(Bass, "BASS_ChannelFlags");
    ChannelGetLevel = (TChannelGetLevel)GetProcAddress(Bass, "BASS_ChannelGetLevel");
    ChannelBytes2Seconds = (TChannelBytes2Seconds)GetProcAddress(Bass, "BASS_ChannelBytes2Seconds");
@@ -107,6 +110,8 @@ void Load()
        errexit("can't import BASS API: BASS_ChannelFlags");
    if (!ChannelSetAttribute)
        errexit("can't import BASS API: BASS_ChannelSetAttribute");
+   if(!ChannelGetAttribute)
+       errexit("can't import BASS API: BASS_ChannelGetAttribute");
    if (!ChannelGetPosition)
        errexit("can't import BASS API: BASS_ChannelGetPosition");
    if (!ChannelSetPosition)
@@ -138,8 +143,12 @@ void Unload()
     if(Bass)
     {
         if(Free)
+        {
             Free();
+        }
         FreeLibrary(Bass);
+        Initialized = false;
+        Bass = nullptr;
     }
 }
 

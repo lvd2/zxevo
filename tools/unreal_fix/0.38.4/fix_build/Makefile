@@ -73,9 +73,9 @@ SRCS=emul.cpp std.cpp atm.cpp cheat.cpp config.cpp dbgbpx.cpp dbgcmd.cpp dbglabl
         debug.cpp draw.cpp drawnomc.cpp draw_384.cpp dx.cpp dxerr.cpp dxovr.cpp \
         dxrcopy.cpp dxrend.cpp dxrendch.cpp dxrframe.cpp dxr_4bpp.cpp dxr_512.cpp \
         dxr_advm.cpp dxr_atm.cpp dxr_atm0.cpp dxr_atm2.cpp dxr_atm4.cpp dxr_atm6.cpp \
-        dxr_atm7.cpp \
+        dxr_atm7.cpp profi.cpp \
         dxr_atmf.cpp dxr_prof.cpp dxr_rsm.cpp dxr_text.cpp dxr_vd.cpp \
-        emulkeys.cpp emul_2203.cpp fntsrch.cpp font.cpp font14.cpp font16.cpp \
+        emulkeys.cpp fntsrch.cpp font.cpp font14.cpp font16.cpp \
         font8.cpp fontatm2.cpp fontdata.cpp gs.cpp gshlbass.cpp gshle.cpp \
         gsz80.cpp gui.cpp hdd.cpp hddio.cpp iehelp.cpp init.cpp \
         input.cpp inputpc.cpp io.cpp keydefs.cpp leds.cpp mainloop.cpp \

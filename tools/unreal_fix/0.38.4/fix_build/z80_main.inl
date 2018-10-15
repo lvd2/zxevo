@@ -159,10 +159,10 @@ void Z80FAST step()
           comp.wd.trdos_traps();
    }
 
-   if (comp.tape.play_pointer && conf.tape_traps && (cpu.pc & 0xFFFF) == 0x056B)
+   if (conf.tape_traps && (cpu.pc & 0xFFFF) == 0x056B)
        tape_traps();
 
-   if (comp.tape.play_pointer && !conf.sound.enabled)
+   if (!comp.tape.stopped && !conf.sound.enabled)
        fast_tape();
 
 //todo if(comp.turbo)cpu.t-=tbias[cpu.dt]
@@ -230,7 +230,7 @@ void z80loop()
 */
    }
    cpu.int_pend = false;
-   cpu.eipos = -1;
+   cpu.eipos = -1U;
 
    while (cpu.t < conf.frame)
    {

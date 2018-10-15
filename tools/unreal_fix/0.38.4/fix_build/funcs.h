@@ -1,3 +1,5 @@
+#pragma once
+
 void __declspec(noreturn) exit();
 void correct_exit();
 void wnd_resize(int scale);
@@ -12,7 +14,6 @@ void setpal(char);
 void set_vidmode();
 void set_video();
 void calc_rsm_tables();
-void update_screen();
 
 void spectrum_frame();
 void do_sound();
@@ -28,7 +29,6 @@ void out(unsigned port, unsigned char val);
 unsigned char in(unsigned port);
 void set_banks();
 
-void applyconfig();
 void apply_video();
 void apply_gs();
 void setup_dlg();
@@ -58,9 +58,8 @@ void debug_events(Z80 *cpu);
 void __fastcall render_rsm(unsigned char*, unsigned); //Alone Coder
 void __fastcall render_advmame(unsigned char *dst, unsigned pitch); //Alone Coder
 void __fastcall render_small(unsigned char *dst, unsigned pitch);
-void rend_dbl(unsigned char *dst, unsigned pitch);
 
 int loadsnap(char *filename);
-unsigned char what_is(char *filename);
+SNAP what_is(char *filename);
 
 unsigned char getcheck(unsigned ID);
