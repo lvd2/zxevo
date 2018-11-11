@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 14.10.2018 savelij
+;LAST UPDATE: 11.11.2018 savelij
 
 ;éèàëÄíÖãú éäçÄ (ÄÑêÖë Ç IX)
 ;+00 X äééêÑàçÄíÄ
@@ -88,14 +88,14 @@ MKILLSTXT	DB 0X17,0XFF,"Services"
 		DB 0X0D," B.Basic 128 standart"		;b
 		DB 0X0D," M.Edit CMOS"			;m
 		DB 0X0D," S.Test PC keyboard"		;s
-;		DB 0X0D," D.HDD detector"		;d
+		DB 0X0D," D.HDD detector"		;d
 		DB 0X0D," C.ATM CP/M"			;c
 		DB 0X0D," T.IS-DOS boot"		;t
 		DB 0X0D," F.Fast update ROM"		;f
 		DB 0X0D," U.Update custom ROM"		;u
 		DB 0X0D," N.Dismount image"		;n
 		DB 0X0D," X.Exit",0			;x
-MKILLS_KEY	DB LOW (KILL1-$-1),"rekvbmsctfunx"
+MKILLS_KEY	DB LOW (KILL1-$-1),"rekvbmsdctfunx"
 
 KILL1		DW RESETNGS			;r
 		DW RESET_CMOS			;e
@@ -104,7 +104,7 @@ KILL1		DW RESETNGS			;r
 		DW BAS128STD			;b
 		DW EDIT_CMOS			;m
 		DW PC_KEYS_TEST			;s
-;		DW HDD_DETECTOR			;d
+		DW HDD_DETECTOR			;d
 		DW ATM_CPM			;c
 		DW ISDOS_BOOT			;t
 		DW LOAD4FLASH_FULL		;f
@@ -140,23 +140,26 @@ SETUPER		DB 0X07,0X07,LOW ((SETUPER2-SETUPER1)/2)+2,0X15,0X0F,0X1F,%00100000,0
 		DW 0,((SETUPER2-SETUPER1)/2)
 		DW SETUPERTXT,SETUPER1,0,SETUPERKEY
 SETUPERTXT	DB 1,0X17,0XFF,"Setup"
-		DB 0X0D," S.Sound on keys:      off"
+		DB "\r S.Sound on keys:      off"
 SNDKEYS_STAT	EQU $-2
-		DB 0X0D," G.Access SD NeoGS:    off"
+		DB "\r G.Access SD NeoGS:    ofN"
 ACCSSDG_STAT	EQU $-2
-		DB 0X0D," K.DRV AY printer:     off"
+		DB "\r K.DRV AY printer:     off"
 ETXT_AYPRINTER	EQU $-2
-		DB 0X0D," T.Autostart tape:     off"
+		DB "\r R.Resident Honey Cmd: off"
+TXT_REZIDENT	EQU $-2
+		DB "\r T.Autostart tape:     off"
 TXT_AUTOTAPE	EQU $-2
-		DB 0X0D," H.Delay for HDD, secs  5"
+		DB "\r H.Delay for HDD, secs  5"
 TXT_HDDTIMEOUT	EQU $-1
-		DB 0X0D," X.Exit"
+		DB "\r X.Exit"
 		DB 0
-SETUPERKEY	DB LOW (SETUPER1-$-1),"sgkthx"
+SETUPERKEY	DB LOW (SETUPER1-$-1),"sgkrthx"
 
 SETUPER1	DW SOUND_KEYS			;s
 		DW ACS_SDNGS			;g
 		DW AYPRN_SETUP			;k
+		DW REZID_SETUP			;r
 		DW AUTO_TAPE			;t
 		DW HDDTIMEOUT			;h
 		DW RESTART			;x
