@@ -1,0 +1,439 @@
+
+;LAST UPDATE: 18.10.2018 savelij
+
+MATH		CALL P5_READ_BYTE
+		LD A,(NEXTBYTERST8)
+		ADD A,A
+		ADD A,LOW (.MATH_FUNC)
+		LD L,A
+		ADC A,HIGH (.MATH_FUNC)
+		SUB L
+		LD H,A
+		LD A,(HL)
+		INC HL
+		LD H,(HL)
+		LD L,A
+		JP (HL)
+
+.MATH_FUNC	DW .XDIVIDE16		;DE = HL/DE					;BC = BC / DE
+		DW .XMULTIPLY16		;BCDE = HL * DE					;HLDE = BC * DE
+		DW .XDIVIDE32		;BCDE = HLDE / HL'DE', BC'DE' = HLDE % HL'DE'	;HL'HL = HL'HL / DE'DE, DE'DE = HL'HL % DE'DE
+		DW .XMULTIPLY32		;BC'DE'BCDE = BCDE * HL				;DE'HL'DEHL = DEHL * BC
+		DW .XHEX4DEC
+		DW .XHEX2DEC
+		DW .XHEX1DEC
+
+.XHEX4DEC	LD BC,(RREG_C)
+		LD DE,(RREG_E)
+		CALL .HEX4DEC
+.LDIRSTRTEXT	LD BC,CPU6
+		AND A
+		SBC HL,BC
+		LD DE,(RREG_L)
+		LD BC,STRLEN("4294967295\0")
+		JP LDIR_BYTES
+
+.XHEX2DEC	LD DE,(RREG_E)
+		CALL .HEX2DEC
+		JR .LDIRSTRTEXT
+
+.XHEX1DEC	LD DE,(RREG_E)
+		CALL .HEX1DEC
+		JR .LDIRSTRTEXT
+
+;BCDE = HLDE / HL'DE', BC'DE' = HLDE % HL'DE'	;HL'HL = HL'HL / DE'DE, DE'DE = HL'HL % DE'DE
+;BCDE = BCDE / BC'DE', BC'DE' = BCDE % BC'DE'
+.XDIVIDE32	LD HL,(RREG_C)		;HL'
+		LD DE,(RREG_CC)		;DE'
+		EXX
+		LD HL,(RREG_E)		;HL
+		LD DE,(RREG_EE)		;DE
+		CALL .ldiv
+		LD (RREG_EE),DE		;DE'
+		LD (RREG_E),HL		;DE
+		EXX
+		LD (RREG_CC),DE		;BC'
+		LD (RREG_C),HL		;BC
+		RET
+
+;BC'DE'BCDE = BCDE * HL			;DE'HL'DEHL = DEHL * BC
+.XMULTIPLY32	LD DE,(RREG_C)		;BC
+		LD HL,(RREG_E)		;DE *
+		EXX
+		LD BC,(RREG_L)		;   * HL
+		CALL .MUL_BC_DEHL
+		LD (RREG_C),DE		;   = BC
+		LD (RREG_E),HL		;     DE
+		EXX
+		LD (RREG_CC),DE		;     BC'
+		LD (RREG_EE),HL		;     DE'
+		EXX
+		RET
+
+;DE = HL/DE				;BC = BC / DE
+.XDIVIDE16	LD BC,(RREG_L)		;HL /
+		LD DE,(RREG_E)		;   / DE
+		CALL .DIVIDE
+		LD (RREG_E),BC		;   = DE
+		RET
+
+;BCDE = HL * DE					;HLDE = BC * DE
+.XMULTIPLY16	LD BC,(RREG_C)		;HL *
+		LD DE,(RREG_E)		;   * DE
+		CALL .MULTIPLY
+		LD (RREG_C),HL		;   = BC
+		LD (RREG_E),DE		;     DE
+		RET
+
+;[деление bc=bc/de]
+.DIVIDE		xor	a
+		ld	h,a
+		ld	l,a
+		ld	a,10h
+.loc_3E29	ccf
+.loc_3E2A	rl	c
+		rl	b
+		dec	a
+		ret	m
+		adc	hl,hl
+		sbc	hl,de
+		jr	nc,.loc_3E29
+		add	hl,de
+		or	a
+		jr	.loc_3E2A
+
+;[умножение hlde=bc*de]
+.MULTIPLY	push	bc
+		ld	a,b
+		ld	hl,0
+		ld	b,10h
+.MULTIPLY2	add	hl,hl
+		rl	c
+		rla
+		jr	nc,.MULTIPLY1
+		add	hl,de
+		jr	nc,.MULTIPLY1
+		inc	c
+		jr	nz,.MULTIPLY1
+		inc	a
+.MULTIPLY1	djnz	.MULTIPLY2
+		ex	de,hl
+		ld	l,c
+		ld	h,a
+		pop	bc
+		ret
+
+;[умножение DE'HL'DEHL=DEHL*BC]
+.MUL_BC_DEHL	XOR A
+		LD H,A
+		LD L,A
+		LD D,A
+		LD E,A
+		EXX
+		LD B,A
+		LD C,A
+		LD A,0X20
+.MUL1		EX AF,AF'
+		EXX
+		ADD HL,HL
+		EX DE,HL
+		ADC HL,HL
+		EX DE,HL
+		EXX
+		ADC HL,HL
+		EX DE,HL
+		ADC HL,HL
+		EX DE,HL
+		JR NC,.MUL2
+		EXX
+		ADD HL,BC
+		JR NC,.MUL3
+		INC DE
+.MUL3		EXX
+.MUL2		EX AF,AF'
+		DEC A
+		JR NZ,.MUL1
+		EXX
+		RET
+
+;[BCDE=BCDE/HL]
+.LDIV_HL	EX DE,HL
+		PUSH BC
+		EXX
+		POP HL
+		LD DE,0
+		JR .LDIV1
+
+;[BCDE=(HL)/BCDE]
+.LDIV__HL_	PUSH BC		;DE'
+		LD C,(HL)
+		INC HL
+		LD B,(HL)	;HL
+		INC HL
+		LD A,(HL)
+		INC HL
+		LD H,(HL)
+		LD L,A		;HL'
+		PUSH HL
+		LD H,B
+		LD L,C		;HL
+		EXX
+		POP HL		;HL'
+		POP DE		;DE'
+.LDIV1		EXX
+		CALL .ldiv
+		EXX
+		PUSH HL
+		EXX
+		POP BC
+		EX DE,HL
+		RET
+
+; http://zx-pk.ru/archive/index.php/t-4497.html
+; версия от 2006-12-18 T 15:11:28+0300
+; Беззнаковое 32-разрядное деление
+; функция состоит из двух частей:
+; 1. 32-разрядное делимое и 16-разрядный
+; делитель.
+; 2. 32-раздядное делимое и 32-разрядный
+; делитель.
+; hl'hl = hl'hl / de'de
+; de'de = hl'hl % de'de
+.ldiv		push hl
+		xor a
+		ld l,a
+		ld h,a
+		sub e
+		ld e,a
+		ld a,h
+		sbc a,d
+		ld d,a
+		exx
+		pop bc
+		ld a,0
+		sbc a,e
+		ld e,a
+		sbc a,d		; de'de=0-divisor
+		sub e
+		ld d,a
+		and e
+		inc a		; Z=short divisor
+		push hl
+		ld hl,0		; hl'hl=reminder
+		exx
+		pop bc
+		ld a,b		; a,c,bc'=divident
+		jr nz,.ldiv_long
+
+; divisor = -00de
+		ld b,8
+		rla
+.ldivs0		rl l
+		add hl,de
+		jr c,.ldivs1
+		sbc hl,de
+.ldivs1		rla
+		djnz .ldivs0
+		ld b,c
+		ld c,a
+		ld a,b
+		ld b,8
+		rla
+.ldivs2		adc hl,hl
+		add hl,de
+		jr c,.ldivs3
+		sbc hl,de
+.ldivs3		rla
+		djnz .ldivs2
+		jr .ldiv_long1
+
+; divisor=-de'de
+.ldiv_long	call .ldiv_8
+		ld b,c
+		ld c,a
+		ld a,b
+		call .ldiv_8
+.ldiv_long1	exx
+		ex af,af'
+		ld a,b
+		ex af,af'
+		ld b,a
+		ex af,af'
+		exx
+		call .ldiv_8
+		exx
+		ex af,af'
+		ld a,c
+		ex af,af'
+		ld c,a
+		ex af,af'
+		exx
+		call .ldiv_8
+; result=c,bc',a -> hl'hl
+; reminder=hl'hl -> de'de
+		ex de,hl
+		ld l,a
+		ld a,c
+		exx
+		ex de,hl
+		ld h,a
+		ld l,b
+		ld a,c
+		exx
+		ld h,a
+		ret
+
+; hl'hl=reminder
+; de'de=divisor
+; a=divident
+.ldiv_8		ld b, 8
+		rla
+.ldiv_8_0	adc hl,hl
+		exx
+		adc hl,hl
+		exx
+		add hl,de
+		exx
+		adc hl,de
+		exx
+		jr c, .ldiv_8_1
+		sbc hl,de
+		exx
+		sbc hl,de
+		exx
+.ldiv_8_1	rla
+		djnz .ldiv_8_0
+		ret
+
+;[HEX4DEC]
+;BCDE->текст
+.HEX4DEC	EXX
+		LD HL,VARS_TXT_DEC
+		PUSH HL
+		PUSH HL
+		LD B,9
+		EXX
+		LD HL,.CHISLA4
+		REPT 9
+		CALL .BCDEMHL
+		ENDM
+.H2D1		LD A,"0"
+		ADD A,E
+		EXX
+		LD (HL),A
+		INC HL
+		LD (HL),0
+		LD A,B
+		EXX
+		POP HL
+		LD B,A
+.H2D2		LD A,(HL)
+		CP "0"
+		JR NZ,.H2D3
+		LD (HL)," "
+		INC HL
+		DJNZ .H2D2
+.H2D3		POP HL
+		RET
+
+;[HEX2DEC]
+;DE->текст
+.HEX2DEC	EXX
+		LD HL,VARS_TXT_DEC
+		PUSH HL
+		PUSH HL
+		LD B,4
+		EXX
+		LD HL,.CHISLA2
+		LD BC,0
+		JR .H2D1-(4*3)
+
+;[HEX1DEC]
+;E->текст
+.HEX1DEC	EXX
+		LD HL,VARS_TXT_DEC
+		PUSH HL
+		PUSH HL
+		LD B,2
+		EXX
+		LD HL,.CHISLA1
+		LD BC,0
+		LD D,0
+		JR .H2D1-(2*3)
+
+.CHISLA4	DD 1000000000
+		DD 100000000
+		DD 10000000
+		DD 1000000
+		DD 100000
+.CHISLA2	DD 10000
+		DD 1000
+.CHISLA1	DD 100
+		DD 10
+
+;[BCDE-(ADR)=BCDE]
+.BCDEMHL	XOR A
+		EX AF,AF'
+.BCDEMHL1	LD A,E
+		SUB (HL)
+		INC HL
+		LD E,A
+		LD A,D
+		SBC A,(HL)
+		INC HL
+		LD D,A
+		LD A,C
+		SBC A,(HL)
+		INC HL
+		LD C,A
+		LD A,B
+		SBC A,(HL)
+		LD B,A
+		DEC HL
+		DEC HL
+		DEC HL
+		EX AF,AF'
+		INC A
+		EX AF,AF'
+		LD A,B
+		CP 0XC4
+		JR C,.BCDEMHL1
+		LD A,(HL)
+		ADD A,E
+		LD E,A
+		INC HL
+		LD A,(HL)
+		ADC A,D
+		LD D,A
+		INC HL
+		LD A,(HL)
+		ADC A,C
+		LD C,A
+		INC HL
+		LD A,(HL)
+		ADC A,B
+		LD B,A
+		DEC HL
+		DEC HL
+		DEC HL
+		EX AF,AF'
+		DEC A
+		ADD A,'0'
+		INC HL
+		INC HL
+		INC HL
+		INC HL
+		EXX
+		LD (HL),A
+		INC HL
+		EXX
+		RET
+
+;[BCDE=BCDE+HL]
+.BCDE_BCDE_HL	ADD HL,DE
+		EX DE,HL
+		LD HL,0
+		ADC HL,BC
+		LD B,H
+		LD C,L
+		RET
