@@ -671,10 +671,13 @@ set1FFD:
        return;
    }
 
-   if( (port == 0xEFF7) && ( (conf.mem_model==MM_PENTAGON) || (conf.mem_model==MM_ATM3) ) ) // lvd added eff7 to atm3
+   if( (port == 0xEFF7) && ( (conf.mem_model==MM_PENTAGON) || (conf.mem_model==MM_ATM3)
+	   || conf.mem_model == MM_ATM710 ) ) // lvd added eff7 to atm3
    {
       unsigned char oldpEFF7 = comp.pEFF7; //Alone Coder 0.36.4
       comp.pEFF7 = (comp.pEFF7 & conf.EFF7_mask) | (val & ~conf.EFF7_mask);
+	  if(conf.mem_model == MM_ATM710) 
+		  return;
       comp.pEFF7 |= EFF7_GIGASCREEN; // [vv] disable turbo
 //    if ((comp.pEFF7 ^ oldpEFF7) & EFF7_GIGASCREEN) {
 //      conf.frame = frametime;
@@ -694,7 +697,9 @@ set1FFD:
           set_banks(); //Alone Coder 0.36.4
       return;
    }
-   if (conf.cmos && (((comp.pEFF7 & EFF7_CMOS) && conf.mem_model == MM_PENTAGON) || conf.mem_model == MM_ATM3))
+   if (conf.cmos && (((comp.pEFF7 & EFF7_CMOS) && 
+		(conf.mem_model == MM_PENTAGON || conf.mem_model == MM_ATM710)) || 
+		conf.mem_model == MM_ATM3))
    {
       unsigned mask = (conf.mem_model == MM_ATM3 && (comp.flags & CF_DOSPORTS)) ? ~0x100U : 0xFFFF;
 
@@ -1110,7 +1115,7 @@ __inline unsigned char in1(unsigned port)
       return 0xFF;
    }
 
-   if (conf.cmos && ((comp.pEFF7 & EFF7_CMOS) || conf.mem_model == MM_ATM3))
+   if (conf.cmos && ((comp.pEFF7 & EFF7_CMOS) || conf.mem_model == MM_ATM3 || conf.mem_model == MM_ATM710))
    {
       unsigned mask = (conf.mem_model == MM_ATM3 && (comp.flags & CF_DOSPORTS)) ? ~0x100U : 0xFFFF;
       if(port == (0xBFF7 & mask))
