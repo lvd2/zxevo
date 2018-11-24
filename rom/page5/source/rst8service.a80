@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 12.11.2018 savelij
+;LAST UPDATE: 24.11.2018 savelij
 
 PAGE	
 		TITLE "rst8service.a80 ROM_RST83"
@@ -13,6 +13,7 @@ PAGE
 		include ../../fat_vars.a80
 		include ../../bootsecfat.a80
 		include ../../evodos_vars.a80
+		include ../../tmpkeys.a80
 		include struct_mount.a80
 
 CPU5		EQU CPU1

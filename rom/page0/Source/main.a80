@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 11.11.2018 savelij
+;LAST UPDATE: 24.11.2018 savelij
 
 PAGE
 		TITLE "main.a80"
@@ -10,6 +10,7 @@ PAGE
 		include ../../ports_ide.a80
 		include ../../basic_tokens.a80
 		include ../../bas_trd_vars.a80
+		include ../../tmpkeys.a80
 		include version.a80
 
 ;BIT 4,(IY+55)
@@ -723,9 +724,12 @@ SETMODES01	LD DE,TXT_MEM			;êÖÜàå èÄåüíà
 		LD HL,ETXT_AUTOMOUNT
 		CALL SET_ONOFF
 		POP AF
+;Ñãü êÖáàÑÖçíÄ HONEY COMANDER
+	IFDEF REZIDENT
 		AND M_REZIDENT
 		LD HL,TXT_REZIDENT
 		CALL SET_ONOFF
+	ENDIF;REZIDENT
 		LD A,(ERS_FLAGS)
 		AND M_CLOCK_ON
 		RET Z

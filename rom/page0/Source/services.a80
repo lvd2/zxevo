@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 16.11.2018 savelij
+;LAST UPDATE: 24.11.2018 savelij
 
 		include ../../macros.a80
 		include ../../define.a80
@@ -183,8 +183,6 @@ RSTKEYS2	LD H,CMOS_BYTE_00
 		AND 0XFC			;ëÅêéë Ñãü éëçéÇçéÉé èáì
 		LD L,A
 		RST8 _CMOS_RW,_WRITE_CMOS	;èêàçìÑàíÖãúçé ÇõëíÄÇãÖçàÖ Ç äåéë ëÅêéëÄ çÄ EVO SERVICE
-;		LD A,0X80
-;		RST8 _SET_VIRT_BITS
 	IF DOS_FE
 		LD BC,WIN_A3
 		LD A,ROM_RST82
@@ -217,9 +215,10 @@ RSTKEYS2	LD H,CMOS_BYTE_00
 		LD B,HIGH (WIN_A3)
 		LD A,0XFF
 		OUT (C),A
-
+;Ñãü êÖáàÑÖçíÄ HONEY COMANDER
+	IFDEF REZIDENT
 		CALL CMP_REZIDENT		;èêéÇÖêäÄ êÖáàÑÖçíÄ
-
+	ENDIF
 		LD BC,0XFEFF
 RSTKEYS1	LD A,B
 		IN A,(0XFE)
@@ -368,6 +367,8 @@ READCMOS	PUSH BC
 		POP BC
 		RET
 
+;Ñãü êÖáàÑÖçíÄ HONEY COMANDER
+	IFDEF REZIDENT
 CMP_REZIDENT	LD H,CMOS_BYTE_01
 		CALL READCMOS
 		AND M_REZIDENT
@@ -394,11 +395,18 @@ CMP_REZIDENT	LD H,CMOS_BYTE_01
 		CPL
 		DEC HL
 		CP (HL)
-		JP Z,CPU3
+		JR NZ,.NOTFOUND
+		LD BC,0X4177
+		LD A,6
+		OUT (C),A
+		PEC_OFF M_SHADOW_BF
+		JP CPU3
+
 .NOTFOUND	LD BC,WIN_A3
 		LD A,0XFF
 		OUT (C),A
 		RET
+	ENDIF
 
 BONUADR		binclude cmosset_pack.rom
 	IF DOS_FE
@@ -523,8 +531,23 @@ PAGES_PROFROM	DB 0XFF,0X7D,0X7A,CONF4PROF+3
 		DB 0XFF,0X7D,0X7A,0X00,CONF4PROF+1
 
 ;èÄãàíêÄ Ñãü SPECTRUM êÖÜàåÄ
-TRSTPAL		DB 0X00,0X21,0X42,0X63,0X90,0XB1,0XD2,0XF3
-		DB 0XE0,0XE1,0XE2,0XE3,0XF0,0XF1,0XF2,0XF3
+TRSTPAL
+		DB (R_H | R_L | G_H | G_L | B_H | B_L)	! 0xF3	;00
+		DB (R_H | R_L | G_H | G_L            )	! 0xF3	;21
+		DB (            G_H | G_L | B_H | B_L)	! 0xF3	;42
+		DB (            G_H | G_L            )	! 0xF3	;63
+		DB (R_H | R_L |             B_H | B_L)	! 0xF3	;90
+		DB (R_H | R_L			     )	! 0xF3	;B1
+		DB (                        B_H | B_L)	! 0xF3	;D2
+		DB BLACK				! 0xF3	;F3
+		DB (R_H |       G_H |       B_H      )	! 0xF3	;E0
+		DB (R_H |       G_H                  )	! 0xF3	;E1
+		DB (            G_H |       B_H      )	! 0xF3	;E2
+		DB (            G_H                  )	! 0xF3	;E3
+		DB (R_H |                   B_H      )	! 0xF3	;F0
+		DB (R_H)				! 0xF3	;F1
+		DB (                        B_H      )	! 0xF3	;F2
+		DB BLACK				! 0xF3	;F3
 
 		DUPL 0X3FF8-$,0XFF
 		DB "HEGLUK"
