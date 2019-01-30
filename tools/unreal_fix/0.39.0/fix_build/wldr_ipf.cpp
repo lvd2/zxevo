@@ -178,7 +178,7 @@ union TCapsBlockType
 {
     TCapsBlockExt caps; // access old image
     TSPSBlockExt sps;   // access new image
-    static_assert(sizeof(sps) == sizeof(caps),"static_assert");
+//    static_assert(sizeof(sps) == sizeof(caps),"sizeof(sps) == sizeof(caps");
 };
 
 // encoder types

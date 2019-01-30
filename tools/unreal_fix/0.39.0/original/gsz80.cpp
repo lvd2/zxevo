@@ -102,6 +102,18 @@ namespace z80gs
 const u8 MPAG   = 0x00;
 const u8 MPAGEX = 0x10;
 
+// gs
+const u8 VOL1 = 0x06;
+const u8 VOL2 = 0x07;
+const u8 VOL3 = 0x08;
+const u8 VOL4 = 0x09;
+
+// nsg
+const u8 VOL5 = 0x16;
+const u8 VOL6 = 0x17;
+const u8 VOL7 = 0x18;
+const u8 VOL8 = 0x19;
+
 const u8 DMA_MOD= 0x1b;
 const u8 DMA_HAD= 0x1c;
 const u8 DMA_MAD= 0x1d;
@@ -114,14 +126,18 @@ const u8 M_NOROM = 1;
 const u8 M_RAMRO = 2;
 const u8 M_EXPAG = 8;
 
+const u8 M_8CHANS = 0x04;
+const u8 M_PAN4CH = 0x40;
+
 static u8 *gsbankr[4] = { ROM_GS_M, GSRAM_M + 3 * PAGE, ROM_GS_M, ROM_GS_M + PAGE }; // bank pointers for read
 static u8 *gsbankw[4] = { TRASH_M, GSRAM_M + 3 * PAGE, TRASH_M, TRASH_M }; // bank pointers for write
 
-static unsigned gs_v[4];
-static unsigned char gsvol[4], gsbyte[4];
-static unsigned led_gssum[4], led_gscnt[4];
+static unsigned gs_v[8];
+static unsigned char gsvol[8], gsbyte[8]{ 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80 };
 static unsigned char gsdata_in, gsdata_out, gspage = 0;
 static unsigned char gscmd, gsstat;
+
+static bool GsSilent = false; // Признак нулевой громкости во всех каналах
 
 static unsigned long long mult_gs, mult_gs2;
 
@@ -133,6 +149,8 @@ static u8 ngs_s_stat;
 static u8 SdRdVal, SdRdValNew;
 static u8 ngs_dmamod;
 
+static u8 ngs_chn_mask = 3;
+static int vol_div = 256;
 
 static bool SdDataAvail = false;
 
@@ -162,7 +180,13 @@ static inline void flush_gs_sound()
   l = gs_v[0] + gs_v[1];    //!psb
   r = gs_v[2] + gs_v[3];    //!psb
 
-//   sound.update(gscpu.t + (unsigned) (gs_t_states - gscpu_t_at_frame_start), gs_v[0] + gs_v[1], gs_v[2] + gs_v[3]);
+  // ngs 8ch
+  if(ngs_cfg0 & M_8CHANS)
+  {
+      l += gs_v[4] + gs_v[5];
+      r += gs_v[6] + gs_v[7];
+  }
+
    unsigned lv, rv;
    lv = (l + r/2) / 2;
    rv = (r + l/2) / 2;
@@ -179,13 +203,6 @@ static inline void flush_gs_sound()
 //   assert(gs_t_states >= gscpu_t_at_frame_start);
 
    sound.update(unsigned((gs_t_states + gscpu.t) - gscpu_t_at_frame_start), lv, rv);     //!psb
-
-   for (int ch = 0; ch < 4; ch++)
-   {
-      gsleds[ch].level = led_gssum[ch] * gsvol[ch] / (led_gscnt[ch]*(0x100*0x40/16)+1);
-      led_gssum[ch] = led_gscnt[ch] = 0;
-      gsleds[ch].attrib = 0x0F;
-   }
 }
 
 void init_gs_frame()
@@ -205,6 +222,12 @@ void flush_gs_frame()
        ((gs_t_states + gscpu.t)  - gscpu_t_at_frame_start));
 */
    sound.end_frame(unsigned((gs_t_states + gscpu.t) - gscpu_t_at_frame_start));
+
+   for(int ch = 0; ch < 8; ch++)
+   {
+       gsleds[ch].level = abs(int(gsbyte[ch] - 0x80) * gsvol[ch]) / ((128 * 63) / 15);
+       gsleds[ch].attrib = 0x0F;
+   }
 }
 
 void out_gs(unsigned port, u8 val)
@@ -257,13 +280,16 @@ u8 in_gs(unsigned port)
 
 static void gs_byte_to_dac(unsigned addr, unsigned char byte)
 {
+    if(GsSilent)
+    {
+        return;
+    }
+
    flush_gs_sound();
-   unsigned chan = (addr>>8) & 3;
+   unsigned chan = (addr>>8) & ngs_chn_mask;
    gsbyte[chan] = byte;
 //   gs_v[chan] = (gsbyte[chan] * gs_vfx[gsvol[chan]]) >> 8;
-   gs_v[chan] = unsigned(((signed char)(gsbyte[chan]-0x80) * (signed)gs_vfx[gsvol[chan]]) /256 + int(gs_vfx[33])); //!psb
-   led_gssum[chan] += byte;
-   led_gscnt[chan]++;
+   gs_v[chan] = unsigned(((signed char)(gsbyte[chan]-0x80) * (signed)gs_vfx[gsvol[chan]]) / vol_div + int(gs_vfx[33])); //!psb
 }
 
 static inline void stepi();
@@ -365,13 +391,42 @@ void out(unsigned port, unsigned char val)
       case 0x02: gsstat &= 0x7F; return;
       case 0x03: gsstat |= 0x80; gsdata_in = val; return;
       case 0x05: gsstat &= 0xFE; return;
-      case 0x06: case 0x07: case 0x08: case 0x09:
+
+      case VOL1: case VOL2: case VOL3: case VOL4:
+      case VOL5: case VOL6: case VOL7: case VOL8:
       {
+         if((port & 0x10) && !(ngs_cfg0 & (M_8CHANS | M_PAN4CH)))
+         {
+             return;
+         }
+
+         val &= 0x3F;
+
+         if(GsSilent && val == 0)
+         {
+             return;
+         }
+
          flush_gs_sound();
-         unsigned chan = (port & 0x0F)-6; val &= 0x3F;
+         unsigned chan = ((port & 0x10) >> 2U) + (port & 0x0F)-6;
          gsvol[chan] = val;
+
+         auto Chans = (ngs_cfg0 & M_8CHANS) ? 8 : 4;
+
+         auto Silent = true;
+         for(auto Ch = 0; Ch < Chans; Ch++)
+         {
+             if(gsvol[Ch] != 0)
+             {
+                 Silent = false;
+                 break;
+             }
+         }
+
+         GsSilent = Silent;
+
 //         gs_v[chan] = (gsbyte[chan] * gs_vfx[gsvol[chan]]) >> 8;
-         gs_v[chan] = unsigned(((signed char)(gsbyte[chan]-0x80) * (signed)gs_vfx[gsvol[chan]]) /256 + int(gs_vfx[33])); //!psb
+         gs_v[chan] = unsigned(((signed char)(gsbyte[chan]-0x80) * (signed)gs_vfx[gsvol[chan]]) /vol_div + int(gs_vfx[33])); //!psb
          return;
       }
       case 0x0A: gsstat = u8((gsstat & 0x7F) | (gspage << 7)); return;
@@ -387,6 +442,17 @@ void out(unsigned port, unsigned char val)
       {
           ngs_cfg0 = val & 0x3F;
 //          printf(__FUNCTION__"->GSCFG0, %X, Ro=%d, NoRom=%d, Ext=%d\n", ngs_cfg0, RamRo, NoRom, ExtMem);
+
+          if(ngs_cfg0 & M_8CHANS)
+          {
+              ngs_chn_mask = 0x7;
+              vol_div = 512;
+          }
+          else
+          {
+              ngs_chn_mask = 0x3;
+              vol_div = 256;
+          }
           UpdateMemMapping();
       }
       break;
@@ -584,6 +650,13 @@ void reset()
    SdRdVal = SdRdValNew = 0xFF;
    SdDataAvail = false;
    Vs1001.Reset();
+
+   for(unsigned i = 0; i < 8; i++)
+   {
+       gsbyte[i] = 0x80;
+       gsvol[i] = 0;
+       gs_v[i] = 0;
+   }
 
    ngs_mode_pg1 = 1;
    ngs_dmamod = 0;

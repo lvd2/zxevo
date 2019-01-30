@@ -651,4 +651,14 @@ char *setptr = presetbuf;
 #include "fontatm2.cpp"
 */
 
-const char * const ay_schemes[] = { "no soundchip", "single chip", "pseudo-turbo", "quadro-AY", "turbo-AY // POS", "turbo-sound // NedoPC" };
+// Порядок строк в этом массиве должен соответствовать enum AY_SCHEME
+const char * const ay_schemes[] = 
+{
+    "no soundchip",
+    "fuller box",
+    "single chip",
+    "pseudo-turbo",
+    "quadro-AY",
+    "turbo-AY // POS",
+    "turbo-sound // NedoPC"
+};

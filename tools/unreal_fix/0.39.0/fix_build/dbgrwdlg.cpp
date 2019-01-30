@@ -6,6 +6,7 @@
 #include "dbgpaint.h"
 #include "dbgtrace.h"
 #include "dbgrwdlg.h"
+#include "fdd.h"
 #include "util.h"
 
 /*
@@ -130,7 +131,7 @@ static char rw_select_drive()
       fillattr(FILEDLG_X+8, FILEDLG_Y+2, 1);
       unsigned disk = unsigned(*str - 'A');
       if (disk > 3) continue;
-      if (!comp.wd.fdd[disk].rawdata) continue;
+      if (!comp.fdd[disk].rawdata) continue;
       rw_drive = disk; return 1;
    }
 }
@@ -154,7 +155,7 @@ static char rw_trdos_sectors(FILEDLG_MODE mode)
    tprint(FILEDLG_X+1, FILEDLG_Y+5, ln, FFRAME_INSIDE);
 
    if (!rw_select_drive()) return 0;
-   FDD *fdd = &comp.wd.fdd[rw_drive];
+   FDD *fdd = &comp.fdd[rw_drive];
    // if (fdd->sides != 2) { rw_err("single-side TR-DOS disks are not supported"); return 0; }
 
    t = input2(FILEDLG_X+14, FILEDLG_Y+3, rw_trk);
@@ -190,14 +191,14 @@ static char rw_trdos_sectors(FILEDLG_MODE mode)
 
       tc.seek(fdd, trk/2, trk & 1, LOAD_SECTORS);
       if (!tc.trkd) { sprintf(ln, "track #%02X not found", trk); rw_err(ln); break; }
-      const SECHDR *hdr = tc.get_sector(sec+1);
+      const SECHDR *hdr = tc.get_sector(sec+1, 1);
       if (!hdr || !hdr->data) { sprintf(ln, "track #%02X, sector #%02X not found", trk, sec); rw_err(ln); break; }
       if (hdr->l != 1) { sprintf(ln, "track #%02X, sector #%02X is not 256 bytes", trk, sec); rw_err(ln); break; }
 
       if (mode == FDM_LOAD) {
          memcpy(memdata+offset, hdr->data, size_t(left));
       } else {
-         tc.write_sector(sec+1, memdata+offset);
+         tc.write_sector(sec+1, 1, memdata+offset);
          fdd->optype |= 1;
       }
 
@@ -229,7 +230,7 @@ static char wr_trdos_file()
    tprint(FILEDLG_X+1, FILEDLG_Y+4, ln, FFRAME_INSIDE);
 
    if (!rw_select_drive()) return 0;
-   FDD *fdd = &comp.wd.fdd[rw_drive];
+   FDD *fdd = &comp.fdd[rw_drive];
    // if (fdd->sides != 2) { rw_err("single-side TR-DOS disks are not supported"); return 0; }
 
    strcpy(str, trdname);

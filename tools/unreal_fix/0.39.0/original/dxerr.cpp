@@ -11,6 +11,7 @@ void printrdd(const char *pr, HRESULT r)
 {
    color(CONSCLR_ERROR);
    printf("%s: %s\n", pr, DXGetErrorString(r));
+   color();
 
 #ifdef _DEBUG
    OutputDebugString(pr);
@@ -24,6 +25,7 @@ void printrdi(const char *pr, HRESULT r)
 {
    color(CONSCLR_ERROR);
    printf("%s: %s\n", pr, DXGetErrorString(r));
+   color();
 
 #ifdef _DEBUG
    OutputDebugString(pr);
@@ -51,12 +53,24 @@ void printrmm(const char *pr, MMRESULT r)
    }
    color(CONSCLR_ERROR);
    printf("%s: %s\n", pr, str);
+   color();
 }
 
 void printrds(const char *pr, HRESULT r)
 {
    color(CONSCLR_ERROR);
-   printf("%s: 0x%lX, %s\n", pr, r, DXGetErrorString(r));
+   PCSTR ErrStr;
+   if(r == AUDCLNT_E_DEVICE_IN_USE)
+   {
+       ErrStr = "AUDCLNT_E_DEVICE_IN_USE";
+   }
+   else
+   {
+       ErrStr = DXGetErrorString(r);
+   }
+
+   printf("%s: 0x%lX, %s\n", pr, r, ErrStr);
+   color();
 }
 #else
 #define printrdd(x,y)

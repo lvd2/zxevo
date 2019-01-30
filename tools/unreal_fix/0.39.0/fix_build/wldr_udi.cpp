@@ -50,7 +50,9 @@ int FDD::read_udi()
        return 0;
    }
 
-   mem += (MAX_CYLS - cyls) * sides * MAX_CYLS; // ƒобавка дл€ возможности форматировани€ на MAX_CYLS дорожек
+   const unsigned bitmap_len = (unsigned(MAX_TRACK_LEN + 7U)) >> 3;
+
+   mem += (MAX_CYLS - cyls) * sides * (MAX_TRACK_LEN + bitmap_len); // ƒобавка дл€ возможности форматировани€ на MAX_CYLS дорожек
 
    rawsize = align_by(mem, 4096U);
    rawdata = (unsigned char*)VirtualAlloc(nullptr, rawsize, MEM_COMMIT, PAGE_READWRITE);
@@ -71,8 +73,6 @@ int FDD::read_udi()
          dst += sz;
       }
    }
-
-   const unsigned bitmap_len = unsigned(MAX_TRACK_LEN + 7U) >> 3;
 
    for(; c < MAX_CYLS; c++)
    {

@@ -78,6 +78,7 @@ void FDD::format_trd(unsigned CylCnt)
             t.hdr[sn].c = u8(c); t.hdr[sn].s = 0;
             t.hdr[sn].c1 = t.hdr[sn].c2 = 0;
             t.hdr[sn].data = (unsigned char*)1;
+            t.hdr[sn].datlen = 0;
          }
          t.format();
       }
@@ -90,7 +91,7 @@ void FDD::emptydisk(unsigned FreeSecCnt)
     unsigned CylCnt = SecCnt / (16 * 2) + ((SecCnt % (16 * 2)) ? 1 : 0);
     format_trd(CylCnt);
     t.seek(this, 0, 0, LOAD_SECTORS);
-    const SECHDR *Sec9Hdr = t.get_sector(9);
+    const SECHDR *Sec9Hdr = t.get_sector(9, 1);
     if(!Sec9Hdr)
         return;
 
@@ -101,13 +102,13 @@ void FDD::emptydisk(unsigned FreeSecCnt)
     Sec9->TrDosSig = TRD_SIG;         // trdos flag
     memset(Sec9->Label, ' ', 8);      // label
     memset(Sec9->Res2, ' ', 9);       // reserved
-    t.write_sector(9, Sec9Hdr->data); // update sector CRC
+    t.write_sector(9, 1, Sec9Hdr->data); // update sector CRC
 }
 
 int FDD::addfile(unsigned char *hdr, unsigned char *data)
 {
     t.seek(this, 0, 0, LOAD_SECTORS);
-    const SECHDR *Sec9Hdr = t.get_sector(9);
+    const SECHDR *Sec9Hdr = t.get_sector(9, 1);
     if (!Sec9Hdr)
         return 0;
 
@@ -120,7 +121,7 @@ int FDD::addfile(unsigned char *hdr, unsigned char *data)
 
     unsigned len = ((TTrdDirEntry *)hdr)->SecCnt;
     unsigned pos = Sec9->FileCnt * sizeof(TTrdDirEntry);
-    const SECHDR *dir = t.get_sector(1 + pos / 0x100);
+    const SECHDR *dir = t.get_sector(1 + pos / 0x100, 1);
 
     if (!dir)
         return 0;
@@ -132,14 +133,14 @@ int FDD::addfile(unsigned char *hdr, unsigned char *data)
     memcpy(TrdDirEntry, hdr, 14);
     TrdDirEntry->Sec = Sec9->FirstFreeSec;
     TrdDirEntry->Trk = Sec9->FirstFreeTrk;
-    t.write_sector(1 + pos / 0x100, dir->data);
+    t.write_sector(1 + pos / 0x100, 1, dir->data);
 
     pos = Sec9->FirstFreeSec + 16*Sec9->FirstFreeTrk;
     Sec9->FirstFreeSec = (pos+len) & 0x0F;
     Sec9->FirstFreeTrk = u8((pos+len) >> 4);
     Sec9->FileCnt++;
     Sec9->FreeSecCnt -= len;
-    t.write_sector(9, Sec9Hdr->data);
+    t.write_sector(9, 1, Sec9Hdr->data);
 
     // goto next track. s8 become invalid
     for (unsigned i = 0; i < len; i++, pos++)
@@ -147,7 +148,7 @@ int FDD::addfile(unsigned char *hdr, unsigned char *data)
        t.seek(this, pos/32, (pos/16) & 1, LOAD_SECTORS);
        if (!t.trkd)
            return 0;
-       if (!t.write_sector((pos & 0x0F) + 1, data + i * 0x100))
+       if (!t.write_sector((pos & 0x0F) + 1, 1, data + i * 0x100))
            return 0;
     }
     return 1;
@@ -170,7 +171,7 @@ void FDD::addboot()
    t.seek(this, 0, 0, LOAD_SECTORS);
 
    // Проверка на то что диск имеет tr-dos формат
-   const SECHDR *Hdr = t.get_sector(9);
+   const SECHDR *Hdr = t.get_sector(9, 1);
    if(!Hdr)
        return;
 
@@ -196,7 +197,7 @@ void FDD::addboot()
 
    for (unsigned s = 0; s < 8; s++)
    {
-      const SECHDR *sc = t.get_sector(1 + s);
+      const SECHDR *sc = t.get_sector(1 + s, 1);
       if (!sc)
           return;
       TTrdDirEntry *TrdDirEntry = (TTrdDirEntry *)sc->data;
@@ -262,7 +263,7 @@ int FDD::read_trd()
    for (unsigned i = 0; i < snapsize; i += 0x100)
    {
       t.seek(this, i>>13, (i>>12) & 1, LOAD_SECTORS);
-      t.write_sector(((i>>8) & 0x0F)+1, snbuf+i);
+      t.write_sector(((i>>8) & 0x0F)+1, 1, snbuf+i);
    }
    return 1;
 }
@@ -274,7 +275,7 @@ int FDD::write_trd(FILE *ff)
    for (unsigned i = 0; i < cyls * sides * 16; i++)
    {
       t.seek(this, i>>5, (i>>4) & 1, LOAD_SECTORS);
-      const SECHDR *hdr = t.get_sector((i & 0x0F)+1);
+      const SECHDR *hdr = t.get_sector((i & 0x0F)+1, 1);
       unsigned char *ptr = zerosec;
       if (hdr && hdr->data)
           ptr = hdr->data;

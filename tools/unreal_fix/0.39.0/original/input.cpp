@@ -237,6 +237,8 @@ void K_INPUT::make_matrix()
 
 __inline int sign_pm(int a) { return (a < 0)? -1 : 1; }
 
+static u8 CapsLockState = 0;
+
 char K_INPUT::readdevices()
 {
    if (nomouse) nomouse--;
@@ -339,8 +341,14 @@ char K_INPUT::readdevices()
 
    lastkey = process_msgs();
 
-   memset(kbdpc, 0, 256); // Њлим Ё ¤¦®©бвЁЄ ­Ґ ®зЁй Ґ¬
+   memset(kbdpc, 0, 256); // Мышь и джойстик не очищаем
    ReadKeyboard(kbdpc);
+
+   // Исправление "залипания" CapsLock, CapsLock при однократном нажатии возвращает всегда 0x80, пока не будет нажат повторно
+   u8 cl = kbdpc[DIK_CAPSLOCK];
+   kbdpc[DIK_CAPSLOCK] ^= CapsLockState;
+   CapsLockState = cl;
+
 /* [vv]
    if (temp.win9x)
    {

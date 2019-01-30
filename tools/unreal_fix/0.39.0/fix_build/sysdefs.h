@@ -2,7 +2,6 @@
 #ifndef __SYSDEFS_H_INCLUDED
 #define __SYSDEFS_H_INCLUDED
 
-#define inline __inline
 #define forceinline __forceinline
 #define fastcall __fastcall             // parameters in registers
 

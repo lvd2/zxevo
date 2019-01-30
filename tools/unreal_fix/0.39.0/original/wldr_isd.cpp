@@ -24,6 +24,7 @@ void FDD::format_isd()
             t.hdr[s].c = u8(c); t.hdr[s].s = 0;
             t.hdr[s].c1 = t.hdr[s].c2 = 0;
             t.hdr[s].data = (unsigned char*)1;
+            t.hdr[s].datlen = 0;
          }
          t.format();
       }
@@ -43,7 +44,7 @@ int FDD::read_isd()
          for (unsigned s = 0; s < 5; s++)
          {
             t.seek(this, c, h, LOAD_SECTORS);
-            t.write_sector(sn[s], snbuf+(c*10 + h*5 + s)*1024);
+            t.write_sector(sn[s], 3, snbuf+(c*10 + h*5 + s)*1024);
          }
       }
    }

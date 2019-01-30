@@ -608,6 +608,7 @@ void load_config(const char *fname)
    GetPrivateProfileString(ay, "Scheme", nil, line, sizeof line, ininame);
    conf.sound.ay_scheme = AY_SCHEME_NONE;
    if (!strnicmp(line, "default", 7)) conf.sound.ay_scheme = AY_SCHEME_SINGLE;
+   if(!strnicmp(line, "FULLER", 6)) conf.sound.ay_scheme = AY_SCHEME_FULLER;
    if (!strnicmp(line, "PSEUDO", 6)) conf.sound.ay_scheme = AY_SCHEME_PSEUDO;
    if (!strnicmp(line, "QUADRO", 6)) conf.sound.ay_scheme = AY_SCHEME_QUADRO;
    if (!strnicmp(line, "POS", 3)) conf.sound.ay_scheme = AY_SCHEME_POS;

@@ -148,12 +148,12 @@ void CHEATDLG::SetControls()
    setcheck(IDC_BYTE, !wordmode);
    setcheck(IDC_WORD, wordmode);
 
-   enabled = lastsnap && (nFound > 0);
+   enabled = lastsnap && (nFound != 0);
    EnableWindow(GetDlgItem(dlg, IDC_DEC), enabled);
    EnableWindow(GetDlgItem(dlg, IDC_INC), enabled);
    if (!enabled && (mode == S_DEC || mode == S_INC)) mode = S_NEW;
 
-   enabled = (nFound > 0);
+   enabled = (nFound != 0);
    EnableWindow(GetDlgItem(dlg, IDC_EXACT), enabled);
    if (!enabled && mode == S_VAL) mode = S_NEW;
 

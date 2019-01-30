@@ -2,7 +2,7 @@
 
 !ifdef USE_CL
 CXX=cl -c
-ICL_FLAGS_COMMON=
+ICL_FLAGS_COMMON=-Zc:externConstexpr
 ICL_FLAGS_RELEASE=
 ICL_IA32=
 CL_FLAGS_RELEASE=-Ox -GL
@@ -51,4 +51,4 @@ all: snd.lib
 snd.lib: sndbuffer.obj sndchip.obj emul_2203.obj saa1099.obj sndcounter.obj sndrender.obj
     $(LIB) $(LIBFLAGS) -out:$@ $**
 clean:
-    -del *.obj *.lib *.pdb
+    -del *.obj *.lib

@@ -55,6 +55,12 @@ SNAP what_is(char *filename)
       if (snapsize >= 8192 && ext == WORD4('p','r','o',' '))
           type = snPRO;
 
+      if(snapsize >= 8192 && ext == WORD4('d', 's', 'k', ' '))
+          type = snDSK;
+
+      if(snapsize >= 8192 && ext == WORD4('i', 'p', 'f', ' '))
+          type = snIPF;
+
       if (!memcmp(snbuf, "SINCLAIR", 8))
       {
           unsigned nfiles = snbuf[8];
@@ -100,7 +106,7 @@ int loadsnap(char *filename)
 
       for (unsigned k = 0; k < 4; k++)
       {
-         if (k != trd_toload && !stricmp(comp.wd.fdd[k].name, filename))
+         if (k != trd_toload && !stricmp(comp.fdd[k].name, filename))
          {
             static char err[] = "This disk image is already loaded to drive X:\n"
                                 "Do you still want to load it to drive Y:?";
@@ -110,7 +116,7 @@ int loadsnap(char *filename)
          }
       }
 
-      FDD *drive = comp.wd.fdd + trd_toload;
+      FDD *drive = comp.fdd + trd_toload;
       if (!drive->test())
           return 0;
       comp.wd.Eject(trd_toload);
@@ -530,11 +536,11 @@ void opensnap(unsigned index)
    }
 
    char fline[0x400];
-   const char *src = "all (sna,z80,sp,tap,tzx,csw,trd,scl,fdi,td0,udi,isd,pro,hobeta,pal)\0"
-               "*.sna;*.z80;*.sp;*.tap;*.tzx;*.csw;*.trd;*.scl;*.td0;*.udi;*.fdi;*.isd;*.pro;*.$?;*.!?;*.pal<\0"
-               "Disk B (trd,scl,fdi,td0,udi,isd,pro,hobeta)\0*.trd;*.scl;*.fdi;*.udi;*.td0;*.isd;*.pro;*.$?<\0"
-               "Disk C (trd,scl,fdi,td0,udi,isd,pro,hobeta)\0*.trd;*.scl;*.fdi;*.udi;*.td0;*.isd;*.pro;*.$?<\0"
-               "Disk D (trd,scl,fdi,td0,udi,isd,pro,hobeta)\0*.trd;*.scl;*.fdi;*.udi;*.td0;*.isd;*.pro;*.$?<\0\0>";
+   const char *src = "all (sna,z80,sp,tap,tzx,csw,trd,scl,fdi,td0,udi,isd,pro,dsk,ipf,hobeta,pal)\0"
+               "*.sna;*.z80;*.sp;*.tap;*.tzx;*.csw;*.trd;*.scl;*.td0;*.udi;*.fdi;*.isd;*.pro;*.dsk;*.ipf;*.$?;*.!?;*.pal<\0"
+               "Disk B (trd,scl,fdi,td0,udi,isd,pro,dsk,ipf,hobeta)\0*.trd;*.scl;*.fdi;*.udi;*.td0;*.isd;*.pro;*.dsk;*.ipf;*.$?<\0"
+               "Disk C (trd,scl,fdi,td0,udi,isd,pro,dsk,ipf,hobeta)\0*.trd;*.scl;*.fdi;*.udi;*.td0;*.isd;*.pro;*.dsk;*.ipf;*.$?<\0"
+               "Disk D (trd,scl,fdi,td0,udi,isd,pro,dsk,ipf,hobeta)\0*.trd;*.scl;*.fdi;*.udi;*.td0;*.isd;*.pro;*.dsk;*.ipf;*.$?<\0\0>";
    if (!conf.trdos_present)
       src = "ZX files (sna,z80,tap,tzx,csw,pal)\0*.sna;*.z80;*.tap;*.tzx;*.csw;*.pal<\0\0>";
    for(char *dst = fline; *src != '>'; src++)
@@ -590,7 +596,7 @@ again:
    OPENFILENAME ofn = { };
    char fname[0x200]; *fname = 0;
    if (diskindex >= 0) {
-      strcpy(fname, comp.wd.fdd[diskindex].name);
+      strcpy(fname, comp.fdd[diskindex].name);
       size_t ln = strlen(fname);
       if (ln > 4 && (*(unsigned*)(fname+ln-4) | WORD4(0,0x20,0x20,0x20)) == WORD4('.','s','c','l'))
          *(unsigned*)(fname+ln-4) = WORD4('.','t','r','d');
@@ -618,7 +624,7 @@ again:
 
       for (unsigned n = 0; n < 4; n++)
       {
-         if (!comp.wd.fdd[n].rawdata)
+         if (!comp.fdd[n].rawdata)
              continue;
          if (diskindex >= 0 && unsigned(diskindex) != n)
              continue;
@@ -626,7 +632,7 @@ again:
 
          for (size_t i = 0; i < sizeof ex/sizeof(ex[0]); i++)
          {
-            if (unsigned(diskindex) == n && ex2[i] == comp.wd.fdd[n].snaptype)
+            if (unsigned(diskindex) == n && ex2[i] == comp.fdd[n].snaptype)
                 ofn.nFilterIndex = snp;
             memcpy(mask+8, ex[i], 3);
             memcpy(mask+15, ex[i], 3);
@@ -665,7 +671,7 @@ again:
       if (ff)
       {
          int res = 0;
-         FDD *saveto = comp.wd.fdd + drvs[ofn.nFilterIndex];
+         FDD *saveto = comp.fdd + drvs[ofn.nFilterIndex];
          switch (snaps[ofn.nFilterIndex])
          {
             case snSNA_128: res = writeSNA(ff); break;
@@ -682,8 +688,8 @@ again:
              MessageBox(GetForegroundWindow(), "write error", "Save", MB_ICONERROR);
          else if (drvs[ofn.nFilterIndex]!=-1U)
          {
-             comp.wd.fdd[drvs[ofn.nFilterIndex]].optype=0;
-             strcpy(comp.wd.fdd[drvs[ofn.nFilterIndex]].name, ofn.lpstrFile);
+             comp.fdd[drvs[ofn.nFilterIndex]].optype=0;
+             strcpy(comp.fdd[drvs[ofn.nFilterIndex]].name, ofn.lpstrFile);
 
              //---------Alone Coder
              char *name = ofn.lpstrFile;

@@ -6,6 +6,12 @@
 
 #include "util.h"
 
+static inline unsigned CalcSecSizeMask()
+{
+    // Маска кода размера сектора (3 - для fd1793, 0xF - для uPD765)
+    return (conf.mem_model == MM_PLUS3) ? 0xFU : 3U;
+}
+
 void TRKCACHE::seek(FDD *d, unsigned cyl, unsigned side, SEEK_MODE fs)
 {
    if ((d == drive) && (sf == fs) && (cyl == TRKCACHE::cyl) && (side == TRKCACHE::side))
@@ -46,6 +52,8 @@ void TRKCACHE::seek(FDD *d, unsigned cyl, unsigned side, SEEK_MODE fs)
    if (fs == JUST_SEEK)
        return; // else find sectors
 
+   auto SecSizeMask{ CalcSecSizeMask() };
+
    for (unsigned i = 0; i < trklen - 8; i++)
    {
       if (trkd[i] != 0xA1 || trkd[i+1] != 0xFE || !test_i(i)) // Поиск idam
@@ -65,6 +73,7 @@ void TRKCACHE::seek(FDD *d, unsigned cyl, unsigned side, SEEK_MODE fs)
       h->data = nullptr;
       h->datlen = 0;
       h->wp_start = 0;
+      h->Flags = 0;
 //      if (h->l > 5) continue; [vv]
 
       unsigned end = min(trklen - 8, i + 8 + 43); // 43-DD, 30-SD
@@ -75,11 +84,24 @@ void TRKCACHE::seek(FDD *d, unsigned cyl, unsigned side, SEEK_MODE fs)
          if (trkd[j] != 0xA1 || !test_i(j) || test_i(j+1))
              continue;
 
-         if (trkd[j+1] == 0xF8 || trkd[j+1] == 0xFB) // Найден data am
+         if (trkd[j+1] == 0xF8 || trkd[j+1] == 0xFB) // Найден data am (0xFB), deleted data am (0xF8)
          {
-            h->datlen = 128U << (h->l & 3); // [vv] FD1793 use only 2 lsb of sector size code
+            if(trkd[j + 1] == 0xF8) // ddam
+            {
+                h->Flags |= SECHDR::FL_DDAM;
+            }
+            h->datlen = min(128U << (h->l & SecSizeMask), MAX_SEC_DATA_LEN); // [vv] FD1793 use only 2 lsb of sector size code
             h->data = trkd + j + 2;
-            h->c2 = (wd93_crc(h->data-1, h->datlen+1) == *(unsigned short*)(h->data+h->datlen));
+            // Для больших секторов 8192 байта (не влезающих на дорожку)
+            // до проверки crc дело не доходит, команда прерывается по второму прохождению индекса
+            if((h->l & SecSizeMask) < 6 && wd93_crc(h->data - 1, h->datlen + 1) != *(unsigned short*)(h->data + h->datlen))
+            {
+                h->c2 = 0;
+            }
+            else
+            {
+                h->c2 = 1;
+            }
 
             if(trkwp)
             {
@@ -104,6 +126,9 @@ void TRKCACHE::format()
    {
        return;
    }
+
+   auto SecSizeMask{ CalcSecSizeMask() };
+
    memset(trkd, 0, trklen);
    memset(trki, 0, unsigned(trklen + 7U) >> 3);
    memset(trkwp, 0, unsigned(trklen + 7U) >> 3);
@@ -128,7 +153,7 @@ void TRKCACHE::format()
    for (unsigned is = 0; is < s; is++)
    {
       SECHDR *sechdr = hdr + is;
-      data_sz += (128U << (sechdr->l & 3)); // n
+      data_sz += sechdr->datlen != 0 ? sechdr->datlen : min(128U << (sechdr->l & SecSizeMask), MAX_SEC_DATA_LEN); // n
    }
 
    if((gap4a+sync0+i_am+1+data_sz+s*(gap1+sync1+id_am+1+4+2+gap2+sync2+data_am+1+2)) >= MAX_TRACK_LEN)
@@ -179,10 +204,10 @@ void TRKCACHE::format()
          memset(dst, 0, sync2); dst += sync2; //sync
          for (i = 0; i < data_am; i++) // data am
              write(unsigned(dst++ - trkd), 0xA1, 1);
-         *dst++ = 0xFB;
+         *dst++ = (sechdr->Flags & SECHDR::FL_DDAM) ? 0xF8 : 0xFB;
 
 //         if (sechdr->l > 5) errexit("strange sector"); // [vv]
-         unsigned len = 128U << (sechdr->l & 3); // data
+         unsigned len = sechdr->datlen != 0 ? sechdr->datlen : min(128U << (sechdr->l & SecSizeMask), MAX_SEC_DATA_LEN); // data
          if (sechdr->data != (unsigned char*)1)
          {
              memcpy(dst, sechdr->data, len);
@@ -232,9 +257,9 @@ void TRKCACHE::dump()
 }
 #endif
 
-unsigned TRKCACHE::write_sector(unsigned sec, unsigned char *data)
+unsigned TRKCACHE::write_sector(unsigned sec, unsigned l, unsigned char *data)
 {
-   const SECHDR *h = get_sector(sec);
+   const SECHDR *h = get_sector(sec, l);
    if (!h || !h->data)
        return 0;
    unsigned sz = h->datlen;
@@ -244,7 +269,7 @@ unsigned TRKCACHE::write_sector(unsigned sec, unsigned char *data)
    return sz;
 }
 
-const SECHDR *TRKCACHE::get_sector(unsigned sec) const
+const SECHDR *TRKCACHE::get_sector(unsigned sec, unsigned l) const
 {
    unsigned i;
    for (i = 0; i < s; i++)
@@ -257,8 +282,14 @@ const SECHDR *TRKCACHE::get_sector(unsigned sec) const
 
 //   dump();
 
-   if (/*(hdr[i].l & 3) != 1 ||*/ hdr[i].c != cyl) // [vv]
+   auto SecSizeMask{ CalcSecSizeMask() };
+
+   // hdr[i].c != cyl - не работают batman the movie, op. thunderbold и подобные
+   // возможно надо выставлять флаг не совпадения цилиндра, либо номер цилиндра вообще не влияет на поиск сектора
+   // т.е. влияет только номер сектора и код его размера
+   if ((hdr[i].l & SecSizeMask) != (l & SecSizeMask) /*|| hdr[i].c != cyl*/)
        return nullptr;
+
    return &hdr[i];
 }
 

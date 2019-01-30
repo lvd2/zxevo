@@ -18,7 +18,7 @@ LFLAGS=-LTCG
 !endif #DEBUG
 
 CXX=cl -c
-ICL_FLAGS_COMMON=
+ICL_FLAGS_COMMON=-Zc:externConstexpr
 ICL_FLAGS_RELEASE=
 ICL_IA32=
 CL_FLAGS_RELEASE=-Ox -GL
@@ -26,7 +26,7 @@ LINK=link
 LFLAGS=$(LFLAGS) #-pdbpath:none
 !else #USE_CL
 CXX=icl -c
-ICL_FLAGS_COMMON=-Wcheck -Qms0 -debug:inline-debug-info -Qopt-report-embed- -notraceback
+ICL_FLAGS_COMMON=-Wcheck -Qms0 -Qstd:c++17 -debug:inline-debug-info -Qopt-report-embed- -notraceback
 ICL_FLAGS_RELEASE=-O3 -Qip -Qipo
 ICL_IA32=-arch:IA32
 CL_FLAGS_RELEASE=
@@ -81,9 +81,9 @@ SRCS=emul.cpp std.cpp atm.cpp cheat.cpp config.cpp dbgbpx.cpp dbgcmd.cpp dbglabl
         input.cpp inputpc.cpp io.cpp keydefs.cpp leds.cpp mainloop.cpp \
         memory.cpp modem.cpp opendlg.cpp savesnd.cpp sdcard.cpp snapshot.cpp \
         snd_bass.cpp sound.cpp sshot_png.cpp tape.cpp util.cpp vars.cpp \
-        vs1001.cpp wd93cmd.cpp wd93crc.cpp wd93dat.cpp wd93trk.cpp \
+        vs1001.cpp wd93cmd.cpp wd93crc.cpp fdd.cpp upd765.cpp wd93trk.cpp \
         wldr_fdi.cpp wldr_isd.cpp wldr_pro.cpp wldr_td0.cpp wldr_trd.cpp wldr_udi.cpp \
-        z80.cpp z80asm.cpp zc.cpp savevid.cpp
+        wldr_dsk.cpp wldr_ipf.cpp z80.cpp z80asm.cpp zc.cpp savevid.cpp
 
 OBJS=$(SRCS:.cpp=.obj)
 

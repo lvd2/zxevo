@@ -394,7 +394,7 @@ static unsigned char is_font()
    return 1;
 }
 
-inline int pretest_font(unsigned pix, unsigned chr, unsigned shift)
+static inline int pretest_font(unsigned pix, unsigned chr, unsigned shift)
 {
    unsigned i; //Alone Coder 0.36.7
    // check space

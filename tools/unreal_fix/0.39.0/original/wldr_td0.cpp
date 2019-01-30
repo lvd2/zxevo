@@ -205,6 +205,7 @@ int FDD::read_td0()
          t.hdr[s].l = SecHdr->n;
          t.hdr[s].c1 = t.hdr[s].c2 = 0;
          t.hdr[s].data = dst;
+         t.hdr[s].datlen = 0;
 
          td0_src += sizeof(TTd0Sec); // sizeof(sec_rec)
 

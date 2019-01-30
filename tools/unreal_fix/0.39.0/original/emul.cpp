@@ -147,3 +147,11 @@ int __cdecl main(int argc, char **argv)
    mainloop(Exit);
    return 0;
 }
+
+COMPUTER::COMPUTER()
+{
+    for(unsigned i = 0; i < 4; i++) // [vv] Для удобства отладки
+    {
+        fdd[i].Id = u8(i);
+    }
+}

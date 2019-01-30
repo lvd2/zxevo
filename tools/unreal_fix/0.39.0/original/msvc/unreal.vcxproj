@@ -66,7 +66,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='icl-Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
     <BasePlatformToolset>v141_xp</BasePlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-Debug|Win32'" Label="Configuration">
@@ -84,7 +84,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='icl-Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
     <BasePlatformToolset>v141_xp</BasePlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-Release|Win32'" Label="Configuration">
@@ -102,7 +102,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='icl-Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
     <BasePlatformToolset>v141_xp</BasePlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-Debug|x64'" Label="Configuration">
@@ -121,7 +121,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='icl-Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
     <BasePlatformToolset>v141_xp</BasePlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
@@ -306,6 +306,8 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
       <ForcedIncludeFiles>std.h</ForcedIncludeFiles>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -514,6 +516,8 @@
       <ConformanceMode>true</ConformanceMode>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ForcedIncludeFiles>std.h</ForcedIncludeFiles>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -751,6 +755,7 @@
     <ClCompile Include="..\dxr_vd.cpp" />
     <ClCompile Include="..\emul.cpp" />
     <ClCompile Include="..\emulkeys.cpp" />
+    <ClCompile Include="..\fdd.cpp" />
     <ClCompile Include="..\fntsrch.cpp" />
     <ClCompile Include="..\font.cpp" />
     <ClCompile Include="..\font14.cpp" />
@@ -799,14 +804,16 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='clang-Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\tape.cpp" />
+    <ClCompile Include="..\upd765.cpp" />
     <ClCompile Include="..\util.cpp" />
     <ClCompile Include="..\vars.cpp" />
     <ClCompile Include="..\vs1001.cpp" />
     <ClCompile Include="..\wd93cmd.cpp" />
     <ClCompile Include="..\wd93crc.cpp" />
-    <ClCompile Include="..\wd93dat.cpp" />
     <ClCompile Include="..\wd93trk.cpp" />
+    <ClCompile Include="..\wldr_dsk.cpp" />
     <ClCompile Include="..\wldr_fdi.cpp" />
+    <ClCompile Include="..\wldr_ipf.cpp" />
     <ClCompile Include="..\wldr_isd.cpp" />
     <ClCompile Include="..\wldr_pro.cpp" />
     <ClCompile Include="..\wldr_td0.cpp" />
@@ -856,6 +863,7 @@
     <ClInclude Include="..\dxr_text.h" />
     <ClInclude Include="..\emul.h" />
     <ClInclude Include="..\emulkeys.h" />
+    <ClInclude Include="..\fdd.h" />
     <ClInclude Include="..\fntsrch.h" />
     <ClInclude Include="..\font.h" />
     <ClInclude Include="..\font14.h" />
@@ -893,12 +901,12 @@
     <ClInclude Include="..\std.h" />
     <ClInclude Include="..\sysdefs.h" />
     <ClInclude Include="..\tape.h" />
+    <ClInclude Include="..\upd765.h" />
     <ClInclude Include="..\util.h" />
     <ClInclude Include="..\vars.h" />
     <ClInclude Include="..\vs1001.h" />
     <ClInclude Include="..\wd93.h" />
     <ClInclude Include="..\wd93crc.h" />
-    <ClInclude Include="..\wd93dat.h" />
     <ClInclude Include="..\z80.h" />
     <ClInclude Include="..\z80asm.h" />
     <ClInclude Include="..\z80_main.h" />
@@ -932,7 +940,9 @@
     <Image Include="..\res\u1.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="..\unreal.manifest" />
+    <Manifest Include="..\unreal.manifest">
+      <SubType>Designer</SubType>
+    </Manifest>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

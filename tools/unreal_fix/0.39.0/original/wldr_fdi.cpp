@@ -149,12 +149,15 @@ int FDD::read_fdi()
             t.hdr[sec].l = FdiTrkHdr->Sec[sec].n;
             t.hdr[sec].c1 = 0;
             t.hdr[sec].wp = nullptr;
+            t.hdr[sec].datlen = 0;
 
-            if (FdiTrkHdr->Sec[sec].fl & TFdiSecHdr::FL_NO_DATA)
+            if(FdiTrkHdr->Sec[sec].fl & TFdiSecHdr::FL_NO_DATA)
+            {
                 t.hdr[sec].data = nullptr;
+            }
             else
             {
-               if (t0 + FdiTrkHdr->Sec[sec].DataOffset > snbuf + snapsize)
+               if(t0 + FdiTrkHdr->Sec[sec].DataOffset > snbuf + snapsize)
                {
                    err_printf("sector data is beyond disk image end");
                    return 0;

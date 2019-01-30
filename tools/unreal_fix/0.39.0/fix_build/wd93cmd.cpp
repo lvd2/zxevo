@@ -9,6 +9,16 @@
 //static u8 old_status;
 //static __int64 last_t;
 
+WD1793::WD1793()
+{
+    seldrive = &comp.fdd[0];
+    idx_cnt = 0;
+    idx_tmo = LLONG_MAX;
+    sign_status = 0;
+    tshift = 0;
+    EjectPending = false;
+}
+
 void WD1793::process()
 {
    time = comp.t_states + cpu.t;
@@ -880,7 +890,7 @@ void WD1793::out(unsigned char port, unsigned char val)
    { // system
       drive = val & 3;
       side = ~(val >> 4) & 1;
-      seldrive = &fdd[drive];
+      seldrive = &comp.fdd[drive];
       seldrive->t.clear();
 
       if (!(val & 0x04))
@@ -917,13 +927,13 @@ void WD1793::out(unsigned char port, unsigned char val)
 
 void WD1793::Eject(unsigned Drive)
 {
-    if(seldrive == &fdd[Drive]) //√енераци€ последовательности вынимани€ дискеты (/WPRT->1->0)
+    if(seldrive == &comp.fdd[Drive]) //√енераци€ последовательности вынимани€ дискеты (/WPRT->1->0)
     {
         status |= WDS_WRITEP;
         state = S_EJECT1;
         EjectPending = true;
     }
-    fdd[Drive].free();
+    comp.fdd[Drive].free();
 }
 
 void WD1793::trdos_traps()

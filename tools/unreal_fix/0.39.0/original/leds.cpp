@@ -188,7 +188,19 @@ static void ay_led()
       paint_led(v, u8(a));
       paint_led(v, u8(a));
       paint_led(0, 0);
+
+#if 0
+      printf("{%2u}", v);
+      for(unsigned i = 0; i < v; i++)
+      {
+          printf("#");
+      }
+      printf("\n");
    }
+   printf("-------------------------\n");
+#else
+   }
+#endif
 
    #endif
 }
@@ -258,7 +270,7 @@ static void load_led()
                 }
                 for(; ptr < comp.tape.play_pointer; ptr++)
                 {
-                    temp.led.tape_started -= tape_pulse[*ptr];
+                    temp.led.tape_started -= (tape_pulse[*ptr] & tape_pulse_mask);
                 }
             }
             time /= (conf.frame * conf.intfq);

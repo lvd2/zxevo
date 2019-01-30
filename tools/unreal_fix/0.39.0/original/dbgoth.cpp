@@ -7,6 +7,7 @@
 #include "dbgpaint.h"
 #include "dbgoth.h"
 #include "gui.h"
+#include "fdd.h"
 #include "util.h"
 
 namespace z80dbg

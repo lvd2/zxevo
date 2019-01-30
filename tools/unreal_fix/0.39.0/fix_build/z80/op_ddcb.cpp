@@ -178,7 +178,7 @@ LOGICFUNC const logic_ix_opcode[0x100] = {
 };
 
 // offsets to b,c,d,e,h,l,trash,a  from cpu.c
-static unsigned reg_offset[] =
+static const unsigned reg_offset[] =
 {
     (offsetof(TZ80State, b) - offsetof(TZ80State, c)),
     (offsetof(TZ80State, c) - offsetof(TZ80State, c)),

@@ -9,7 +9,9 @@ struct TAPEINFO
 extern TAPEINFO *tapeinfo;
 extern unsigned tape_infosize;
 extern unsigned char *tape_image;
-extern unsigned tape_pulse[];
+
+constexpr u32 tape_pulse_mask = (1 << 30) - 1;
+extern u32 tape_pulse[];
 
 void start_tape();
 void stop_tape();

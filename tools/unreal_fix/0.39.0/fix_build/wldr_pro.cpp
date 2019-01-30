@@ -25,6 +25,7 @@ void FDD::format_pro()
             t.hdr[s].c = u8(c); t.hdr[s].s = u8(h);
             t.hdr[s].c1 = t.hdr[s].c2 = 0;
             t.hdr[s].data = (unsigned char*)1;
+            t.hdr[s].datlen = 0;
          }
          t.format();
       }
@@ -42,7 +43,7 @@ int FDD::read_pro()
          for (unsigned s = 0; s < 5; s++)
          {
             t.seek(this, c, h, LOAD_SECTORS);
-            t.write_sector((c == 0 && h == 0) ? sn0[s] : sn[s], snbuf+(c*10 + h*5 + s)*1024);
+            t.write_sector((c == 0 && h == 0) ? sn0[s] : sn[s], 3, snbuf+(c*10 + h*5 + s)*1024);
          }
       }
    }

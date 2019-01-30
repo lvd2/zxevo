@@ -246,9 +246,6 @@
     <ClCompile Include="..\wd93crc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\wd93dat.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\wd93trk.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -283,6 +280,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\profi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\upd765.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fdd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\wldr_dsk.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\wldr_ipf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -375,9 +384,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\z80.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\wd93dat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\wd93crc.h">
@@ -543,7 +549,13 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\profi.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\upd765.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fdd.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

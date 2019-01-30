@@ -14,7 +14,7 @@
 #include "init.h"
 #include "snapshot.h"
 #include "savesnd.h"
-#include "wd93dat.h"
+#include "fdd.h"
 #include "z80/tables.h"
 #include "dbgbpx.h"
 

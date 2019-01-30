@@ -15,7 +15,7 @@
 #include "gui.h"
 #include "leds.h"
 #include "snapshot.h"
-#include "wd93dat.h"
+#include "fdd.h"
 #include "init.h"
 #include "z80.h"
 #include "emulkeys.h"
@@ -386,9 +386,9 @@ void main_save()
    unsigned char optype = 0;
    for (int i = 0; i < 4; i++)
    {
-      if (!comp.wd.fdd[i].test())
+      if (!comp.fdd[i].test())
           return;
-      optype |= comp.wd.fdd[i].optype;
+      optype |= comp.fdd[i].optype;
    }
 
    if(!optype)

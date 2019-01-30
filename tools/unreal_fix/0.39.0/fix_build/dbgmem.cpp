@@ -47,8 +47,8 @@ static void editwm(unsigned addr, unsigned char byte)
        }
        return;
    }
-   if (editor == ED_PHYS) { comp.wd.fdd[mem_disk].optype |= 2; return; }
-   comp.wd.fdd[mem_disk].optype |= 1;
+   if (editor == ED_PHYS) { comp.fdd[mem_disk].optype |= 2; return; }
+   comp.fdd[mem_disk].optype |= 1;
    // recalc sector checksum
    findsector(addr);
    *(unsigned short*)(edited_track.hdr[sector].data + edited_track.hdr[sector].datlen) =
@@ -83,7 +83,7 @@ void showmem()
    if (editor == ED_LOG || editor == ED_PHYS)
    {
       edited_track.clear();
-      edited_track.seek(comp.wd.fdd+mem_disk, mem_track/2, mem_track & 1, (editor == ED_LOG)? LOAD_SECTORS : JUST_SEEK);
+      edited_track.seek(comp.fdd+mem_disk, mem_track/2, mem_track & 1, (editor == ED_LOG)? LOAD_SECTORS : JUST_SEEK);
       if (!edited_track.trkd) { // no track
          for (ii = 0; ii < mem_size; ii++) {
             sprintf(line, (ii == mem_size/2)?

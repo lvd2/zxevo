@@ -13,6 +13,7 @@
 #include "sdcard.h"
 #include "zc.h"
 #include "tape.h"
+#include "upd765.h"
 
 void out(unsigned port, unsigned char val)
 {
@@ -356,6 +357,17 @@ void out(unsigned port, unsigned char val)
    }
    else // не dos
    {
+       if((p1 == 0x3F) && (conf.sound.ay_scheme == AY_SCHEME_FULLER)) // fuller AY register select
+       {
+           ay[0].select(val);
+           return;
+       }
+       if((p1 == 0x5F) && (conf.sound.ay_scheme == AY_SCHEME_FULLER)) // fuller AY data
+       {
+           ay[0].write(temp.sndblock ? 0 : cpu.t, val);
+           return;
+       }
+
          if(((port & 0xA3) == 0xA3) && (conf.ide_scheme == IDE_DIVIDE))
          {
              if((port & 0xFF) == 0xA3)
@@ -424,8 +436,8 @@ void out(unsigned port, unsigned char val)
    bool pFE;
 
    // scorp  xx1xxx10 /dos=1 (sc16 green)
-   if((conf.mem_model == MM_SCORP || conf.mem_model == MM_PROFSCORP) && !(comp.flags & CF_DOSPORTS))
-       pFE = ((port & 0x23) == (0xFE & 0x23));
+   if((conf.mem_model == MM_SCORP || conf.mem_model == MM_PROFSCORP))
+       pFE = ((port & 0x23) == (0xFE & 0x23)) && !(comp.flags & CF_DOSPORTS);
    else if(conf.mem_model == MM_QUORUM) // 1xx11xx0
        pFE = ((port & 0x99) == (0xFE & 0x99));
    else // others xxxxxxx0
@@ -482,9 +494,21 @@ void out(unsigned port, unsigned char val)
 
       if (!(port & 0x8000)) // zx128 port
       {
-         // 0001xxxxxxxxxx0x (bcig4)
-         if ((port & 0xF002) == (0x1FFD & 0xF002) && conf.mem_model == MM_PLUS3)
-             goto set1FFD;
+         // 0001xxxxxxxxxx0x (bcig4) // 1FFD
+         // 0010xxxxxxxxxx0x (bcig4) // 2FFD
+         // 0011xxxxxxxxxx0x (bcig4) // 3FFD
+          if((port & (3 << 14)) == 0 && conf.mem_model == MM_PLUS3)
+          {
+              unsigned Idx = (port >> 12) & 3;
+              switch(Idx)
+              {
+              case 1: // 1FFD
+                  goto set1FFD;
+              case 3: // 3FFD
+                  Upd765.out(val);
+                  return;
+              }
+          }
 
          if ((port & 0xC003) == (0x1FFD & 0xC003) && conf.mem_model == MM_KAY)
              goto set1FFD;
@@ -565,7 +589,7 @@ set1FFD:
           return;
       }
 
-      if ((port & 0xC0FF) == 0xC0FD)
+      if ((port & 0xC0FF) == 0xC0FD && conf.sound.ay_scheme >= AY_SCHEME_SINGLE)
       { // A15=A14=1, FxFD - AY select register
          if ((conf.sound.ay_scheme == AY_SCHEME_CHRV) && ((val & 0xF8) == 0xF8)) //Alone Coder
          {
@@ -581,7 +605,7 @@ set1FFD:
          return;
       }
 
-      if ((port & 0xC000)==0x8000 && conf.sound.ay_scheme)
+      if ((port & 0xC000)==0x8000 && conf.sound.ay_scheme >= AY_SCHEME_SINGLE)
       {  // BFFD - AY data register
          unsigned n_ay = (conf.sound.ay_scheme == AY_SCHEME_QUADRO)? (port >> 12) & 1 : comp.active_ay;
          ay[n_ay].write(temp.sndblock? 0 : cpu.t, val);
@@ -963,8 +987,8 @@ __inline unsigned char in1(unsigned port)
    bool pFE;
 
    // scorp  xx1xxx10 (sc16)
-   if((conf.mem_model == MM_SCORP || conf.mem_model == MM_PROFSCORP) && !(comp.flags & CF_DOSPORTS))
-       pFE = ((port & 0x23) == (0xFE & 0x23));
+   if((conf.mem_model == MM_SCORP || conf.mem_model == MM_PROFSCORP))
+       pFE = ((port & 0x23) == (0xFE & 0x23)) && !(comp.flags & CF_DOSPORTS);
    else if(conf.mem_model == MM_QUORUM) // 1xx11xx0
        pFE = ((port & 0x99) == (0xFE & 0x99));
    else // others xxxxxxx0
@@ -987,7 +1011,22 @@ __inline unsigned char in1(unsigned port)
       return irq + 0x3F;
    }
 
-   if ((unsigned char)port == 0xFD && conf.sound.ay_scheme)
+   // 0001xxxxxxxxxx0x (bcig4) // 1FFD
+   // 0010xxxxxxxxxx0x (bcig4) // 2FFD
+   // 0011xxxxxxxxxx0x (bcig4) // 3FFD
+   if((port & ((3 << 14) | 2)) == 0 && conf.mem_model == MM_PLUS3)
+   {
+       unsigned Idx = (port >> 12) & 3;
+       switch(Idx)
+       {
+       case 2: // 2FFD
+           return Upd765.in(Idx);
+       case 3: // 3FFD
+           return Upd765.in(Idx);
+       }
+   }
+
+   if ((unsigned char)port == 0xFD && conf.sound.ay_scheme >= AY_SCHEME_SINGLE)
    {
       if((conf.sound.ay_scheme == AY_SCHEME_CHRV) && (conf.sound.ay_chip == (SNDCHIP::CHIP_YM2203)) && (tfmstatuson0 == 0))
           return 0x7f /*always ready*/; //Alone Coder 0.36.6

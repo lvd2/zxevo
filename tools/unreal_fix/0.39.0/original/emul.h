@@ -360,9 +360,11 @@ struct TEMP
 extern TEMP temp;
 extern unsigned sb_start_frame;
 
+// ќт этого enum'а завивит пор€док строк в массиве ay_schemes
 enum AY_SCHEME
 {
    AY_SCHEME_NONE = 0,
+   AY_SCHEME_FULLER, // fuller должен идти об€зательно до single
    AY_SCHEME_SINGLE,
    AY_SCHEME_PSEUDO,
    AY_SCHEME_QUADRO,
@@ -372,6 +374,7 @@ enum AY_SCHEME
 };
 
 #include "wd93.h"
+#include "fdd.h"
 #include "hddio.h"
 #include "hdd.h"
 #include "input.h"
@@ -410,7 +413,7 @@ enum SNAP
    snTAP, snTZX, snCSW,
    snPAL,
    // ƒисковые форматы в конце, дл€ них отдельна€ проверка по наличию дисковой подсистемы
-   snHOB, snSCL, snTRD, snFDI, snTD0, snUDI, snISD, snPRO
+   snHOB, snSCL, snTRD, snFDI, snTD0, snUDI, snISD, snPRO, snDSK, snIPF
 };
 
 struct NVRAM
@@ -462,6 +465,7 @@ struct COMPUTER
 
    unsigned char p0F, p1F, p4F, p5F; // soundrive
    struct WD1793 wd;
+   FDD fdd[4];
    struct NVRAM nvram;
    struct {
       __int64 edge_change;
@@ -479,6 +483,8 @@ struct COMPUTER
    u8 ula_plus_group;
    u8 ula_plus_pal_idx;
    bool ula_plus_en;
+
+   COMPUTER();
 };
 
 // bits for COMPUTER::flags

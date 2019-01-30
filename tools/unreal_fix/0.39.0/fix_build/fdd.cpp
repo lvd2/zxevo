@@ -3,13 +3,13 @@
 #include "emul.h"
 #include "vars.h"
 #include "snapshot.h"
-#include "wd93dat.h"
+#include "fdd.h"
 
 #include "util.h"
 
 int FDD::index()
 {
-   return int(this - comp.wd.fdd);
+   return int(this - comp.fdd);
 }
 
 // return: 0 - CANCEL, 1 - YES/SAVED, 2 - NOT SAVED
@@ -95,6 +95,8 @@ int FDD::read(unsigned char type)
    case snTD0: ok = read_td0(); break;
    case snISD: ok = read_isd(); break;
    case snPRO: ok = read_pro(); break;
+   case snDSK: ok = read_dsk(); break;
+   case snIPF: ok = read_ipf(); break;
    }
    return ok;
 }
@@ -102,7 +104,7 @@ int FDD::read(unsigned char type)
 bool done_fdd(bool Cancelable)
 {
    for(int i = 0; i < 4; i++)
-      if(!comp.wd.fdd[i].test() && Cancelable)
+      if(!comp.fdd[i].test() && Cancelable)
           return false;
    return true;
 }

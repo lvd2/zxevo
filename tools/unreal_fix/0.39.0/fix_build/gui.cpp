@@ -1466,7 +1466,7 @@ static INT_PTR CALLBACK BetaDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
          case IDB_INS_C: disk = 2; goto load;
          case IDB_INS_D: disk = 3; goto load;
          load:
-            if (!comp.wd.fdd[disk].test())
+            if (!comp.fdd[disk].test())
                 return 1;
             opensnap(disk+1);
             c1.trdos_wp[disk] = conf.trdos_wp[disk];
@@ -1477,7 +1477,7 @@ static INT_PTR CALLBACK BetaDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
          case IDB_REM_C: disk = 2; goto remove;
          case IDB_REM_D: disk = 3; goto remove;
          remove:
-            if (!comp.wd.fdd[disk].test())
+            if (!comp.fdd[disk].test())
                 return 1;
             comp.wd.Eject(disk);
             c1.trdos_wp[disk] = conf.trdos_wp[disk];
@@ -1515,10 +1515,10 @@ static INT_PTR CALLBACK BetaDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    if (nm->code == PSN_RESET) dlgok = 0;
    return 1;}
 reload:
-   SendDlgItemMessage(dlg, IDE_DISK_A, WM_SETTEXT, 0, (LPARAM)comp.wd.fdd[0].name);
-   SendDlgItemMessage(dlg, IDE_DISK_B, WM_SETTEXT, 0, (LPARAM)comp.wd.fdd[1].name);
-   SendDlgItemMessage(dlg, IDE_DISK_C, WM_SETTEXT, 0, (LPARAM)comp.wd.fdd[2].name);
-   SendDlgItemMessage(dlg, IDE_DISK_D, WM_SETTEXT, 0, (LPARAM)comp.wd.fdd[3].name);
+   SendDlgItemMessage(dlg, IDE_DISK_A, WM_SETTEXT, 0, (LPARAM)comp.fdd[0].name);
+   SendDlgItemMessage(dlg, IDE_DISK_B, WM_SETTEXT, 0, (LPARAM)comp.fdd[1].name);
+   SendDlgItemMessage(dlg, IDE_DISK_C, WM_SETTEXT, 0, (LPARAM)comp.fdd[2].name);
+   SendDlgItemMessage(dlg, IDE_DISK_D, WM_SETTEXT, 0, (LPARAM)comp.fdd[3].name);
    setcheck(IDC_BETA128, c1.trdos_present);
    setcheck(IDC_DISK_TRAPS, c1.trdos_traps);
    setcheck(IDC_DISK_NODELAY, c1.wd93_nodelay);
@@ -1540,15 +1540,15 @@ reload:
    EnableWindow(GetDlgItem(dlg, IDB_REM_C), on);
    EnableWindow(GetDlgItem(dlg, IDB_REM_D), on);
 
-   EnableWindow(GetDlgItem(dlg, IDB_SAVE_A), on && comp.wd.fdd[0].rawdata);
-   EnableWindow(GetDlgItem(dlg, IDB_SAVE_B), on && comp.wd.fdd[1].rawdata);
-   EnableWindow(GetDlgItem(dlg, IDB_SAVE_C), on && comp.wd.fdd[2].rawdata);
-   EnableWindow(GetDlgItem(dlg, IDB_SAVE_D), on && comp.wd.fdd[3].rawdata);
+   EnableWindow(GetDlgItem(dlg, IDB_SAVE_A), on && comp.fdd[0].rawdata);
+   EnableWindow(GetDlgItem(dlg, IDB_SAVE_B), on && comp.fdd[1].rawdata);
+   EnableWindow(GetDlgItem(dlg, IDB_SAVE_C), on && comp.fdd[2].rawdata);
+   EnableWindow(GetDlgItem(dlg, IDB_SAVE_D), on && comp.fdd[3].rawdata);
 
-   ShowWindow(GetDlgItem(dlg, IDC_MODA), comp.wd.fdd[0].optype? SW_SHOW : SW_HIDE);
-   ShowWindow(GetDlgItem(dlg, IDC_MODB), comp.wd.fdd[1].optype? SW_SHOW : SW_HIDE);
-   ShowWindow(GetDlgItem(dlg, IDC_MODC), comp.wd.fdd[2].optype? SW_SHOW : SW_HIDE);
-   ShowWindow(GetDlgItem(dlg, IDC_MODD), comp.wd.fdd[3].optype? SW_SHOW : SW_HIDE);
+   ShowWindow(GetDlgItem(dlg, IDC_MODA), comp.fdd[0].optype? SW_SHOW : SW_HIDE);
+   ShowWindow(GetDlgItem(dlg, IDC_MODB), comp.fdd[1].optype? SW_SHOW : SW_HIDE);
+   ShowWindow(GetDlgItem(dlg, IDC_MODC), comp.fdd[2].optype? SW_SHOW : SW_HIDE);
+   ShowWindow(GetDlgItem(dlg, IDC_MODD), comp.fdd[3].optype? SW_SHOW : SW_HIDE);
    return 1;
 }
 
