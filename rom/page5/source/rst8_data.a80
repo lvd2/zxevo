@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 224.11.2018 savelij
+;LAST UPDATE: 14.01.2019 savelij
 
 ;éèàëÄíÖãú éäçÄ (ÄÑêÖë Ç IX)
 ;+00 X äééêÑàçÄíÄ
@@ -61,14 +61,13 @@ TXT_MAINMENU	DB 0X17,0XFF,"MAGIC Service"
 		DB 0X0D," 0.Continue program"
 		DB 0X0D," S.Setup"
 	IF BUILD_DEBUG=1
-		DB 0X0D," C.Cash remember"
 		DB 0X0D," F.File browser"
 		DB 0X0D," D.Debugger STS"
 	ENDIF
 		DB 0
 
 	IF BUILD_DEBUG=1
-MAINMKEYS	DB LOW (MAINMENU1-$-1),"0scfd"
+MAINMKEYS	DB LOW (MAINMENU1-$-1),"0sfd"
 	ELSE
 MAINMKEYS	DB LOW (MAINMENU1-$-1),"0s"
 	ENDIF
@@ -76,7 +75,6 @@ MAINMKEYS	DB LOW (MAINMENU1-$-1),"0s"
 MAINMENU1	DW CONTINUE_PROG
 		DW SETUP
 	IF BUILD_DEBUG=1
-		DW CASHRM
 		DW FILE_BROWSER
 		DW DEBUGGER
 	ENDIF

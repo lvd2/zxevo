@@ -1,4 +1,10 @@
 
+;LAST UPDATE: 25.01.19 savelij
+
+		include ../../macros.a80
+
+		ORG 0X6000
+
 ;CMOS SetUp & HELP для Gluk
 secHDD		EQU 0XA000	;GLUcat
 secOLD		EQU secHDD+512

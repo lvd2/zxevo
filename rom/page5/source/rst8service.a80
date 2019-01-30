@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 24.11.2018 savelij
+;LAST UPDATE: 29.01.2019 savelij
 
 PAGE	
 		TITLE "rst8service.a80 ROM_RST83"
@@ -111,8 +111,6 @@ CONT_MAGIC	NOP
 		LD A,(CPU6+DEBUG_ONOFF)
 		BIT B_TRACE_DBG,A
 		JP NZ,DEBUGGER			;если активен отладчик, то переход на его запуск
-		BIT B_CASH_ACTIV,A
-		JP NZ,CASHRM
 		LD A,(N_BF)
 		AND M_BREAK_BF
 		JP Z,CONT_MAGIC2
@@ -200,8 +198,6 @@ CONT_MAGIC2	LD BC,CONF_128
 CONT_MAGIC1	LD A,(CPU6+DEBUG_ONOFF)
 		BIT B_DBG_ACTIV,A
 		JP NZ,DEBUGGER			;если активен отладчик, то переход на его запуск
-		BIT B_CASH_ACTIV,A
-		JP NZ,CASHRM
 		JP RESTART_NMI
 
 SETUP_FONT_	PCALL SETUP_FONT,ROM_RST81
@@ -778,5 +774,4 @@ SD_CARD_LOST	LD HL,FLAGS_DRV
 		include addons.a80
 		include addon1.a80
 		include addon2.a80
-		include cashrom.a80
-		include cashstsrom.a80
+		include mainmenu.a80

@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 14.10.2018 savelij
+;LAST UPDATE: 23.01.2019 savelij
 
 ;автоопределение кодировки работает неправильно
 
@@ -7,7 +7,6 @@
 		CPU Z80UNDOC
 
 BUILD_DEBUG	EQU 0
-;TMP_FITCHA	EQU 1
 
 DZ		MACRO DEFZ
 		DB DEFZ,0
@@ -197,6 +196,7 @@ INITVAR := 0
 		ENDIF
 		ENDM
 
+;инициализация переменной для генерации таблицы смещений
 INIT_GETADR	MACRO NAME
 NAME_DIGIT := 0
 	IF MOMPASS = 1
@@ -204,6 +204,7 @@ NAME_DIGITMAX := NAME_DIGIT
 	ENDIF
 		ENDM
 
+;генерация имени переменной для таблицы смещений
 GETADR		MACRO NAME
 dIgIt1 := CHARFROMSTR("\{NAME_DIGIT >> 12}",0)
 dIgIt2 := CHARFROMSTR("\{NAME_DIGIT >> 8}",0)
@@ -217,6 +218,7 @@ NAME_DIGITMAX := NAME_DIGITMAX + 1
 	ENDIF
 		ENDM
 
+;генерация таблицы смещений
 PUTADR		MACRO NAME
 NAME_TMPDIGIT := 0
 		REPT NAME_DIGITMAX
