@@ -2,22 +2,11 @@
 
 #include "emul.h"
 #include "vars.h"
+#include "dxerr.h"
 #include "util.h"
 
-#ifdef __GNUC__
-#define DXGetErrorString DXGetErrorString9
-#endif
-
 #ifdef EMUL_DEBUG
-
- // lvd {
- #ifdef __GNUC__
-  #include <dxerr9.h>
- #else
-  #include "dxerr9.h"
- #endif
- // lvd }
-
+#include "dxerr9.h"
 void printrdd(const char *pr, HRESULT r)
 {
    color(CONSCLR_ERROR);
@@ -44,9 +33,9 @@ void printrdi(const char *pr, HRESULT r)
 #endif
 }
 
-void printrmm(const char *pr, HRESULT r)
+void printrmm(const char *pr, MMRESULT r)
 {
-   char buf[200]; sprintf(buf, "unknown error (%08lX)", r);
+   char buf[200]; sprintf(buf, "unknown error (%08X)", r);
    const char *str = buf;
    switch (r)
    {

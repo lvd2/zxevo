@@ -3,7 +3,7 @@ CXX_COMPILER=clang++
 CXX_LTO=
 !else
 CXX_COMPILER=g++
-CXX_LTO=#-flto
+CXX_LTO=
 !endif
 
 CXX=$(CXX_COMPILER) -c
@@ -11,11 +11,9 @@ CXX=$(CXX_COMPILER) -c
 CFLAGS_COMMON=-D_CRT_SECURE_NO_DEPRECATE -DUSE_SND_EXTERNAL_BUFFER -D_PREFIX_ -std=c++11 -Wno-attributes
 
 !ifdef SSE1
-CFLAGS_COMMON=$(CFLAGS_COMMON) -march=pentium3 -msse
+CFLAGS_COMMON=$(CFLAGS_COMMON) -march=pentium3 -msse1
 !elseifdef SSE2
 CFLAGS_COMMON=$(CFLAGS_COMMON) -march=pentium4 -msse2 -D_M_IX86_FP=2
-!elseifdef NATIVE
-CFLAGS_COMMON=$(CFLAGS_COMMON) -march=native
 !else
 CFLAGS_COMMON=$(CFLAGS_COMMON) -march=pentium2 -mmmx
 !endif

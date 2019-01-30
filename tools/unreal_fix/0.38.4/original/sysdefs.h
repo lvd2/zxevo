@@ -15,6 +15,7 @@ typedef long long i64;
 typedef unsigned long u32;
 typedef unsigned short u16;
 typedef signed  short i16;
+typedef signed char i8;
 typedef unsigned char u8;
 
 #ifdef _MSC_VER
@@ -82,15 +83,6 @@ static __inline__ void __debugbreak__(void)
 #endif
 
 #define __assume(x)
-
-
-
-#ifndef min
- #define min(a,b) (((a)<(b))?(a):(b))
-#endif
-#ifndef max
- #define max(a,b) (((a)>(b))?(a):(b))
-#endif
 
 #endif // __GNUC__
 

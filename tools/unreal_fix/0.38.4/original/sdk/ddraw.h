@@ -5691,7 +5691,7 @@ typedef struct _DDCOLORCONTROL
 
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #ifdef ENABLE_NAMELESS_UNION_PRAGMA

@@ -19,7 +19,7 @@ int FDD::write_td0(FILE *ff)
    if (*dsc) {
       unsigned char inf[0x200] = { 0 };
       strcpy((char*)inf+10, dsc);
-      unsigned len = strlen(dsc)+1;
+      unsigned len = unsigned(strlen(dsc)+1);
       *(unsigned*)(inf+2) = len;
       *(unsigned short*)inf = crc16(inf+2, len+8);
       fwrite(inf, 1, len+10, ff);
@@ -30,16 +30,21 @@ int FDD::write_td0(FILE *ff)
       for (unsigned s = 0; s < sides; s++) {
          t.seek(this,c,s,LOAD_SECTORS);
          unsigned char bf[16];
-         *bf = t.s;
-         bf[1] = c, bf[2] = s;
+         *bf = u8(t.s);
+         bf[1] = u8(c); bf[2] = u8(s);
          bf[3] = (unsigned char)crc16(bf, 3);
          fwrite(bf, 1, 4, ff);
          for (unsigned sec = 0; sec < t.s; sec++) {
-            if (!t.hdr[sec].data) { t.hdr[sec].data = zerosec, t.hdr[sec].datlen = 256, t.hdr[sec].l = 1; }
+             if(!t.hdr[sec].data)
+             {
+                 t.hdr[sec].data = zerosec;
+                 t.hdr[sec].datlen = 256;
+                 t.hdr[sec].l = 1;
+             }
             *(unsigned*)bf = *(unsigned*)&t.hdr[sec];
             bf[4] = 0; // flags
             bf[5] = (unsigned char)crc16(t.hdr[sec].data, t.hdr[sec].datlen);
-            *(unsigned short*)(bf+6) = t.hdr[sec].datlen + 1;
+            *(unsigned short*)(bf+6) = u16(t.hdr[sec].datlen + 1);
             bf[8] = 0; // compression type = none
             fwrite(bf, 1, 9, ff);
             if (fwrite(t.hdr[sec].data, 1, t.hdr[sec].datlen, ff) != t.hdr[sec].datlen) return 0;
@@ -207,6 +212,18 @@ int FDD::read_td0()
          td0_src += 2; // data_len
          unsigned char *end_packed_data = td0_src + src_size;
 
+         if(src_size == 0)
+         {
+             printf("sector data size is zero\n");
+             goto shit;
+         }
+
+         if(src_size > sec_size + 1)
+         {
+             printf("sector overflow: src_size=%u > (sec_size+1)=%u\n", src_size, sec_size + 1);
+             goto shit;
+         }
+
          memset(dst, 0, sec_size);
 
          switch (*td0_src++) // Method
@@ -225,30 +242,41 @@ int FDD::read_td0()
             }
             case 2: // RLE block
             {
-               unsigned short data;
-               unsigned char s;
+               u8 n;
                unsigned char *d0 = dst;
                do
                {
-                  switch (*td0_src++)
+                  u8 RleData[510];
+                  u8 l = 2 * (*td0_src++);
+                  if(l == 0) // Zero count means a literal data block
                   {
-                     case 0: // Zero count means a literal data block
-                        for (s = *td0_src++; s; s--)
-                           *dst++ = *td0_src++;
-                        break;
-                     case 1:    // repeated fragment
-                        s = *td0_src++;
-                        data = *(unsigned short*)td0_src;
-                        td0_src += 2;
-                        for ( ; s; s--)
-                        {
-                            *(unsigned short*)dst = data;
-                            dst += 2;
-                        }
-                        break;
-                     default:
-                         errmsg("unknown RLE block type");
-                         goto shit;
+                      n = *td0_src++;
+                      if(dst + n > d0 + sec_size)
+                      {
+                          printf("sector overflow: pos=0x%x, l=%u, n=%u, sec_size=%u, src_size=%u\n",
+                              unsigned(td0_src - 2 - snbuf), unsigned(l), unsigned(n), sec_size, src_size);
+                          goto shit;
+                      }
+                      memcpy(dst, td0_src, n);
+                      td0_src += n;
+                      dst += n;
+                  }
+                  else // repeated fragment
+                  {
+                      n = *td0_src++;
+                      memcpy(RleData, td0_src, l);
+                      td0_src += l;
+                      for ( ; n; n--)
+                      {
+                          if(dst + l > d0 + sec_size)
+                          {
+                              printf("sector overflow: pos=0x%x, dpos=0x%x, l=%u, sec_size=%u, src_size=%u\n",
+                                  unsigned(td0_src - 2 - snbuf), unsigned((dst + l) - d0), unsigned(l), sec_size, src_size);
+                              goto shit;
+                          }
+                          memcpy(dst, RleData, l);
+                          dst += l;
+                      }
                   }
                } while (td0_src < end_packed_data);
                dst = d0;
@@ -274,15 +302,21 @@ int FDD::read_td0()
 // ------------------------------------------------------ LZH unpacker
 
 
-unsigned char *packed_ptr, *packed_end;
+static unsigned char *packed_ptr, *packed_end;
 
-int readChar(void)
+static unsigned readChar()
 {
-  if (packed_ptr < packed_end) return *packed_ptr++;
-  else return -1;
+    if(packed_ptr < packed_end)
+    {
+        return *packed_ptr++;
+    }
+    else
+    {
+        return -1U;
+    }
 }
 
-unsigned char d_code[256] =
+static unsigned char d_code[256] =
 {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -318,7 +352,7 @@ unsigned char d_code[256] =
         0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
 };
 
-unsigned char d_len[256] =
+static unsigned char d_len[256] =
 {
         0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
         0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
@@ -360,7 +394,7 @@ const int F = 60;       // lookahead buffer size
 const int THRESHOLD =   2;
 const int NIL = N;      // leaf of tree
 
-unsigned char text_buf[N + F - 1];
+static unsigned char text_buf[N + F - 1];
 
 const int N_CHAR = (256 - THRESHOLD + F);       // kinds of characters (character code = 0..N_CHAR-1)
 const int T =   (N_CHAR * 2 - 1);       // size of table
@@ -368,28 +402,31 @@ const int R = (T - 1);                  // position of root
 const int MAX_FREQ = 0x8000;            // updates tree when the
                                     // root frequency comes to this value.
 
-unsigned short freq[T + 1];        // frequency table
+static unsigned short freq[T + 1];        // frequency table
 
-short prnt[T + N_CHAR]; // pointers to parent nodes, except for the
+static short prnt[T + N_CHAR]; // pointers to parent nodes, except for the
                         // elements [T..T + N_CHAR - 1] which are used to get
                         // the positions of leaves corresponding to the codes.
-short son[T];           // pointers to child nodes (son[], son[] + 1)
+static short son[T];           // pointers to child nodes (son[], son[] + 1)
 
 
-int r;
+static int r;
 
-unsigned getbuf;
-unsigned char getlen;
+static unsigned getbuf;
+static unsigned char getlen;
 
-int GetBit(void)      /* get one bit */
+static int GetBit()      /* get one bit */
 {
-  int i;
+  unsigned i;
 
   while (getlen <= 8)
   {
-    if((i = readChar()) == -1) i = 0;
-    getbuf |= i << (8 - getlen);
-    getlen += 8;
+      if((i = readChar()) == -1U)
+      {
+          i = 0;
+      }
+      getbuf |= unsigned(i << (8 - getlen));
+      getlen += 8;
   }
   i = getbuf;
   getbuf <<= 1;
@@ -397,15 +434,18 @@ int GetBit(void)      /* get one bit */
   return ((i>>15) & 1);
 }
 
-int GetByte(void)     /* get one byte */
+static int GetByte()     /* get one byte */
 {
   unsigned i;
 
   while (getlen <= 8)
   {
-    if((i = readChar()) == -1) i = 0;
-    getbuf |= i << (8 - getlen);
-    getlen += 8;
+      if((i = readChar()) == -1U)
+      {
+          i = 0;
+      }
+      getbuf |= unsigned(i << (8 - getlen));
+      getlen += 8;
   }
   i = getbuf;
   getbuf <<= 8;
@@ -413,21 +453,21 @@ int GetByte(void)     /* get one byte */
   return (i >> 8) & 0xFF;
 }
 
-void StartHuff(void)
+static void StartHuff()
 {
   int i, j;
 
-  getbuf = 0, getlen = 0;
+  getbuf = 0; getlen = 0;
   for (i = 0; i < N_CHAR; i++) {
     freq[i] = 1;
-    son[i] = i + T;
-    prnt[i + T] = i;
+    son[i] = i16(i + T);
+    prnt[i + T] = i16(i);
   }
   i = 0; j = N_CHAR;
   while (j <= R) {
     freq[j] = freq[i] + freq[i + 1];
-    son[j] = i;
-    prnt[i] = prnt[i + 1] = j;
+    son[j] = i16(i);
+    prnt[i] = prnt[i + 1] = i16(j);
     i += 2; j++;
   }
   freq[T] = 0xffff;
@@ -438,10 +478,10 @@ void StartHuff(void)
 }
 
 /* reconstruction of tree */
-void reconst(void)
+static void reconst()
 {
   int i, j, k;
-  int f, l;
+  int f;
 
   /* collect leaf nodes in the first half of the table */
   /* and replace the freq by (freq + 1) / 2. */
@@ -462,22 +502,22 @@ void reconst(void)
     f = freq[j] = freq[i] + freq[k];
     for(k = j - 1; f < freq[k]; k--);
     k++;
-    l = (j - k) * sizeof(*freq);
+    size_t l = unsigned(j - k) * sizeof(*freq);
     MoveMemory(&freq[k + 1], &freq[k], l);
-    freq[k] = f;
+    freq[k] = u16(f);
     MoveMemory(&son[k + 1], &son[k], l);
-    son[k] = i;
+    son[k] = i16(i);
   }
   /* connect prnt */
   for (i = 0; i < T; i++)
-    if ((k = son[i]) >= T) prnt[k] = i;
-    else prnt[k] = prnt[k + 1] = i;
+    if ((k = son[i]) >= T) prnt[k] = i16(i);
+    else prnt[k] = prnt[k + 1] = i16(i);
 }
 
 
 /* increment frequency of given code by one, and update tree */
 
-void update(int c)
+static void update(int c)
 {
   int i, j, k, l;
 
@@ -493,25 +533,25 @@ void update(int c)
       while (k > freq[++l]);
       l--;
       freq[c] = freq[l];
-      freq[l] = k;
+      freq[l] = u16(k);
 
       i = son[c];
-      prnt[i] = l;
-      if (i < T) prnt[i + 1] = l;
+      prnt[i] = i16(l);
+      if (i < T) prnt[i + 1] = i16(l);
 
       j = son[l];
-      son[l] = i;
+      son[l] = i16(i);
 
-      prnt[j] = c;
-      if (j < T) prnt[j + 1] = c;
-      son[c] = j;
+      prnt[j] = i16(c);
+      if (j < T) prnt[j + 1] = i16(c);
+      son[c] = i16(j);
 
       c = l;
     }
   } while ((c = prnt[c]) != 0);  /* repeat up to root */
 }
 
-int DecodeChar(void)
+static int DecodeChar()
 {
   int c;
 
@@ -526,7 +566,7 @@ int DecodeChar(void)
   return c;
 }
 
-int DecodePosition(void)
+static int DecodePosition()
 {
   int i, j, c;
 
@@ -553,8 +593,8 @@ unsigned unpack_lzh(unsigned char *src, unsigned size, unsigned char *buf)
     c = DecodeChar();
     if(c < 256)
     {
-      *buf++ = c;
-      text_buf[r++] = c;
+      *buf++ = u8(c);
+      text_buf[r++] = u8(c);
       r &= (N - 1);
       count++;
     } else {
@@ -563,8 +603,8 @@ unsigned unpack_lzh(unsigned char *src, unsigned size, unsigned char *buf)
       for (k = 0; k < j; k++)
       {
         c = text_buf[(i + k) & (N - 1)];
-        *buf++ = c;
-        text_buf[r++] = c;
+        *buf++ = u8(c);
+        text_buf[r++] = u8(c);
         r &= (N - 1);
         count++;
       }

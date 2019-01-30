@@ -70,7 +70,7 @@ Z80INLINE unsigned char resbyte(unsigned char src, unsigned char bit)
 
 Z80INLINE unsigned char setbyte(unsigned char src, unsigned char bit)
 {
-   return src | (1 << bit);
+   return u8(src | (1U << bit));
 }
 
 Z80INLINE void inc8(Z80 *cpu, unsigned char &x)

@@ -53,8 +53,8 @@ static void line_p4bpp_8(unsigned char *dst, unsigned char *src, unsigned *tab)
    for (unsigned x = 0, i = 0; x < 256; x += 2, i++)
    {
        unsigned tmp = tab[src[p4bpp_ofs[(i+temp.offset_hscroll) & 0x7f]]];
-       d[x]   = tmp;
-       d[x+1] = tmp >> 16;
+       d[x]   = u8(tmp);
+       d[x+1] = u8(tmp >> 16);
    }
 }
 
@@ -84,8 +84,8 @@ static void line_p4bpp_16(unsigned char *dst, unsigned char *src, unsigned *tab)
    for (unsigned x = 0, i = 0; x < 256; x +=2, i++)
    {
        unsigned tmp = 2*src[p4bpp_ofs[(i+temp.offset_hscroll) & 0x7f]];
-       d[x]   = tab[0+tmp];
-       d[x+1] = tab[1+tmp];
+       d[x]   = u8(tab[0+tmp]);
+       d[x+1] = u8(tab[1+tmp]);
    }
 }
 
@@ -108,8 +108,8 @@ static void line_p4bpp_16d_nf(unsigned char *dst, unsigned char *src1, unsigned 
    unsigned tmp2;
    for (unsigned x = 0; x < 128; x++)
    {
-       tmp1 = p4bpp_ofs[(x+temp.offset_hscroll     ) & 0x7f];
-       tmp2 = p4bpp_ofs[(x+temp.offset_hscroll_prev) & 0x7f];
+       tmp1 = unsigned(p4bpp_ofs[(x+temp.offset_hscroll     ) & 0x7f]);
+       tmp2 = unsigned(p4bpp_ofs[(x+temp.offset_hscroll_prev) & 0x7f]);
        *(unsigned*)dst = tab[0+2*src1[tmp1]] + tab[0+2*src2[tmp2]];
        dst+=4;
        *(unsigned*)dst = tab[1+2*src1[tmp1]] + tab[1+2*src2[tmp2]];
@@ -147,8 +147,8 @@ static void line_p4bpp_32d_nf(unsigned char *dst, unsigned char *src1, unsigned 
    unsigned tmp2;
    for (unsigned x = 0; x < 128; x++)
    {
-       tmp1 = p4bpp_ofs[(x+temp.offset_hscroll     ) & 0x7f];
-       tmp2 = p4bpp_ofs[(x+temp.offset_hscroll_prev) & 0x7f];
+       tmp1 = unsigned(p4bpp_ofs[(x+temp.offset_hscroll     ) & 0x7f]);
+       tmp2 = unsigned(p4bpp_ofs[(x+temp.offset_hscroll_prev) & 0x7f]);
        *(unsigned*)dst = *(unsigned*)(dst+4) = tab[0+2*src1[tmp1]] + tab[0+2*src2[tmp2]];
        dst+=8;
        *(unsigned*)dst = *(unsigned*)(dst+4) = tab[1+2*src1[tmp1]] + tab[1+2*src2[tmp2]];
@@ -335,7 +335,7 @@ void rend_p4bpp_small(unsigned char *dst, unsigned pitch)
        pitch *= 2;
 
    if (conf.noflic)
-       buf4bpp_shift = (rbuf_s+PAGE) - temp.base;
+       buf4bpp_shift = int((rbuf_s+PAGE) - temp.base);
 
    if (temp.obpp == 8) 
    {
@@ -370,7 +370,7 @@ void rend_p4bpp(unsigned char *dst, unsigned pitch)
    if (temp.oy > temp.scy && conf.fast_sl) pitch *= 2;
 
    if (conf.noflic)
-       buf4bpp_shift = (rbuf_s+PAGE) - temp.base;
+       buf4bpp_shift = int((rbuf_s+PAGE) - temp.base);
 
    if (temp.obpp == 8) 
    {

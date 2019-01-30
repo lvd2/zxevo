@@ -1,7 +1,6 @@
 #pragma once
 
 void wnd_resize(int scale);
-void correct_exit();
 
 void main_mouse();
 void main_reset();

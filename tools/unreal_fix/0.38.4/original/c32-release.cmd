@@ -1,5 +1,5 @@
 @echo off
-call iclvars.bat ia32 vs2015
+call iclvars.bat ia32 vs2017
 cd sndrender
 nmake all SSE2=1 RELEASE=1
 cd ..

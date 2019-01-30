@@ -86,6 +86,7 @@
 #define IDC_MOUSESWAP                   1067
 #define IDC_KJOY                        1069
 #define IDC_ARCLIST                     1070
+#define IDC_FJOY                        1070
 #define IDC_FLIP                        1071
 #define IDE_INT                         1072
 #define IDC_WPB                         1073
@@ -109,6 +110,7 @@
 #define IDB_GS_RESET                    1088
 #define IDB_MEM_ADD                     1088
 #define IDB_MEM_DEL                     1089
+#define IDB_GS_SAVE                     1089
 #define IDE_GS                          1090
 #define IDB_GS_CLEAR                    1091
 #define IDC_NOPAPER                     1092
@@ -184,6 +186,7 @@
 #define IDC_NOFLIC                      1150
 #define IDC_TAPE_AUTOSTART              1151
 #define IDC_BASS_TITLE                  1152
+#define IDC_TAPE_TRAPS                  1152
 #define IDC_GS_TITLE                    1153
 #define IDC_CHIP_BUS                    1154
 #define IDC_CHIP_VOL                    1155
@@ -228,6 +231,7 @@
 #define IDC_ATMPAL2                     1182
 #define IDC_PROFI_MONOCHROME            1182
 #define IDC_R3039                       1183
+#define IDC_ULA_PLUS                    1183
 #define IDC_R415A                       1184
 #define IDC_R617A                       1185
 #define IDC_R809F                       1186
@@ -306,7 +310,9 @@
 #define IDC_VIDEOSCALE                  1250
 #define IDD_FILEPREVIEW                 1251
 #define IDC_PREVIEW_BOX                 1252
+#define IDD_SETTINGS_NGS                1252
 #define IDC_PREVIEW_BASIC               1253
+#define IDD_SETTINGS_ZC                 1253
 #define IDC_PREVIEW_ERASED              1254
 #define IDC_NEW                         1255
 #define IDC_EXACT                       1256
@@ -318,6 +324,17 @@
 #define IDE_VALUE                       1262
 #define IDC_HEX                         1263
 #define IDC_STATUS                      1264
+#define IDE_SD_NGS                      1265
+#define IDB_SD_NGS                      1266
+#define IDC_COMBO_GS_TYPE               1267
+#define IDC_COMBO_GS_RAM_SIZE           1268
+#define IDE_SD_ZC                       1269
+#define IDB_SD_ZC                       1270
+#define IDC_CHECK1                      1271
+#define IDC_ZC_ENABLED                  1271
+#define IDC_NGS_ENABLED                 1272
+#define IDC_LIST1                       1273
+#define IDC_LIST                        1273
 #define IDC_PC_LAYOUT                   10050
 #define IDC_WHEEL_NONE                  10252
 #define IDC_WHEEL_KEYBOARD              10254
@@ -327,9 +344,10 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        139
+#define _APS_NO_MFC                     1
+#define _APS_NEXT_RESOURCE_VALUE        143
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1265
+#define _APS_NEXT_CONTROL_VALUE         1274
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

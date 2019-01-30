@@ -1,3 +1,3 @@
 #pragma once
 
-extern const unsigned char font14[];
+extern unsigned char font14[];

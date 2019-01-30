@@ -29,9 +29,9 @@ videopoint *vcurr; // Указатель на текущий элемент из video[]
 // Массив видеострок включая бордюр
 // video[i] - начало строки (используется только next_t)
 // video[i+1] - конец строки  (используются все параметры)
-videopoint video[4*MAX_HEIGHT];
+static videopoint video[4*MAX_HEIGHT];
 unsigned vmode;  // what are drawing: 0-not visible, 1-border, 2-screen
-unsigned prev_t; // такт на котором был отрисован последний пиксель
+static unsigned prev_t; // такт на котором был отрисован последний пиксель
 unsigned *atrtab;
 
 unsigned char colortab[0x100];// map zx attributes to pc attributes
@@ -83,22 +83,50 @@ void video_permanent_tables()
    unsigned i; //Alone Coder 0.36.7
    for (/*unsigned*/ i = 0; i < 0x100; i++) {
       unsigned res = 0;
-      for (int j = 0x80; j; j/=2) {
-         res <<= 2; if (i & j) res |= 3;
+      for (unsigned j = 0x80; j; j/=2) {
+         res <<= 2;
+         if(i & j)
+         {
+             res |= 3;
+         }
       }
       t.dbl[i] = res;
    }
 
    for (i = 0; i < 0x100; i++) {
       unsigned r1 = 0, r2 = 0;
-      if (i & 0x01) r1++,        r2 += 1;
-      if (i & 0x02) r1++,        r2 += 1;
-      if (i & 0x04) r1++,        r2 += 0x100;
-      if (i & 0x08) r1++,        r2 += 0x100;
-      if (i & 0x10) r1 += 0x100, r2 += 0x10000;
-      if (i & 0x20) r1 += 0x100, r2 += 0x10000;
-      if (i & 0x40) r1 += 0x100, r2 += 0x1000000;
-      if (i & 0x80) r1 += 0x100, r2 += 0x1000000;
+      if(i & 0x01)
+      {
+          r1++; r2 += 1;
+      }
+      if(i & 0x02)
+      {
+          r1++; r2 += 1;
+      }
+      if(i & 0x04)
+      {
+          r1++; r2 += 0x100;
+      }
+      if(i & 0x08)
+      {
+          r1++; r2 += 0x100;
+      }
+      if(i & 0x10)
+      {
+          r1 += 0x100; r2 += 0x10000;
+      }
+      if(i & 0x20)
+      {
+          r1 += 0x100; r2 += 0x10000;
+      }
+      if(i & 0x40)
+      {
+          r1 += 0x100; r2 += 0x1000000;
+      }
+      if(i & 0x80)
+      {
+          r1 += 0x100; r2 += 0x1000000;
+      }
       // low byte of settab - number of pixels in low nibble of i
       // high byte of low word of settab - number of pixels in high nibble of i
       t.settab[i] = r1;
@@ -106,12 +134,18 @@ void video_permanent_tables()
    }
 
    i = 0; // calc screen addresses
-   for (int p = 0; p < 4; p++)
-      for (int y = 0; y < 8; y++)
-         for (int o = 0; o < 8; o++, i++)
-            t.scrtab[i] = p*0x800 + y*0x20 + o*0x100,
-            t.atrtab_hwmc[i] = t.scrtab[i] + 0x2000,
-            t.atrtab[i] = 0x1800 + (p*8+y)*32;
+   for(unsigned p = 0; p < 4; p++)
+   {
+       for(unsigned y = 0; y < 8; y++)
+       {
+           for(unsigned o = 0; o < 8; o++, i++)
+           {
+               t.scrtab[i] = p * 0x800 + y * 0x20 + o * 0x100;
+               t.atrtab_hwmc[i] = t.scrtab[i] + 0x2000;
+               t.atrtab[i] = 0x1800 + (p * 8 + y) * 32;
+           }
+       }
+   }
 
    // alco table
    static unsigned disp_0[] = { 0x0018, 0x2000, 0x2008, 0x2010, 0x2018, 0x0008 };
@@ -143,7 +177,7 @@ void video_permanent_tables()
    temp.offset_hscroll = 0;
 }
 
-unsigned getYUY2(unsigned r, unsigned g, unsigned b)
+static unsigned getYUY2(unsigned r, unsigned g, unsigned b)
 {
    int y = (int)(0.29*r + 0.59*g + 0.14*b);
    int u = (int)(128.0 - 0.14*r - 0.29*g + 0.43*b);
@@ -154,67 +188,100 @@ unsigned getYUY2(unsigned r, unsigned g, unsigned b)
    return WORD4(y,u,y,v);
 }
 
-void create_palette()
+static void create_palette()
 {
-   if ((temp.rflags & RF_8BPCH) && temp.obpp == 8) temp.rflags |= RF_GRAY, conf.flashcolor = 0;
+    if((temp.rflags & RF_8BPCH) && temp.obpp == 8)
+    {
+        temp.rflags |= RF_GRAY;
+        conf.flashcolor = 0;
+    }
 
-   PALETTE_OPTIONS *pl = &pals[conf.pal];
-   unsigned char brights[4] = { u8(pl->ZZ), u8(pl->ZN), u8(pl->NN), u8(pl->BB) };
-   unsigned char brtab[16] =
-      {  //  ZZ          NN          ZZ          BB
-        u8(pl->ZZ), u8(pl->ZN), u8(pl->ZZ), u8(pl->ZB),    // ZZ
-        u8(pl->ZN), u8(pl->NN), u8(pl->ZN), u8(pl->NB),    // NN
-        u8(pl->ZZ), u8(pl->ZN), u8(pl->ZZ), u8(pl->ZB),    // ZZ (bright=1,ink=0)
-        u8(pl->ZB), u8(pl->NB), u8(pl->ZB), u8(pl->BB)     // BB
-      };
+    PALETTE_OPTIONS *pl = &pals[conf.pal];
+    //                                Ii          Ii          Ii          Ii
+    //                                00          01          10          11
+    unsigned char brights[4] = { u8(pl->ZZ), u8(pl->ZN), u8(pl->NN), u8(pl->BB) };
+    unsigned char brtab[16] =
+    {   //   ZZ          NN          ZZ          BB
+        u8(pl->ZZ), u8(pl->ZN), u8(pl->ZZ), u8(pl->ZB), // ZZ
+        u8(pl->ZN), u8(pl->NN), u8(pl->ZN), u8(pl->NB), // NN
+        u8(pl->ZZ), u8(pl->ZN), u8(pl->ZZ), u8(pl->ZB), // ZZ (bright=1,ink=0)
+        u8(pl->ZB), u8(pl->NB), u8(pl->ZB), u8(pl->BB)  // BB
+    };
 
-   for (unsigned i = 0; i < 0x100; i++) {
-      unsigned r0, g0, b0;
-      if (temp.rflags & RF_GRAY) { // grayscale palette
-         r0 = g0 = b0 = i;
-      } else if (temp.rflags & RF_PALB) { // palette index: gg0rr0bb
-         b0 = brights[i & 3];
-         r0 = brights[(i >> 3) & 3];
-         g0 = brights[(i >> 6) & 3];
-      } else { // palette index: ygrbYGRB
-         b0 = brtab[((i>>0)&1)+((i>>2)&2)+((i>>2)&4)+((i>>4)&8)]; // brtab[ybYB]
-         r0 = brtab[((i>>1)&1)+((i>>2)&2)+((i>>3)&4)+((i>>4)&8)]; // brtab[yrYR]
-         g0 = brtab[((i>>2)&1)+((i>>2)&2)+((i>>4)&4)+((i>>4)&8)]; // brtab[ygYG]
-      }
+    for(unsigned i = 0; i < 0x100; i++)
+    {
+        unsigned r0, g0, b0;
+        if(temp.rflags & RF_GRAY)
+        { // grayscale palette
+            r0 = g0 = b0 = i;
+        }
+        else if(temp.rflags & RF_PALB)
+        { // palette index:
+            if(comp.ula_plus_en) // gggrrrbb (ULA+)
+            { // Линейная интерполяция яркости
+                b0 = ((i & 3) * 255) / 3; // 2 бита
+                r0 = (((i >> 2) & 7) * 255) / 7; // 3 бита
+                g0 = (((i >> 5) & 7) * 255) / 7; // 3 бита
+            }
+            else // gg0rr0bb (ATM / profi / bilinear filter)
+            { // Нелинейная коррекция яркости (на 2 бита) по таблице палитры из .ini файла
+                b0 = brights[i & 3];
+                r0 = brights[(i >> 3) & 3];
+                g0 = brights[(i >> 6) & 3];
+            }
+        }
+        else
+        { // palette index: ygrbYGRB (обычный zx режим без палитры)
+          // Нелинейная коррекция яркости (на 4 бита) по таблице палитры из .ini файла
+            b0 = brtab[((i >> 0) & 1) + ((i >> 2) & 2) + ((i >> 2) & 4) + ((i >> 4) & 8)]; // brtab[ybYB]
+            r0 = brtab[((i >> 1) & 1) + ((i >> 2) & 2) + ((i >> 3) & 4) + ((i >> 4) & 8)]; // brtab[yrYR]
+            g0 = brtab[((i >> 2) & 1) + ((i >> 2) & 2) + ((i >> 4) & 4) + ((i >> 4) & 8)]; // brtab[ygYG]
+        }
 
-      // transform with current settings
-      unsigned r = 0xFF & ((r0 * pl->r11 + g0 * pl->r12 + b0 * pl->r13) / 0x100);
-      unsigned g = 0xFF & ((r0 * pl->r21 + g0 * pl->r22 + b0 * pl->r23) / 0x100);
-      unsigned b = 0xFF & ((r0 * pl->r31 + g0 * pl->r32 + b0 * pl->r33) / 0x100);
+        // transform with current settings
+        unsigned r = 0xFF & ((r0 * pl->r11 + g0 * pl->r12 + b0 * pl->r13) / 0x100);
+        unsigned g = 0xFF & ((r0 * pl->r21 + g0 * pl->r22 + b0 * pl->r23) / 0x100);
+        unsigned b = 0xFF & ((r0 * pl->r31 + g0 * pl->r32 + b0 * pl->r33) / 0x100);
 
-      // prepare palette in bitmap header for GDI renderer
-      gdibmp.header.bmiColors[i].rgbRed   = pal0[i].peRed   = r;
-      gdibmp.header.bmiColors[i].rgbGreen = pal0[i].peGreen = g;
-      gdibmp.header.bmiColors[i].rgbBlue  = pal0[i].peBlue  = b;
-   }
-   memcpy(syspalette + 10, pal0 + 10, (246-9) * sizeof *syspalette);
+        // prepare palette in bitmap header for GDI renderer
+        gdibmp.header.bmiColors[i].rgbRed = pal0[i].peRed = BYTE(r);
+        gdibmp.header.bmiColors[i].rgbGreen = pal0[i].peGreen = BYTE(g);
+        gdibmp.header.bmiColors[i].rgbBlue = pal0[i].peBlue = BYTE(b);
+    }
+    memcpy(syspalette + 10, pal0 + 10, (246 - 9) * sizeof *syspalette);
+
+    if(conf.mem_model == MM_PROFI)
+    {
+        // profi palette mapping (port out to palette index)
+        for(unsigned i = 0; i < 0x100; i++)
+        {
+            unsigned dst;
+            dst = i; // Gg0Rr0Bb => Gg0Rr0Bb
+            t.profi_pal_map[i] = dst;
+        }
+    }
 }
 
 void atm_zc_tables();//forward
 
 // make colortab: zx-attr -> pc-attr
-void make_colortab(char flash_active)
+static void make_colortab(char flash_active)
 {
-   if (conf.flashcolor)
+   if (conf.flashcolor || conf.ula_plus)
        flash_active = 0;
 
-   for (unsigned a = 0; a < 0x100; a++)
+   for (unsigned a = 0; a < 0x100; a++) // a - zx-attr
    {
       unsigned char ink = a & 7;
       unsigned char paper = (a >> 3) & 7;
       unsigned char bright = (a >> 6) & 1;
       unsigned char flash = (a >> 7) & 1;
 
-      if((conf.flashcolor && ink) || !conf.flashcolor)
-          ink |= bright << 3;
+//      if((conf.flashcolor && ink) || !conf.flashcolor)
+      ink |= bright << 3;
 
-      if((conf.flashcolor && paper) || !conf.flashcolor)
-          paper |= (conf.flashcolor ? flash : bright) << 3;
+//      if((conf.flashcolor && paper) || !conf.flashcolor)
+          paper |= ((conf.flashcolor || (conf.ula_plus && comp.ula_plus_en)) ? flash : bright) << 3;
 
       if (flash_active && flash)
       {
@@ -223,11 +290,11 @@ void make_colortab(char flash_active)
           paper = t;
       }
 
-      u8 color = (paper << 4) | ink;
+      u8 color = u8((paper << 4) | ink); // color - pc-attr
 
       colortab[a] = color;
-      colortab_s8[a] = color << 8;
-      colortab_s24[a] = color << 24;
+      colortab_s8[a] = unsigned(color << 8U);
+      colortab_s24[a] = unsigned(color << 24U);
    }
 
    if (conf.mem_model == MM_ATM710 || conf.mem_model == MM_ATM3 || conf.mem_model == MM_ATM450)
@@ -235,12 +302,12 @@ void make_colortab(char flash_active)
 }
 
 // make attrtab: pc-attr + 0x100*pixel -> palette index
-void attr_tables()
+static void attr_tables()
 {
    unsigned char flashcolor = (temp.rflags & RF_MON)? 0 : conf.flashcolor;
    for (unsigned a = 0; a < 0x100; a++)
    {
-      unsigned char ink = (a & 0x0F), paper = (a >> 4);
+      unsigned char ink = (a & 0x0F), paper = u8(a >> 4);
       if (flashcolor)
           paper = (paper & 7) + (ink & 8); // paper_bright from ink
 
@@ -250,25 +317,45 @@ void attr_tables()
          t.attrtab[a+0x100] = ink*16;
       }
       else if (temp.rflags & RF_COMPPAL)
-      { //------ for ATM palette - direct values from palette registers
-         t.attrtab[a] = comp.comp_pal[a >> 4];
-         t.attrtab[a+0x100] = comp.comp_pal[a & 0x0F];
+      {
+          // Палитра в формате ULA+
+          u8 paper_idx; // fb1ppp
+          u8 ink_idx;   // fb0iii
+          if(comp.ula_plus_en)
+          {
+              u8 flash = (a & 0x80) >> 7;
+              u8 bright = (a & 8) >> 3;
+              paper &= 7;
+              ink &= 7;
+              u8 pal_no = u8(((flash << 1) | bright) << 4);
+              paper_idx = u8(pal_no | 8 | paper);
+              ink_idx   = u8(pal_no | 0 | ink);
+          }
+          else
+          { //------ for ATM / profi palette - direct values from palette registers
+              paper = a >> 4;
+              ink = a & 0x0F;
+              paper_idx = u8(((paper & 8) << 1) | (paper & 7));
+              ink_idx = u8(((ink & 8) << 1) | (ink & 7));
+          }
+          t.attrtab[a] = comp.comp_pal[paper_idx]; // paper
+          t.attrtab[a | 0x100] = comp.comp_pal[ink_idx]; // ink
       }
       else if (temp.rflags & RF_PALB)
       { //----------------------------- for bilinear
          unsigned char b0,b1, r0,r1, g0,g1;
-         b0 = (paper >> 0) & 1, r0 = (paper >> 1) & 1, g0 = (paper >> 2) & 1;
-         b1 = (ink >> 0) & 1, r1 = (ink >> 1) & 1, g1 = (ink >> 2) & 1;
+         b0 = (paper >> 0) & 1; r0 = (paper >> 1) & 1; g0 = (paper >> 2) & 1;
+         b1 = (ink >> 0) & 1; r1 = (ink >> 1) & 1; g1 = (ink >> 2) & 1;
 
          if (flashcolor && (a & 0x80))
          {
-            b1 += b0, r1 += r0, g1 += g0;
-            r0 = b0 = g0 = 0;
+             b1 += b0; r1 += r0; g1 += g0;
+             r0 = b0 = g0 = 0;
          }
          else
          {
-            b0 *= 2, r0 *= 2, g0 *=2,
-            b1 *= 2, r1 *= 2, g1 *=2;
+             b0 *= 2; r0 *= 2; g0 *= 2;
+             b1 *= 2; r1 *= 2; g1 *= 2;
          }
 
          unsigned char br1 = (ink >> 3) & 1;
@@ -282,8 +369,8 @@ void attr_tables()
          if (b0) b0 += br0;
 
          // palette index: gg0rr0bb
-         t.attrtab[a+0x100]  = (g1 << 6) + (r1 << 3) + b1;
-         t.attrtab[a]        = (g0 << 6) + (r0 << 3) + b0;
+         t.attrtab[a+0x100]  = u8((g1 << 6) + (r1 << 3) + b1);
+         t.attrtab[a]        = u8((g0 << 6) + (r0 << 3) + b0);
       }
       else //------------------------------------ all others
       {
@@ -291,18 +378,18 @@ void attr_tables()
          if (flashcolor && (a & 0x80))
          {
              t.attrtab[a] = 0;
-             t.attrtab[a+0x100] = ink+(paper<<4);
+             t.attrtab[a+0x100] = u8(ink+(paper<<4));
          }
          else
          {
-             t.attrtab[a] = paper * 0x11;
-             t.attrtab[a+0x100] = ink * 0x11;
+             t.attrtab[a] = paper * 0x11; // p[3..0]:p[3..0] (удвоение)
+             t.attrtab[a+0x100] = ink * 0x11; // i[3..0]:i[3..0] (удвоение)
          }
       }
    }
 }
 
-void p4bpp_tables()
+static void p4bpp_tables()
 {
    for (unsigned pass = 0; pass < 2; pass++) {
       for (unsigned bt = 0; bt < 0x100; bt++) {
@@ -312,11 +399,11 @@ void p4bpp_tables()
             t.p4bpp8[pass][bt] = (t.sctab8[pass][0x0F+0x10*rt] & 0xFFFF) +
                                    (t.sctab8[pass][0x0F+0x10*lf] & 0xFFFF0000);
          } else if (temp.obpp == 16) {
-            t.p4bpp16[pass][bt*2+0] = t.sctab16[pass][0x03+4*rt],
-            t.p4bpp16[pass][bt*2+1] = t.sctab16[pass][0x03+4*lf];
+             t.p4bpp16[pass][bt * 2 + 0] = t.sctab16[pass][0x03 + 4 * rt];
+             t.p4bpp16[pass][bt * 2 + 1] = t.sctab16[pass][0x03 + 4 * lf];
          } else /* if (temp.obpp == 32) */ {
-            t.p4bpp32[pass][bt*2+0] = t.sctab32[pass][0x100+rt],
-            t.p4bpp32[pass][bt*2+1] = t.sctab32[pass][0x100+lf];
+             t.p4bpp32[pass][bt * 2 + 0] = t.sctab32[pass][0x100 + rt];
+             t.p4bpp32[pass][bt * 2 + 1] = t.sctab32[pass][0x100 + lf];
          }
       }
    }
@@ -327,15 +414,23 @@ void atm_zc_tables() // atm,profi screens (use normal zx-flash)
    for (unsigned pass = 0; pass < 2; pass++) {
       for (unsigned at = 0; at < 0x100; at++) {
          unsigned pc_attr = colortab[at];
-         if (temp.obpp == 8)
-            for (unsigned j = 0; j < 4; j++)
-               t.zctab8ad[pass][at*4+j] = t.sctab8d[pass][pc_attr*4+j];
-         else if (temp.obpp == 16)
-            t.zctab16ad[pass][at] = t.sctab16d[pass][pc_attr],
-            t.zctab16ad[pass][at+0x100] = t.sctab16d[pass][pc_attr+0x100];
+         if(temp.obpp == 8)
+         {
+             for(unsigned j = 0; j < 4; j++)
+             {
+                 t.zctab8ad[pass][at * 4 + j] = t.sctab8d[pass][pc_attr * 4 + j];
+             }
+         }
+         else if(temp.obpp == 16)
+         {
+             t.zctab16ad[pass][at] = t.sctab16d[pass][pc_attr];
+             t.zctab16ad[pass][at + 0x100] = t.sctab16d[pass][pc_attr + 0x100];
+         }
          else /* if (temp.obpp == 32) */
-            t.zctab32ad[pass][at] = t.sctab32[pass][pc_attr],
-            t.zctab32ad[pass][at+0x100] = t.sctab32[pass][pc_attr+0x100];
+         {
+             t.zctab32ad[pass][at] = t.sctab32[pass][pc_attr];
+             t.zctab32ad[pass][at + 0x100] = t.sctab32[pass][pc_attr + 0x100];
+         }
       }
    }
 
@@ -362,7 +457,7 @@ void atm_zc_tables() // atm,profi screens (use normal zx-flash)
    }
 }
 
-void hires_sc_tables()  // atm,profi screens (use zx-attributes & flash -> paper_bright)
+static void hires_sc_tables()  // atm,profi screens (use zx-attributes & flash -> paper_bright)
 {
    for (unsigned pass = 0; pass < 2; pass++) {
       for (unsigned at = 0; at < 0x100; at++) {
@@ -380,7 +475,7 @@ void hires_sc_tables()  // atm,profi screens (use zx-attributes & flash -> paper
    }
 }
 
-void calc_noflic_16_32()
+static void calc_noflic_16_32()
 {
    unsigned at, pass;
    if (temp.obpp == 16) {
@@ -405,11 +500,10 @@ void calc_noflic_16_32()
 }
 
 // pal.index => raw video data, shadowed with current scanline pass
-unsigned raw_data(unsigned index, unsigned pass, unsigned bpp)
+static unsigned raw_data(unsigned index, unsigned pass, unsigned bpp)
 {
    if (bpp == 8)
    {
-
       if (pass)
       {
          if (!conf.scanbright)
@@ -423,7 +517,7 @@ unsigned raw_data(unsigned index, unsigned pass, unsigned bpp)
                 index &= 0x0F;
          }
       }
-      return index * 0x01010101;
+      return index * 0x01010101; // 4 точки (8bit)
    }
 
    unsigned r = pal0[index].peRed, g = pal0[index].peGreen, b = pal0[index].peBlue;
@@ -435,19 +529,19 @@ unsigned raw_data(unsigned index, unsigned pass, unsigned bpp)
    }
 
    if (bpp == 32)
-       return WORD4(b,g,r,0);
+       return WORD4(b,g,r,0); // 1 точка (32bit)
 
    // else (bpp == 16)
    if (temp.hi15==0)
-       return ((b/8) + ((g/4)<<5) + ((r/8)<<11)) * 0x10001;
+       return ((b/8) + ((g/4)<<5) + ((r/8)<<11)) * 0x10001; // 2 точки (16bit)
    if (temp.hi15==1)
-       return ((b/8) + ((g/8)<<5) + ((r/8)<<10)) * 0x10001;
+       return ((b/8) + ((g/8)<<5) + ((r/8)<<10)) * 0x10001; // 2 точки (16bit)
    if (temp.hi15==2)
-       return getYUY2(r,g,b);
+       return getYUY2(r,g,b); // yuyv (32bit)
    return 0;
 }
 
-unsigned atari_to_raw(unsigned at, unsigned pass)
+static unsigned atari_to_raw(unsigned at, unsigned pass)
 {
    unsigned c1 = at/0x10, c2 = at & 0x0F;
    unsigned raw0 = raw_data(t.attrtab[c1+0x100], pass, temp.obpp);
@@ -464,63 +558,86 @@ unsigned atari_to_raw(unsigned at, unsigned pass)
 
 void pixel_tables()
 {
-   attr_tables();
-   for (unsigned pass = 0; pass < 2; pass++)
-   {
-      for (unsigned at = 0; at < 0x100; at++)
-      {
-         unsigned px0 = t.attrtab[at];
-         unsigned px1 = t.attrtab[at+0x100];
-         unsigned p0 = raw_data(px0, pass, temp.obpp);
-         unsigned p1 = raw_data(px1, pass, temp.obpp);
+    attr_tables();
+    for(unsigned pass = 0; pass < 2; pass++)
+    {
+        for(unsigned at = 0; at < 0x100; at++)
+        {
+            unsigned px0 = t.attrtab[at]; // Точка выключена (индекс палитры эмулятора, палитра 8[idx]->32[xrgb])
+            unsigned px1 = t.attrtab[at + 0x100]; // Точка включена (индекс палитры эмулятора, палитра 8[idx]->32[xrgb])
 
-         // sctab32 required for frame resampler in 16-bit mode, so temp.obpp=16 here
-         t.sctab32[pass][at] = raw_data(px0, pass, 32);
-         t.sctab32[pass][at+0x100] = raw_data(px1, pass, 32);
+            // 4 точки (одинаковых, учетверение) для 8bpp
+            // 2 точки (одинаковых, удвоение) для 16bpp
+            // 1 точка для 32bpp
+            unsigned p0 = raw_data(px0, pass, temp.obpp); // Точка выключена (данные для pc видеопамяти)
+            unsigned p1 = raw_data(px1, pass, temp.obpp); // Точка включена (данные для pc видеопамяти)
 
-         // 8 bit
-         unsigned j;
-         for (j = 0; j < 0x10; j++)
-         {
-            unsigned mask = (j >> 3)*0xFF + (j & 0x04)*(0xFF00/4) +
-                            (j & 0x02)*(0xFF0000/2) + (j & 1)*0xFF000000;
-            t.sctab8[pass][j + at*0x10] = (mask & p1) + (~mask & p0);
-         }
-         for (j = 0; j < 4; j++)
-         {
-            unsigned mask = (j >> 1)*0xFFFF + (j & 1)*0xFFFF0000;
-            t.sctab8d[pass][j+at*4] = (mask & p1) + (~mask & p0);
-         }
-         t.sctab8q[at] = p0, t.sctab8q[at+0x100] = p1;
+            // sctab32 required for frame resampler in 16-bit mode, so temp.obpp=16 here
+            // Входные данные 1 бит
+            t.sctab32[pass][at] = raw_data(px0, pass, 32); // Точка выключена (данные для pc видеопамяти xrgb)
+            t.sctab32[pass][at + 0x100] = raw_data(px1, pass, 32); // Точка включена (данные для pc видеопамяти xrgb)
 
-         // 16 bit
-         for (j = 0; j < 4; j++)
-         {
-            unsigned mask = (j >> 1)*0xFFFF + (j & 1)*0xFFFF0000;
-            t.sctab16[pass][j+at*4] = (mask & p1) + (~mask & p0);
-         }
-         t.sctab16d[pass][at] = p0, t.sctab16d[pass][at+0x100] = p1;
+            // 8 bit
+            unsigned j;
+            for(j = 0; j < 0x10; j++) // j - Входные данные (значение ч/б пикселей) 4бита (16 комбинаций)
+            {
+                unsigned mask = (j >> 3) * 0xFF + (j & 0x04)*(0xFF00 / 4) +
+                    (j & 0x02)*(0xFF0000 / 2) + (j & 1) * 0xFF000000;
+                t.sctab8[pass][j + at * 0x10] = (mask & p1) + (~mask & p0); // Данные для pc видеопамяти 4 точки
+            }
+            for(j = 0; j < 4; j++) // j - Входные данные (значение ч/б пикселей) 2бита (4 комбинации)
+            {
+                unsigned mask = (j >> 1) * 0xFFFF + (j & 1) * 0xFFFF0000;
+                t.sctab8d[pass][j + at * 4] = (mask & p1) + (~mask & p0); // Данные для pc видеопамяти 2 точки с удвоением
+            }
+            // Входные данные (значение ч/б пикселей) 1бит (2 комбинации)
+            t.sctab8q[at] = p0; t.sctab8q[at + 0x100] = p1; // Данные для pc видеопамяти 1 точка с учетверением
 
-         unsigned atarimode;
-         if (!(temp.rflags & RF_MON) && (atarimode = temp.ataricolors[at]))
-         {
-            unsigned rawdata[4], i;
-            for (i = 0; i < 4; i++) rawdata[i] = atari_to_raw((atarimode >> (8*i)) & 0xFF, pass);
-            for (i = 0; i < 16; i++) t.sctab8[pass][at*0x10+i] = rawdata[i/4] + 16*rawdata[i & 3];
-            for (i = 0; i < 4; i++) t.sctab8d[pass][at*4+i] = rawdata[i];
-            for (i = 0; i < 4; i++) t.sctab16[pass][at*4+i] = rawdata[i];
+            // 16 bit
+            for(j = 0; j < 4; j++) // j - Входные данные (значение ч/б пикселей) 2бита (4 комбинации)
+            {
+                unsigned mask = (j >> 1) * 0xFFFF + (j & 1) * 0xFFFF0000;
+                t.sctab16[pass][j + at * 4] = (mask & p1) + (~mask & p0); // Данные для pc видеопамяти 2 точки
+            }
+            // Входные данные (значение ч/б пикселей) 1бит (2 комбинации)
+            t.sctab16d[pass][at] = p0; t.sctab16d[pass][at + 0x100] = p1; // Данные для pc видеопамяти 1 точка с удвоением
 
-         }
-      }
-   }
+            unsigned atarimode;
+            if(!(temp.rflags & RF_MON) && (atarimode = temp.ataricolors[at]))
+            {
+                unsigned rawdata[4], i;
+                for(i = 0; i < 4; i++)
+                {
+                    rawdata[i] = atari_to_raw((atarimode >> (8 * i)) & 0xFF, pass);
+                }
+                for(i = 0; i < 16; i++)
+                {
+                    t.sctab8[pass][at * 0x10 + i] = rawdata[i / 4] + 16 * rawdata[i & 3];
+                }
+                for(i = 0; i < 4; i++)
+                {
+                    t.sctab8d[pass][at * 4 + i] = rawdata[i];
+                }
+                for(i = 0; i < 4; i++)
+                {
+                    t.sctab16[pass][at * 4 + i] = rawdata[i];
+                }
+            }
+        }
+    }
 
-   p4bpp_tables(); // used for ATM2+ mode0 and Pentagon-4bpp
+    p4bpp_tables(); // used for ATM2+ mode0 and Pentagon-4bpp
 
-   if (temp.obpp > 8 && conf.noflic) calc_noflic_16_32();
+    if(temp.obpp > 8 && conf.noflic)
+    {
+        calc_noflic_16_32();
+    }
 
-   if ((temp.rflags & (RF_DRIVER|RF_2X|RF_USEFONT))==(RF_DRIVER|RF_2X) && // render="double"
-       (conf.mem_model == MM_ATM450 || conf.mem_model == MM_ATM710 || conf.mem_model == MM_ATM3 || conf.mem_model == MM_PROFI))
-      hires_sc_tables();
+    if((temp.rflags & (RF_DRIVER | RF_2X | RF_USEFONT)) == (RF_DRIVER | RF_2X) && // render="double"
+        (conf.mem_model == MM_ATM450 || conf.mem_model == MM_ATM710 || conf.mem_model == MM_ATM3 || conf.mem_model == MM_PROFI))
+    {
+        hires_sc_tables();
+    }
 }
 
 void video_color_tables()
@@ -538,11 +655,11 @@ void video_color_tables()
          for (unsigned vl = 0; vl <= 0x10; vl++) {
             unsigned br = (at & 0x40) ? 0xFF : 0xBF;
             unsigned c1, c2, res;
-            c1 = (at & 1) >> 0, c2 = (at & 0x08) >> 3;
+            c1 = (at & 1) >> 0; c2 = (at & 0x08) >> 3;
             unsigned b = (c1*vl + c2*(0x10-vl))*br/0x10;
-            c1 = (at & 2) >> 1, c2 = (at & 0x10) >> 4;
+            c1 = (at & 2) >> 1; c2 = (at & 0x10) >> 4;
             unsigned r = (c1*vl + c2*(0x10-vl))*br/0x10;
-            c1 = (at & 4) >> 2, c2 = (at & 0x20) >> 5;
+            c1 = (at & 4) >> 2; c2 = (at & 0x20) >> 5;
             unsigned g = (c1*vl + c2*(0x10-vl))*br/0x10;
             if (temp.rflags & RF_USE32AS16) {
                if (temp.hi15==0) res = (b/8) + ((g/4)<<5) + ((r/8)<<11);
@@ -579,7 +696,7 @@ void video_timing_tables()
    const unsigned buf_mid = 256; // Число пикселей в центральной части экрана (без бордюра)
 
    // Расчет размер бордюра в пикселях (1 пиксель = 2 такта)
-   temp.b_bottom = temp.b_top = conf.b_top_small, temp.b_left = conf.b_left_small; // border small
+   temp.b_bottom = temp.b_top = conf.b_top_small; temp.b_left = conf.b_left_small; // border small
    if (conf.bordersize==0) temp.b_top = temp.b_left = 0; // border none
    if (conf.bordersize==2) { temp.b_top = conf.b_top_full; temp.b_left = conf.b_left_full; } // border full
 
@@ -591,7 +708,11 @@ void video_timing_tables()
    temp.b_right = temp.scx - buf_mid - temp.b_left; // Расчет размера правой части бордюра в пикселях (1 пиксель = 1/2 такта)
    temp.b_bottom = temp.scy - mid_lines - temp.b_top; // Расчет размера нижней части бордюра в пикселях (1 пиксель = 1/2 такта)
 
-   if (conf.nopaper) temp.b_bottom += mid_lines, mid_lines=0; // Режим nopaper (растр в середине экрана отсутствует)
+   if(conf.nopaper) // Режим nopaper (растр в середине экрана отсутствует)
+   {
+       temp.b_bottom += mid_lines;
+       mid_lines = 0;
+   }
    int inx = 0;
 
    unsigned i;
@@ -672,7 +793,7 @@ void video_timing_tables()
       int y = (signed short)(((z >> 16) & 0x7FFF) + ((z >> 15) & 0x8000));
       if (x < 0) x += width*8;
       if (y < 0) y += temp.scy;
-      *(&temp.led.ay+i) = (z & 0x80000000) ? rbuf + ((x>>2)&0xFE) + y*width : 0;
+      *(&temp.led.ay+i) = (z & 0x80000000) ? rbuf + ((x>>2)&0xFE) + unsigned(y)*width : nullptr;
    }
 
    if (temp.rflags & RF_USEFONT)
@@ -707,6 +828,11 @@ void apply_video()
       conf.noflic = 0;
    }
 
+   if(conf.ula_plus/* && comp.ula_plus_en*/)
+   {
+       temp.rflags |= RF_COMPPAL | RF_PALB;
+   }
+
    if (renders[conf.render].func == render_rsm)
        conf.flip = 1; // todo: revert back after returning from frame resampler //Alone Coder
 
@@ -738,19 +864,34 @@ __inline unsigned char *raypointer()
 __inline void clear_until_ray()
 {
    unsigned char *dst = raypointer();
-   while (dst < rbuf + rb2_offs) *dst++ = 0, *dst++ = 0x55;
+   while(dst < rbuf + rb2_offs)
+   {
+       *dst++ = 0;
+       *dst++ = 0x55;
+   }
 }
 
 void paint_scr(char alt) // alt=0/1 - main/alt screen, alt=2 - ray-painted
 {
-   if (alt == 2) {
-      update_screen();
-      clear_until_ray();
-   } else {
-      if (alt) comp.p7FFD ^= 8, set_banks();
-      draw_screen();
-      if (alt) comp.p7FFD ^= 8, set_banks();
-   }
+    if(alt == 2)
+    {
+        update_screen();
+        clear_until_ray();
+    }
+    else
+    {
+        if(alt)
+        {
+            comp.p7FFD ^= 8;
+            set_banks();
+        }
+        draw_screen();
+        if(alt)
+        {
+            comp.p7FFD ^= 8;
+            set_banks();
+        }
+    }
 }
 
 // Вызывается при записи в видеопамять/(порты FE/7FFD) нового значения
@@ -758,7 +899,7 @@ void paint_scr(char alt) // alt=0/1 - main/alt screen, alt=2 - ray-painted
 void update_screen()
 {
    unsigned last_t = (cpu.t + temp.border_add) & temp.border_and;
-   unsigned t = prev_t;
+   unsigned t = prev_t; // Выполняется отрисовка от последнего отрисованного такта prev_t до текущего округленного такта last_t
 //   printf("upd_scr: t=%u, lt=%u, vm=%u\n", t, last_t, vmode);
    if (t >= last_t) // Невидимая часть строки (hblank либо невидимые строки верхнего бордюра)
        return;
@@ -766,11 +907,15 @@ void update_screen()
    unsigned char b = comp.border_attr;
    b |= (b<<4); // Атрибуты бордюра дублируются в формате pc атрибутов ink=paper
 
-   if (vmode == 1)
-       goto mode1;
+   if(vmode == 1)
+   {
+       goto mode1; // border
+   }
 
-   if (vmode == 2)
+   if(vmode == 2) // screen
+   {
        goto mode2;
+   }
 
 mode0: // not visible
    {
@@ -780,22 +925,28 @@ mode0: // not visible
       if (t >= last_t)
       {
 done:
-          prev_t = t;
+          prev_t = t; // Последний отрисованный такт
           return;
       }
    }
 mode1: // border
    {
       unsigned offs = (t - vcurr[-1].next_t); // Смещение в тактах от начала строки (1 такт = 2 пикселя)
-      unsigned char *ptr = vcurr->screen_ptr + offs/2; // Указатель на адрес точки в промежуточном буфере
+      unsigned char *ptr = vcurr->screen_ptr + offs/2; // Указатель на адрес точки в промежуточном буфере (структура буфера 8pix:attr)
 //      u8 *pp =ptr;
       ptr = (unsigned char*)(ULONG_PTR(ptr) & ~ULONG_PTR(1)); // Выравание до четного адреса
       if(offs & 3)
-      { // Есть пиксели не попадающие на границу знакоместа
-         *ptr++ = ((unsigned)0xFF00 >> ((offs & 3)*2)); // Маска пикселей
-         t += 4 -(offs & 3);
-         *ptr = (*ptr & 0x0F) + (b & 0xF0); // Атрибуты
-         ptr++;
+      { // Смена цвета бордюра произошла не по границе знакоместа (два цвета бордюра внутри одного знакоместа, эмулируются через ink/paper)
+          u8 old_b = (ptr[1] & 0x0F);
+          if(old_b ^ (b & 0xF)) // Цвет бордюра изменился по сравнению с предыдущим
+          {
+              u8 mask = u8((unsigned)0xFF00 >> ((offs & 3) * 2)); // Маска пикселей (для 1 - используется цвет ink, для 0 - paper)
+              *ptr = mask;
+              ptr++;
+              t += 4 - (offs & 3);
+              *ptr = old_b | (b & 0xF0); // Атрибуты (ink - старый цвет бордюра, paper - текущий цвет бордюра)
+              ptr++;
+          }
       }
       unsigned end = min(vcurr->next_t, last_t);
 //      printf("upd_scr_m1: o=%uT, p=%u, t=%uT, end=%uT\n", offs, pp - rbuf, t, end);
@@ -847,8 +998,8 @@ void init_frame()
    if (!(frame & 15) /* && !conf.flashcolor */ )
        make_colortab(frame & 16);
 
-   prev_t = -1; // block MCR
-   temp.base_2 = 0; // block paper trace
+   prev_t = -1U; // block MCR
+   temp.base_2 = nullptr; // block paper trace
 
    if (temp.vidblock)
        return;
@@ -896,7 +1047,7 @@ void flush_frame()
 {
    if (temp.vidblock)
        return;
-   if (prev_t != -1)
+   if (prev_t != -1U)
    { // MCR on
       if (prev_t)
       {  // paint until end of frame
@@ -920,12 +1071,40 @@ void flush_frame()
        draw_alco();
 }
 
+// spectrum colors -> palette indexes (RF_PALB - gggrrrbb format)
+static const u8 comp_pal[16] =
+{
+    // normal bright  g   r   b   g  r  b
+    0x00, // black   000|000|00  00|00|00
+    0x02, // blue    000|000|10  00|00|10
+    0x10, // red     000|100|00  00|10|00
+    0x12, // magenta 000|100|10  00|10|10
+    0x80, // green   100|000|00  10|00|00
+    0x82, // cyan    100|000|10  10|00|10
+    0x90, // yellow  100|100|00  10|10|00
+    0x92, // white   100|100|10  10|10|10
+
+    // high bright    g   r   b   g  r  b
+    0x00, // black   000|000|00  00|00|00
+    0x03, // blue    000|000|11  00|00|11
+    0x1C, // red     000|111|00  00|11|00
+    0x1F, // magenta 000|111|11  00|11|11
+    0xE0, // green   111|000|00  11|00|00
+    0xE3, // cyan    111|000|11  11|00|11
+    0xFC, // yellow  111|111|00  11|11|00
+    0xFF  // white   111|111|11  11|11|11
+};
+
 void load_spec_colors()
 {
-   // spectrum colors -> palette indexes (RF_PALB - gg0rr0bb format)
-   static unsigned char comp_pal[16] =
-      { 0x00, 0x02, 0x10, 0x12, 0x80, 0x82, 0x90, 0x92,
-        0x00, 0x03, 0x18, 0x1B, 0xC0, 0xC3, 0xD8, 0xDB };
-   memcpy(comp.comp_pal, comp_pal, sizeof comp.comp_pal);
-   temp.comp_pal_changed = 1;
+    for(unsigned flash = 0; flash < 2; flash++)
+    {
+        for(unsigned bright = 0; bright < 2; bright++)
+        {
+            unsigned PalNo = ((flash << 1) | bright) << 4;
+            memcpy(comp.comp_pal + (PalNo | (0 << 3)), comp_pal + (bright << 3), sizeof(comp_pal) / 2); // ink
+            memcpy(comp.comp_pal + (PalNo | (1 << 3)), comp_pal + (bright << 3), sizeof(comp_pal) / 2); // paper
+        }
+    }
+    temp.comp_pal_changed = 1;
 }

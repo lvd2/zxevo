@@ -35,7 +35,7 @@ void line32_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
    }
 }
 
-void line32d_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
+static void line32d_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
 {
    for (unsigned x = 0; x < temp.scx*8; x += 64) {
       unsigned char byte = *src;
@@ -79,7 +79,7 @@ void line32d_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
    }
 }
 
-void line32t_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
+static void line32t_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
 {
    u32 *d = (u32 *)dst;
    for (unsigned x = 0,  i = 0; x < temp.scx*3; x += 24, i += 2)
@@ -129,7 +129,7 @@ void line32t_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
    }
 }
 
-void line32q_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
+static void line32q_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
 {
    for (unsigned x = 0; x < temp.scx*16; x += 128) {
       unsigned char byte = *src;
@@ -210,9 +210,9 @@ void line32(unsigned char *dst, unsigned char *src, unsigned *tab)
       __m128i im1, pm1, im2, pm2;
       __m128i vr1, vr2;
 
-      b = _mm_set1_epi32(byte);
-      iv = _mm_set1_epi32(ink);
-      pv = _mm_set1_epi32(paper);
+      b = _mm_set1_epi32(int(byte));
+      iv = _mm_set1_epi32(int(ink));
+      pv = _mm_set1_epi32(int(paper));
 
       b1 = _mm_and_si128(b, m1);
       r1 = _mm_cmpeq_epi32(b1, m1);
@@ -276,9 +276,9 @@ void line32d(unsigned char *dst, unsigned char *src, unsigned *tab)
       __m128i l1, l2;
       __m128i h1, h2;
 
-      b = _mm_set1_epi32(byte);
-      iv = _mm_set1_epi32(ink);
-      pv = _mm_set1_epi32(paper);
+      b = _mm_set1_epi32(int(byte));
+      iv = _mm_set1_epi32(int(ink));
+      pv = _mm_set1_epi32(int(paper));
 
       b1 = _mm_and_si128(b, m1);
       r1 = _mm_cmpeq_epi32(b1, m1);
@@ -327,7 +327,7 @@ void line32d(unsigned char *dst, unsigned char *src, unsigned *tab)
 }
 #endif
 
-void line32t(unsigned char *dst, const unsigned char *src, const unsigned *tab)
+static void line32t(unsigned char *dst, const unsigned char *src, const unsigned *tab)
 {
    unsigned *d = (unsigned *)dst;
    for (unsigned x = 0, i = 0; x < temp.scx * 3; x += 3*8,  i += 2)
@@ -348,7 +348,7 @@ void line32t(unsigned char *dst, const unsigned char *src, const unsigned *tab)
    }
 }
 
-void line32q(unsigned char *dst, unsigned char *src, unsigned *tab)
+static void line32q(unsigned char *dst, unsigned char *src, unsigned *tab)
 {
    for (unsigned x = 0; x < temp.scx*16; x += 128) {
       unsigned char byte = *src++;
@@ -427,17 +427,17 @@ void line16_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
 #define line16q line32d
 #define line16q_nf line32d_nf
 
-void line16t(unsigned char *dst, unsigned char *src, unsigned *tab)
+static void line16t(unsigned char *dst, unsigned char *src, unsigned *tab)
 {
    u16 *d = (u16 *)dst;
    for (unsigned x = 0; x < temp.scx*3; x += 24)
    {
       unsigned char byte = *src++;
       unsigned *t = tab + *src++;
-      u16 paper_yu = t[0];
-      u16 paper_yv = t[0] >> 16;
-      u16 ink_yu = t[0x100];
-      u16 ink_yv = t[0x100] >> 16;
+      u16 paper_yu = u16(t[0]);
+      u16 paper_yv = u16(t[0] >> 16);
+      u16 ink_yu = u16(t[0x100]);
+      u16 ink_yv = u16(t[0x100] >> 16);
 
       d[x+0]  = (byte & 0x80) ? ink_yu : paper_yu;
       d[x+1]  = (byte & 0x80) ? ink_yv : paper_yv;
@@ -473,7 +473,7 @@ void line16t(unsigned char *dst, unsigned char *src, unsigned *tab)
    }
 }
 
-void line16t_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
+static void line16t_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
 {
    u16 *d = (u16 *)dst;
    for (unsigned x = 0,  i = 0; x < temp.scx*3; x += 24, i += 2)
@@ -483,15 +483,15 @@ void line16t_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
       u8 byte2 = src[i+rb2_offs];
       unsigned *t2 = tab + src[i+rb2_offs+1];
 
-      u16 paper_yu1 = t1[0];
-      u16 paper_yv1 = t1[0] >> 16;
-      u16 ink_yu1 = t1[0x100];
-      u16 ink_yv1 = t1[0x100] >> 16;
+      u16 paper_yu1 = u16(t1[0]);
+      u16 paper_yv1 = u16(t1[0] >> 16);
+      u16 ink_yu1 = u16(t1[0x100]);
+      u16 ink_yv1 = u16(t1[0x100] >> 16);
 
-      u16 paper_yu2 = t2[0];
-      u16 paper_yv2 = t2[0] >> 16;
-      u16 ink_yu2 = t2[0x100];
-      u16 ink_yv2 = t2[0x100] >> 16;
+      u16 paper_yu2 = u16(t2[0]);
+      u16 paper_yv2 = u16(t2[0] >> 16);
+      u16 ink_yu2 = u16(t2[0x100]);
+      u16 ink_yv2 = u16(t2[0x100] >> 16);
 
       d[x+0]  = ((byte1 & 0x80) ? ink_yu1 : paper_yu1) + ((byte2 & 0x80) ? ink_yu2 : paper_yu2);
       d[x+1]  = ((byte1 & 0x80) ? ink_yv1 : paper_yv1) + ((byte2 & 0x80) ? ink_yv2 : paper_yv2);
@@ -536,7 +536,8 @@ void line8(unsigned char *dst, unsigned char *src, unsigned *tab)
       attr = (src0 >> 20) & 0xFF0;
       *(unsigned*)(dst+x+8)  = tab[((src0 >> 20) & 0xF) + attr];
       *(unsigned*)(dst+x+12) = tab[((src0 >> 16) & 0xF) + attr];
-      src0 = *(unsigned*)(src+4), attr = (src0 >> 4) & 0xFF0;
+      src0 = *(unsigned*)(src + 4);
+      attr = (src0 >> 4) & 0xFF0;
       *(unsigned*)(dst+x+16) = tab[((src0 >> 4)  & 0xF) + attr];
       *(unsigned*)(dst+x+20) = tab[((src0 >> 0)  & 0xF) + attr];
       attr = (src0 >> 20) & 0xFF0;
@@ -560,8 +561,10 @@ void line8_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
                                (tab[((r >> 20) & 0xF) + atr2] & 0xF0F0F0F0);
       *(unsigned*)(dst+x+12) = (tab[((s >> 16) & 0xF) + attr] & 0x0F0F0F0F) +
                                (tab[((r >> 16) & 0xF) + atr2] & 0xF0F0F0F0);
-      s = *(unsigned*)(src+4), attr = (s >> 4) & 0xFF0;
-      r = *(unsigned*)(src+rb2_offs+4), atr2 = (r >> 4) & 0xFF0;
+      s = *(unsigned*)(src + 4);
+      attr = (s >> 4) & 0xFF0;
+      r = *(unsigned*)(src + rb2_offs + 4);
+      atr2 = (r >> 4) & 0xFF0;
       *(unsigned*)(dst+x+16) = (tab[((s >> 4)  & 0xF) + attr] & 0x0F0F0F0F) +
                                (tab[((r >> 4)  & 0xF) + atr2] & 0xF0F0F0F0);
       *(unsigned*)(dst+x+20) = (tab[((s >> 0)  & 0xF) + attr] & 0x0F0F0F0F) +
@@ -599,18 +602,18 @@ void line8t(unsigned char *dst, unsigned char *src, unsigned *tab)
    {
       unsigned char byte = *src++;
       unsigned *t = tab + *src++;
-      dst[x+0]  = dst[x+1]  = dst[x+2]  = t[(byte << 1) & 0x100];
-      dst[x+3]  = dst[x+4]  = dst[x+5]  = t[(byte << 2) & 0x100];
-      dst[x+6]  = dst[x+7]  = dst[x+8]  = t[(byte << 3) & 0x100];
-      dst[x+9]  = dst[x+10] = dst[x+11] = t[(byte << 4) & 0x100];
-      dst[x+12] = dst[x+13] = dst[x+14] = t[(byte << 5) & 0x100];
-      dst[x+15] = dst[x+16] = dst[x+17] = t[(byte << 6) & 0x100];
-      dst[x+18] = dst[x+19] = dst[x+20] = t[(byte << 7) & 0x100];
-      dst[x+21] = dst[x+22] = dst[x+23] = t[(byte << 8) & 0x100];
+      dst[x+0]  = dst[x+1]  = dst[x+2]  = u8(t[(byte << 1) & 0x100]);
+      dst[x+3]  = dst[x+4]  = dst[x+5]  = u8(t[(byte << 2) & 0x100]);
+      dst[x+6]  = dst[x+7]  = dst[x+8]  = u8(t[(byte << 3) & 0x100]);
+      dst[x+9]  = dst[x+10] = dst[x+11] = u8(t[(byte << 4) & 0x100]);
+      dst[x+12] = dst[x+13] = dst[x+14] = u8(t[(byte << 5) & 0x100]);
+      dst[x+15] = dst[x+16] = dst[x+17] = u8(t[(byte << 6) & 0x100]);
+      dst[x+18] = dst[x+19] = dst[x+20] = u8(t[(byte << 7) & 0x100]);
+      dst[x+21] = dst[x+22] = dst[x+23] = u8(t[(byte << 8) & 0x100]);
    }
 }
 
-void line8q(unsigned char *dst, unsigned char *src, unsigned *tab)
+static void line8q(unsigned char *dst, unsigned char *src, unsigned *tab)
 {
    for (unsigned x = 0; x < temp.scx*4; x += 32) {
       unsigned char byte = *src++;
@@ -626,7 +629,7 @@ void line8q(unsigned char *dst, unsigned char *src, unsigned *tab)
    }
 }
 
-void line8d_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
+static void line8d_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
 {
    for (unsigned x = 0; x < temp.scx*2; x += 32) {
       unsigned s = *(unsigned*)src, attr = (s >> 6) & 0x3FC;
@@ -652,7 +655,7 @@ void line8d_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
    }
 }
 
-void line8t_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
+static void line8t_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
 {
    for (unsigned x = 0, i = 0; x < temp.scx*3; x += 24, i += 2)
    {
@@ -676,7 +679,7 @@ void line8t_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
    }
 }
 
-void line8q_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
+static void line8q_nf(unsigned char *dst, unsigned char *src, unsigned *tab)
 {
    for (unsigned x = 0; x < temp.scx*4; x += 32) {
       unsigned char byte1 = src[0], byte2 = src[rb2_offs+0];
@@ -730,7 +733,11 @@ void rend_copy32d_nf(unsigned char *dst, unsigned pitch)
    unsigned char *src = rbuf; unsigned delta = temp.scx/4;
    if (conf.alt_nf) {
       int offset = rb2_offs;
-      if (comp.frame_counter & 1) src += rb2_offs, offset = -offset;
+      if(comp.frame_counter & 1)
+      {
+          src += rb2_offs;
+          offset = -offset;
+      }
       for (unsigned y = 0; y < temp.scy; y++) {
          line32d(dst, src, t.sctab32[0]); dst += pitch;
          line32d(dst, src+offset, t.sctab32[0]); dst += pitch;
@@ -839,7 +846,8 @@ void rend_copy16(unsigned char *dst, unsigned pitch)
    unsigned char *src = rbuf; unsigned delta = temp.scx/4;
    for (unsigned y = 0; y < temp.scy; y++) {
       line16(dst, src, t.sctab16[0]);
-      dst += pitch, src += delta;
+      dst += pitch;
+      src += delta;
    }
 }
 
@@ -848,7 +856,8 @@ void rend_copy16_nf(unsigned char *dst, unsigned pitch)
    unsigned char *src = rbuf; unsigned delta = temp.scx/4;
    for (unsigned y = 0; y < temp.scy; y++) {
       line16_nf(dst, src, t.sctab16_nf[0]);
-      dst += pitch, src += delta;
+      dst += pitch;
+      src += delta;
    }
 }
 
@@ -908,7 +917,11 @@ void rend_copy16d_nf(unsigned char *dst, unsigned pitch)
    unsigned char *src = rbuf; unsigned delta = temp.scx/4;
    if (conf.alt_nf) {
       int offset = rb2_offs;
-      if (comp.frame_counter & 1) src += rb2_offs, offset = -offset;
+      if(comp.frame_counter & 1)
+      {
+          src += rb2_offs;
+          offset = -offset;
+      }
       for (unsigned y = 0; y < temp.scy; y++) {
          line16d(dst, src, t.sctab16d[0]); dst += pitch;
          line16d(dst, src+offset, t.sctab16d[0]); dst += pitch;
@@ -952,7 +965,8 @@ void __fastcall rend_copy8(unsigned char *dst, unsigned pitch)
    unsigned char *src = rbuf; unsigned delta = temp.scx/4;
    for (unsigned y = 0; y < temp.scy; y++) {
       line8(dst, src, t.sctab8[0]);
-      dst += pitch, src += delta;
+      dst += pitch;
+      src += delta;
    }
 }
 
@@ -961,7 +975,8 @@ void __fastcall rend_copy8_nf(unsigned char *dst, unsigned pitch)
    unsigned char *src = rbuf; unsigned delta = temp.scx/4;
    for (unsigned y = 0; y < temp.scy; y++) {
       line8_nf(dst, src, t.sctab8[0]);
-      dst += pitch, src += delta;
+      dst += pitch;
+      src += delta;
    }
 }
 
@@ -1021,7 +1036,11 @@ void rend_copy8d_nf(unsigned char *dst, unsigned pitch)
    unsigned char *src = rbuf; unsigned delta = temp.scx/4;
    if (conf.alt_nf) {
       int offset = rb2_offs;
-      if (comp.frame_counter & 1) src += rb2_offs, offset = -offset;
+      if(comp.frame_counter & 1)
+      {
+          src += rb2_offs;
+          offset = -offset;
+      }
       for (unsigned y = 0; y < temp.scy; y++) {
          line8d(dst, src, t.sctab8d[0]); dst += pitch;
          line8d(dst, src+offset, t.sctab8d[0]); dst += pitch;

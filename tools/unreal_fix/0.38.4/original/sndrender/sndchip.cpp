@@ -2,7 +2,7 @@
 
 #include "../emul.h"
 #include "../vars.h"
-#include "../emul_2203.h"
+#include "emul_2203.h"
 /*
    YM-2149F emulator for Unreal Speccy project
    created under public domain license by SMT, jan.2006
@@ -51,60 +51,89 @@ unsigned SNDCHIP::end_frame(unsigned clk_ticks)
 
 void SNDCHIP::flush(unsigned chiptick) // todo: noaction at (temp.sndblock || !conf.sound.ay)
 {
-   while (t < chiptick) {
-      t++;
-      if (++ta >= fa) ta = 0, bitA ^= -1;
-      if (++tb >= fb) tb = 0, bitB ^= -1;
-      if (++tc >= fc) tc = 0, bitC ^= -1;
-      if (++tn >= fn)
-         tn = 0,
-         ns = (ns*2+1) ^ (((ns>>16)^(ns>>13)) & 1),
-         bitN = 0 - ((ns >> 16) & 1);
-      if (++te >= fe) {
-         te = 0, env += denv;
-         if (env & ~31) {
-            unsigned mask = (1<<r.env);
-            if (mask & ((1<<0)|(1<<1)|(1<<2)|(1<<3)|(1<<4)|(1<<5)|(1<<6)|(1<<7)|(1<<9)|(1<<15)))
-               env = denv = 0;
-            else if (mask & ((1<<8)|(1<<12)))
-               env &= 31;
-            else if (mask & ((1<<10)|(1<<14)))
-               denv = -denv, env = env + denv;
-            else env = 31, denv = 0; //11,13
-         }
-      }
+    while(t < chiptick)
+    {
+        t++;
+        if(++ta >= fa)
+        {
+            ta = 0;
+            bitA ^= -1U;
+        }
+        if(++tb >= fb)
+        {
+            tb = 0;
+            bitB ^= -1U;
+        }
+        if(++tc >= fc)
+        {
+            tc = 0;
+            bitC ^= -1U;
+        }
+        if(++tn >= fn)
+        {
+            tn = 0;
+            ns = (ns * 2 + 1) ^ (((ns >> 16) ^ (ns >> 13)) & 1);
+            bitN = 0 - ((ns >> 16) & 1);
+        }
+        if(++te >= fe)
+        {
+            te = 0;
+            env = unsigned(int(env) + denv);
+            if(env & ~31U)
+            {
+                unsigned mask = (1 << r.env);
+                if(mask & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5) | (1 << 6) | (1 << 7) | (1 << 9) | (1 << 15)))
+                    env = denv = 0;
+                else if(mask & ((1 << 8) | (1 << 12)))
+                    env &= 31;
+                else if(mask & ((1 << 10) | (1 << 14)))
+                {
+                    denv = -denv;
+                    env = unsigned(int(env) + denv);
+                }
+                else
+                {
+                    env = 31; denv = 0;
+                } //11,13
+            }
+        }
 
-      unsigned en, mix_l, mix_r;
+        unsigned en, mix_l, mix_r;
 
-      en = ((ea & env) | va) & ((bitA | bit0) & (bitN | bit3));
-      mix_l  = vols[0][en]; mix_r  = vols[1][en];
+        en = ((ea & env) | va) & ((bitA | bit0) & (bitN | bit3));
+        mix_l = vols[0][en]; mix_r = vols[1][en];
 
-      en = ((eb & env) | vb) & ((bitB | bit1) & (bitN | bit4));
-      mix_l += vols[2][en]; mix_r += vols[3][en];
+        en = ((eb & env) | vb) & ((bitB | bit1) & (bitN | bit4));
+        mix_l += vols[2][en]; mix_r += vols[3][en];
 
-      en = ((ec & env) | vc) & ((bitC | bit2) & (bitN | bit5));
-      mix_l += vols[4][en]; mix_r += vols[5][en];
-//YM2203 here
-      if (/*temp.sndblock ||*/ conf.sound.ay_chip == CHIP_YM2203) {
-        if (t >= nextfmtick) {
-          nextfmtickfloat += ayticks_per_fmtick;
-		  nextfmtick = (int)nextfmtickfloat;
-		  if (++FMbufN == FMBUFSIZE) {
-            YM2203UpdateOne(Chip2203, FMbufs/*&FMbuf*/, FMBUFSIZE/*1*/);
-			FMbufN = 0;
-		  };
-          if (fmsoundon0 == 0) {
-            //FMbufOUT=(int)(FMbuf*conf.sound.ay/8192*0.7f);
-		    FMbufOUT=((((INT16)FMbufs[FMbufN])*FMbufMUL)>>16);
-		  }
-		  else FMbufOUT=0;
-		}
-        mix_l += FMbufOUT; mix_r += FMbufOUT;
-      }; //Alone Coder
-//
-      if ((mix_l ^ SNDRENDER::mix_l) | (mix_r ^ SNDRENDER::mix_r)) // similar check inside update()
-         update(t, mix_l, mix_r);
-   }
+        en = ((ec & env) | vc) & ((bitC | bit2) & (bitN | bit5));
+        mix_l += vols[4][en]; mix_r += vols[5][en];
+        //YM2203 here
+        if(/*temp.sndblock ||*/ conf.sound.ay_chip == CHIP_YM2203)
+        {
+            if(t >= nextfmtick)
+            {
+                nextfmtickfloat += ayticks_per_fmtick;
+                nextfmtick = unsigned(nextfmtickfloat);
+                if(++FMbufN == FMBUFSIZE)
+                {
+                    YM2203UpdateOne(Chip2203, FMbufs/*&FMbuf*/, FMBUFSIZE/*1*/);
+                    FMbufN = 0;
+                };
+                if(fmsoundon0 == 0)
+                {
+                    //FMbufOUT=(int)(FMbuf*conf.sound.ay/8192*0.7f);
+                    FMbufOUT = ((((INT16)FMbufs[FMbufN])*FMbufMUL) >> 16);
+                }
+                else FMbufOUT = 0;
+            }
+            mix_l = unsigned(int(mix_l) + FMbufOUT);
+            mix_r = unsigned(int(mix_r) + FMbufOUT);
+        }; //Alone Coder
+  //
+        if((mix_l ^ SNDRENDER::mix_l) | (mix_r ^ SNDRENDER::mix_r)) // similar check inside update()
+            update(t, mix_l, mix_r);
+    }
 }
 
 void SNDCHIP::select(unsigned char nreg)
@@ -130,7 +159,7 @@ void SNDCHIP::write(unsigned timestamp, unsigned char val)
             //mult_const3 = TICK_F/2+(unsigned)((__int64)temp.snd_frame_ticks*conf.intfq*(1<<(MULT_C+3))/ayfq);
             //ay_div = ((unsigned)((double)ayfq*0x10*(double)SAMPLE_T/(double)conf.sound.fq));
             //ay_div2 = (ayfq*0x100)/(conf.sound.fq/32);
-			set_timings(system_clock_rate,Chip2203->OPN.ST.SSGclock,SNDRENDER::sample_rate);
+			set_timings(system_clock_rate,unsigned(Chip2203->OPN.ST.SSGclock),SNDRENDER::sample_rate);
          }
       }
       else
@@ -178,15 +207,15 @@ void SNDCHIP::write(unsigned timestamp, unsigned char val)
          bit5 = 0 - ((val>>5) & 1);
          break;
       case 8:
-         ea = (val & 0x10)? -1 : 0;
+         ea = unsigned((val & 0x10)? -1 : 0);
          va = ((val & 0x0F)*2+1) & ~ea;
          break;
       case 9:
-         eb = (val & 0x10)? -1 : 0;
+         eb = unsigned((val & 0x10)? -1 : 0);
          vb = ((val & 0x0F)*2+1) & ~eb;
          break;
       case 10:
-         ec = (val & 0x10)? -1 : 0;
+         ec = unsigned((val & 0x10) ? -1 : 0);
          vc = ((val & 0x0F)*2+1) & ~ec;
          break;
       case 11:
@@ -196,8 +225,14 @@ void SNDCHIP::write(unsigned timestamp, unsigned char val)
       case 13:
          r13_reloaded = 1;
          te = 0;
-         if (r.env & 4) env = 0, denv = 1; // attack
-         else env = 31, denv = -1; // decay
+         if(r.env & 4)
+         {
+             env = 0; denv = 1;
+         } // attack
+         else
+         {
+             env = 31; denv = -1;
+         } // decay
          break;
    }
 }
@@ -211,12 +246,12 @@ unsigned char SNDCHIP::read()
 void SNDCHIP::set_timings(unsigned system_clock_rate, unsigned chip_clock_rate, unsigned sample_rate)
 {
    if (conf.sound.ay_chip == CHIP_YM2203) { //install YM2203 frequencies
-         Chip2203->OPN.ST.clock = conf.sound.ayfq*2;
-         Chip2203->OPN.ST.rate = conf.sound.fq /*44100*/;
+         Chip2203->OPN.ST.clock = int(conf.sound.ayfq*2);
+         Chip2203->OPN.ST.rate = int(conf.sound.fq) /*44100*/;
          OPNPrescaler_w(&Chip2203->OPN, 1 , 1 );
          //ayfq=Chip2203->OPN.ST.SSGclock;
 		 //Вот тут как раз ayfq дает уже "умноженную" частоту, которую и нужно взять за основу.
-         chip_clock_rate=Chip2203->OPN.ST.SSGclock;
+         chip_clock_rate = unsigned(Chip2203->OPN.ST.SSGclock);
    } //Dexus
    
    chip_clock_rate /= 8;
@@ -281,7 +316,7 @@ SNDCHIP::SNDCHIP()
    bitA = bitB = bitC = 0;
    nextfmtick = 0; //Alone Coder
    set_timings(SNDR_DEFAULT_SYSTICK_RATE, SNDR_DEFAULT_AY_RATE, SNDR_DEFAULT_SAMPLE_RATE);
-   Chip2203 = (YM2203 *) YM2203Init(NULL, 0, conf.sound.ayfq*2, conf.sound.fq /*44100*/); //Dexus
+   Chip2203 = (YM2203 *) YM2203Init(nullptr, 0, int(conf.sound.ayfq*2), int(conf.sound.fq) /*44100*/); //Dexus
    set_chip(CHIP_YM);
    set_volumes(0x7FFF, SNDR_VOL_YM, SNDR_PAN_ABC);
    reset();

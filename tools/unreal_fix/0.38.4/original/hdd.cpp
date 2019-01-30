@@ -7,10 +7,10 @@
 
 //#define DUMP_HDD_IO 1
 
-const int MAX_DEVICES = MAX_PHYS_HD_DRIVES+2*MAX_PHYS_CD_DRIVES;
+const unsigned MAX_DEVICES = MAX_PHYS_HD_DRIVES+2*MAX_PHYS_CD_DRIVES;
 
 PHYS_DEVICE phys[MAX_DEVICES];
-int n_phys = 0;
+unsigned n_phys = 0;
 
 /*
 // this function is untested
@@ -60,7 +60,7 @@ void init_hdd_cd()
        errmsg("HDD/CD emulator can't access physical drives");
 }
 
-void delstr_spaces(char *dst, char *src)
+static void delstr_spaces(char *dst, char *src)
 {
    for (; *src; src++)
       if (*src != ' ') *dst++ = *src;
@@ -72,32 +72,32 @@ unsigned find_hdd_device(char *name)
    char s2[512];
    delstr_spaces(s2, name);
 //   if(temp.win9x)
-   for (int drive = 0; drive < n_phys; drive++)
+   for (unsigned drive = 0; drive < n_phys; drive++)
    {
       char s1[512];
       delstr_spaces(s1, phys[drive].viewname);
       if (!stricmp(s1,s2))
           return drive;
    }
-   return -1;
+   return -1U;
 }
 
 void ATA_DEVICE::configure(IDE_CONFIG *cfg)
 {
    atapi_p.close(); ata_p.close();
 
-   c = cfg->c, h = cfg->h, s = cfg->s, lba = cfg->lba; readonly = cfg->readonly;
+   c = cfg->c; h = cfg->h; s = cfg->s; lba = cfg->lba; readonly = cfg->readonly;
 
    memset(&reg, 0, sizeof(reg)); // ќчищаем регистры
    command_ok(); // —брасываем состо€ние и позицию передачи данных
 
-   phys_dev = -1;
+   phys_dev = -1U;
    if (!*cfg->image)
        return;
 
    PHYS_DEVICE filedev, *dev;
    phys_dev = find_hdd_device(cfg->image);
-   if (phys_dev == -1)
+   if (phys_dev == -1U)
    {
       if (cfg->image[0] == '<')
       {
@@ -127,7 +127,7 @@ void ATA_DEVICE::configure(IDE_CONFIG *cfg)
              lba = c*h*s;
       }
    }
-   DWORD errcode;
+   DWORD errcode = ERROR_DEVICE_NOT_AVAILABLE;
    if (dev->type == ATA_NTHDD || dev->type == ATA_FILEHDD)
    {
        dev->usage = ATA_OP_USE;
@@ -237,7 +237,7 @@ void ATA_DEVICE::reset(RESET_TYPE mode)
 void ATA_DEVICE::command_ok()
 {
    state = S_IDLE;
-   transptr = -1;
+   transptr = -1U;
    reg.err = 0;
    reg.status = STATUS_DRDY | STATUS_DSC;
 }
@@ -349,7 +349,7 @@ char ATA_DEVICE::exec_ata_cmd(unsigned char cmd)
           return 1;
      }
 
-     c = lba / s / h;
+     c = unsigned(lba / s / h);
 
      reg.status = STATUS_DRDY | STATUS_DSC;
      return 1;
@@ -659,7 +659,7 @@ void ATA_DEVICE::write_sectors()
    }
    next_sector();
 
-   transptr = 0, transcount = 0x100;
+   transptr = 0; transcount = 0x100;
    state = S_WRITE_SECTORS;
    reg.err = 0;
    reg.status = STATUS_DRQ | STATUS_DSC;
@@ -817,7 +817,7 @@ void ATA_DEVICE::handle_atapi_packet_emulate()
           }
       }
       intrq = 1;
-      reg.atapi_count = cnt * 2048;
+      reg.atapi_count = u16(cnt * 2048);
       reg.intreason = INT_IO;
       reg.status = STATUS_DRQ;
       transcount = (cnt * 2048)/2;
@@ -828,7 +828,7 @@ void ATA_DEVICE::handle_atapi_packet_emulate()
 
     case SCSIOP_READ_TOC:; // 10
     {
-      u8 TOC_DATA[] =
+      static const u8 TOC_DATA[] =
       {
         0, 4+8*2 - 2, 1, 0xAA,
         0, TOC_DATA_TRACK, 1, 0, 0, 0, 0, 0,
@@ -836,7 +836,7 @@ void ATA_DEVICE::handle_atapi_packet_emulate()
       };
       unsigned len = sizeof(TOC_DATA);
       memcpy(transbf, TOC_DATA, len);
-      reg.atapi_count = len;
+      reg.atapi_count = u16(len);
       reg.intreason = INT_IO;
       reg.status = STATUS_DRQ;
       transcount = (len + 1)/2;
@@ -870,7 +870,7 @@ void ATA_DEVICE::handle_atapi_packet()
        printf("]\n");
    }
 #endif
-   if(phys_dev == -1)
+   if(phys_dev == -1U)
        return handle_atapi_packet_emulate();
 
    memcpy(&atapi_p.cdb, transbf, 12);
@@ -899,7 +899,7 @@ void ATA_DEVICE::handle_atapi_packet()
    {
       if (atapi_p.senselen)
       {
-          reg.err = atapi_p.sense[2] << 4;
+          reg.err = u8(atapi_p.sense[2] << 4);
           goto err;
       } // err = sense key //win9x hangs on drq after atapi packet when emulator does goto err (see walkaround in SEND_ASPI_CMD)
     ok:
@@ -910,7 +910,7 @@ void ATA_DEVICE::handle_atapi_packet()
           command_ok();
           return;
       }
-      reg.atapi_count = atapi_p.passed_length;
+      reg.atapi_count = u16(atapi_p.passed_length);
       reg.intreason = INT_IO;
       reg.status = STATUS_DRQ;
       transcount = (atapi_p.passed_length+1)/2;
@@ -929,7 +929,7 @@ void ATA_DEVICE::handle_atapi_packet()
 
 void ATA_DEVICE::prepare_id()
 {
-   if (phys_dev == -1)
+   if (phys_dev == -1U)
    {
       memset(transbf, 0, 512);
       make_ata_string(transbf+54, 20, "UNREAL SPECCY HARD DRIVE IMAGE");
@@ -939,7 +939,7 @@ void ATA_DEVICE::prepare_id()
       ((unsigned short*)transbf)[1] = (unsigned short)c;
       ((unsigned short*)transbf)[3] = (unsigned short)h;
       ((unsigned short*)transbf)[6] = (unsigned short)s;
-      *(unsigned*)(transbf+60*2) = (lba > 0xFFFFFFFULL) ? 0xFFFFFFF : lba; // lba28
+      *(unsigned*)(transbf+60*2) = (lba > 0xFFFFFFFULL) ? 0xFFFFFFF : unsigned(lba); // lba28
       ((unsigned short*)transbf)[20] = 3; // a dual ported multi-sector buffer capable of simultaneous transfers with a read caching capability
       ((unsigned short*)transbf)[21] = 512; // cache size=256k
       ((unsigned short*)transbf)[22] = 4; // ECC bytes
@@ -999,10 +999,10 @@ void ATA_DEVICE::update_regs()
    }
    else
    { // chs
-       reg.cyl = c_cur;
+       reg.cyl = u16(c_cur);
        reg.devhead &= ~0xF;
        reg.devhead |= h_cur & 0xF;
-       reg.sec = s_cur;
+       reg.sec = u8(s_cur);
    }
 }
 
@@ -1012,7 +1012,7 @@ void ATA_DEVICE::update_cur()
    if(lba > 0xFFFFFFFULL)
    { // lba48
        lba_cur = reg.lba0 | (u64(reg.lba1) << 8) | (u64(reg.lba2) << 16) | (u64(reg.lba4) << 24) | (u64(reg.lba5) << 32) | (u64(reg.lba6) << 40);
-       n_cur |= (reg.count1 << 8);
+       n_cur |= unsigned(reg.count1 << 8);
    }
    else
    { // lba28

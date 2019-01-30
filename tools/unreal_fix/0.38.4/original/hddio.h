@@ -24,7 +24,7 @@ struct ATA_PASSER
    PHYS_DEVICE *dev;
    HANDLE Vols[100];
 
-   static unsigned identify(PHYS_DEVICE *outlist, int max);
+   static unsigned identify(PHYS_DEVICE *outlist, unsigned max);
    static unsigned get_hdd_count();
 
    DWORD open(PHYS_DEVICE *dev);
@@ -48,7 +48,7 @@ struct ATAPI_PASSER
    unsigned passed_length;
    unsigned char sense[MAX_SENSE_LEN]; unsigned senselen;
 
-   static unsigned identify(PHYS_DEVICE *outlist, int max);
+   static unsigned identify(PHYS_DEVICE *outlist, unsigned max);
 
    DWORD open(PHYS_DEVICE *dev);
    void close();
@@ -58,16 +58,16 @@ struct ATAPI_PASSER
 //   bool loaded() { return (hDevice != INVALID_HANDLE_VALUE); } //Alone Coder (CD doesn't work)
    bool loaded() { return ((hDevice != INVALID_HANDLE_VALUE) || (dev)); } //Alone Coder (CD doesn't initialize (although works) if another device isn't set)
 
-   int pass_through(void *buf, int bufsize);
+   int pass_through(void *buf, size_t bufsize);
    int read_atapi_id(unsigned char *idsector, char prefix);
 
-   int SEND_ASPI_CMD(void *buf, int buf_sz);
-   int SEND_SPTI_CMD(void *buf, int buf_sz);
+   int SEND_ASPI_CMD(void *buf, size_t buf_sz);
+   int SEND_SPTI_CMD(void *buf, size_t buf_sz);
 
    bool seek(unsigned nsector);
    bool read_sector(unsigned char *dst);
 
-   ATAPI_PASSER() { hDevice = INVALID_HANDLE_VALUE; dev = 0; }
+   ATAPI_PASSER() { hDevice = INVALID_HANDLE_VALUE; dev = nullptr; }
    ~ATAPI_PASSER() { close(); }
 };
 

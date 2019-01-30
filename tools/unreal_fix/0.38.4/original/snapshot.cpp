@@ -11,6 +11,7 @@
 #include "config.h"
 #include "z80.h"
 #include "sshot_png.h"
+#include "funcs.h"
 
 #include "util.h"
 
@@ -22,22 +23,27 @@ int writeSNA(FILE*);
 
 int load_arc(char *fname);
 
-unsigned char what_is(char *filename)
+SNAP what_is(char *filename)
 {
    FILE *ff = fopen(filename, "rb");
    if (!ff) return snNOFILE;
-   snapsize = fread(snbuf, 1, sizeof snbuf, ff);
+   snapsize = unsigned(fread(snbuf, 1, sizeof snbuf, ff));
    fclose(ff);
    if (snapsize == sizeof snbuf) return snTOOLARGE;
-   unsigned char type = snUNKNOWN;
+   SNAP type = snUNKNOWN;
    char *ptr = strrchr(filename, '.');
-   unsigned ext = ptr? (*(int*)(ptr+1) | 0x20202020) : 0;
+   unsigned ext = ptr? (*(unsigned*)(ptr+1) | 0x20202020U) : 0;
    if (snapsize < 32) return type;
 
    if (snapsize == 131103 || snapsize == 147487) type = snSNA_128;
    if (snapsize == 49179) type = snSNA_48;
    if (ext == WORD4('t','a','p',' ')) type = snTAP;
    if (ext == WORD4('z','8','0',' ')) type = snZ80;
+   if(ext == WORD4('p', 'a', 'l', ' ') && (snapsize == sizeof(comp.comp_pal)))
+   {
+       type = snPAL;
+       return type;
+   }
    if (conf.trdos_present)
    {
       if (!snbuf[13] && snbuf[14] && (int)snapsize == snbuf[14]*256+17) type = snHOB;
@@ -74,20 +80,22 @@ unsigned char what_is(char *filename)
    return type;
 }
 
+static int readPAL();
+
 int loadsnap(char *filename)
 {
    if (load_arc(filename))
        return 1;
-   unsigned char type = what_is(filename);
+   SNAP type = what_is(filename);
 
    if (type >= snHOB)
    {
 
-      if (trd_toload == -1)
+      if (trd_toload == -1U)
       {
-         int last = -1;
-         for (int i = 0; i < 4; i++) if (trd_loaded[i]) last = i;
-         trd_toload = (last == -1)? 0 : ((type == snHOB)? last : (last+1) & 3);
+         unsigned last = -1U;
+         for (unsigned i = 0; i < 4; i++) if (trd_loaded[i]) last = i;
+         trd_toload = (last == -1U)? 0 : ((type == snHOB)? last : (last+1) & 3);
       }
 
       for (unsigned k = 0; k < 4; k++)
@@ -96,8 +104,8 @@ int loadsnap(char *filename)
          {
             static char err[] = "This disk image is already loaded to drive X:\n"
                                 "Do you still want to load it to drive Y:?";
-            err[43] = k+'A';
-            err[84] = trd_toload+'A';
+            err[43] = char(k+'A');
+            err[84] = char(trd_toload+'A');
             if (MessageBox(GetForegroundWindow(), err, "Warning", MB_YESNO | MB_ICONWARNING) == IDNO) return 1;
          }
       }
@@ -105,6 +113,7 @@ int loadsnap(char *filename)
       FDD *drive = comp.wd.fdd + trd_toload;
       if (!drive->test())
           return 0;
+      comp.wd.Eject(trd_toload);
       int ok = drive->read(type);
       if (ok)
       {
@@ -141,6 +150,10 @@ int loadsnap(char *filename)
    if (type == snTAP) return readTAP();
    if (type == snTZX) return readTZX();
    if (type == snCSW) return readCSW();
+   if(type == snPAL)
+   {
+       return readPAL();
+   }
 
    return 0;
 }
@@ -150,7 +163,7 @@ int readSNA128()
    if(conf.mem_model == MM_PENTAGON && conf.Sna128Lock)
    {
        conf.ramsize = 128;
-       temp.ram_mask = (conf.ramsize-1) >> 4;
+       temp.ram_mask = u8((conf.ramsize-1) >> 4);
    }
 
    hdrSNA128 *hdr = (hdrSNA128*)snbuf;
@@ -179,7 +192,7 @@ int readSNA128()
    memcpy(memory+PAGE*2, hdr->page2, PAGE);
    memcpy(memory+PAGE*(hdr->p7FFD & 7), hdr->active_page, PAGE);
    unsigned char *newpage = snbuf+0xC01F;
-   unsigned char mapped = 0x24 | (1 << (hdr->p7FFD & 7));
+   unsigned char mapped = u8(0x24U | (1 << (hdr->p7FFD & 7)));
    for (unsigned char i = 0; i < 8; i++)
    {
       if (!(mapped & (1 << i)))
@@ -241,16 +254,16 @@ int writeSNA(FILE *ff)
    }*/ //Alone Coder
    hdrSNA128 *hdr = (hdrSNA128*)snbuf;
    hdr->trdos = (comp.flags & CF_TRDOS)? 1 : 0;
-   hdr->altaf = cpu.alt.af; hdr->altbc = cpu.alt.bc;
-   hdr->altde = cpu.alt.de; hdr->althl = cpu.alt.hl;
-   hdr->af = cpu.af; hdr->bc = cpu.bc; hdr->de = cpu.de; hdr->hl = cpu.hl;
-   hdr->ix = cpu.ix; hdr->iy = cpu.iy; hdr->sp = cpu.sp; hdr->pc = cpu.pc;
+   hdr->altaf = u16(cpu.alt.af); hdr->altbc = u16(cpu.alt.bc);
+   hdr->altde = u16(cpu.alt.de); hdr->althl = u16(cpu.alt.hl);
+   hdr->af = u16(cpu.af); hdr->bc = u16(cpu.bc); hdr->de = u16(cpu.de); hdr->hl = u16(cpu.hl);
+   hdr->ix = u16(cpu.ix); hdr->iy = u16(cpu.iy); hdr->sp = u16(cpu.sp); hdr->pc = u16(cpu.pc);
    hdr->i = cpu.i; hdr->r = (cpu.r_low & 0x7F)+cpu.r_hi; hdr->im = cpu.im;
    hdr->iff = cpu.iff2 ? 4 : 0;
    hdr->p7FFD = comp.p7FFD;
    hdr->pFE = comp.pFE; comp.border_attr = comp.pFE & 7;
    unsigned savesize = sizeof(hdrSNA128);
-   unsigned char mapped = 0x24 | (1 << (comp.p7FFD & 7));
+   unsigned char mapped = u8(0x24U | (1 << (comp.p7FFD & 7)));
    if (comp.p7FFD == 0x30)
    { // save 48k
       mapped = 0xFF;
@@ -270,15 +283,26 @@ int writeSNA(FILE *ff)
    return 1;
 }
 
-void unpack_page(unsigned char *dst, int dstlen, unsigned char *src, int srclen)
+static void unpack_page(unsigned char *dst, unsigned dstlen, unsigned char *src, unsigned srclen)
 {
    memset(dst, 0, dstlen);
-   while (srclen > 0 && dstlen > 0) {
-      if (srclen >= 4 && *(unsigned short*)src == WORD2(0xED, 0xED)) {
-         for (unsigned char i = src[2]; i; i--)
-            *dst++ = src[3], dstlen--;
-         srclen -= 4; src += 4;
-      } else *dst++ = *src++, dstlen--, srclen--;
+   while (srclen > 0 && dstlen > 0)
+   {
+      if (srclen >= 4 && src[0] == 0xED && src[1] == 0xED)
+      {
+         size_t len = src[2];
+         memset(dst, src[3], len);
+         dstlen -= len;
+         srclen -= 4;
+         src += 4;
+         dst += len;
+      }
+      else
+      {
+          *dst++ = *src++;
+          dstlen--;
+          srclen--;
+      }
    }
 }
 
@@ -297,20 +321,21 @@ int readZ80()
       hdr->pc = hdr->newpc;
       memset(RAM_BASE_M, 0, PAGE*8); // clear 128k - first 8 pages
 
+      unsigned char * const p48[] =
+      {
+             base_sos_rom, nullptr, nullptr, nullptr,
+             RAM_BASE_M+2*PAGE, RAM_BASE_M+0*PAGE, nullptr, nullptr,
+             RAM_BASE_M+5*PAGE, nullptr, nullptr, nullptr
+      };
+      unsigned char * const p128[] =
+      {
+             base_sos_rom, base_dos_rom, base_128_rom, RAM_BASE_M+0*PAGE,
+             RAM_BASE_M+1*PAGE, RAM_BASE_M+2*PAGE, RAM_BASE_M+3*PAGE, RAM_BASE_M+4*PAGE,
+             RAM_BASE_M+5*PAGE, RAM_BASE_M+6*PAGE, RAM_BASE_M+7*PAGE, nullptr
+      };
+
       while (ptr < snbuf+snapsize)
       {
-         unsigned char *p48[] =
-         {
-                base_sos_rom, 0, 0, 0,
-                RAM_BASE_M+2*PAGE, RAM_BASE_M+0*PAGE, 0, 0,
-                RAM_BASE_M+5*PAGE, 0, 0, 0
-         };
-         unsigned char *p128[] =
-         {
-                base_sos_rom, base_dos_rom, base_128_rom, RAM_BASE_M+0*PAGE,
-                RAM_BASE_M+1*PAGE, RAM_BASE_M+2*PAGE, RAM_BASE_M+3*PAGE, RAM_BASE_M+4*PAGE,
-                RAM_BASE_M+5*PAGE, RAM_BASE_M+6*PAGE, RAM_BASE_M+7*PAGE, 0
-         };
          unsigned len = *(unsigned short*)ptr;
          if (ptr[2] > 11)
              return 0;
@@ -319,7 +344,10 @@ int readZ80()
              return 0;
          ptr += 3;
          if (len == 0xFFFF)
-             memcpy(dstpage, ptr, len = PAGE);
+         {
+             len = PAGE;
+             memcpy(dstpage, ptr, len);
+         }
          else
              unpack_page(dstpage, PAGE, ptr, len);
          ptr += len;
@@ -327,7 +355,7 @@ int readZ80()
    }
    else
    {
-      int len = snapsize - 30;
+      unsigned len = snapsize - 30;
       unsigned char *mem48 = ptr;
       if (hdr->flags & 0x20)
          unpack_page(mem48 = snbuf + 4*PAGE, 3*PAGE, ptr, len);
@@ -336,16 +364,16 @@ int readZ80()
       memcpy(memory + PAGE*0, mem48 + 2*PAGE, PAGE);
       model48k = 1;
    }
-   cpu.a = hdr->a, cpu.f = hdr->f;
-   cpu.bc = hdr->bc, cpu.de = hdr->de, cpu.hl = hdr->hl;
-   cpu.alt.bc = hdr->bc1, cpu.alt.de = hdr->de1, cpu.alt.hl = hdr->hl1;
-   cpu.alt.a = hdr->a1, cpu.alt.f = hdr->f1;
-   cpu.pc = hdr->pc, cpu.sp = hdr->sp; cpu.ix = hdr->ix, cpu.iy = hdr->iy;
-   cpu.i = hdr->i, cpu.r_low = hdr->r & 0x7F;
-   cpu.r_hi = ((hdr->flags & 1) << 7);
+   cpu.a = hdr->a; cpu.f = hdr->f;
+   cpu.bc = hdr->bc; cpu.de = hdr->de; cpu.hl = hdr->hl;
+   cpu.alt.bc = hdr->bc1; cpu.alt.de = hdr->de1; cpu.alt.hl = hdr->hl1;
+   cpu.alt.a = hdr->a1; cpu.alt.f = hdr->f1;
+   cpu.pc = hdr->pc; cpu.sp = hdr->sp; cpu.ix = hdr->ix; cpu.iy = hdr->iy;
+   cpu.i = hdr->i; cpu.r_low = hdr->r & 0x7F;
+   cpu.r_hi = u8((hdr->flags & 1U) << 7U);
    comp.pFE = (hdr->flags >> 1) & 7;
    comp.border_attr = comp.pFE;
-   cpu.iff1 = hdr->iff1, cpu.iff2 = hdr->iff2; cpu.im = (hdr->im & 3);
+   cpu.iff1 = hdr->iff1; cpu.iff2 = hdr->iff2; cpu.im = (hdr->im & 3);
    comp.p7FFD = (model48k) ? 0x30 : hdr->p7FFD;
 
    if(hdr->len == 55) // version 3.0 (with 1ffd)
@@ -353,15 +381,38 @@ int readZ80()
 
    if (model48k)
        comp.pEFF7 |= EFF7_LOCKMEM; //Alone Coder
+
    set_banks();
 
    return 1;
 }
 
-#define arctmp ((char*)rbuf)
-char *arc_fname;
-INT_PTR CALLBACK ArcDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static int readPAL()
 {
+    memcpy(comp.comp_pal, snbuf, snapsize);
+    temp.comp_pal_changed = 1;
+    if(conf.ula_plus)
+    {
+        comp.ula_plus_en = true; // ≈сли присутствует ULA+, то сразу и активируем ее (чтобы изменени€ палитры были видны)
+    }
+    return 1;
+}
+
+static int writePAL(FILE *ff)
+{
+    if(fwrite(comp.comp_pal, 1, sizeof(comp.comp_pal), ff) != sizeof(comp.comp_pal))
+    {
+        return 0;
+    }
+    return 1;
+}
+
+#define arctmp ((char*)rbuf)
+static char *arc_fname;
+static INT_PTR CALLBACK ArcDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+{
+   (void)lp;
+
    if (msg == WM_INITDIALOG) {
       for (char *dst = arctmp; *dst; dst += strlen(dst)+1)
          SendDlgItemMessage(dlg, IDC_ARCLIST, LB_ADDSTRING, 0, (LPARAM)dst);
@@ -372,7 +423,7 @@ INT_PTR CALLBACK ArcDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
        (msg == WM_SYSCOMMAND && (wp & 0xFFF0) == SC_CLOSE)) EndDialog(dlg, 0);
    if (msg == WM_COMMAND && (LOWORD(wp) == IDOK || (HIWORD(wp)==LBN_DBLCLK && LOWORD(wp) == IDC_ARCLIST)))
    {
-      int n = SendDlgItemMessage(dlg, IDC_ARCLIST, LB_GETCURSEL, 0, 0);
+      int n = int(SendDlgItemMessage(dlg, IDC_ARCLIST, LB_GETCURSEL, 0, 0));
       char *dst = arctmp;
       for (int q = 0; q < n; q++) dst += strlen(dst)+1;
       arc_fname = dst;
@@ -381,7 +432,7 @@ INT_PTR CALLBACK ArcDlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    return 0;
 }
 
-bool filename_ok(char *fname)
+static bool filename_ok(char *fname)
 {
    for (char *wc = skiparc; *wc; wc += strlen(wc)+1)
       if (wcmatch(fname, wc)) return 0;
@@ -392,7 +443,8 @@ int load_arc(char *fname)
 {
    char *ext = strrchr(fname, '.'); if (!ext) return 0;
    ext++;
-   char *cmdtmp, done = 0;
+   char *cmdtmp;
+   char done = 0;
    for (char *x = arcbuffer; *x; x = cmdtmp + strlen(cmdtmp)+1) {
       cmdtmp = x + strlen(x)+1;
       if (stricmp(ext, x)) continue;
@@ -401,7 +453,7 @@ int load_arc(char *fname)
       char tmp[0x200]; GetTempPath(sizeof tmp, tmp);
       char d1[0x20]; sprintf(d1, "us%08lX", GetTickCount());
       SetCurrentDirectory(tmp);
-      CreateDirectory(d1, 0);
+      CreateDirectory(d1, nullptr);
       SetCurrentDirectory(d1);
 
       color();
@@ -410,14 +462,18 @@ int load_arc(char *fname)
       si.dwFlags = STARTF_USESHOWWINDOW; si.wShowWindow = SW_HIDE;
       PROCESS_INFORMATION pi;
       unsigned flags = CREATE_NEW_CONSOLE;
-      HANDLE hc = CreateFile("CONOUT$", GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
-      if (hc != INVALID_HANDLE_VALUE) CloseHandle(hc), flags = 0;
-      if (CreateProcess(0, cmdln, 0, 0, 0, flags, 0, 0, &si, &pi)) {
+      HANDLE hc = CreateFile("CONOUT$", GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
+      if(hc != INVALID_HANDLE_VALUE)
+      {
+          CloseHandle(hc);
+          flags = 0;
+      }
+      if (CreateProcess(nullptr, cmdln, nullptr, nullptr, 0, flags, nullptr, nullptr, &si, &pi)) {
          WaitForSingleObject(pi.hProcess, INFINITE);
          DWORD code; GetExitCodeProcess(pi.hProcess, &code);
          CloseHandle(pi.hThread);
          CloseHandle(pi.hProcess);
-         if (!code || MessageBox(GetForegroundWindow(), "Broken archive", 0, MB_ICONERROR | MB_OKCANCEL) == IDOK) {
+         if (!code || MessageBox(GetForegroundWindow(), "Broken archive", nullptr, MB_ICONERROR | MB_OKCANCEL) == IDOK) {
             WIN32_FIND_DATA fd; HANDLE h;
             char *dst = arctmp; unsigned nfiles = 0;
             if ((h = FindFirstFile("*.*", &fd)) != INVALID_HANDLE_VALUE) {
@@ -429,14 +485,20 @@ int load_arc(char *fname)
                } while (FindNextFile(h, &fd));
                FindClose(h);
             }
-            *dst = 0; arc_fname = 0;
+            *dst = 0; arc_fname = nullptr;
             if (nfiles == 1) arc_fname = arctmp;
             if (nfiles > 1)
                 DialogBox(hIn, MAKEINTRESOURCE(IDD_ARC), GetForegroundWindow(), ArcDlg);
-            if (!nfiles) MessageBox(GetForegroundWindow(), "Empty archive!", 0, MB_ICONERROR | MB_OK);
+            if (!nfiles) MessageBox(GetForegroundWindow(), "Empty archive!", nullptr, MB_ICONERROR | MB_OK);
             char buf[0x200]; strcpy(buf, tmp); strcat(buf, "\\");
-            strcat(buf, d1); strcat(buf, "\\"); if (arc_fname) strcat(buf, arc_fname), arc_fname = buf;
-            if (arc_fname && !(done = loadsnap(arc_fname))) MessageBox(GetForegroundWindow(), "loading error", arc_fname, MB_ICONERROR);
+            strcat(buf, d1);
+            strcat(buf, "\\");
+            if(arc_fname)
+            {
+                strcat(buf, arc_fname);
+                arc_fname = buf;
+            }
+            if (arc_fname && !(done = (char)loadsnap(arc_fname))) MessageBox(GetForegroundWindow(), "loading error", arc_fname, MB_ICONERROR);
             if (!done) done = -1;
          }
          // delete junk
@@ -456,25 +518,39 @@ int load_arc(char *fname)
    eat(); return 0;
 }
 
-void opensnap(int index)
+void opensnap(unsigned index)
 {
    char mask[0x200]; *mask = 0;
-   for (char *x = arcbuffer; *x; )
-      strcat(mask, ";*."), strcat(mask, x),
-      x += strlen(x)+1, x += strlen(x)+1;
+   for(char *x = arcbuffer; *x; )
+   {
+       strcat(mask, ";*.");
+       strcat(mask, x);
+       x += strlen(x) + 1;
+       x += strlen(x) + 1;
+   }
 
    char fline[0x400];
-   const char *src = "all (sna,z80,sp,tap,tzx,csw,trd,scl,fdi,td0,udi,isd,pro,hobeta)\0*.sna;*.z80;*.sp;*.tap;*.tzx;*.csw;*.trd;*.scl;*.td0;*.udi;*.fdi;*.isd;*.pro;*.$?;*.!?<\0"
+   const char *src = "all (sna,z80,sp,tap,tzx,csw,trd,scl,fdi,td0,udi,isd,pro,hobeta,pal)\0"
+               "*.sna;*.z80;*.sp;*.tap;*.tzx;*.csw;*.trd;*.scl;*.td0;*.udi;*.fdi;*.isd;*.pro;*.$?;*.!?;*.pal<\0"
                "Disk B (trd,scl,fdi,td0,udi,isd,pro,hobeta)\0*.trd;*.scl;*.fdi;*.udi;*.td0;*.isd;*.pro;*.$?<\0"
                "Disk C (trd,scl,fdi,td0,udi,isd,pro,hobeta)\0*.trd;*.scl;*.fdi;*.udi;*.td0;*.isd;*.pro;*.$?<\0"
                "Disk D (trd,scl,fdi,td0,udi,isd,pro,hobeta)\0*.trd;*.scl;*.fdi;*.udi;*.td0;*.isd;*.pro;*.$?<\0\0>";
    if (!conf.trdos_present)
-      src = "ZX files (sna,z80,tap,tzx,csw)\0*.sna;*.z80;*.tap;*.tzx;*.csw<\0\0>";
-   for (char *dst = fline; *src != '>'; src++)
-      if (*src == '<') strcpy(dst, mask), dst += strlen(dst);
-      else *dst++ = *src;
+      src = "ZX files (sna,z80,tap,tzx,csw,pal)\0*.sna;*.z80;*.tap;*.tzx;*.csw;*.pal<\0\0>";
+   for(char *dst = fline; *src != '>'; src++)
+   {
+       if(*src == '<')
+       {
+           strcpy(dst, mask);
+           dst += strlen(dst);
+       }
+       else
+       {
+           *dst++ = *src;
+       }
+   }
 
-   OPENFILENAME ofn = { 0 };
+   OPENFILENAME ofn = { };
    char fname[0x200]; *fname = 0;
    char dir[0x200]; GetCurrentDirectory(sizeof dir, dir);
 
@@ -484,7 +560,7 @@ void opensnap(int index)
    ofn.lpstrFile = fname; ofn.nMaxFile = sizeof fname;
    ofn.lpstrTitle = "Load Snapshot / Disk / Tape";
    ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-   ofn.nFilterIndex = index;
+   ofn.nFilterIndex = DWORD(index);
    ofn.lpstrInitialDir = dir;
 //   __debugbreak();
    if (GetSnapshotFileName(&ofn, 0))
@@ -496,8 +572,11 @@ void opensnap(int index)
    eat();
 }
 
-const int mx_typs = (1+4*6);
-unsigned char snaps[mx_typs]; unsigned exts[mx_typs], drvs[mx_typs]; int snp;
+static const int mx_typs = (1+4*6);
+static unsigned char snaps[mx_typs];
+static unsigned exts[mx_typs];
+static unsigned drvs[mx_typs];
+static unsigned snp;
 static void addref(LPSTR &ptr, unsigned char sntype, const char *ref, unsigned drv, unsigned ext)
 {
    strcpy(ptr, ref); ptr += strlen(ptr)+1;
@@ -508,11 +587,11 @@ static void addref(LPSTR &ptr, unsigned char sntype, const char *ref, unsigned d
 void savesnap(int diskindex)
 {
 again:
-   OPENFILENAME ofn = { 0 };
+   OPENFILENAME ofn = { };
    char fname[0x200]; *fname = 0;
    if (diskindex >= 0) {
       strcpy(fname, comp.wd.fdd[diskindex].name);
-      int ln = strlen(fname);
+      size_t ln = strlen(fname);
       if (ln > 4 && (*(unsigned*)(fname+ln-4) | WORD4(0,0x20,0x20,0x20)) == WORD4('.','s','c','l'))
          *(unsigned*)(fname+ln-4) = WORD4('.','t','r','d');
    }
@@ -522,7 +601,10 @@ again:
    if (diskindex < 0)
    {
       exts[snp] = WORD4('s','n','a',0); snaps[snp] = snSNA_128; // default
-      addref(ptr, snSNA_128, "ZX-Spectrum 128K snapshot (SNA)\0*.sna", -1, WORD4('s','n','a',0));
+      addref(ptr, snSNA_128, "ZX-Spectrum 128K snapshot (SNA)\0*.sna", -1U, WORD4('s','n','a',0));
+
+      exts[snp] = WORD4('p', 'a', 'l', 0); snaps[snp] = snPAL;
+      addref(ptr, snPAL, "Palette (ULA+)\0*.pal", -1U, WORD4('p', 'a', 'l', 0));
    }
 
    ofn.lStructSize = (WinVerMajor < 5) ? OPENFILENAME_SIZE_VERSION_400 : sizeof(OPENFILENAME);
@@ -534,21 +616,21 @@ again:
       static const char ex[][3] = { {'T','R','D'}, {'F','D','I'},{'T','D','0'},{'U','D','I'},{'I','S','D'},{'P','R','O'}};
       static const unsigned ex2[] = { snTRD, snFDI, snTD0, snUDI, snISD, snPRO };
 
-      for (int n = 0; n < 4; n++)
+      for (unsigned n = 0; n < 4; n++)
       {
          if (!comp.wd.fdd[n].rawdata)
              continue;
-         if (diskindex >= 0 && diskindex != n)
+         if (diskindex >= 0 && unsigned(diskindex) != n)
              continue;
-         mask[5] = 'A'+n;
+         mask[5] = char('A'+n);
 
-         for (int i = 0; i < sizeof ex/sizeof(ex[0]); i++)
+         for (size_t i = 0; i < sizeof ex/sizeof(ex[0]); i++)
          {
-            if (diskindex == n && ex2[i] == comp.wd.fdd[n].snaptype)
+            if (unsigned(diskindex) == n && ex2[i] == comp.wd.fdd[n].snaptype)
                 ofn.nFilterIndex = snp;
             memcpy(mask+8, ex[i], 3);
             memcpy(mask+15, ex[i], 3);
-            addref(ptr, ex2[i], mask, n, (*(unsigned*)ex[i] & 0xFFFFFF) | 0x202020);
+            addref(ptr, u8(ex2[i]), mask, n, (*(const unsigned*)ex[i] & 0xFFFFFF) | 0x202020);
          }
       }
    }
@@ -561,7 +643,7 @@ again:
    { // check if directory exists (for files opened from archive)
       char x = *path; *path = 0;
       unsigned atr = GetFileAttributes(fname); *path = x;
-      if (atr == -1 || !(atr & FILE_ATTRIBUTE_DIRECTORY)) *fname = 0;
+      if (atr == -1U || !(atr & FILE_ATTRIBUTE_DIRECTORY)) *fname = 0;
    } else path = fname;
    path = strrchr(path, '.'); if (path) *path = 0; // delete extension
 
@@ -575,7 +657,7 @@ again:
          char *dst = fn + strlen(fn); *dst++ = '.';
          *(unsigned*)dst = exts[ofn.nFilterIndex];
       }
-      if (GetFileAttributes(ofn.lpstrFile) != -1 &&
+      if (GetFileAttributes(ofn.lpstrFile) != INVALID_FILE_ATTRIBUTES &&
             IDNO == MessageBox(GetForegroundWindow(), "File exists. Overwrite ?", "Save", MB_ICONQUESTION | MB_YESNO))
          goto again;
 
@@ -587,6 +669,7 @@ again:
          switch (snaps[ofn.nFilterIndex])
          {
             case snSNA_128: res = writeSNA(ff); break;
+            case snPAL: res = writePAL(ff); break;
             case snTRD: res = saveto->write_trd(ff); break;
             case snUDI: res = saveto->write_udi(ff); break;
             case snFDI: res = saveto->write_fdi(ff); break;
@@ -597,7 +680,7 @@ again:
          fclose(ff);
          if (!res)
              MessageBox(GetForegroundWindow(), "write error", "Save", MB_ICONERROR);
-         else if (drvs[ofn.nFilterIndex]!=-1)
+         else if (drvs[ofn.nFilterIndex]!=-1U)
          {
              comp.wd.fdd[drvs[ofn.nFilterIndex]].optype=0;
              strcpy(comp.wd.fdd[drvs[ofn.nFilterIndex]].name, ofn.lpstrFile);
@@ -627,7 +710,7 @@ void ConvPal8ToBgr24(u8 *dst, u8 *scrbuf, int dx)
     u8 *ds = dst;
     for(unsigned i = 0; i < temp.oy; i++) // convert to BGR24 format
     {
-       unsigned char *src = scrbuf + i*dx;
+       unsigned char *src = scrbuf + int(i)*dx;
        for (unsigned y = 0; y < temp.ox; y++)
        {
           ds[0] = pal0[src[y]].peBlue;
@@ -644,15 +727,15 @@ void ConvRgb15ToBgr24(u8 *dst, u8 *scrbuf, int dx)
     u8 *ds = dst;
     for(unsigned i = 0; i < temp.oy; i++) // convert to BGR24 format
     {
-       unsigned char *src = scrbuf + i*dx;
+       unsigned char *src = scrbuf + int(i)*dx;
        for (unsigned y = 0; y < temp.ox; y++)
        {
           unsigned xx;
           xx = *(unsigned*)(src + y*2);
 
-          ds[0] = (xx & 0x1F)<<3;
-          ds[1] = (xx & 0x03E0)>>2;
-          ds[2] = (xx & 0x7C00)>>7;
+          ds[0] = u8((xx & 0x1F)<<3);
+          ds[1] = u8((xx & 0x03E0)>>2);
+          ds[2] = u8((xx & 0x7C00)>>7);
           ds += 3;
        }
        ds = (PBYTE)(ULONG_PTR(ds + 3) & ~ULONG_PTR(3)); // кажда€ строка выравнена на 4
@@ -664,15 +747,15 @@ void ConvRgb16ToBgr24(u8 *dst, u8 *scrbuf, int dx)
     u8 *ds = dst;
     for(unsigned i = 0; i < temp.oy; i++) // convert to BGR24 format
     {
-       unsigned char *src = scrbuf + i*dx;
+       unsigned char *src = scrbuf + int(i)*dx;
        for (unsigned y = 0; y < temp.ox; y++)
        {
           unsigned xx;
           xx = *(unsigned*)(src + y*2);
 
-          ds[0] = (xx&0x1F)<<3;
-          ds[1] = (xx&0x07E0)>>3;
-          ds[2] = (xx&0xF800)>>8;
+          ds[0] = u8((xx&0x1F)<<3);
+          ds[1] = u8((xx&0x07E0)>>3);
+          ds[2] = u8((xx&0xF800)>>8);
           ds += 3;
        }
        ds = (PBYTE)(ULONG_PTR(ds + 3) & ~ULONG_PTR(3)); // кажда€ строка выравнена на 4
@@ -684,7 +767,7 @@ void ConvYuy2ToBgr24(u8 *dst, u8 *scrbuf, int dx)
     u8 *ds = dst;
     for(unsigned i = 0; i < temp.oy; i++) // convert to BGR24 format
     {
-        unsigned char *src = scrbuf + i*dx;
+        unsigned char *src = scrbuf + int(i)*dx;
         for (unsigned y = 0; y < temp.ox; y++)
         {
             unsigned xx;
@@ -698,9 +781,9 @@ void ConvYuy2ToBgr24(u8 *dst, u8 *scrbuf, int dx)
             if (g < 0) g = 0; if (g > 255) g = 255;
             if (b < 0) b = 0; if (b > 255) b = 255;
 
-            ds[0] = b;
-            ds[1] = g;
-            ds[2] = r;
+            ds[0] = u8(b);
+            ds[1] = u8(g);
+            ds[2] = u8(r);
             ds += 3;
         }
         ds = (PBYTE)(ULONG_PTR(ds + 3) & ~ULONG_PTR(3)); // кажда€ строка выравнена на 4
@@ -712,7 +795,7 @@ void ConvBgr32ToBgr24(u8 *dst, u8 *scrbuf, int dx)
     u8 *ds = dst;
     for(unsigned i = 0; i < temp.oy; i++) // convert to BGR24 format
     {
-       unsigned char *src = scrbuf + i*dx;
+       unsigned char *src = scrbuf + int(i)*dx;
        for (unsigned x = 0; x < temp.ox; x++)
        {
           ds[0] = src[0];
@@ -726,9 +809,9 @@ void ConvBgr32ToBgr24(u8 *dst, u8 *scrbuf, int dx)
 }
 
 
-TColorConverter ConvBgr24 = 0;
+TColorConverter ConvBgr24 = nullptr;
 
-void SaveBmp(FILE *File, u8 *ds)
+static void SaveBmp(FILE *File, u8 *ds)
 {
      static u8 bmpheader32[]=
      {
@@ -757,20 +840,20 @@ void SaveBmp(FILE *File, u8 *ds)
     *(unsigned*)(bmpheader32 + 0x16) = temp.oy;
     fwrite(bmpheader32, 1, sizeof(bmpheader32), File);
 
-    for(int y = temp.oy - 1; y >= 0 ; y--)
+    for(int y = int(temp.oy - 1); y >= 0 ; y--)
     {
-        fwrite(ds + ((y * temp.ox * 3 + 3) & ~3), 1, temp.ox * 3, File);
+        fwrite(ds + ((unsigned(y) * temp.ox * 3 + 3) & ~3U), 1, temp.ox * 3, File);
     }
 }
 
-void SavePng(FILE *File, u8 *ds)
+static void SavePng(FILE *File, u8 *ds)
 {
     static png_color bkgColor = {127, 127, 127};
 
     if(!temp.PngSupport)
         return;
 
-    PngSaveImage(File, ds, temp.ox, temp.oy, bkgColor);
+    PngSaveImage(File, ds, int(temp.ox), int(temp.oy), bkgColor);
 }
 
 #define MAKE_RGBQUAD(r,g,b) (ULONG) (u32(b) | (u32(g)<<8) | (u32(r)<<16))
@@ -819,10 +902,12 @@ static void SaveBmp16c(FILE *File, const u8 *ds)
     *(unsigned*)(bmpheader32 + 2) = 320 * 200 / 2 + sizeof(bmpheader32); // filesize
     for(unsigned i = 0; i < 16; i++)
     {
-        // ‘ормат палитры Gg0Rr0Bb
-        u8 r = u32((comp.comp_pal[i] >> 3) & 3) * 255 / 3;
-        u8 g = u32((comp.comp_pal[i] >> 6) & 3) * 255 / 3;
-        u8 b = u32(comp.comp_pal[i] & 3) * 255 / 3;
+        // ‘ормат данных палитры Gg0Rr0Bb
+        // –аскладка палитры эмул€тора - ULA+
+        unsigned PalIdx = ((i & 8) << 1) | (i & 7);
+        u8 r = u8(u32((comp.comp_pal[PalIdx] >> 3) & 3) * 255 / 3);
+        u8 g = u8(u32((comp.comp_pal[PalIdx] >> 6) & 3) * 255 / 3);
+        u8 b = u8(u32(comp.comp_pal[PalIdx] & 3) * 255 / 3);
 
         *(PULONG)(bmpheader32 + 54 + 4*i) = MAKE_RGBQUAD(r,g,b);
     }
@@ -847,14 +932,14 @@ static void ConvPal16cAtm1(u8 *Buf)
           u8 v1 = src[ega1_ofs];
           u8 v2 = src[ega2_ofs];
           u8 v3 = src[ega3_ofs];
-          Buf[0] = ((((v0 >> 3) & 8) | (v0 & 0x7)) << 4) |
-                   (((v0 & 0x80) | (v0 << 1) & 0x70) >> 4);
-          Buf[1] = ((((v1 >> 3) & 8) | (v1 & 0x7)) << 4) |
-                   (((v1 & 0x80) | (v1 << 1) & 0x70) >> 4);
-          Buf[2] = ((((v2 >> 3) & 8) | (v2 & 0x7)) << 4) |
-                   (((v2 & 0x80) | (v2 << 1) & 0x70) >> 4);
-          Buf[3] = ((((v3 >> 3) & 8) | (v3 & 0x7)) << 4) |
-                   (((v3 & 0x80) | (v3 << 1) & 0x70) >> 4);
+          Buf[0] = u8(((((v0 >> 3) & 8) | (v0 & 0x7)) << 4) |
+                   (((v0 & 0x80) | ((v0 << 1) & 0x70)) >> 4));
+          Buf[1] = u8(((((v1 >> 3) & 8) | (v1 & 0x7)) << 4) |
+                   (((v1 & 0x80) | ((v1 << 1) & 0x70)) >> 4));
+          Buf[2] = u8(((((v2 >> 3) & 8) | (v2 & 0x7)) << 4) |
+                   (((v2 & 0x80) | ((v2 << 1) & 0x70)) >> 4));
+          Buf[3] = u8(((((v3 >> 3) & 8) | (v3 & 0x7)) << 4) |
+                   (((v3 & 0x80) | ((v3 << 1) & 0x70)) >> 4));
           
           src++;
           Buf += 4;
@@ -886,8 +971,7 @@ void main_scrshot()
        Ext = Format[1];
    }
 
-   //snprintf(fname, _countof(fname), "%s\\%s_%06u.%s", conf.scrshot_dir,
-   _snprintf(fname, _countof(fname), "%s\\%s_%06u.%s", conf.scrshot_dir, /* lvd */
+   snprintf(fname, _countof(fname), "%s\\%s_%06u.%s", conf.scrshot_dir,
        temp.LastSnapName[0] ? temp.LastSnapName : "sshot", sshot, Ext);
    fname[FILENAME_MAX-1] = 0;
 
@@ -948,8 +1032,8 @@ standard_zx_mode:;
       memset(scrbuf, 0, dx * temp.oy);
       renders[conf.render].func(scrbuf, dx); // render to memory buffer (PAL8, YUY2, RGB15, RGB16, RGB32)
 
-      u8 *ds = (u8 *)malloc(((temp.ox * 3 + 3) & ~3) * temp.oy);
-      ConvBgr24(ds, scrbuf, dx);
+      u8 *ds = (u8 *)malloc(((temp.ox * 3 + 3) & ~3U) * temp.oy);
+      ConvBgr24(ds, scrbuf, int(dx));
 
       Saver[conf.scrshot - 1](fileShot, ds);
 

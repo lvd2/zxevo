@@ -4,22 +4,23 @@
 #include "emul.h"
 #include "vars.h"
 #include "dxr_text.h"
+#include "fntsrch.h"
 
 #include "util.h"
 
 #ifdef MOD_SETTINGS
-unsigned font_maxmem = 0xFFFF;
-unsigned char r21=1, r30=1, r41=1, r61=1, r80=1, rae=1, rf0=0, roth=0;
-unsigned char linear = 0, right = 1, x100 = 1;
-unsigned char rmask[0x100];
-unsigned font_address;
-unsigned char fontdata2[0x900*2];
-unsigned fontsize = 8;
+static unsigned font_maxmem = 0xFFFF;
+static unsigned char r21=1, r30=1, r41=1, r61=1, r80=1, rae=1, rf0=0, roth=0;
+static unsigned char linear = 0, right = 1, x100 = 1;
+static unsigned char rmask[0x100];
+static unsigned font_address;
+static unsigned char fontdata2[0x900*2];
+static unsigned fontsize = 8;
 static unsigned block_font_dialog = 0;
-unsigned char *font_base;
+static unsigned char *font_base;
 
 
-void update_rmask()
+static void update_rmask()
 {
    memset(rmask, 0, sizeof rmask);
    if (r21) memset(rmask+0x21, 1, 0x0F);
@@ -27,15 +28,24 @@ void update_rmask()
    if (r41) memset(rmask+0x41, 1, 26);
    if (r61) memset(rmask+0x61, 1, 26);
    if (r80) memset(rmask+0x80, 1, 32);
-   if (rae) memset(rmask+0xA0, 1, 16), memset(rmask+0xE0, 1, 16);
+   if(rae)
+   {
+       memset(rmask + 0xA0, 1, 16);
+       memset(rmask + 0xE0, 1, 16);
+   }
    if (rf0) rmask[0xF0] = rmask[0xF1] = 1;
-   if (roth)
-       memset(rmask+1, 1, 0x1F), memset(rmask+0xB0, 1, 0x30),
-       memset(rmask+0xF2, 1, 13), memset(rmask+0x3A, 1, 7),
-       memset(rmask+0x5B, 1, 6), memset(rmask+0x7B, 1, 5);
+   if(roth)
+   {
+       memset(rmask + 1, 1, 0x1F);
+       memset(rmask + 0xB0, 1, 0x30);
+       memset(rmask + 0xF2, 1, 13);
+       memset(rmask + 0x3A, 1, 7);
+       memset(rmask + 0x5B, 1, 6);
+       memset(rmask + 0x7B, 1, 5);
+   }
 }
 
-void get_ranges(HWND dlg)
+static void get_ranges(HWND dlg)
 {
    char ln[64]; GetDlgItemText(dlg, IDE_ADDRESS, ln, sizeof ln);
    sscanf(ln, "%X", &font_address); font_address &= font_maxmem;
@@ -52,29 +62,37 @@ void get_ranges(HWND dlg)
    rae = IsDlgButtonChecked(dlg, IDC_RA0AF) == BST_CHECKED;
    rf0 = IsDlgButtonChecked(dlg, IDC_RF0F1) == BST_CHECKED;
    roth = IsDlgButtonChecked(dlg, IDC_ROTH2) == BST_CHECKED;
-   fontsize = 5 + SendDlgItemMessage(dlg, IDC_FONTSIZE, CB_GETCURSEL, 0, 0);
+   fontsize = unsigned(5 + SendDlgItemMessage(dlg, IDC_FONTSIZE, CB_GETCURSEL, 0, 0));
    update_rmask();
 }
 
-void paint_font(HWND dlg, int paint=0)
+static void paint_font(HWND dlg, int paint=0)
 {
    const int sz = 340;
    char *buf = (char*)malloc(sz*sz);
    if (!buf) return;
    RECT rc; GetWindowRect(GetDlgItem(dlg, IDC_FRAME), &rc);
    RECT r2; GetWindowRect(dlg, &r2);
-   rc.top -= r2.top, rc.bottom -= r2.top, rc.left -= r2.left, rc.right -= r2.left;
+   rc.top -= r2.top; rc.bottom -= r2.top; rc.left -= r2.left; rc.right -= r2.left;
    static struct {
       BITMAPINFO header;
       RGBQUAD waste[0x100];
-   } gdibmp = { { sizeof(BITMAPINFOHEADER), sz, -sz, 1, 8, BI_RGB } };
-   static RGBQUAD cl[] = { {0xFF,0,0},{0xC0,0xC0,0xC0},{0,0,0} };
+   } gdibmp = { { { sizeof(BITMAPINFOHEADER), sz, -sz, 1, 8, BI_RGB } } };
+   static RGBQUAD cl[] = { { 0xFF, 0, 0, 0 }, { 0xC0, 0xC0, 0xC0, 0 }, { 0, 0, 0, 0 } };
    memcpy(gdibmp.header.bmiColors, cl, sizeof(cl));
    memset(buf, 0, sz*sz);
 
    unsigned next_pixel, next_char;
-   if (linear) next_pixel = 1, next_char = 8;
-   else next_pixel = 0x100, next_char = 1;
+   if(linear)
+   {
+       next_pixel = 1;
+       next_char = 8;
+   }
+   else
+   {
+       next_pixel = 0x100;
+       next_char = 1;
+   }
 
    unsigned t1[4], t2[4];
    for (unsigned j = 0; j < 4; j++) {
@@ -86,7 +104,7 @@ void paint_font(HWND dlg, int paint=0)
       unsigned x = ch & 0x0F, y = ch / 0x10;
       x = x*20 + ((x>>2)&3) * 2;
       y = y*20 + ((y>>2)&3) * 2;
-      x += 10, y += 10;
+      x += 10; y += 10;
       for (unsigned i = 0; i < fontsize; i++) {
          unsigned char byte = font_base[(font_address + i*next_pixel + ch*next_char) & font_maxmem];
          unsigned *t0 = t1;
@@ -118,39 +136,103 @@ void paint_font(HWND dlg, int paint=0)
    SetDlgItemText(dlg, IDC_ADDRESS, ln);
 }
 
-unsigned char pattern[12][8];
+static unsigned char pattern[12][8];
 
-void kill_pattern(unsigned x, unsigned y, unsigned mode)
+static void kill_pattern(unsigned x, unsigned y, unsigned mode)
 {
    unsigned sx[64], sy[64], sp = 1;
-   sx[0] = x, sy[0] = y;
+   sx[0] = x; sy[0] = y;
    pattern[y][x] = 0;
    while (sp--) {
-      x = sx[sp], y = sy[sp];
-      if (pattern[y-1][x]) pattern[y-1][x] = 0, sx[sp] = x, sy[sp] = y-1, sp++;
-      if (pattern[y+1][x]) pattern[y+1][x] = 0, sx[sp] = x, sy[sp] = y+1, sp++;
-      if (pattern[y][x-1]) pattern[y][x-1] = 0, sx[sp] = x-1, sy[sp] = y, sp++;
-      if (pattern[y][x+1]) pattern[y][x+1] = 0, sx[sp] = x+1, sy[sp] = y, sp++;
+      x = sx[sp]; y = sy[sp];
+      if(pattern[y - 1][x])
+      {
+          pattern[y - 1][x] = 0;
+          sx[sp] = x;
+          sy[sp] = y - 1;
+          sp++;
+      }
+      if(pattern[y + 1][x])
+      {
+          pattern[y + 1][x] = 0;
+          sx[sp] = x;
+          sy[sp] = y + 1;
+          sp++;
+      }
+      if(pattern[y][x - 1])
+      {
+          pattern[y][x - 1] = 0;
+          sx[sp] = x - 1;
+          sy[sp] = y;
+          sp++;
+      }
+      if(pattern[y][x + 1])
+      {
+          pattern[y][x + 1] = 0;
+          sx[sp] = x + 1;
+          sy[sp] = y;
+          sp++;
+      }
       if (mode) {
-         if (pattern[y-1][x+1]) pattern[y-1][x+1] = 0, sx[sp] = x+1, sy[sp] = y-1, sp++;
-         if (pattern[y+1][x+1]) pattern[y+1][x+1] = 0, sx[sp] = x+1, sy[sp] = y+1, sp++;
-         if (pattern[y-1][x-1]) pattern[y-1][x-1] = 0, sx[sp] = x-1, sy[sp] = y-1, sp++;
-         if (pattern[y+1][x-1]) pattern[y+1][x-1] = 0, sx[sp] = x-1, sy[sp] = y+1, sp++;
+          if(pattern[y - 1][x + 1])
+          {
+              pattern[y - 1][x + 1] = 0;
+              sx[sp] = x + 1;
+              sy[sp] = y - 1;
+              sp++;
+          }
+          if(pattern[y + 1][x + 1])
+          {
+              pattern[y + 1][x + 1] = 0;
+              sx[sp] = x + 1;
+              sy[sp] = y + 1;
+              sp++;
+          }
+          if(pattern[y - 1][x - 1])
+          {
+              pattern[y - 1][x - 1] = 0;
+              sx[sp] = x - 1;
+              sy[sp] = y - 1;
+              sp++;
+          }
+          if(pattern[y + 1][x - 1])
+          {
+              pattern[y + 1][x - 1] = 0;
+              sx[sp] = x - 1;
+              sy[sp] = y + 1;
+              sp++;
+          }
       }
    }
 }
 
-unsigned kill_raw(unsigned x, unsigned y, unsigned mode)
+static unsigned kill_raw(unsigned x, unsigned y, unsigned mode)
 {
    unsigned result = 0;
-   if (pattern[y][x])   kill_pattern(x, y, mode), result++;
-   if (pattern[y][x+1]) kill_pattern(x+1, y, mode), result++;
-   if (pattern[y][x+2]) kill_pattern(x+2, y, mode), result++;
-   if (pattern[y][x+3]) kill_pattern(x+3, y, mode), result++;
+   if(pattern[y][x])
+   {
+       kill_pattern(x, y, mode);
+       result++;
+   }
+   if(pattern[y][x + 1])
+   {
+       kill_pattern(x + 1, y, mode);
+       result++;
+   }
+   if(pattern[y][x + 2])
+   {
+       kill_pattern(x + 2, y, mode);
+       result++;
+   }
+   if(pattern[y][x + 3])
+   {
+       kill_pattern(x + 3, y, mode);
+       result++;
+   }
    return result;
 }
 
-unsigned count_lnk(unsigned mode)
+static unsigned count_lnk(unsigned mode)
 {
    unsigned result = 0;
    for (;;) {
@@ -170,53 +252,65 @@ static union { unsigned v32; unsigned char v8[4]; } c_map2[16];
 static union { unsigned v32; unsigned char v8[4]; } c_map3[16];
 static union { unsigned v32; unsigned char v8[4]; } c_map4[16];
 
-void create_maps()
+static void create_maps()
 {
    unsigned i; //Alone Coder 0.36.7
    for (/*unsigned*/ i = 0; i < 16; i++)
       for (unsigned j = 0; j < 4; j++)
          c_map0[i].v8[3-j] = (i >> j) & 1;
    for (i = 0; i < 16; i++) {
-      c_map1[i].v32 = c_map0[i >> 1].v32,
-      c_map2[i].v32 = c_map0[(i&1) << 3].v32;
-      c_map3[i].v32 = c_map0[(((~i)>>2) | 4) & 0x07].v32,
-      c_map4[i].v32 = c_map0[(((~i)<<2) | 2) & 0x0E].v32;
+      c_map1[i].v32 = c_map0[i >> 1].v32;
+      c_map2[i].v32 = c_map0[(i & 1) << 3].v32;
+      c_map3[i].v32 = c_map0[(((~i) >> 2) | 4) & 0x07].v32;
+      c_map4[i].v32 = c_map0[(((~i) << 2) | 2) & 0x0E].v32;
    }
 }
 
-unsigned linked_cells(unsigned sym)
+static unsigned linked_cells(unsigned sym)
 {
    unsigned pix = 0x100, shift = right? 0 : 4;
-   if (linear) sym *= 8, pix = 1;
+   if(linear)
+   {
+       sym *= 8;
+       pix = 1;
+   }
    sym += font_address;
 //   *(unsigned*)&(pattern[0][0]) = *(unsigned*)&(pattern[0][4]) = 0;
-   for (unsigned i = 0; i < fontsize; i++, sym += pix)
-      *(unsigned*)&(pattern[i+1][0]) = c_map1[(font_base[sym & font_maxmem] >> shift) & 0x0F].v32,
-      *(unsigned*)&(pattern[i+1][4]) = c_map2[(font_base[sym & font_maxmem] >> shift) & 0x0F].v32;
+   for(unsigned i = 0; i < fontsize; i++, sym += pix)
+   {
+       *(unsigned*)&(pattern[i + 1][0]) = c_map1[(font_base[sym & font_maxmem] >> shift) & 0x0F].v32;
+       *(unsigned*)&(pattern[i + 1][4]) = c_map2[(font_base[sym & font_maxmem] >> shift) & 0x0F].v32;
+   }
    *(unsigned*)&(pattern[fontsize+1][0]) = *(unsigned*)&(pattern[fontsize+1][4]) = 0;
    *(unsigned*)&(pattern[fontsize+2][0]) = *(unsigned*)&(pattern[fontsize+2][4]) = 0;
 //   *(unsigned*)&(pattern[fontsize+3][0]) = *(unsigned*)&(pattern[fontsize+3][4]) = 0;
    return count_lnk(1);
 }
 
-unsigned linked_empties(unsigned sym)
+static unsigned linked_empties(unsigned sym)
 {
    unsigned pix = 0x100, shift = right? 0 : 4;
-   if (linear) sym *= 8, pix = 1;
+   if(linear)
+   {
+       sym *= 8;
+       pix = 1;
+   }
    sym += font_address;
 //   *(unsigned*)&(pattern[0][0]) = *(unsigned*)&(pattern[0][4]) = 0;
-   *(unsigned*)&(pattern[1][0]) = WORD4(0,1,1,1),
-   *(unsigned*)&(pattern[1][4]) = WORD4(1,1,1,0);
-   for (unsigned i = 0; i < fontsize; i++, sym += pix)
-      *(unsigned*)&(pattern[i+2][0]) = c_map3[(font_base[sym & font_maxmem] >> shift) & 0x0F].v32,
-      *(unsigned*)&(pattern[i+2][4]) = c_map4[(font_base[sym & font_maxmem] >> shift) & 0x0F].v32;
-   *(unsigned*)&(pattern[fontsize+2][0]) = WORD4(0,1,1,1),
-   *(unsigned*)&(pattern[fontsize+2][4]) = WORD4(1,1,1,0);
+   *(unsigned*)&(pattern[1][0]) = WORD4(0, 1, 1, 1);
+   *(unsigned*)&(pattern[1][4]) = WORD4(1, 1, 1, 0);
+   for(unsigned i = 0; i < fontsize; i++, sym += pix)
+   {
+       *(unsigned*)&(pattern[i + 2][0]) = c_map3[(font_base[sym & font_maxmem] >> shift) & 0x0F].v32;
+       *(unsigned*)&(pattern[i + 2][4]) = c_map4[(font_base[sym & font_maxmem] >> shift) & 0x0F].v32;
+   }
+   *(unsigned*)&(pattern[fontsize + 2][0]) = WORD4(0, 1, 1, 1);
+   *(unsigned*)&(pattern[fontsize + 2][4]) = WORD4(1, 1, 1, 0);
 //   *(unsigned*)&(pattern[fontsize+3][0]) = *(unsigned*)&(pattern[fontsize+3][4]) = 0;
    return count_lnk(0);
 }
 
-unsigned char is_font()
+static unsigned char is_font()
 {
    const int max_err = 2;
    int err = 0;
@@ -242,7 +336,7 @@ unsigned char is_font()
       if (linked_cells('9') != 1) RET_ERR
       if (linked_empties('9') != 2) RET_ERR
       if (linked_cells('0') != 1) RET_ERR
-      int e = linked_empties('0');
+      unsigned e = linked_empties('0');
       if (e != 2 && e != 3) RET_ERR
    }
    if (r41) {
@@ -317,30 +411,38 @@ inline int pretest_font(unsigned pix, unsigned chr, unsigned shift)
    return 1;
 }
 
-void set_data(HWND dlg)
+static void set_data(HWND dlg)
 {
    unsigned prev = block_font_dialog;
    block_font_dialog = 1;
    char ln[64]; sprintf(ln, "0%04X", font_address);
    SetDlgItemText(dlg, IDE_ADDRESS, ln);
 
-   if (linear)
-      CheckDlgButton(dlg, IDC_PLANES, BST_UNCHECKED),
-      CheckDlgButton(dlg, IDC_LINEAR, BST_CHECKED);
+   if(linear)
+   {
+       CheckDlgButton(dlg, IDC_PLANES, BST_UNCHECKED);
+       CheckDlgButton(dlg, IDC_LINEAR, BST_CHECKED);
+   }
    else
-      CheckDlgButton(dlg, IDC_PLANES, BST_CHECKED),
-      CheckDlgButton(dlg, IDC_LINEAR, BST_UNCHECKED);
+   {
+       CheckDlgButton(dlg, IDC_PLANES, BST_CHECKED);
+       CheckDlgButton(dlg, IDC_LINEAR, BST_UNCHECKED);
+   }
 
-   if (right)
-      CheckDlgButton(dlg, IDC_LEFT, BST_UNCHECKED),
-      CheckDlgButton(dlg, IDC_RIGHT, BST_CHECKED);
+   if(right)
+   {
+       CheckDlgButton(dlg, IDC_LEFT, BST_UNCHECKED);
+       CheckDlgButton(dlg, IDC_RIGHT, BST_CHECKED);
+   }
    else
-      CheckDlgButton(dlg, IDC_LEFT, BST_CHECKED),
-      CheckDlgButton(dlg, IDC_RIGHT, BST_UNCHECKED);
+   {
+       CheckDlgButton(dlg, IDC_LEFT, BST_CHECKED);
+       CheckDlgButton(dlg, IDC_RIGHT, BST_UNCHECKED);
+   }
    block_font_dialog = prev;
 }
 
-void fnt_search(HWND dlg)
+static void fnt_search(HWND dlg)
 {
    create_maps();
    memset(pattern, 0, sizeof pattern);
@@ -357,7 +459,7 @@ void fnt_search(HWND dlg)
       if (font_address == start) {
          right ^= 1; shift = right? 0 : 4;
          if (right == st_right) {
-            linear ^= 1; pix = linear? 1 : 0x100, chr = linear? 8 : 1;
+            linear ^= 1; pix = linear? 1 : 0x100; chr = linear? 8 : 1;
             if (linear == st_linear) {
                MessageBox(dlg, "font not found", "font searcher", MB_OK | MB_ICONWARNING);
                return;
@@ -371,10 +473,14 @@ void fnt_search(HWND dlg)
    set_data(dlg);
 }
 
-void save_font()
+static void save_font()
 {
    unsigned chr = 1, line = 0x100, shift = 4;
-   if (linear) chr = 8, line = 1;
+   if(linear)
+   {
+       chr = 8;
+       line = 1;
+   }
    if (right) shift = 0;
    unsigned char *dst = fontdata2;
 
@@ -395,9 +501,9 @@ void save_font()
    fontdata = fontdata2;
 }
 
-void FontFromFile(HWND dlg)
+static void FontFromFile(HWND dlg)
 {
-   OPENFILENAME ofn = { 0 };
+   OPENFILENAME ofn = { };
    char fname[0x200]; *fname = 0;
 
    ofn.lStructSize = (WinVerMajor < 5) ? OPENFILENAME_SIZE_VERSION_400 : sizeof(OPENFILENAME);
@@ -410,7 +516,7 @@ void FontFromFile(HWND dlg)
 
    FILE *ff = fopen(fname, "rb"); if (!ff) return;
    memset(font_base = snbuf, 0, sizeof snbuf);
-   unsigned size = fread(snbuf, 1, sizeof snbuf, ff);
+   size_t size = fread(snbuf, 1, sizeof snbuf, ff);
    fclose(ff);
 
    for (font_maxmem = 0x800; font_maxmem < size; font_maxmem *= 2);
@@ -421,7 +527,7 @@ void FontFromFile(HWND dlg)
    paint_font(dlg);
 }
 
-INT_PTR CALLBACK fonts_dlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static INT_PTR CALLBACK fonts_dlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
    if (msg == WM_INITDIALOG) {
       block_font_dialog = 1;
@@ -455,7 +561,7 @@ INT_PTR CALLBACK fonts_dlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    if (msg == WM_NOTIFY && wp == IDC_SPIN) {
       char ln[64]; GetDlgItemText(dlg, IDE_ADDRESS, ln, sizeof ln);
       sscanf(ln, "%X", &font_address);
-      font_address += ((LPNMUPDOWN)lp)->iDelta * (x100? 0x100 : 1);
+      font_address = unsigned(int(font_address) + ((LPNMUPDOWN)lp)->iDelta * (x100? 0x100 : 1));
       font_address &= font_maxmem;
       sprintf(ln, "0%04X", font_address); SetDlgItemText(dlg, IDE_ADDRESS, ln);
       paint_font(dlg);
@@ -480,7 +586,11 @@ INT_PTR CALLBACK fonts_dlg(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
    if (id == IDC_FILE) FontFromFile(dlg);
    if (id == IDC_FIND) fnt_search(dlg);
    if (id == IDCANCEL) EndDialog(dlg, 0);
-   if (id == IDOK) save_font(), EndDialog(dlg, 0);
+   if(id == IDOK)
+   {
+       save_font();
+       EndDialog(dlg, 0);
+   }
 
    return 0;
 }

@@ -16,7 +16,7 @@ void make_gs_volume(unsigned level)
    for (int i = 0; i <= 0x40; i++) {
       //const double ln_0x40 = 4.15888308336;
       //gs_vfx[i] = (unsigned)(conf.sound.gs*log((double)(i*level/0x3F+1))/ln_0x40);
-      gs_vfx[i] = conf.sound.gs_vol*i*level/(0x40*0x40);
+      gs_vfx[i] = unsigned(conf.sound.gs_vol*i*int(level)/(0x40*0x40));
    }
 }
 
@@ -91,18 +91,17 @@ void apply_gs()
 #endif
 }
 
-void init_gs()
+void init_gs(bool Init)
 {
 #ifdef MOD_GS
    if (conf.gs_type != 0)
        BASS::Load();
 #endif
 
-#ifdef MOD_GSZ80
-   make_gs_volume(); // for GS-Z80
-#endif
-
-   reset_gs();
+   if(Init)
+   {
+       reset_gs();
+   }
 }
 
 void done_gs()

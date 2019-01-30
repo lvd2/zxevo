@@ -5,10 +5,11 @@
 #include "emul.h"
 #include "vars.h"
 #include "gui.h"
+#include "opendlg.h"
 
 #include "util.h"
 
-struct FILEPREVIEWINFO
+static struct FILEPREVIEWINFO
 {
    OPENFILENAME *ofn;
    struct { HWND h; int dx,dy; } list;
@@ -32,14 +33,14 @@ void FILEPREVIEWINFO::OnResize()
    RECT dlgrc; GetWindowRect(dlg.h, &dlgrc);
    list.dy = (dlgrc.bottom - dlgrc.top) - dlgbase + listbase;
 
-   SetWindowPos(list.h, 0, 0, 0, list.dx, list.dy,
+   SetWindowPos(list.h, nullptr, 0, 0, list.dx, list.dy,
                   SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 void FILEPREVIEWINFO::OnChange()
 {
    char filename[512];
-   int r = SendMessage(dlg.h, CDM_GETFILEPATH, sizeof(filename), (LPARAM) filename);
+   int r = int(SendMessage(dlg.h, CDM_GETFILEPATH, sizeof(filename), (LPARAM) filename));
    SendMessage(list.h, LVM_DELETEALLITEMS, 0, 0);
    if (r < 0 || (GetFileAttributes(filename) & FILE_ATTRIBUTE_DIRECTORY)) return;
 
@@ -81,9 +82,9 @@ void FILEPREVIEWINFO::Preview(unsigned char *cat)
       memcpy(fn, cat+p, 8); fn[8] = 0;
       item.iItem = count++;
       item.iSubItem = 0;
-      item.iItem = SendMessage(list.h, LVM_INSERTITEM, 0, (LPARAM) &item);
+      item.iItem = int(SendMessage(list.h, LVM_INSERTITEM, 0, (LPARAM) &item));
 
-      fn[0] = cat[p+8]; fn[1] = 0;
+      fn[0] = char(cat[p+8]); fn[1] = 0;
       item.iSubItem = 1;
       SendMessage(list.h, LVM_SETITEM, 0, (LPARAM) &item);
 
@@ -97,7 +98,7 @@ void FILEPREVIEWINFO::PreviewTRD(char *filename)
 {
    unsigned char cat[0x800];
    FILE *ff = fopen(filename, "rb");
-   int sz = fread(cat, 1, 0x800, ff);
+   size_t sz = fread(cat, 1, 0x800, ff);
    fclose(ff);
    if (sz != 0x800) return;
    Preview(cat);
@@ -109,7 +110,7 @@ void FILEPREVIEWINFO::PreviewSCL(char *filename)
    unsigned char hdr[16];
 
    FILE *ff = fopen(filename, "rb");
-   unsigned sz = fread(hdr, 1, 9, ff), count = 0;
+   size_t sz = fread(hdr, 1, 9, ff), count = 0;
 
    if (sz == 9 && !memcmp(hdr, "SINCLAIR", 8)) {
       unsigned max = hdr[8]; sz = max*14;
@@ -126,7 +127,7 @@ void FILEPREVIEWINFO::PreviewSCL(char *filename)
    if (count) Preview(cat);
 }
 
-UINT_PTR CALLBACK PreviewDlgProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+static UINT_PTR CALLBACK PreviewDlgProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
    switch (msg)
    {

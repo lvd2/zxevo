@@ -252,7 +252,7 @@ struct ATA_PORT
 };
 
 extern PHYS_DEVICE phys[];
-extern int n_phys;
+extern unsigned n_phys;
 
 unsigned find_hdd_device(char *name);
 void init_hdd_cd();

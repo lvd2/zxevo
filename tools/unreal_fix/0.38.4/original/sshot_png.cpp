@@ -29,20 +29,20 @@ typedef png_structp (PNGAPI *png_create_write_struct_ptr)
 typedef void (PNGAPI *png_set_filter_ptr) PNGARG((png_structp png_ptr, int method,
    int filters));
 
-png_error_ptr png_error_p = 0;
-png_write_end_ptr png_write_end_p = 0;
-png_write_image_ptr png_write_image_p = 0;
-png_set_bgr_ptr png_set_bgr_p = 0;
-png_write_info_ptr png_write_info_p = 0;
-png_set_IHDR_ptr png_set_IHDR_p = 0;
-png_set_write_fn_ptr png_set_write_fn_p = 0;
-png_destroy_write_struct_ptr png_destroy_write_struct_p = 0;
-png_create_info_struct_ptr png_create_info_struct_p = 0;
-png_set_compression_level_ptr png_set_compression_level_p = 0;
-png_create_write_struct_ptr png_create_write_struct_p = 0;
-png_set_filter_ptr png_set_filter_p = 0;
+static png_error_ptr png_error_p = nullptr;
+static png_write_end_ptr png_write_end_p = nullptr;
+static png_write_image_ptr png_write_image_p = nullptr;
+static png_set_bgr_ptr png_set_bgr_p = nullptr;
+static png_write_info_ptr png_write_info_p = nullptr;
+static png_set_IHDR_ptr png_set_IHDR_p = nullptr;
+static png_set_write_fn_ptr png_set_write_fn_p = nullptr;
+static png_destroy_write_struct_ptr png_destroy_write_struct_p = nullptr;
+static png_create_info_struct_ptr png_create_info_struct_p = nullptr;
+static png_set_compression_level_ptr png_set_compression_level_p = nullptr;
+static png_create_write_struct_ptr png_create_write_struct_p = nullptr;
+static png_set_filter_ptr png_set_filter_p = nullptr;
 
-static HMODULE PngDll = 0;
+static HMODULE PngDll = nullptr;
 bool PngInit()
 {
     PngDll = LoadLibrary("libpng12.dll");
@@ -93,14 +93,14 @@ void PngDone()
         FreeLibrary(PngDll);
 }
 
-static png_structp png_ptr = NULL;
-static png_infop info_ptr = NULL;
+static png_structp png_ptr = nullptr;
+static png_infop info_ptr = nullptr;
 
 static void
 PNGAPI
 png_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
 {
-   png_uint_32 check;
+   size_t check;
 
    check = fwrite(data, 1, length, (FILE *)(png_ptr->io_ptr));
    if (check != length)
@@ -115,22 +115,24 @@ png_flush(png_structp png_ptr)
 {
    FILE *io_ptr;
    io_ptr = (FILE *)CVT_PTR((png_ptr->io_ptr));
-   if (io_ptr != NULL)
+   if (io_ptr != nullptr)
       fflush(io_ptr);
 }
 
 BOOL PngSaveImage (FILE *pfFile, png_byte *pDiData,
                    int iWidth, int iHeight, png_color bkgColor)
 {
+    (void)bkgColor;
+
     const int           ciBitDepth = 8;
     const int           ciChannels = 3;
 
     png_uint_32         ulRowBytes;
-    static png_byte   **ppbRowPointers = NULL;
+    static png_byte   **ppbRowPointers = nullptr;
     int                 i;
 
     // prepare the standard PNG structures
-    png_ptr = png_create_write_struct_p(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    png_ptr = png_create_write_struct_p(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
     if (!png_ptr)
     {
         return FALSE;
@@ -143,7 +145,7 @@ BOOL PngSaveImage (FILE *pfFile, png_byte *pDiData,
     info_ptr = png_create_info_struct_p(png_ptr);
     if (!info_ptr)
     {
-        png_destroy_write_struct_p(&png_ptr, (png_infopp) NULL);
+        png_destroy_write_struct_p(&png_ptr, (png_infopp) nullptr);
         return FALSE;
     }
 
@@ -151,7 +153,7 @@ BOOL PngSaveImage (FILE *pfFile, png_byte *pDiData,
     png_set_write_fn_p(png_ptr, (png_voidp)pfFile, png_write_data, png_flush);
     
     // we're going to write a very simple 3x8 bit RGB image
-    png_set_IHDR_p(png_ptr, info_ptr, iWidth, iHeight, ciBitDepth,
+    png_set_IHDR_p(png_ptr, info_ptr, png_uint_32(iWidth), png_uint_32(iHeight), ciBitDepth,
         PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE,
         PNG_FILTER_TYPE_BASE);
     
@@ -162,14 +164,14 @@ BOOL PngSaveImage (FILE *pfFile, png_byte *pDiData,
     png_set_bgr_p(png_ptr);
     
     // row_bytes is the width x number of channels
-    ulRowBytes = iWidth * ciChannels;
+    ulRowBytes = png_uint_32(iWidth * ciChannels);
     
     // we can allocate memory for an array of row-pointers
-    ppbRowPointers = (png_bytepp) malloc(iHeight * sizeof(png_bytep));
+    ppbRowPointers = (png_bytepp) malloc(unsigned(iHeight) * sizeof(png_bytep));
     
     // set the individual row-pointers to point at the correct offsets
     for (i = 0; i < iHeight; i++)
-        ppbRowPointers[i] = pDiData + i * (((ulRowBytes + 3) >> 2) << 2);
+        ppbRowPointers[i] = pDiData + unsigned(i) * (((ulRowBytes + 3) >> 2) << 2);
 
     // write out the entire image data in one call
     png_write_image_p(png_ptr, ppbRowPointers);
@@ -179,10 +181,10 @@ BOOL PngSaveImage (FILE *pfFile, png_byte *pDiData,
     
     // and we're done
     free (ppbRowPointers);
-    ppbRowPointers = NULL;
+    ppbRowPointers = nullptr;
     
     // clean up after the write, and free any memory allocated
-    png_destroy_write_struct_p(&png_ptr, (png_infopp) NULL);
+    png_destroy_write_struct_p(&png_ptr, (png_infopp) nullptr);
     
     return TRUE;
 }

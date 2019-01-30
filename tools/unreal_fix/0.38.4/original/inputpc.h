@@ -5,7 +5,6 @@ struct PC_KEY
    unsigned char vkey;
    unsigned char normal;
    unsigned char shifted;
-   unsigned char padd;
 };
 
 extern const PC_KEY pc_layout[];

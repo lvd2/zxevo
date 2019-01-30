@@ -26,6 +26,7 @@ typedef DWORD (WINAPI *TChannelGetLevel)(DWORD);
 typedef BOOL  (WINAPI *TChannelFlags)(DWORD,DWORD,DWORD);
 typedef double (WINAPI *TChannelBytes2Seconds)(DWORD,QWORD);
 typedef BOOL  (WINAPI *TChannelSetAttribute)(DWORD,DWORD,float);
+typedef BOOL  (WINAPI *TChannelGetAttribute)(DWORD handle, DWORD attrib, float *value);
 typedef DWORD (WINAPI *TChannelIsActive)(DWORD handle);
 
 typedef HSTREAM (WINAPI *TStreamCreate)(DWORD,DWORD,DWORD,STREAMPROC,PVOID);
@@ -51,6 +52,8 @@ extern TChannelStop         ChannelStop;
 extern TChannelGetPosition  ChannelGetPosition;
 extern TChannelSetPosition  ChannelSetPosition;
 extern TChannelSetAttribute ChannelSetAttribute;
+extern TChannelGetAttribute ChannelGetAttribute;
+
 extern TChannelGetLevel     ChannelGetLevel;
 extern TErrorGetCode        ErrorGetCode;
 extern TChannelFlags        ChannelFlags;
@@ -63,6 +66,8 @@ extern TStreamCreateFileUser StreamCreateFileUser;
 extern TStreamFree          StreamFree;
 
 extern HMODULE Bass;
+extern bool Initialized;
+
 void Load();
 void Unload();
 }

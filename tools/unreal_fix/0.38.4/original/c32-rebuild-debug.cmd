@@ -1,5 +1,5 @@
 @echo off
-call iclvars ia32 vs2015
+call iclvars ia32 vs2017
 
 cd sndrender
 nmake clean

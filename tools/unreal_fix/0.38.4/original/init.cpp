@@ -20,7 +20,7 @@
 
 #include "util.h"
 
-void cpu_info()
+static void cpu_info()
 {
    char idstr[64];
    idstr[0] = 0;
@@ -52,7 +52,7 @@ void cpu_info()
    printf("%s ", idstr);
 
    color(CONSCLR_HARDITEM);
-   printf("%d.%d.%d [MMX:%s,SSE:%s,SSE2:%s,TSCINV:%s] ",
+   printf("%u.%u.%u [MMX:%s,SSE:%s,SSE2:%s,TSCINV:%s] ",
       (cpuver>>8) & 0x0F, (cpuver>>4) & 0x0F, cpuver & 0x0F,
       temp.mmx ? "YES" : "NO",
       temp.sse ? "YES" : "NO",
@@ -75,8 +75,9 @@ void cpu_info()
 #endif
 }
 
-void restrict_version(char legacy)
+static void restrict_version(char legacy)
 {
+    (void)legacy;
 //   color(CONSCLR_WARNING);
 //   printf ("WARNING: Windows 95/98/Me is not fully supported.\n");
    temp.win9x=1; //Dexus
@@ -104,11 +105,14 @@ void init_all(int argc, char **argv)
 //   printf("%s\n", __FUNCTION__);
    cpu_info();
 
-   char *config = 0, legacy = 0;
+   char *config = nullptr, legacy = 0;
    for (int i = 0; i < argc; i++) {
       if (argv[i][0] != '/' && argv[i][0] != '-') continue;
-      if (!stricmp(argv[i]+1, "i") && i+1 < argc)
-         config = argv[i+1], i++;
+      if(!stricmp(argv[i] + 1, "i") && i + 1 < argc)
+      {
+          config = argv[i + 1];
+          i++;
+      }
       #ifdef MOD_9X
       if (argv[i][1] == '9') legacy = 1;
       #endif
@@ -123,9 +127,6 @@ void init_all(int argc, char **argv)
    init_ie_help();
    load_config(config);
    //make_samples();
-   #ifdef MOD_GS
-   init_gs();
-   #endif
    init_leds();
    init_tape();
    init_hdd_cd();
@@ -160,7 +161,11 @@ void init_all(int argc, char **argv)
    {
       if (**argv == '-' || **argv == '/')
       {
-         if (argc > 1 && !stricmp(argv[0]+1, "i")) argc--, argv++;
+          if(argc > 1 && !stricmp(argv[0] + 1, "i"))
+          {
+              argc--;
+              argv++;
+          }
          continue;
       }
 
@@ -168,7 +173,11 @@ void init_all(int argc, char **argv)
       GetFullPathName(*argv, sizeof fname, fname, &temp);
 
       trd_toload = DefaultDrive; // auto-select
-      if (!loadsnap(fname)) errmsg("error loading <%s>", *argv), load_errors = 1;
+      if(!loadsnap(fname))
+      {
+          errmsg("error loading <%s>", *argv);
+          load_errors = 1;
+      }
    }
 
    if (load_errors) {

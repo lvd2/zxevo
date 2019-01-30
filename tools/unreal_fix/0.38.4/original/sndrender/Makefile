@@ -48,7 +48,7 @@ all: snd.lib
 .cpp.obj::
     $(CXX) $(CXXFLAGS) $<
 
-snd.lib: sndbuffer.obj sndchip.obj saa1099.obj sndcounter.obj sndrender.obj
+snd.lib: sndbuffer.obj sndchip.obj emul_2203.obj saa1099.obj sndcounter.obj sndrender.obj
     $(LIB) $(LIBFLAGS) -out:$@ $**
 clean:
     -del *.obj *.lib

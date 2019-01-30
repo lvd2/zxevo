@@ -13,11 +13,14 @@
 #include "dx.h"
 #include "fontatm2.h"
 #include "snapshot.h"
+#include "sndrender/sndcounter.h"
 #include "sound.h"
 #include "sdcard.h"
+#include "gs.h"
 #include "zc.h"
 #include "util.h"
 #include "init.h"
+#include "config.h"
 
 char load_errors;
 
@@ -25,13 +28,13 @@ void loadkeys(action*);
 void loadzxkeys(CONFIG*);
 void load_arch(const char*);
 
-unsigned load_rom(const char *path, unsigned char *bank, unsigned max_banks = 1)
+static unsigned load_rom(const char *path, unsigned char *bank, unsigned max_banks = 1)
 {
    if (!*path) { norom: memset(bank, 0xFF, max_banks*PAGE); return 0; }
    char tmp[FILENAME_MAX]; strcpy(tmp, path);
    char *x = strrchr(tmp+2, ':');
    unsigned page = 0;
-   if (x) { *x = 0; page = atoi(x+1); }
+   if (x) { *x = 0; page = unsigned(atoi(x+1)); }
    if (max_banks == 16) page *= 16; // bank for scorp prof.rom
 
    FILE *ff = fopen(tmp, "rb");
@@ -43,18 +46,18 @@ unsigned load_rom(const char *path, unsigned char *bank, unsigned max_banks = 1)
       goto norom;
    }
 
-   if (fseek(ff, page*PAGE, SEEK_SET)) {
+   if (fseek(ff, long(page*PAGE), SEEK_SET)) {
 badrom:
       fclose(ff);
       errmsg("Incorrect ROM file: %s", path);
       goto err;
    }
 
-   unsigned size = fread(bank, 1, max_banks*PAGE, ff);
+   size_t size = fread(bank, 1, max_banks*PAGE, ff);
    if (!size || (size & (PAGE-1))) goto badrom;
 
    fclose(ff);
-   return size / 1024;
+   return unsigned(size / 1024);
 }
 
 void load_atm_font()
@@ -66,7 +69,7 @@ void load_atm_font()
        return;
    }
    unsigned char font[0x800];
-   unsigned sz = fread(font, 1, 0x800, ff);
+   size_t sz = fread(font, 1, 0x800, ff);
    if (sz == 0x800) {
       color(CONSCLR_INFO);
       printf("using ATM font from external SGEN.ROM\n");
@@ -77,7 +80,7 @@ void load_atm_font()
    fclose(ff);
 }
 
-void load_atariset()
+static void load_atariset()
 {
    memset(temp.ataricolors, 0, sizeof temp.ataricolors);
    if (!conf.atariset[0])
@@ -105,7 +108,7 @@ void load_atariset()
    }
 }
 
-void addpath(char *dst, const char *fname = 0)
+void addpath(char *dst, const char *fname)
 {
    if (!fname)
        fname = dst;
@@ -117,7 +120,7 @@ void addpath(char *dst, const char *fname = 0)
        return; // already full name
 
    char tmp[FILENAME_MAX];
-   GetModuleFileName(0, tmp, sizeof tmp);
+   GetModuleFileName(nullptr, tmp, sizeof tmp);
    char *xx = strrchr(tmp, '\\');
    if (*fname == '?')
        *xx = 0; // "?" to get exe directory
@@ -128,12 +131,20 @@ void addpath(char *dst, const char *fname = 0)
 
 void save_nv()
 {
-   char line[0x200]; addpath(line, "CMOS");
+   char line[FILENAME_MAX]; addpath(line, "CMOS");
    FILE *f0 = fopen(line, "wb");
-   if (f0) fwrite(cmos, 1, sizeof cmos, f0), fclose(f0);
+   if(f0)
+   {
+       fwrite(cmos, 1, sizeof cmos, f0);
+       fclose(f0);
+   }
 
    addpath(line, "NVRAM");
-   if ((f0 = fopen(line, "wb"))) fwrite(nvram, 1, sizeof nvram, f0), fclose(f0);
+   if((f0 = fopen(line, "wb")))
+   {
+       fwrite(nvram, 1, sizeof nvram, f0);
+       fclose(f0);
+   }
 }
 
 void load_romset(CONFIG *conf, const char *romset)
@@ -150,7 +161,7 @@ void load_romset(CONFIG *conf, const char *romset)
    addpath(conf->sys_rom_path);
 }
 
-void add_presets(const char *section, const char *prefix0, unsigned *num, char **tab, unsigned char *curr)
+static void add_presets(const char *section, const char *prefix0, unsigned *num, char **tab, unsigned char *curr)
 {
    *num = 0;
    char buf[0x7F00], defval[64];
@@ -164,7 +175,7 @@ void add_presets(const char *section, const char *prefix0, unsigned *num, char *
    char prefix[0x200];
    strcpy(prefix, prefix0);
    strcat(prefix, ".");
-   unsigned plen = strlen(prefix);
+   size_t plen = strlen(prefix);
    for (char *ptr = buf; *ptr; )
    {
       if (!strnicmp(ptr, prefix, plen))
@@ -192,7 +203,7 @@ void load_ula_preset()
    static char defaults[] = "71680,17989,224,50,32,0,0,0,0,0,320,240,24,32,384,288,48,64";
    GetPrivateProfileString("ULA", name, defaults, line, sizeof line, ininame);
    unsigned t1, t2, t3, t4, t5;
-   sscanf(line, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%u,%u,%u,%u,%u,%u,%u,%u,%u", &/*conf.frame*/frametime/*Alone Coder*/, &conf.paper,
+   sscanf(line, "%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u", &/*conf.frame*/frametime/*Alone Coder*/, &conf.paper,
        &conf.t_line, &conf.intfq, &conf.intlen, &t1, &t2, &t3, &t4, &t5,
        &conf.mcx_small, &conf.mcy_small, &conf.b_top_small, &conf.b_left_small,
        &conf.mcx_full, &conf.mcy_full, &conf.b_top_full, &conf.b_left_full);
@@ -222,7 +233,7 @@ void load_ay_stereo()
    char line[128], name[64]; sprintf(name, "STEREO.%s", aystereo[conf.sound.ay_stereo]);
    GetPrivateProfileString("AY", name, "100,10,66,66,10,100", line, sizeof line, ininame);
    unsigned *stereo = conf.sound.ay_stereo_tab;
-   sscanf(line, "%d,%d,%d,%d,%d,%d", stereo+0, stereo+1, stereo+2, stereo+3, stereo+4, stereo+5);
+   sscanf(line, "%u,%u,%u,%u,%u,%u", stereo+0, stereo+1, stereo+2, stereo+3, stereo+4, stereo+5);
 }
 
 void load_ay_vols()
@@ -236,8 +247,11 @@ void load_ay_vols()
       for (int i = 0; i < 32; i++)
          sscanf(line+i*5, "%X", &conf.sound.ay_voltab[i]);
    } else { // AY
-      for (int i = 0; i < 16; i++)
-         sscanf(line+i*5, "%X", &conf.sound.ay_voltab[2*i]), conf.sound.ay_voltab[2*i+1] = conf.sound.ay_voltab[2*i];
+       for(int i = 0; i < 16; i++)
+       {
+           sscanf(line + i * 5, "%X", &conf.sound.ay_voltab[2 * i]);
+           conf.sound.ay_voltab[2 * i + 1] = conf.sound.ay_voltab[2 * i];
+       }
    }
 }
 
@@ -246,7 +260,7 @@ void load_config(const char *fname)
    char line[FILENAME_MAX];
    load_errors = 0;
 
-   GetModuleFileName(0, ininame, sizeof ininame);
+   GetModuleFileName(nullptr, ininame, sizeof ininame);
    strlwr(ininame); *(unsigned*)(strstr(ininame, ".exe")+1) = WORD4('i','n','i',0);
 
    if (fname && *fname) {
@@ -257,7 +271,7 @@ void load_config(const char *fname)
    color(CONSCLR_DEFAULT); printf("ini: ");
    color(CONSCLR_INFO);    printf("%s\n", ininame);
 
-   if (GetFileAttributes(ininame) == -1) errexit("config file not found");
+   if (GetFileAttributes(ininame) == INVALID_FILE_ATTRIBUTES) errexit("config file not found");
 
    static const char* misc = "MISC";
    static const char* video = "VIDEO";
@@ -269,7 +283,6 @@ void load_config(const char *fname)
    static const char* colors = "COLORS";
    static const char* ay = "AY";
    static const char* saa1099 = "SAA1099";
-   static const char* atm = "ATM";
    static const char* hdd = "HDD";
    static const char* rom = "ROM";
    static const char* ngs = "NGS";
@@ -280,7 +293,7 @@ void load_config(const char *fname)
    #endif
 
    GetPrivateProfileString("*", "UNREAL", nil, line, sizeof line, ininame);
-   int a,b,c;
+   unsigned a,b,c;
    sscanf(line, "%u.%u.%u", &a, &b, &c);
    if ((((a << 8U) | b) != VER_HL) || (c != (VER_A & 0x7F)))
        errexit("wrong ini-file version");
@@ -294,10 +307,10 @@ void load_config(const char *fname)
        nowait = 1;
    }
 
-   conf.ConfirmExit = GetPrivateProfileInt(misc, "ConfirmExit", 0, ininame);
+   conf.ConfirmExit = u8(GetPrivateProfileInt(misc, "ConfirmExit", 0, ininame));
 
-   conf.sleepidle = GetPrivateProfileInt(misc, "ShareCPU", 0, ininame);
-   conf.highpriority = GetPrivateProfileInt(misc, "HighPriority", 0, ininame);
+   conf.sleepidle = u8(GetPrivateProfileInt(misc, "ShareCPU", 0, ininame));
+   conf.highpriority = u8(GetPrivateProfileInt(misc, "HighPriority", 0, ininame));
    GetPrivateProfileString(misc, "SyncMode", "SOUND", line, sizeof line, ininame);
    conf.SyncMode = SM_SOUND;
    if(!strnicmp(line, "SOUND", 5))
@@ -307,9 +320,9 @@ void load_config(const char *fname)
    else if(!strnicmp(line, "TSC", 3))
        conf.SyncMode = SM_TSC;
    conf.HighResolutionTimer = GetPrivateProfileInt(misc, "HighResolutionTimer", 0, ininame);
-   conf.tape_traps = GetPrivateProfileInt(misc, "TapeTraps", 1, ininame);
-   conf.tape_autostart = GetPrivateProfileInt(misc, "TapeAutoStart", 1, ininame);
-   conf.EFF7_mask = GetPrivateProfileInt(misc, "EFF7mask", 0, ininame);
+   conf.tape_traps = u8(GetPrivateProfileInt(misc, "TapeTraps", 1, ininame));
+   conf.tape_autostart = u8(GetPrivateProfileInt(misc, "TapeAutoStart", 1, ininame));
+   conf.EFF7_mask = u8(GetPrivateProfileInt(misc, "EFF7mask", 0, ininame));
 
    GetPrivateProfileString(rom, "ATM1", nil, conf.atm1_rom_path, sizeof conf.atm1_rom_path, ininame);
    GetPrivateProfileString(rom, "ATM2", nil, conf.atm2_rom_path, sizeof conf.atm2_rom_path, ininame);
@@ -335,14 +348,21 @@ void load_config(const char *fname)
 //[vv]   addpath(conf.kay_rom_path);
 
    GetPrivateProfileString(rom, "ROMSET", "default", line, sizeof line, ininame);
-   if (*line) load_romset(&conf, line), conf.use_romset = 1; else conf.use_romset = 0;
+   if(*line)
+   {
+       load_romset(&conf, line); conf.use_romset = 1;
+   }
+   else
+   {
+       conf.use_romset = 0;
+   }
 
-   conf.smuc = GetPrivateProfileInt(misc, "SMUC", 0, ininame);
+   conf.smuc = u8(GetPrivateProfileInt(misc, "SMUC", 0, ininame));
    GetPrivateProfileString(misc, "CMOS", nil, line, sizeof line, ininame);
    conf.cmos = 0;
    if (!strnicmp(line, "DALLAS", 6)) conf.cmos=1;
    if (!strnicmp(line, "512Bu1", 6)) conf.cmos=2;
-   conf.cache = GetPrivateProfileInt(misc, "Cache", 0, ininame);
+   conf.cache = u8(GetPrivateProfileInt(misc, "Cache", 0, ininame));
    if (conf.cache && conf.cache!=16 && conf.cache!=32) conf.cache = 0;
    GetPrivateProfileString(misc, "HIMEM", nil, line, sizeof line, ininame);
    conf.mem_model = MM_PENTAGON;
@@ -361,6 +381,7 @@ void load_config(const char *fname)
    SetCurrentDirectory(line);
    strcpy(temp.RomDir, temp.SnapDir);
    strcpy(temp.HddDir, temp.SnapDir);
+   strcpy(temp.SdDir, temp.SnapDir);
 
    conf.reset_rom = RM_SOS;
    GetPrivateProfileString(misc, "RESET", nil, line, sizeof line, ininame);
@@ -378,10 +399,10 @@ void load_config(const char *fname)
    conf.intfq = GetPrivateProfileInt(ula, "int", 50, ininame);
    conf.intlen = GetPrivateProfileInt(ula, "intlen", 32, ininame);
    /*conf.frame*/frametime/*Alone Coder*/ = GetPrivateProfileInt(ula, "Frame", 71680, ininame);
-   conf.border_4T = GetPrivateProfileInt(ula, "4TBorder", 0, ininame);
-   conf.even_M1 = GetPrivateProfileInt(ula, "EvenM1", 0, ininame);
-   conf.floatbus = GetPrivateProfileInt(ula, "FloatBus", 0, ininame);
-   conf.floatdos = GetPrivateProfileInt(ula, "FloatDOS", 0, ininame);
+   conf.border_4T = u8(GetPrivateProfileInt(ula, "4TBorder", 0, ininame));
+   conf.even_M1 = u8(GetPrivateProfileInt(ula, "EvenM1", 0, ininame));
+   conf.floatbus = u8(GetPrivateProfileInt(ula, "FloatBus", 0, ininame));
+   conf.floatdos = u8(GetPrivateProfileInt(ula, "FloatDOS", 0, ininame));
    conf.portff = GetPrivateProfileInt(ula, "PortFF", 0, ininame) != 0;
    conf.mcx_small = GetPrivateProfileInt(ula, "mcx_small", 320, ininame);
    conf.mcy_small = GetPrivateProfileInt(ula, "mcy_small", 240, ininame);
@@ -392,33 +413,34 @@ void load_config(const char *fname)
    conf.b_top_full = GetPrivateProfileInt(ula, "b_top_full", 48, ininame);
    conf.b_left_full = GetPrivateProfileInt(ula, "b_left_full", 64, ininame);
 
-   conf.ula_preset=-1;
+   conf.ula_preset=u8(-1U);
    add_presets(ula, "preset", &num_ula, ulapreset, &conf.ula_preset);
 
    load_ula_preset();
 
-   conf.atm.mem_swap = GetPrivateProfileInt(ula, "AtmMemSwap", 0, ininame);
-   conf.use_comp_pal = GetPrivateProfileInt(ula, "UsePalette", 1, ininame);
-   conf.profi_monochrome = GetPrivateProfileInt(ula, "ProfiMonochrome", 0, ininame);
+   conf.atm.mem_swap = u8(GetPrivateProfileInt(ula, "AtmMemSwap", 0, ininame));
+   conf.use_comp_pal = u8(GetPrivateProfileInt(ula, "UsePalette", 1, ininame));
+   conf.profi_monochrome = u8(GetPrivateProfileInt(ula, "ProfiMonochrome", 0, ininame));
+   conf.ula_plus = GetPrivateProfileInt(ula, "ULAPlus", 0, ininame) != 0;
 
-   conf.flashcolor = GetPrivateProfileInt(video, "FlashColor", 0, ininame);
-   conf.frameskip = GetPrivateProfileInt(video, "SkipFrame", 0, ininame);
-   conf.flip = (conf.SyncMode == SM_VIDEO) ? 1 : GetPrivateProfileInt(video, "VSync", 0, ininame);
-   conf.fullscr = GetPrivateProfileInt(video, "FullScr", 1, ininame);
+   conf.flashcolor = u8(GetPrivateProfileInt(video, "FlashColor", 0, ininame));
+   conf.frameskip = u8(GetPrivateProfileInt(video, "SkipFrame", 0, ininame));
+   conf.flip = (conf.SyncMode == SM_VIDEO) ? 1 : u8(GetPrivateProfileInt(video, "VSync", 0, ininame));
+   conf.fullscr = u8(GetPrivateProfileInt(video, "FullScr", 1, ininame));
    conf.refresh = GetPrivateProfileInt(video, "Refresh", 0, ininame);
-   conf.frameskipmax = GetPrivateProfileInt(video, "SkipFrameMaxSpeed", 33, ininame);
-   conf.updateb = GetPrivateProfileInt(video, "Update", 1, ininame);
-   conf.ch_size = GetPrivateProfileInt(video, "ChunkSize", 0, ininame);
-   conf.noflic = GetPrivateProfileInt(video, "NoFlic", 0, ininame);
-   conf.alt_nf = GetPrivateProfileInt(video, "AltNoFlic", 0, ininame);
+   conf.frameskipmax = u8(GetPrivateProfileInt(video, "SkipFrameMaxSpeed", 33, ininame));
+   conf.updateb = u8(GetPrivateProfileInt(video, "Update", 1, ininame));
+   conf.ch_size = u8(GetPrivateProfileInt(video, "ChunkSize", 0, ininame));
+   conf.noflic = u8(GetPrivateProfileInt(video, "NoFlic", 0, ininame));
+   conf.alt_nf = u8(GetPrivateProfileInt(video, "AltNoFlic", 0, ininame));
    conf.scanbright = GetPrivateProfileInt(video, "ScanIntens", 66, ininame);
-   conf.pixelscroll = GetPrivateProfileInt(video, "PixelScroll", 0, ininame);
-   conf.detect_video = GetPrivateProfileInt(video, "DetectModel", 1, ininame);
+   conf.pixelscroll = u8(GetPrivateProfileInt(video, "PixelScroll", 0, ininame));
+   conf.detect_video = u8(GetPrivateProfileInt(video, "DetectModel", 1, ininame));
    conf.fontsize = 8;
 
-   conf.videoscale = GetPrivateProfileInt(video, "scale", 2, ininame);
+   conf.videoscale = u8(GetPrivateProfileInt(video, "scale", 2, ininame));
 
-   conf.rsm.mix_frames = GetPrivateProfileInt(video, "rsm.frames", 8, ininame);
+   conf.rsm.mix_frames = u8(GetPrivateProfileInt(video, "rsm.frames", 8, ininame));
    GetPrivateProfileString(video, "rsm.mode", nil, line, sizeof line, ininame);
    conf.rsm.mode = RSM_FIR0;
    if (!strnicmp(line, "FULL", 4)) conf.rsm.mode = RSM_FIR0;
@@ -440,7 +462,7 @@ void load_config(const char *fname)
       if (!strnicmp(line, drivers[i].nick, strlen(drivers[i].nick)))
          conf.driver = i;
 
-   conf.fast_sl = GetPrivateProfileInt(video, "fastlines", 0, ininame);
+   conf.fast_sl = u8(GetPrivateProfileInt(video, "fastlines", 0, ininame));
 
    GetPrivateProfileString(video, "Border", nil, line, sizeof line, ininame);
    conf.bordersize = 1;
@@ -456,10 +478,10 @@ void load_config(const char *fname)
    char *ptr = strchr(line, ';'); if (ptr) *ptr = 0;
    for (ptr = line;;)
    {
-      unsigned max = renders_count - 1;
+      size_t max = renders_count - 1;
       for (i = 0; renders[i].func; i++)
       {
-         unsigned sl = strlen(renders[i].nick);
+         size_t sl = strlen(renders[i].nick);
          if (!strnicmp(ptr, renders[i].nick, sl) && !isalnum(ptr[sl]))
          {
             ptr += sl;
@@ -485,20 +507,20 @@ void load_config(const char *fname)
    GetPrivateProfileString(video, "ffmpeg.exec", "ffmpeg.exe", conf.ffmpeg.exec, sizeof conf.ffmpeg.exec, ininame);
    GetPrivateProfileString(video, "ffmpeg.parm", nil, conf.ffmpeg.parm, sizeof conf.ffmpeg.parm, ininame);
    GetPrivateProfileString(video, "ffmpeg.vout", "video#.avi", conf.ffmpeg.vout, sizeof conf.ffmpeg.vout, ininame);
-   conf.ffmpeg.newcons = GetPrivateProfileInt(video, "ffmpeg.newconsole", 1, ininame);
+   conf.ffmpeg.newcons = i8(GetPrivateProfileInt(video, "ffmpeg.newconsole", 1, ininame));
 
-   conf.trdos_present = GetPrivateProfileInt(beta128, "beta128", 1, ininame);
-   conf.trdos_traps = GetPrivateProfileInt(beta128, "Traps", 1, ininame);
-   conf.wd93_nodelay = GetPrivateProfileInt(beta128, "Fast", 1, ininame);
-   conf.trdos_interleave = GetPrivateProfileInt(beta128, "IL", 1, ininame)-1;
+   conf.trdos_present = u8(GetPrivateProfileInt(beta128, "beta128", 1, ininame));
+   conf.trdos_traps = u8(GetPrivateProfileInt(beta128, "Traps", 1, ininame));
+   conf.wd93_nodelay = u8(GetPrivateProfileInt(beta128, "Fast", 1, ininame));
+   conf.trdos_interleave = u8(GetPrivateProfileInt(beta128, "IL", 1, ininame)-1);
    if (conf.trdos_interleave > 2) conf.trdos_interleave = 0;
-   conf.fdd_noise = GetPrivateProfileInt(beta128, "Noise", 0, ininame);
+   conf.fdd_noise = u8(GetPrivateProfileInt(beta128, "Noise", 0, ininame));
    GetPrivateProfileString(beta128, "BOOT", nil, conf.appendboot, sizeof conf.appendboot, ininame);
    addpath(conf.appendboot);
 
-   conf.led.enabled = GetPrivateProfileInt(leds, "leds", 1, ininame);
-   conf.led.flash_ay_kbd = GetPrivateProfileInt(leds, "KBD_AY", 1, ininame);
-   conf.led.perf_t = GetPrivateProfileInt(leds, "PerfShowT", 0, ininame);
+   conf.led.enabled = u8(GetPrivateProfileInt(leds, "leds", 1, ininame));
+   conf.led.flash_ay_kbd = u8(GetPrivateProfileInt(leds, "KBD_AY", 1, ininame));
+   conf.led.perf_t = u8(GetPrivateProfileInt(leds, "PerfShowT", 0, ininame));
    conf.led.bandBpp = GetPrivateProfileInt(leds, "BandBpp", 512, ininame);
    if (conf.led.bandBpp != 64 && conf.led.bandBpp != 128 && conf.led.bandBpp != 256 && conf.led.bandBpp != 512) conf.led.bandBpp = 512;
 
@@ -506,8 +528,9 @@ void load_config(const char *fname)
    char *n2 = nm;
    for (i = 0; i < NUM_LEDS; i++) {
       GetPrivateProfileString(leds, n2, nil, line, sizeof line, ininame);
-      int x, y, z; unsigned r; n2 += strlen(n2)+1;
-      if (sscanf(line, "%d:%d,%d", &z, &x, &y) != 3) r = 0;
+      int x, y;
+      unsigned z; unsigned r; n2 += strlen(n2) + 1;
+      if (sscanf(line, "%u:%d,%d", &z, &x, &y) != 3) r = 0;
       else r = (x & 0xFFFF) + ((y << 16) & 0x7FFFFFFF) + z*0x80000000;
       *(&conf.led.ay+i) = r;
    }
@@ -526,12 +549,12 @@ void load_config(const char *fname)
 //      conf.soundbuffer *= 4; // 16-bit, stereo
    }
 
-   conf.sound.enabled = GetPrivateProfileInt(sound, "Enabled", 1, ininame);
+   conf.sound.enabled = u8(GetPrivateProfileInt(sound, "Enabled", 1, ininame));
    #ifdef MOD_GS
-   conf.sound.gsreset = GetPrivateProfileInt(sound, "GSReset", 0, ininame);
+   conf.sound.gsreset = u8(GetPrivateProfileInt(sound, "GSReset", 0, ininame));
    #endif
    conf.sound.fq = GetPrivateProfileInt(sound, "Fq", 44100, ininame);
-   conf.sound.dsprimary = GetPrivateProfileInt(sound, "DSPrimary", 0, ininame);
+   conf.sound.dsprimary = u8(GetPrivateProfileInt(sound, "DSPrimary", 0, ininame));
 
    conf.gs_type = 0;
 #ifdef MOD_GS
@@ -545,27 +568,27 @@ void load_config(const char *fname)
    conf.gs_ramsize = GetPrivateProfileInt(ngs, "RamSize", 2048, ininame);
 #endif
 
-   conf.soundfilter = GetPrivateProfileInt(sound, "SoundFilter", 0, ininame); //Alone Coder 0.36.4
-   conf.RejectDC = GetPrivateProfileInt(sound, "RejectDC", 1, ininame);
+   conf.soundfilter = u8(GetPrivateProfileInt(sound, "SoundFilter", 0, ininame)); //Alone Coder 0.36.4
+   conf.RejectDC = u8(GetPrivateProfileInt(sound, "RejectDC", 1, ininame));
 
-   conf.sound.beeper_vol = GetPrivateProfileInt(sound, "BeeperVol", 4000, ininame);
-   conf.sound.micout_vol = GetPrivateProfileInt(sound, "MicOutVol", 1000, ininame);
-   conf.sound.micin_vol = GetPrivateProfileInt(sound, "MicInVol", 1000, ininame);
-   conf.sound.ay_vol = GetPrivateProfileInt(sound, "AYVol", 4000, ininame);
-   conf.sound.covoxFB = GetPrivateProfileInt(sound, "CovoxFB", 0, ininame);
-   conf.sound.covoxFB_vol = GetPrivateProfileInt(sound, "CovoxFBVol", 8192, ininame);
-   conf.sound.covoxDD = GetPrivateProfileInt(sound, "CovoxDD", 0, ininame);
-   conf.sound.covoxDD_vol = GetPrivateProfileInt(sound, "CovoxDDVol", 4000, ininame);
-   conf.sound.sd = GetPrivateProfileInt(sound, "SD", 0, ininame);
-   conf.sound.sd_vol = GetPrivateProfileInt(sound, "SDVol", 4000, ininame);
-   conf.sound.saa1099 = GetPrivateProfileInt(sound, "Saa1099", 0, ininame);
+   conf.sound.beeper_vol = int(GetPrivateProfileInt(sound, "BeeperVol", 4000, ininame));
+   conf.sound.micout_vol = int(GetPrivateProfileInt(sound, "MicOutVol", 1000, ininame));
+   conf.sound.micin_vol = int(GetPrivateProfileInt(sound, "MicInVol", 1000, ininame));
+   conf.sound.ay_vol = int(GetPrivateProfileInt(sound, "AYVol", 4000, ininame));
+   conf.sound.covoxFB = int(GetPrivateProfileInt(sound, "CovoxFB", 0, ininame));
+   conf.sound.covoxFB_vol = int(GetPrivateProfileInt(sound, "CovoxFBVol", 8192, ininame));
+   conf.sound.covoxDD = int(GetPrivateProfileInt(sound, "CovoxDD", 0, ininame));
+   conf.sound.covoxDD_vol = int(GetPrivateProfileInt(sound, "CovoxDDVol", 4000, ininame));
+   conf.sound.sd = int(GetPrivateProfileInt(sound, "SD", 0, ininame));
+   conf.sound.sd_vol = int(GetPrivateProfileInt(sound, "SDVol", 4000, ininame));
+   conf.sound.saa1099 = int(GetPrivateProfileInt(sound, "Saa1099", 0, ininame));
 
    #ifdef MOD_GS
-   conf.sound.gs_vol = GetPrivateProfileInt(sound, "GSVol", 8000, ininame);
+   conf.sound.gs_vol = int(GetPrivateProfileInt(sound, "GSVol", 8000, ininame));
    #endif
 
    #ifdef MOD_GSBASS
-   conf.sound.bass_vol = GetPrivateProfileInt(sound, "BASSVol", 8000, ininame);
+   conf.sound.bass_vol = int(GetPrivateProfileInt(sound, "BASSVol", 8000, ininame));
    #endif
 
    conf.sound.saa1099fq = GetPrivateProfileInt(saa1099, "Fq", 8000000, ininame);
@@ -580,7 +603,7 @@ void load_config(const char *fname)
    if (!strnicmp(line, "YM2203", 6)) conf.sound.ay_chip = SNDCHIP::CHIP_YM2203;else //Dexus
    if (!strnicmp(line, "YM", 2)) conf.sound.ay_chip = SNDCHIP::CHIP_YM;
 
-   conf.sound.ay_samples = GetPrivateProfileInt(ay, "UseSamples", 0, ininame);
+   conf.sound.ay_samples = u8(GetPrivateProfileInt(ay, "UseSamples", 0, ininame));
 
    GetPrivateProfileString(ay, "Scheme", nil, line, sizeof line, ininame);
    conf.sound.ay_scheme = AY_SCHEME_NONE;
@@ -620,18 +643,19 @@ void load_config(const char *fname)
    if (!strnicmp(line, "KEMPSTON", 8)) conf.input.mousewheel = MOUSE_WHEEL_KEMPSTON;
    if (!strnicmp(line, "KEYBOARD", 8)) conf.input.mousewheel = MOUSE_WHEEL_KEYBOARD;
 //~
-   conf.input.joymouse = GetPrivateProfileInt(input, "JoyMouse", 0, ininame);
-   conf.input.mousescale = GetPrivateProfileInt(input, "MouseScale", 0, ininame);
-   conf.input.mouseswap = GetPrivateProfileInt(input, "SwapMouse", 0, ininame);
-   conf.input.kjoy = GetPrivateProfileInt(input, "KJoystick", 1, ininame);
-   conf.input.keymatrix = GetPrivateProfileInt(input, "Matrix", 1, ininame);
-   conf.input.firedelay = GetPrivateProfileInt(input, "FireRate", 1, ininame);
-   conf.input.altlock = GetPrivateProfileInt(input, "AltLock", 1, ininame);
-   conf.input.paste_hold = GetPrivateProfileInt(input, "HoldDelay", 2, ininame);
-   conf.input.paste_release = GetPrivateProfileInt(input, "ReleaseDelay", 5, ininame);
-   conf.input.paste_newline = GetPrivateProfileInt(input, "NewlineDelay", 20, ininame);
-   conf.input.keybpcmode = GetPrivateProfileInt(input, "KeybPCMode", 0, ininame);
-   conf.atm.xt_kbd = GetPrivateProfileInt(input, "ATMKBD", 0, ininame);
+   conf.input.joymouse = u8(GetPrivateProfileInt(input, "JoyMouse", 0, ininame));
+   conf.input.mousescale = i8(GetPrivateProfileInt(input, "MouseScale", 0, ininame));
+   conf.input.mouseswap = u8(GetPrivateProfileInt(input, "SwapMouse", 0, ininame));
+   conf.input.kjoy = u8(GetPrivateProfileInt(input, "KJoystick", 1, ininame));
+   conf.input.fjoy = GetPrivateProfileInt(input, "FJoystick", 1, ininame) != 0;
+   conf.input.keymatrix = u8(GetPrivateProfileInt(input, "Matrix", 1, ininame));
+   conf.input.firedelay = u8(GetPrivateProfileInt(input, "FireRate", 1, ininame));
+   conf.input.altlock = u8(GetPrivateProfileInt(input, "AltLock", 1, ininame));
+   conf.input.paste_hold = u8(GetPrivateProfileInt(input, "HoldDelay", 2, ininame));
+   conf.input.paste_release = u8(GetPrivateProfileInt(input, "ReleaseDelay", 5, ininame));
+   conf.input.paste_newline = u8(GetPrivateProfileInt(input, "NewlineDelay", 20, ininame));
+   conf.input.keybpcmode = u8(GetPrivateProfileInt(input, "KeybPCMode", 0, ininame));
+   conf.atm.xt_kbd = u8(GetPrivateProfileInt(input, "ATMKBD", 0, ininame));
    conf.input.JoyId = GetPrivateProfileInt(input, "Joy", 0, ininame);
 
    GetPrivateProfileString(input, "Fire", "0", line, sizeof line, ininame);
@@ -698,7 +722,7 @@ void load_config(const char *fname)
    else if(!strnicmp(line, "DIVIDE", 6))
        conf.ide_scheme = IDE_DIVIDE;
 
-   conf.ide_skip_real = GetPrivateProfileInt(hdd, "SkipReal", 0, ininame);
+   conf.ide_skip_real = u8(GetPrivateProfileInt(hdd, "SkipReal", 0, ininame));
    GetPrivateProfileString(hdd, "CDROM", "SPTI", line, sizeof line, ininame);
    conf.cd_aspi = !strnicmp(line, "ASPI", 4) ? 1 : 0;
 
@@ -708,7 +732,7 @@ void load_config(const char *fname)
       sprintf(param, "LBA%d", ide_device);
 
       GetPrivateProfileString(hdd, param, "0", line, sizeof(line), ininame);
-      conf.ide[ide_device].lba = strtoull(line, 0, 10);
+      conf.ide[ide_device].lba = strtoull(line, nullptr, 10);
       sprintf(param, "CHS%d", ide_device);
       GetPrivateProfileString(hdd, param, "0/0/0", line, sizeof line, ininame);
       unsigned c, h, s;
@@ -780,16 +804,16 @@ void load_config(const char *fname)
 
    if(conf.gs_type == 1) // z80gs mode
    {
-       GetPrivateProfileString(ngs, "SDCARD", 0, conf.ngs_sd_card_path, _countof(conf.ngs_sd_card_path), ininame);
+       GetPrivateProfileString(ngs, "SDCARD", nullptr, conf.ngs_sd_card_path, _countof(conf.ngs_sd_card_path), ininame);
        addpath(conf.ngs_sd_card_path);
        if(conf.ngs_sd_card_path[0])
            printf("NGS SDCARD=`%s'\n", conf.ngs_sd_card_path);
    }
 
-   conf.zc = GetPrivateProfileInt(misc, "ZC", 0, ininame);
+   conf.zc = u8(GetPrivateProfileInt(misc, "ZC", 0, ininame));
    if(conf.zc)
    {
-       GetPrivateProfileString(zc, "SDCARD", 0, conf.zc_sd_card_path, _countof(conf.zc_sd_card_path), ininame);
+       GetPrivateProfileString(zc, "SDCARD", nullptr, conf.zc_sd_card_path, _countof(conf.zc_sd_card_path), ininame);
        addpath(conf.zc_sd_card_path);
        if(conf.zc_sd_card_path[0])
            printf("ZC SDCARD=`%s'\n", conf.zc_sd_card_path);
@@ -797,7 +821,7 @@ void load_config(const char *fname)
 
    GetPrivateProfileString("AUTOLOAD", "DefaultDrive", nil, line, sizeof(line), ininame);
    if(!strnicmp(line, "Auto", 4))
-       DefaultDrive = -1;
+       DefaultDrive = -1U;
    else if(!strnicmp(line, "A", 1))
        DefaultDrive = 0;
    else if(!strnicmp(line, "B", 1))
@@ -823,8 +847,8 @@ void autoload()
    static char autoload[] = "AUTOLOAD";
    char line[512];
 
-   for (int disk = 0; disk < 4; disk++) {
-      char key[8]; sprintf(key, "disk%c", 'A'+disk);
+   for (unsigned disk = 0; disk < 4; disk++) {
+      char key[8]; sprintf(key, "disk%c", int('A'+disk));
       GetPrivateProfileString(autoload, key, nil, line, sizeof line, ininame);
       if (!*line) continue;
       addpath(line);
@@ -838,7 +862,7 @@ void autoload()
    if (!loadsnap(line)) { color(CONSCLR_ERROR); printf("failed to start snapshot <%s>\n", line); }
 }
 
-void apply_memory()
+static void apply_memory()
 {
    #ifdef MOD_GSZ80
    if (conf.gs_type == 1)
@@ -856,7 +880,7 @@ void apply_memory()
    if (!(mem_model[conf.mem_model].availRAMs & conf.ramsize)) {
       conf.ramsize = mem_model[conf.mem_model].defaultRAM;
       color(CONSCLR_ERROR);
-      printf("invalid RAM size for %s, using default (%dK)\n",
+      printf("invalid RAM size for %s, using default (%uK)\n",
          mem_model[conf.mem_model].fullname, conf.ramsize);
    }
 
@@ -942,7 +966,7 @@ void apply_memory()
       }
       else
       {
-         char *romname = 0;
+         const char *romname = nullptr;
          switch(conf.mem_model)
          {
          case MM_PROFI: romname = conf.profi_rom_path; break;
@@ -978,9 +1002,9 @@ void apply_memory()
    load_labels(conf.sos_labels_path, base_sos_rom, 0x4000);
 #endif
 
-   temp.gs_ram_mask = (conf.gs_ramsize-1) >> 4;
-   temp.ram_mask = (conf.ramsize-1) >> 4;
-   temp.rom_mask = (romsize-1) >> 4;
+   temp.gs_ram_mask = u8((conf.gs_ramsize-1) >> 4);
+   temp.ram_mask = u8((conf.ramsize-1) >> 4);
+   temp.rom_mask = u8((romsize-1) >> 4);
    set_banks();
 
    for(unsigned i = 0; i < CpuMgr.GetCount(); i++)
@@ -991,11 +1015,13 @@ void apply_memory()
 }
 
 
-void applyconfig()
+void applyconfig(bool Init)
 {
-//   printf("%s\n", __FUNCTION__);
-   load_atm_font();
+#ifdef MOD_GS
+    init_gs(Init);
+#endif
 
+//   printf("%s\n", __FUNCTION__);
    //[vv] disable turbo
    comp.pEFF7 |= EFF7_GIGASCREEN;
 
@@ -1060,7 +1086,7 @@ void load_arch(const char *fname)
       char *y = strchr(x, '=');
       if (!y) {
 ignore_line:
-         memcpy(x, newx, sizeof arcbuffer - (newx-arcbuffer));
+         memcpy(x, newx, sizeof arcbuffer - size_t(newx-arcbuffer));
       } else {
          *y = 0; if (!stricmp(x, "SkipFiles")) goto ignore_line;
          x = newx;
@@ -1083,7 +1109,9 @@ void loadkeys(action *table)
          errmsg("keydef for %s not found", p->name);
          load_errors = 1;
 bad_key:
-         p->k1 = 0xFE, p->k2 = 0xFF, p->k3 = 0xFD;
+         p->k1 = 0xFE;
+         p->k2 = 0xFF;
+         p->k3 = 0xFD;
          continue;
       }
       char *s = strchr(line, ';');
@@ -1100,7 +1128,7 @@ bad_key:
              s++;
          for (j = 0; j < pckeys_count; j++)
          {
-            if ((int)strlen(pckeys[j].name)==s-s1 && !strnicmp(s1, pckeys[j].name, s-s1))
+            if ((int)strlen(pckeys[j].name)==s-s1 && !strnicmp(s1, pckeys[j].name, size_t(s-s1)))
             {
                switch (num[i])
                {
@@ -1201,7 +1229,7 @@ void loadzxkeys(CONFIG *conf)
                   }
                }
             }
-            s = strtok(NULL, " ;");
+            s = strtok(nullptr, " ;");
             if(s)
             {
                for (k = 0; k < active_zxk->zxk_size; k++)

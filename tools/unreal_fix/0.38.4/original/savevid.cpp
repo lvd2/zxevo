@@ -8,16 +8,16 @@
 
 //#define DEBUG 1
 //handles
-HANDLE hPipe=INVALID_HANDLE_VALUE;
-STARTUPINFO si;
-PROCESS_INFORMATION pi;
+static HANDLE hPipe=INVALID_HANDLE_VALUE;
+static STARTUPINFO si;
+static PROCESS_INFORMATION pi;
 
 TSVSet SVSet;           //settings
 int videosaver_state;   //0-not saving, 1-saving
 
 
 //AVI global hdr + video hdrs
-char AVIRIFF[]=
+static char AVIRIFF[]=
 "\x52\x49\x46\x46\x00\x00\x00\x00\x41\x56\x49\x20\x4C\x49\x53\x54" //RIFF size=0 (inf)
 "\x3c\x01\x00\x00\x68\x64\x72\x6C\x61\x76\x69\x68\x38\x00\x00\x00"
 "\x20\x4E\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x10\x01\x00\x00"
@@ -35,7 +35,7 @@ char AVIRIFF[]=
 ;
 
 //AVI audio hdrs
-char AVIRIFF2[]=
+static char AVIRIFF2[]=
 "\x4C\x49\x53\x54\x68\x00\x00\x00\x73\x74\x72\x6C\x73\x74\x72\x68"
 "\x38\x00\x00\x00\x61\x75\x64\x73\x00\x00\x00\x00\x00\x00\x00\x00"
 "\x00\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x00\x10\xB1\x02\x00"
@@ -46,16 +46,16 @@ char AVIRIFF2[]=
 ;
 
 //AVI start streams
-char AVIRIFF3[]=
+static char AVIRIFF3[]=
 "\x4C\x49\x53\x54\x00\x00\x00\x00\x6D\x6F\x76\x69"; //LIST movi size=0
 
 //AVI stream data headers
-char avi_frameh_vid[] = "00db    "; //DIB
-char avi_frameh_aud[] = "01wb    "; //wave
+static char avi_frameh_vid[] = "00db    "; //DIB
+static char avi_frameh_aud[] = "01wb    "; //wave
 
 
 //proto
-static int pipewrite(HANDLE hPipe, char *buf, int len);
+static int pipewrite(HANDLE hPipe, char *buf, unsigned len);
 static void savevideo_finish();
 
 
@@ -80,7 +80,7 @@ static int savevideo_init(const char *ffmpeg_exec, const char *ffmpeg_param, con
         PIPESIZE,                 // output buffer size
         1024,                     // input buffer size
         0,                        // client time-out
-        NULL);                    // default security attribute
+        nullptr);                    // default security attribute
 
     if(hPipe==INVALID_HANDLE_VALUE)
     {
@@ -106,14 +106,14 @@ color(CONSCLR_INFO); printf("debug: %s\n", args);
     si.dwFlags=STARTF_USESHOWWINDOW;
     memset(&pi, 0, sizeof(pi));
 
-    if(!CreateProcess(NULL, // no app name
+    if(!CreateProcess(nullptr, // no app name
         args,               // cmd line
-        NULL,               // proc attr
-        NULL,               // thread attr
+        nullptr,               // proc attr
+        nullptr,               // thread attr
         FALSE,              // Inherit Handles
         (newcons)?CREATE_NEW_CONSOLE:0, // Creation Flags
-        NULL,               // Environment
-        NULL,               // Current Directory
+        nullptr,               // Environment
+        nullptr,               // Current Directory
         &si,                // Startup Info
         &pi))               // Process Information
     {
@@ -130,7 +130,7 @@ color(CONSCLR_INFO); printf("debug: ffmpeg started.\n");
     int conn=0;
     while(t+5000ul>GetTickCount())
     {
-        conn=ConnectNamedPipe(hPipe, NULL) ? 1 : (GetLastError()==ERROR_PIPE_CONNECTED);
+        conn=ConnectNamedPipe(hPipe, nullptr) ? 1 : (GetLastError()==ERROR_PIPE_CONNECTED);
         if(conn) break;
         Sleep(10);
     }
@@ -143,7 +143,7 @@ color(CONSCLR_INFO); printf("debug: ffmpeg started.\n");
         return -1;
     }
     DWORD dwMode=PIPE_READMODE_BYTE | PIPE_WAIT;
-    SetNamedPipeHandleState(hPipe, &dwMode, NULL,NULL); //set blocking mode
+    SetNamedPipeHandleState(hPipe, &dwMode, nullptr,nullptr); //set blocking mode
 #ifdef DEBUG
 color(CONSCLR_INFO); printf("debug: got connection from pipe.\n");
 #endif
@@ -151,18 +151,18 @@ color(CONSCLR_INFO); printf("debug: got connection from pipe.\n");
     //patch and send video header
     //with negative height we can use linear bitmap data! :)
     //this also fix ffmpeg's bug-o-feature with BottomUp property when '-c:v copy' is used
-    *(unsigned int*)(AVIRIFF+0x20)=1000000/fps;
-    *(unsigned int*)(AVIRIFF+0x40)=w;
-    *(unsigned int*)(AVIRIFF+0x44)=-h;
+    *(unsigned int*)(AVIRIFF+0x20)=u32(1000000/fps);
+    *(unsigned int*)(AVIRIFF+0x40)=u32(w);
+    *(unsigned int*)(AVIRIFF+0x44)=u32(-h);
 
-    *(unsigned int*)(AVIRIFF+0x84)=fps;
-    *(unsigned short*)(AVIRIFF+0xa0)=w;
-    *(unsigned short*)(AVIRIFF+0xa2)=-h;
-    *(unsigned int*)(AVIRIFF+0xb0)=w;
-    *(unsigned int*)(AVIRIFF+0xb4)=-h;
+    *(unsigned int*)(AVIRIFF+0x84)=unsigned(fps);
+    *(unsigned short*)(AVIRIFF+0xa0)=u16(w);
+    *(unsigned short*)(AVIRIFF+0xa2)=u16(-h);
+    *(unsigned int*)(AVIRIFF+0xb0)=u32(w);
+    *(unsigned int*)(AVIRIFF+0xb4)=u32(-h);
 
-    *(unsigned int*)(AVIRIFF2+0x2c)=sndfq*4;
-    *(unsigned int*)(AVIRIFF2+0x58)=sndfq;
+    *(unsigned int*)(AVIRIFF2+0x2c)=u32(sndfq*4);
+    *(unsigned int*)(AVIRIFF2+0x58)=u32(sndfq);
 
     int res=pipewrite(hPipe,AVIRIFF,sizeof(AVIRIFF)-1);
     res+=pipewrite(hPipe,AVIRIFF2,sizeof(AVIRIFF2)-1);
@@ -237,12 +237,12 @@ color(CONSCLR_INFO); printf("debug: saving video done.\n");
 
 
 //send data block to pipe
-static int pipewrite(HANDLE hPipe, char *buf, int len)
+static int pipewrite(HANDLE hPipe, char *buf, unsigned len)
 {
     DWORD cbWritten = 0;
     int res = 0;
 
-    int p=0;
+    unsigned p=0;
     while(p<len) //is all data sent?
     {
         res = WriteFile( 
@@ -250,7 +250,7 @@ static int pipewrite(HANDLE hPipe, char *buf, int len)
             &buf[p],    // buffer to write from 
             len-p,      // number of bytes to write 
             &cbWritten, // number of bytes written 
-            NULL);      // not overlapped I/O 
+            nullptr);      // not overlapped I/O 
         if(res)
         {
             p+=cbWritten;
@@ -287,14 +287,14 @@ void main_savevideo()
         if(p)
         {   //'#' found, split name into two parts, insert a number
             *p=0;
-            _snprintf(video_name,sizeof(video_name),"%s%u%s",tmp,vidn,p+1);
+            _snprintf(video_name,sizeof(video_name),"%s%d%s",tmp,vidn,p+1);
         }
         else
             _snprintf(video_name,sizeof(video_name),"%s",tmp);
 
         //init ffmpeg
         res=savevideo_init(conf.ffmpeg.exec, conf.ffmpeg.parm, video_name, 
-            conf.ffmpeg.newcons, temp.ox, temp.oy, conf.intfq, conf.sound.fq);
+            conf.ffmpeg.newcons, int(temp.ox), int(temp.oy), int(conf.intfq), int(conf.sound.fq));
         if(res) //init ok?
         {
             color(CONSCLR_ERROR); printf("error: init video saver failed.\n");
@@ -314,7 +314,7 @@ void main_savevideo()
         SVSet.dx = temp.ox * temp.obpp / 8;
         SVSet.scrbuf_unaligned = (unsigned char*)malloc(SVSet.dx * temp.oy + CACHE_LINE);
         SVSet.scrbuf = (unsigned char*)align_by(SVSet.scrbuf_unaligned, CACHE_LINE);
-        SVSet.dsll = ((temp.ox * 3 + 3) & ~3);
+        SVSet.dsll = ((temp.ox * 3 + 3) & ~3U);
         SVSet.ds = (u8*)malloc(SVSet.dsll * temp.oy);
 
         vidn++;
@@ -352,7 +352,7 @@ void savevideo_gfx()
     //render screen to scrbuf buffer
     renders[conf.render].func(SVSet.scrbuf, SVSet.dx); // render to memory buffer (PAL8, YUY2, RGB15, RGB16, RGB32)
     //convert colors to RGB24
-    ConvBgr24(SVSet.ds, SVSet.scrbuf, SVSet.dx);
+    ConvBgr24(SVSet.ds, SVSet.scrbuf, int(SVSet.dx));
     //send frame to encoder
     if(savevideo_put_vframe((char*)SVSet.ds, SVSet.dsll*SVSet.ysz))
     {

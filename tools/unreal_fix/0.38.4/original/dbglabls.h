@@ -12,8 +12,8 @@ struct MON_LABELS
    char *names;
    unsigned names_size;
 
-   MON_LABELS() { pairs = 0, names = 0, n_pairs = names_size = 0; hNewUserLabels = 0; }
-   ~MON_LABELS() { free(pairs), free(names); stop_watching_labels(); }
+   MON_LABELS() { pairs = nullptr; names = nullptr; n_pairs = names_size = 0; hNewUserLabels = nullptr; }
+   ~MON_LABELS() { free(pairs); free(names); stop_watching_labels(); }
 
    unsigned add_name(char *name);
    void clear(unsigned char *start, unsigned size);

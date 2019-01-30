@@ -13,20 +13,32 @@ void TRKCACHE::seek(FDD *d, unsigned cyl, unsigned side, SEEK_MODE fs)
 
    drive = d; sf = fs; s = 0;
    TRKCACHE::cyl = cyl; TRKCACHE::side = side;
-   if (cyl >= d->cyls || !d->rawdata)
+   if (cyl >= MAX_CYLS || side >= d->sides || !d->rawdata)
    {
-       trkd = 0;
+       trkd = nullptr;
        return;
    }
 
    assert(cyl < MAX_CYLS);
+
+   if(cyl >= d->cyls) // Случай увеличения размера диска при форматировании дополнительных дорожек до MAX_CYLS
+   {
+       if(fs != JUST_SEEK)
+       {
+           trkd = nullptr;
+           return;
+       }
+
+       d->cyls = cyl + 1;
+   }
+
    trkd = d->trkd[cyl][side];
    trki = d->trki[cyl][side];
    trkwp = d->trkwp[cyl][side];
    trklen = d->trklen[cyl][side];
    if (!trklen)
    {
-       trkd = 0;
+       trkd = nullptr;
        return;
    }
 
@@ -50,7 +62,7 @@ void TRKCACHE::seek(FDD *d, unsigned cyl, unsigned side, SEEK_MODE fs)
       h->l = h->id[3];
       h->crc = *(unsigned short*)(trkd+i+6);
       h->c1 = (wd93_crc(trkd+i+1, 5) == h->crc);
-      h->data = 0;
+      h->data = nullptr;
       h->datlen = 0;
       h->wp_start = 0;
 //      if (h->l > 5) continue; [vv]
@@ -65,7 +77,7 @@ void TRKCACHE::seek(FDD *d, unsigned cyl, unsigned side, SEEK_MODE fs)
 
          if (trkd[j+1] == 0xF8 || trkd[j+1] == 0xFB) // Найден data am
          {
-            h->datlen = 128 << (h->l & 3); // [vv] FD1793 use only 2 lsb of sector size code
+            h->datlen = 128U << (h->l & 3); // [vv] FD1793 use only 2 lsb of sector size code
             h->data = trkd + j + 2;
             h->c2 = (wd93_crc(h->data-1, h->datlen+1) == *(unsigned short*)(h->data+h->datlen));
 
@@ -88,6 +100,10 @@ void TRKCACHE::seek(FDD *d, unsigned cyl, unsigned side, SEEK_MODE fs)
 
 void TRKCACHE::format()
 {
+   if(!trkd) // Трэк без данных (форматирование не нужно)
+   {
+       return;
+   }
    memset(trkd, 0, trklen);
    memset(trki, 0, unsigned(trklen + 7U) >> 3);
    memset(trkwp, 0, unsigned(trklen + 7U) >> 3);
@@ -112,7 +128,7 @@ void TRKCACHE::format()
    for (unsigned is = 0; is < s; is++)
    {
       SECHDR *sechdr = hdr + is;
-      data_sz += (128 << (sechdr->l & 3)); // n
+      data_sz += (128U << (sechdr->l & 3)); // n
    }
 
    if((gap4a+sync0+i_am+1+data_sz+s*(gap1+sync1+id_am+1+4+2+gap2+sync2+data_am+1+2)) >= MAX_TRACK_LEN)
@@ -132,7 +148,7 @@ void TRKCACHE::format()
    memset(dst, 0, sync0); dst += sync0; //sync
 
    for (i = 0; i < i_am; i++) // iam
-       write(dst++ - trkd, 0xC2, 1);
+       write(unsigned(dst++ - trkd), 0xC2, 1);
    *dst++ = 0xFC;
 
    for (unsigned is = 0; is < s; is++)
@@ -140,7 +156,7 @@ void TRKCACHE::format()
       memset(dst, 0x4E, gap1); dst += gap1; // gap1 // 50 [vv] // fixme: recalculate gap1 only for non standard formats
       memset(dst, 0, sync1); dst += sync1; //sync
       for (i = 0; i < id_am; i++) // idam
-          write(dst++ - trkd, 0xA1, 1);
+          write(unsigned(dst++ - trkd), 0xA1, 1);
       *dst++ = 0xFE;
 
       SECHDR *sechdr = hdr + is;
@@ -162,17 +178,17 @@ void TRKCACHE::format()
          memset(dst, 0x4E, gap2); dst += gap2; // gap2
          memset(dst, 0, sync2); dst += sync2; //sync
          for (i = 0; i < data_am; i++) // data am
-             write(dst++ - trkd, 0xA1, 1);
+             write(unsigned(dst++ - trkd), 0xA1, 1);
          *dst++ = 0xFB;
 
 //         if (sechdr->l > 5) errexit("strange sector"); // [vv]
-         unsigned len = 128 << (sechdr->l & 3); // data
+         unsigned len = 128U << (sechdr->l & 3); // data
          if (sechdr->data != (unsigned char*)1)
          {
              memcpy(dst, sechdr->data, len);
              if(sechdr->wp) // Копирование битовой карты сбойных байтов
              {
-                 unsigned wp_start = dst - trkd;
+                 unsigned wp_start = unsigned(dst - trkd);
                  sechdr->wp_start = wp_start;
                  for(unsigned b = 0; b < len; b++)
                  {
@@ -197,7 +213,7 @@ void TRKCACHE::format()
    }
    if (dst > trklen + trkd)
    {
-       printf("cyl=%u, h=%u, additional len=%u\n", cyl, side, dst - (trklen + trkd));
+       printf("cyl=%u, h=%u, additional len=%u\n", cyl, side, unsigned(dst - (trklen + trkd)));
        errexit("track too long");
    }
    while (dst < trkd + trklen)
@@ -207,7 +223,7 @@ void TRKCACHE::format()
 #if 1
 void TRKCACHE::dump()
 {
-   printf("\n%d/%d:", cyl, side);
+   printf("\n%u/%u:", cyl, side);
    if (!trkd) { printf("<e>"); return; }
    if (!sf) { printf("<n>"); return; }
    for (unsigned i = 0; i < s; i++)
@@ -216,7 +232,7 @@ void TRKCACHE::dump()
 }
 #endif
 
-int TRKCACHE::write_sector(unsigned sec, unsigned char *data)
+unsigned TRKCACHE::write_sector(unsigned sec, unsigned char *data)
 {
    const SECHDR *h = get_sector(sec);
    if (!h || !h->data)
@@ -237,12 +253,12 @@ const SECHDR *TRKCACHE::get_sector(unsigned sec) const
           break;
    }
    if (i == s)
-       return 0;
+       return nullptr;
 
 //   dump();
 
    if (/*(hdr[i].l & 3) != 1 ||*/ hdr[i].c != cyl) // [vv]
-       return 0;
+       return nullptr;
    return &hdr[i];
 }
 

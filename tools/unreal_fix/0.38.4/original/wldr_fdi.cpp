@@ -103,8 +103,8 @@ int FDD::read_fdi()
 
    newdisk(cyls, sides);
 
-   const TFdiAddInfo *FdiAddInfo = 0;
-   const TFdiTrkAddInfo *FdiTrkAddInfo = 0;
+   const TFdiAddInfo *FdiAddInfo = nullptr;
+   const TFdiTrkAddInfo *FdiTrkAddInfo = nullptr;
    if(AddLen >= sizeof(TFdiAddInfo))
    {
        // Проверить параметры FdiAddInfo (версию, тип и т.д.)
@@ -130,7 +130,7 @@ int FDD::read_fdi()
 
          u8 *t0 = dat + FdiTrkHdr->TrkOffset;
          unsigned ns = FdiTrkHdr->Spt;
-         u8 *wp0 = 0;
+         u8 *wp0 = nullptr;
          if(FdiTrkAddInfo && FdiTrkAddInfo->TrkOffset != UINT_MAX)
          {
              wp0 = snbuf + FdiAddInfo->DataOffset + FdiTrkAddInfo->TrkOffset;
@@ -148,10 +148,10 @@ int FDD::read_fdi()
             t.hdr[sec].n = FdiTrkHdr->Sec[sec].r;
             t.hdr[sec].l = FdiTrkHdr->Sec[sec].n;
             t.hdr[sec].c1 = 0;
-            t.hdr[sec].wp = 0;
+            t.hdr[sec].wp = nullptr;
 
             if (FdiTrkHdr->Sec[sec].fl & TFdiSecHdr::FL_NO_DATA)
-                t.hdr[sec].data = 0;
+                t.hdr[sec].data = nullptr;
             else
             {
                if (t0 + FdiTrkHdr->Sec[sec].DataOffset > snbuf + snapsize)
@@ -163,7 +163,7 @@ int FDD::read_fdi()
 
                if(FdiTrkAddInfo && FdiTrkAddInfo->TrkOffset != UINT_MAX)
                {
-                   t.hdr[sec].wp = ((FdiTrkAddInfo->Sec[sec].Flags & 1) ? (wp0 + FdiTrkAddInfo->Sec[sec].DataOffset) : 0);
+                   t.hdr[sec].wp = ((FdiTrkAddInfo->Sec[sec].Flags & 1) ? (wp0 + FdiTrkAddInfo->Sec[sec].DataOffset) : nullptr);
                }
 #if 0
                if(FdiTrkHdr->Sec[sec].n > 3)
@@ -242,7 +242,7 @@ int FDD::write_fdi(FILE *ff)
    }
 
    unsigned AddLen = sectors_wp ? sizeof(TFdiAddInfo) : 0;
-   unsigned tlen = strlen(dsc)+1;
+   unsigned tlen = unsigned(strlen(dsc)+1);
    unsigned hsize = sizeof(TFdiHdr) + AddLen + cyls * sides * sizeof(TFdiTrkHdr) + total_s * sizeof(TFdiSecHdr);
    unsigned AddHdrsSize = cyls * sides * sizeof(TFdiTrkAddInfo) + sectors_wp * sizeof(TFdiSecAddInfo);
 
@@ -250,11 +250,11 @@ int FDD::write_fdi(FILE *ff)
    TFdiHdr *FdiHdr = (TFdiHdr *)snbuf;
    memcpy(FdiHdr->Sig, "FDI", 3);
    FdiHdr->Rw = 0;
-   FdiHdr->c = cyls;
-   FdiHdr->h = sides;
-   FdiHdr->TextOffset = hsize;
-   FdiHdr->DataOffset = FdiHdr->TextOffset + tlen;
-   FdiHdr->AddLen = AddLen;
+   FdiHdr->c = u16(cyls);
+   FdiHdr->h = u16(sides);
+   FdiHdr->TextOffset = u16(hsize);
+   FdiHdr->DataOffset = u16(FdiHdr->TextOffset + tlen);
+   FdiHdr->AddLen = u16(AddLen);
 
    TFdiAddInfo *FdiAddInfo = (TFdiAddInfo *)FdiHdr->AddData;
    if(AddLen)
@@ -280,7 +280,7 @@ int FDD::write_fdi(FILE *ff)
          TFdiTrkHdr FdiTrkHdr;
          FdiTrkHdr.TrkOffset = trkoffs;
          FdiTrkHdr.Res1 = 0;
-         FdiTrkHdr.Spt = t.s;
+         FdiTrkHdr.Spt = u8(t.s);
 
          // Запись заголовка трэка
          if(fwrite(&FdiTrkHdr, sizeof(FdiTrkHdr), 1, ff) != 1)
@@ -309,7 +309,7 @@ int FDD::write_fdi(FILE *ff)
                FdiSecHdr.fl |= TFdiSecHdr::FL_NO_DATA;
            }
 
-           FdiSecHdr.DataOffset = secoffs;
+           FdiSecHdr.DataOffset = u16(secoffs);
 
 
             // Запись заголовка сектора
@@ -382,7 +382,7 @@ int FDD::write_fdi(FILE *ff)
                    if(t.hdr[se].wp_start)
                    {
                        FdiSecAddInfo.Flags |= 1;
-                       FdiSecAddInfo.DataOffset = secoffs;
+                       FdiSecAddInfo.DataOffset = u16(secoffs);
                    }
 
                     // Запись заголовка сектора

@@ -30,7 +30,7 @@ unsigned char editor = ED_MEM;
 
 unsigned regs_curs;
 unsigned dbg_extport;
-unsigned char dgb_extval; // extended memory port like 1FFD or DFFD
+unsigned char dbg_extval; // extended memory port like 1FFD or DFFD
 
 unsigned ripper; // ripper mode (none/read/write)
 
@@ -80,66 +80,79 @@ void debugscr()
 #endif
 }
 
-void handle_mouse()
+static void handle_mouse()
 {
-   Z80 &cpu = CpuMgr.Cpu();
-   unsigned mx = ((mousepos & 0xFFFF)-temp.gx)/8,
-            my = (((mousepos >> 16) & 0x7FFF)-temp.gy)/16;
-   if (my >= trace_y && my < trace_y+trace_size && mx >= trace_x && mx < trace_x+32)
-   {
-      needclr++; activedbg = WNDTRACE;
-      cpu.trace_curs = cpu.trpc[my - trace_y];
-      if (mx - trace_x < cs[1][0]) cpu.trace_mode = 0;
-      else if (mx - trace_x < cs[2][0]) cpu.trace_mode = 1;
-      else cpu.trace_mode = 2;
-   }
-   if (my >= mem_y && my < mem_y+mem_size && mx >= mem_x && mx < mem_x+37)
-   {
-      needclr++; activedbg = WNDMEM;
-      unsigned dx = mx-mem_x;
-      if (mem_dump)
-      {
-         if (dx >= 5)
-             cpu.mem_curs = cpu.mem_top + (dx-5) + (my-mem_y)*32;
-      }
-      else
-      {
-         unsigned mem_se = (dx-5)%3;
-         if (dx >= 29) cpu.mem_curs = cpu.mem_top + (dx-29) + (my-mem_y)*8, mem_ascii=1;
-         if (dx >= 5 && mem_se != 2 && dx < 29)
-            cpu.mem_curs = cpu.mem_top + (dx-5)/3 + (my-mem_y)*8,
-            cpu.mem_second = mem_se, mem_ascii=0;
-      }
-   }
-   if (mx >= regs_x && my >= regs_y && mx < regs_x+32 && my < regs_y+4) {
-      needclr++; activedbg = WNDREGS;
-      for (unsigned i = 0; i < regs_layout_count; i++) {
-         unsigned delta = 1;
-         if (regs_layout[i].width == 16) delta = 4;
-         if (regs_layout[i].width == 8) delta = 2;
-         if (my-regs_y == regs_layout[i].y && mx-regs_x-regs_layout[i].x < delta) regs_curs = i;
-      }
-   }
-   if (mousepos & 0x80000000) { // right-click
-      enum { IDM_BPX=1, IDM_SOME_OTHER };
-      HMENU menu = CreatePopupMenu();
-      if (activedbg == WNDTRACE) {
-         AppendMenu(menu, MF_STRING, IDM_BPX, "breakpoint");
-      } else {
-         AppendMenu(menu, MF_STRING, 0, "I don't know");
-         AppendMenu(menu, MF_STRING, 0, "what to place");
-         AppendMenu(menu, MF_STRING, 0, "to menu, so");
-         AppendMenu(menu, MF_STRING, 0, "No Stuff Here");
-      }
-      int cmd = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_NONOTIFY | TPM_LEFTALIGN | TPM_TOPALIGN,
-         (mousepos & 0xFFFF) + temp.client.left,
-         ((mousepos>>16) & 0x7FFF) + temp.client.top, 0, wnd, 0);
-      DestroyMenu(menu);
-      if (cmd == IDM_BPX) cbpx();
-      //if (cmd == IDM_SOME_OTHER) some_other();
-      //needclr++;
-   }
-   mousepos = 0;
+    Z80 &cpu = CpuMgr.Cpu();
+    unsigned mx = ((mousepos & 0xFFFF) - temp.gx) / 8,
+        my = (((mousepos >> 16) & 0x7FFF) - temp.gy) / 16;
+    if(my >= trace_y && my < trace_y + trace_size && mx >= trace_x && mx < trace_x + 32)
+    {
+        needclr++; activedbg = WNDTRACE;
+        cpu.trace_curs = cpu.trpc[my - trace_y];
+        if(mx - trace_x < cs[1][0]) cpu.trace_mode = 0;
+        else if(mx - trace_x < cs[2][0]) cpu.trace_mode = 1;
+        else cpu.trace_mode = 2;
+    }
+    if(my >= mem_y && my < mem_y + mem_size && mx >= mem_x && mx < mem_x + 37)
+    {
+        needclr++; activedbg = WNDMEM;
+        unsigned dx = mx - mem_x;
+        if(mem_dump)
+        {
+            if(dx >= 5)
+                cpu.mem_curs = cpu.mem_top + (dx - 5) + (my - mem_y) * 32;
+        }
+        else
+        {
+            unsigned mem_se = (dx - 5) % 3;
+            if(dx >= 29)
+            {
+                cpu.mem_curs = cpu.mem_top + (dx - 29) + (my - mem_y) * 8;
+                mem_ascii = 1;
+            }
+            if(dx >= 5 && mem_se != 2 && dx < 29)
+            {
+                cpu.mem_curs = cpu.mem_top + (dx - 5) / 3 + (my - mem_y) * 8;
+                cpu.mem_second = mem_se;
+                mem_ascii = 0;
+            }
+        }
+    }
+    if(mx >= regs_x && my >= regs_y && mx < regs_x + 32 && my < regs_y + 4)
+    {
+        needclr++; activedbg = WNDREGS;
+        for(unsigned i = 0; i < regs_layout_count; i++)
+        {
+            unsigned delta = 1;
+            if(regs_layout[i].width == 16) delta = 4;
+            if(regs_layout[i].width == 8) delta = 2;
+            if(my - regs_y == regs_layout[i].y && mx - regs_x - regs_layout[i].x < delta) regs_curs = i;
+        }
+    }
+    if(mousepos & 0x80000000)
+    { // right-click
+        enum { IDM_BPX = 1, IDM_SOME_OTHER };
+        HMENU menu = CreatePopupMenu();
+        if(activedbg == WNDTRACE)
+        {
+            AppendMenu(menu, MF_STRING, IDM_BPX, "breakpoint");
+        }
+        else
+        {
+            AppendMenu(menu, MF_STRING, 0, "I don't know");
+            AppendMenu(menu, MF_STRING, 0, "what to place");
+            AppendMenu(menu, MF_STRING, 0, "to menu, so");
+            AppendMenu(menu, MF_STRING, 0, "No Stuff Here");
+        }
+        int cmd = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_NONOTIFY | TPM_LEFTALIGN | TPM_TOPALIGN,
+            int(mousepos & 0xFFFF) + temp.client.left,
+            int((mousepos >> 16) & 0x7FFF) + temp.client.top, 0, wnd, nullptr);
+        DestroyMenu(menu);
+        if(cmd == IDM_BPX) cbpx();
+        //if (cmd == IDM_SOME_OTHER) some_other();
+        //needclr++;
+    }
+    mousepos = 0;
 }
 
 void TCpuMgr::CopyToPrev()
@@ -149,7 +162,7 @@ void TCpuMgr::CopyToPrev()
 }
 
 /* ------------------------------------------------------------- */
-void debug(Z80 *cpu)
+static void debug(Z80 *cpu)
 {
    OnEnterGui();
    temp.mon_scale = temp.scale;
@@ -162,8 +175,9 @@ void debug(Z80 *cpu)
    CpuMgr.SetCurrentCpu(cpu->GetIdx());
    TZ80State *prevcpu = &CpuMgr.PrevCpu(cpu->GetIdx());
    cpu->trace_curs = cpu->pc;
-   cpu->dbg_stopsp = cpu->dbg_stophere = -1;
-   cpu->dbg_loop_r1 = 0, cpu->dbg_loop_r2 = 0xFFFF;
+   cpu->dbg_stopsp = cpu->dbg_stophere = -1U;
+   cpu->dbg_loop_r1 = 0;
+   cpu->dbg_loop_r2 = 0xFFFF;
    mousepos = 0;
 
    while(dbgbreak) // debugger event loop
@@ -178,7 +192,7 @@ repaint_dbg:
       cpu->trace_curs &= 0xFFFF;
 
       debugscr();
-      if (cpu->trace_curs < cpu->trace_top || cpu->trace_curs >= cpu->trpc[trace_size] || asmii==-1)
+      if (cpu->trace_curs < cpu->trace_top || cpu->trace_curs >= cpu->trpc[trace_size] || asmii==-1U)
       {
          cpu->trace_top = cpu->trace_curs;
          debugscr();
@@ -187,7 +201,7 @@ repaint_dbg:
       debugflip();
 
 sleep:
-      while(!dispatch(0))
+      while(!dispatch(nullptr))
       {
          if (mousepos)
              handle_mouse();
@@ -279,7 +293,7 @@ void debug_events(Z80 *cpu)
       }
    }
 
-   brk_port_in = brk_port_out = -1; // reset only when breakpoints active
+   brk_port_in = brk_port_out = -1U; // reset only when breakpoints active
 
    if (cpu->dbgbreak)
        debug(cpu);

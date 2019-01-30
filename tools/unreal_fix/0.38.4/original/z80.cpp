@@ -6,6 +6,7 @@
 #include "memory.h"
 #include "tape.h"
 #include "debug.h"
+#include "sndrender/sndcounter.h"
 #include "sound.h"
 #include "atm.h"
 #include "gs.h"
@@ -15,6 +16,7 @@
 #include "fontatm2.h"
 #include "sdcard.h"
 #include "zc.h"
+#include "z80.h"
 
 #include "util.h"
 
@@ -134,6 +136,11 @@ void reset(ROM_MODE mode)
    comp.flags = 0;
    comp.active_ay = 0;
 
+   comp.ula_plus_group = 0;
+   comp.ula_plus_pal_idx = 0;
+   comp.ula_plus_en = false;
+
+
    cpu.reset();
    reset_tape();
    ay[0].reset();
@@ -155,11 +162,14 @@ void reset(ROM_MODE mode)
    comp.vdbase = 0; comp.pVD = 0;
    #endif
 
-   if (conf.mem_model == MM_ATM450 ||
+   if(conf.mem_model == MM_ATM450 ||
        conf.mem_model == MM_ATM710 ||
        conf.mem_model == MM_ATM3 ||
-       conf.mem_model == MM_PROFI)
+       conf.mem_model == MM_PROFI ||
+       conf.ula_plus)
+   {
        load_spec_colors();
+   }
 
    comp.ide_hi_byte_r = 0;
    comp.ide_hi_byte_w = 0;

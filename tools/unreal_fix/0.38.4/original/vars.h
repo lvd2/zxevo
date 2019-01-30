@@ -1,5 +1,5 @@
 #pragma once
-#include "emul_2203.h"
+#include "sndrender/emul_2203.h"
 #include "sndrender/sndchip.h"
 #include "sndrender/saa1099.h"
 

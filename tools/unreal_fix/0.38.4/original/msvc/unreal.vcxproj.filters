@@ -129,9 +129,6 @@
     <ClCompile Include="..\emul.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\emul_2203.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\emulkeys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -231,9 +228,6 @@
     <ClCompile Include="..\sshot_png.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\std.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\tape.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -283,6 +277,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\zc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\std.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\profi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -345,9 +345,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\dxovr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\dxerr8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\dxr_4bpp.h">
@@ -506,9 +503,6 @@
     <ClInclude Include="..\emulkeys.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\emul_2203.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\emul.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -547,6 +541,9 @@
     </ClInclude>
     <ClInclude Include="..\opendlg.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\profi.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

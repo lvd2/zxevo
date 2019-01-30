@@ -6,7 +6,7 @@
 /* DD prefix opcodes */
 
 //#ifdef Z80_COMMON
-Z80OPCODE opx_09(Z80 *cpu) { // add ix,bc
+static Z80OPCODE opx_09(Z80 *cpu) { // add ix,bc
    cpu->memptr = cpu->ix+1;
    cpu->f = (cpu->f & ~(NF | CF | F5 | F3 | HF));
    cpu->f |= (((cpu->ix & 0x0FFF) + (cpu->bc & 0x0FFF)) >> 8) & 0x10; /* HF */
@@ -15,7 +15,7 @@ Z80OPCODE opx_09(Z80 *cpu) { // add ix,bc
    cpu->f |= (cpu->xh & (F5 | F3));
    cpu->t += 7;
 }
-Z80OPCODE opx_19(Z80 *cpu) { // add ix,de
+static Z80OPCODE opx_19(Z80 *cpu) { // add ix,de
    cpu->memptr = cpu->ix+1;
    cpu->f = (cpu->f & ~(NF | CF | F5 | F3 | HF));
    cpu->f |= (((cpu->ix & 0x0FFF) + (cpu->de & 0x0FFF)) >> 8) & 0x10; /* HF */
@@ -26,12 +26,12 @@ Z80OPCODE opx_19(Z80 *cpu) { // add ix,de
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_21(Z80 *cpu) { // ld ix,nnnn
+static Z80OPCODE opx_21(Z80 *cpu) { // ld ix,nnnn
    cpu->xl = cpu->MemIf->xm(cpu->pc++);
    cpu->xh = cpu->MemIf->xm(cpu->pc++);
    cpu->t += 6;
 }
-Z80OPCODE opx_22(Z80 *cpu) { // ld (nnnn),ix | M:6 T:20 (4, 4, 3, 3, 3, 3)
+static Z80OPCODE opx_22(Z80 *cpu) { // ld (nnnn),ix | M:6 T:20 (4, 4, 3, 3, 3, 3)
    unsigned adr = cpu->MemIf->xm(cpu->pc++);
    adr += cpu->MemIf->xm(cpu->pc++)*0x100;
    cpu->memptr = adr+1;
@@ -41,25 +41,25 @@ Z80OPCODE opx_22(Z80 *cpu) { // ld (nnnn),ix | M:6 T:20 (4, 4, 3, 3, 3, 3)
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_23(Z80 *cpu) { // inc ix
+static Z80OPCODE opx_23(Z80 *cpu) { // inc ix
    cpu->ix++;
    cpu->t += 2;
 }
-Z80OPCODE opx_24(Z80 *cpu) { // inc xh
+static Z80OPCODE opx_24(Z80 *cpu) { // inc xh
    inc8(cpu, cpu->xh);
 }
-Z80OPCODE opx_25(Z80 *cpu) { // dec xh
+static Z80OPCODE opx_25(Z80 *cpu) { // dec xh
    dec8(cpu, cpu->xh);
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_26(Z80 *cpu) { // ld xh,nn
+static Z80OPCODE opx_26(Z80 *cpu) { // ld xh,nn
    cpu->xh = cpu->MemIf->xm(cpu->pc++);
    cpu->t += 3;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_29(Z80 *cpu) { // add ix,ix
+static Z80OPCODE opx_29(Z80 *cpu) { // add ix,ix
    cpu->memptr = cpu->ix+1;
    cpu->f = (cpu->f & ~(NF | CF | F5 | F3 | HF));
    cpu->f |= ((cpu->ix >> 7) & 0x10); /* HF */
@@ -70,7 +70,7 @@ Z80OPCODE opx_29(Z80 *cpu) { // add ix,ix
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_2A(Z80 *cpu) { // ld ix,(nnnn)
+static Z80OPCODE opx_2A(Z80 *cpu) { // ld ix,(nnnn)
    unsigned adr = cpu->MemIf->xm(cpu->pc++);
    adr += cpu->MemIf->xm(cpu->pc++)*0x100;
    cpu->memptr = adr+1;
@@ -80,44 +80,44 @@ Z80OPCODE opx_2A(Z80 *cpu) { // ld ix,(nnnn)
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_2B(Z80 *cpu) { // dec ix
+static Z80OPCODE opx_2B(Z80 *cpu) { // dec ix
    cpu->ix--;
    cpu->t += 2;
 }
-Z80OPCODE opx_2C(Z80 *cpu) { // inc xl
+static Z80OPCODE opx_2C(Z80 *cpu) { // inc xl
    inc8(cpu, cpu->xl);
 }
-Z80OPCODE opx_2D(Z80 *cpu) { // dec xl
+static Z80OPCODE opx_2D(Z80 *cpu) { // dec xl
    dec8(cpu, cpu->xl);
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_2E(Z80 *cpu) { // ld xl,nn
+static Z80OPCODE opx_2E(Z80 *cpu) { // ld xl,nn
    cpu->xl = cpu->MemIf->xm(cpu->pc++);
    cpu->t += 3;
 }
-Z80OPCODE opx_34(Z80 *cpu) { // inc (ix+nn) | M:6 T:23 (4, 4, 3, 5, 4, 3)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   unsigned char t = cpu->MemIf->rm(cpu->ix + ofs);
+static Z80OPCODE opx_34(Z80 *cpu) { // inc (ix+nn) | M:6 T:23 (4, 4, 3, 5, 4, 3)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   unsigned char t = cpu->MemIf->rm(u32(int(cpu->ix) + ofs));
    inc8(cpu, t);
-   cpu->MemIf->wm(cpu->ix + ofs, t);
+   cpu->MemIf->wm(u32(int(cpu->ix) + ofs), t);
    cpu->t += 15;
 }
-Z80OPCODE opx_35(Z80 *cpu) { // dec (ix+nn) | M:6 T:23 (4, 4, 3, 5, 4, 3)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   unsigned char t = cpu->MemIf->rm(cpu->ix + ofs);
+static Z80OPCODE opx_35(Z80 *cpu) { // dec (ix+nn) | M:6 T:23 (4, 4, 3, 5, 4, 3)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   unsigned char t = cpu->MemIf->rm(u32(int(cpu->ix) + ofs));
    dec8(cpu, t);
-   cpu->MemIf->wm(cpu->ix + ofs, t);
+   cpu->MemIf->wm(u32(int(cpu->ix) + ofs), t);
    cpu->t += 15;
 }
-Z80OPCODE opx_36(Z80 *cpu) { // ld (ix+nn),nn | M:5 T:19 (4, 4, 3,5,3)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cpu->MemIf->wm(cpu->ix + ofs, cpu->MemIf->rm(cpu->pc++));
+static Z80OPCODE opx_36(Z80 *cpu) { // ld (ix+nn),nn | M:5 T:19 (4, 4, 3,5,3)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cpu->MemIf->wm(u32(int(cpu->ix) + ofs), cpu->MemIf->rm(cpu->pc++));
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_39(Z80 *cpu) { // add ix,sp
+static Z80OPCODE opx_39(Z80 *cpu) { // add ix,sp
    cpu->memptr = cpu->ix+1;
    cpu->f = (cpu->f & ~(NF | CF | F5 | F3 | HF));
    cpu->f |= (((cpu->ix & 0x0FFF) + (cpu->sp & 0x0FFF)) >> 8) & 0x10; /* HF */
@@ -126,298 +126,298 @@ Z80OPCODE opx_39(Z80 *cpu) { // add ix,sp
    cpu->f |= (cpu->xh & (F5 | F3));
    cpu->t += 7;
 }
-Z80OPCODE opx_44(Z80 *cpu) { // ld b,xh
+static Z80OPCODE opx_44(Z80 *cpu) { // ld b,xh
    cpu->b = cpu->xh;
 }
-Z80OPCODE opx_45(Z80 *cpu) { // ld b,xl
+static Z80OPCODE opx_45(Z80 *cpu) { // ld b,xl
    cpu->b = cpu->xl;
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_46(Z80 *cpu) { // ld b,(ix+nn)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cpu->b = cpu->MemIf->rm(cpu->ix + ofs);
+static Z80OPCODE opx_46(Z80 *cpu) { // ld b,(ix+nn)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cpu->b = cpu->MemIf->rm(unsigned(int(cpu->ix) + ofs));
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_4C(Z80 *cpu) { // ld c,xh
+static Z80OPCODE opx_4C(Z80 *cpu) { // ld c,xh
    cpu->c = cpu->xh;
 }
-Z80OPCODE opx_4D(Z80 *cpu) { // ld c,xl
+static Z80OPCODE opx_4D(Z80 *cpu) { // ld c,xl
    cpu->c = cpu->xl;
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_4E(Z80 *cpu) { // ld c,(ix+nn)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cpu->c = cpu->MemIf->rm(cpu->ix + ofs);
+static Z80OPCODE opx_4E(Z80 *cpu) { // ld c,(ix+nn)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cpu->c = cpu->MemIf->rm(unsigned(int(cpu->ix) + ofs));
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_54(Z80 *cpu) { // ld d,xh
+static Z80OPCODE opx_54(Z80 *cpu) { // ld d,xh
    cpu->d = cpu->xh;
 }
-Z80OPCODE opx_55(Z80 *cpu) { // ld d,xl
+static Z80OPCODE opx_55(Z80 *cpu) { // ld d,xl
    cpu->d = cpu->xl;
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_56(Z80 *cpu) { // ld d,(ix+nn)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cpu->d = cpu->MemIf->rm(cpu->ix + ofs);
+static Z80OPCODE opx_56(Z80 *cpu) { // ld d,(ix+nn)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cpu->d = cpu->MemIf->rm(unsigned(int(cpu->ix) + ofs));
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_5C(Z80 *cpu) { // ld e,xh
+static Z80OPCODE opx_5C(Z80 *cpu) { // ld e,xh
    cpu->e = cpu->xh;
 }
-Z80OPCODE opx_5D(Z80 *cpu) { // ld e,xl
+static Z80OPCODE opx_5D(Z80 *cpu) { // ld e,xl
    cpu->e = cpu->xl;
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_5E(Z80 *cpu) { // ld e,(ix+nn)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cpu->e = cpu->MemIf->rm(cpu->ix + ofs);
+static Z80OPCODE opx_5E(Z80 *cpu) { // ld e,(ix+nn)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cpu->e = cpu->MemIf->rm(unsigned(int(cpu->ix) + ofs));
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_60(Z80 *cpu) { // ld xh,b
+static Z80OPCODE opx_60(Z80 *cpu) { // ld xh,b
    cpu->xh = cpu->b;
 }
-Z80OPCODE opx_61(Z80 *cpu) { // ld xh,c
+static Z80OPCODE opx_61(Z80 *cpu) { // ld xh,c
    cpu->xh = cpu->c;
 }
-Z80OPCODE opx_62(Z80 *cpu) { // ld xh,d
+static Z80OPCODE opx_62(Z80 *cpu) { // ld xh,d
    cpu->xh = cpu->d;
 }
-Z80OPCODE opx_63(Z80 *cpu) { // ld xh,e
+static Z80OPCODE opx_63(Z80 *cpu) { // ld xh,e
    cpu->xh = cpu->e;
 }
-Z80OPCODE opx_65(Z80 *cpu) { // ld xh,xl
+static Z80OPCODE opx_65(Z80 *cpu) { // ld xh,xl
    cpu->xh = cpu->xl;
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_66(Z80 *cpu) { // ld h,(ix+nn)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cpu->h = cpu->MemIf->rm(cpu->ix + ofs);
+static Z80OPCODE opx_66(Z80 *cpu) { // ld h,(ix+nn)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cpu->h = cpu->MemIf->rm(unsigned(int(cpu->ix) + ofs));
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_67(Z80 *cpu) { // ld xh,a
+static Z80OPCODE opx_67(Z80 *cpu) { // ld xh,a
    cpu->xh = cpu->a;
 }
-Z80OPCODE opx_68(Z80 *cpu) { // ld xl,b
+static Z80OPCODE opx_68(Z80 *cpu) { // ld xl,b
    cpu->xl = cpu->b;
 }
-Z80OPCODE opx_69(Z80 *cpu) { // ld xl,c
+static Z80OPCODE opx_69(Z80 *cpu) { // ld xl,c
    cpu->xl = cpu->c;
 }
-Z80OPCODE opx_6A(Z80 *cpu) { // ld xl,d
+static Z80OPCODE opx_6A(Z80 *cpu) { // ld xl,d
    cpu->xl = cpu->d;
 }
-Z80OPCODE opx_6B(Z80 *cpu) { // ld xl,e
+static Z80OPCODE opx_6B(Z80 *cpu) { // ld xl,e
    cpu->xl = cpu->e;
 }
-Z80OPCODE opx_6C(Z80 *cpu) { // ld xl,xh
+static Z80OPCODE opx_6C(Z80 *cpu) { // ld xl,xh
    cpu->xl = cpu->xh;
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_6E(Z80 *cpu) { // ld l,(ix+nn)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cpu->l = cpu->MemIf->rm(cpu->ix + ofs);
+static Z80OPCODE opx_6E(Z80 *cpu) { // ld l,(ix+nn)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cpu->l = cpu->MemIf->rm(unsigned(int(cpu->ix) + ofs));
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_6F(Z80 *cpu) { // ld xl,a
+static Z80OPCODE opx_6F(Z80 *cpu) { // ld xl,a
    cpu->xl = cpu->a;
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_70(Z80 *cpu) { // ld (ix+nn),b | M:5 T:19 (4, 4, 3, 5, 3)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cpu->MemIf->wm(cpu->ix + ofs, cpu->b);
+static Z80OPCODE opx_70(Z80 *cpu) { // ld (ix+nn),b | M:5 T:19 (4, 4, 3, 5, 3)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cpu->MemIf->wm(unsigned(int(cpu->ix) + ofs), cpu->b);
    cpu->t += 11;
 }
-Z80OPCODE opx_71(Z80 *cpu) { // ld (ix+nn),c | M:5 T:19 (4, 4, 3, 5, 3)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cpu->MemIf->wm(cpu->ix + ofs, cpu->c);
+static Z80OPCODE opx_71(Z80 *cpu) { // ld (ix+nn),c | M:5 T:19 (4, 4, 3, 5, 3)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cpu->MemIf->wm(unsigned(int(cpu->ix) + ofs), cpu->c);
    cpu->t += 11;
 }
-Z80OPCODE opx_72(Z80 *cpu) { // ld (ix+nn),d | M:5 T:19 (4, 4, 3, 5, 3)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cpu->MemIf->wm(cpu->ix + ofs, cpu->d);
+static Z80OPCODE opx_72(Z80 *cpu) { // ld (ix+nn),d | M:5 T:19 (4, 4, 3, 5, 3)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cpu->MemIf->wm(unsigned(int(cpu->ix) + ofs), cpu->d);
    cpu->t += 11;
 }
-Z80OPCODE opx_73(Z80 *cpu) { // ld (ix+nn),e | M:5 T:19 (4, 4, 3, 5, 3)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cpu->MemIf->wm(cpu->ix + ofs, cpu->e);
+static Z80OPCODE opx_73(Z80 *cpu) { // ld (ix+nn),e | M:5 T:19 (4, 4, 3, 5, 3)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cpu->MemIf->wm(unsigned(int(cpu->ix) + ofs), cpu->e);
    cpu->t += 11;
 }
-Z80OPCODE opx_74(Z80 *cpu) { // ld (ix+nn),h | M:5 T:19 (4, 4, 3, 5, 3)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cpu->MemIf->wm(cpu->ix + ofs, cpu->h);
+static Z80OPCODE opx_74(Z80 *cpu) { // ld (ix+nn),h | M:5 T:19 (4, 4, 3, 5, 3)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cpu->MemIf->wm(unsigned(int(cpu->ix) + ofs), cpu->h);
    cpu->t += 11;
 }
-Z80OPCODE opx_75(Z80 *cpu) { // ld (ix+nn),l | M:5 T:19 (4, 4, 3, 5, 3)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cpu->MemIf->wm(cpu->ix + ofs, cpu->l);
+static Z80OPCODE opx_75(Z80 *cpu) { // ld (ix+nn),l | M:5 T:19 (4, 4, 3, 5, 3)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cpu->MemIf->wm(u32(int(cpu->ix) + ofs), cpu->l);
    cpu->t += 11;
 }
-Z80OPCODE opx_77(Z80 *cpu) { // ld (ix+nn),a | M:5 T:19 (4, 4, 3, 5, 3)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cpu->MemIf->wm(cpu->ix + ofs, cpu->a);
+static Z80OPCODE opx_77(Z80 *cpu) { // ld (ix+nn),a | M:5 T:19 (4, 4, 3, 5, 3)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cpu->MemIf->wm(unsigned(int(cpu->ix) + ofs), cpu->a);
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_7C(Z80 *cpu) { // ld a,xh
+static Z80OPCODE opx_7C(Z80 *cpu) { // ld a,xh
    cpu->a = cpu->xh;
 }
-Z80OPCODE opx_7D(Z80 *cpu) { // ld a,xl
+static Z80OPCODE opx_7D(Z80 *cpu) { // ld a,xl
    cpu->a = cpu->xl;
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_7E(Z80 *cpu) { // ld a,(ix+nn)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cpu->a = cpu->MemIf->rm(cpu->ix + ofs);
+static Z80OPCODE opx_7E(Z80 *cpu) { // ld a,(ix+nn)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cpu->a = cpu->MemIf->rm(unsigned(int(cpu->ix) + ofs));
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_84(Z80 *cpu) { // add a,xh
+static Z80OPCODE opx_84(Z80 *cpu) { // add a,xh
    add8(cpu, cpu->xh);
 }
-Z80OPCODE opx_85(Z80 *cpu) { // add a,xl
+static Z80OPCODE opx_85(Z80 *cpu) { // add a,xl
    add8(cpu, cpu->xl);
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_86(Z80 *cpu) { // add a,(ix+nn)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   add8(cpu, cpu->MemIf->rm(cpu->ix + ofs));
+static Z80OPCODE opx_86(Z80 *cpu) { // add a,(ix+nn)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   add8(cpu, cpu->MemIf->rm(unsigned(int(cpu->ix) + ofs)));
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_8C(Z80 *cpu) { // adc a,xh
+static Z80OPCODE opx_8C(Z80 *cpu) { // adc a,xh
    adc8(cpu, cpu->xh);
 }
-Z80OPCODE opx_8D(Z80 *cpu) { // adc a,xl
+static Z80OPCODE opx_8D(Z80 *cpu) { // adc a,xl
    adc8(cpu, cpu->xl);
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_8E(Z80 *cpu) { // adc a,(ix+nn)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   adc8(cpu, cpu->MemIf->rm(cpu->ix + ofs));
+static Z80OPCODE opx_8E(Z80 *cpu) { // adc a,(ix+nn)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   adc8(cpu, cpu->MemIf->rm(u32(int(cpu->ix) + ofs)));
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_94(Z80 *cpu) { // sub xh
+static Z80OPCODE opx_94(Z80 *cpu) { // sub xh
    sub8(cpu, cpu->xh);
 }
-Z80OPCODE opx_95(Z80 *cpu) { // sub xl
+static Z80OPCODE opx_95(Z80 *cpu) { // sub xl
    sub8(cpu, cpu->xl);
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_96(Z80 *cpu) { // sub (ix+nn)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   sub8(cpu, cpu->MemIf->rm(cpu->ix + ofs));
+static Z80OPCODE opx_96(Z80 *cpu) { // sub (ix+nn)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   sub8(cpu, cpu->MemIf->rm(u32(int(cpu->ix) + ofs)));
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_9C(Z80 *cpu) { // sbc a,xh
+static Z80OPCODE opx_9C(Z80 *cpu) { // sbc a,xh
    sbc8(cpu, cpu->xh);
 }
-Z80OPCODE opx_9D(Z80 *cpu) { // sbc a,xl
+static Z80OPCODE opx_9D(Z80 *cpu) { // sbc a,xl
    sbc8(cpu, cpu->xl);
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_9E(Z80 *cpu) { // sbc a,(ix+nn)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   sbc8(cpu, cpu->MemIf->rm(cpu->ix + ofs));
+static Z80OPCODE opx_9E(Z80 *cpu) { // sbc a,(ix+nn)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   sbc8(cpu, cpu->MemIf->rm(u32(int(cpu->ix) + ofs)));
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_A4(Z80 *cpu) { // and xh
+static Z80OPCODE opx_A4(Z80 *cpu) { // and xh
    and8(cpu, cpu->xh);
 }
-Z80OPCODE opx_A5(Z80 *cpu) { // and xl
+static Z80OPCODE opx_A5(Z80 *cpu) { // and xl
    and8(cpu, cpu->xl);
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_A6(Z80 *cpu) { // and (ix+nn)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   and8(cpu, cpu->MemIf->rm(cpu->ix + ofs));
+static Z80OPCODE opx_A6(Z80 *cpu) { // and (ix+nn)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   and8(cpu, cpu->MemIf->rm(u32(int(cpu->ix) + ofs)));
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_AC(Z80 *cpu) { // xor xh
+static Z80OPCODE opx_AC(Z80 *cpu) { // xor xh
    xor8(cpu, cpu->xh);
 }
-Z80OPCODE opx_AD(Z80 *cpu) { // xor xl
+static Z80OPCODE opx_AD(Z80 *cpu) { // xor xl
    xor8(cpu, cpu->xl);
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_AE(Z80 *cpu) { // xor (ix+nn)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   xor8(cpu, cpu->MemIf->rm(cpu->ix + ofs));
+static Z80OPCODE opx_AE(Z80 *cpu) { // xor (ix+nn)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   xor8(cpu, cpu->MemIf->rm(u32(int(cpu->ix) + ofs)));
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_B4(Z80 *cpu) { // or xh
+static Z80OPCODE opx_B4(Z80 *cpu) { // or xh
    or8(cpu, cpu->xh);
 }
-Z80OPCODE opx_B5(Z80 *cpu) { // or xl
+static Z80OPCODE opx_B5(Z80 *cpu) { // or xl
    or8(cpu, cpu->xl);
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_B6(Z80 *cpu) { // or (ix+nn)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   or8(cpu, cpu->MemIf->rm(cpu->ix + ofs));
+static Z80OPCODE opx_B6(Z80 *cpu) { // or (ix+nn)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   or8(cpu, cpu->MemIf->rm(u32(int(cpu->ix) + ofs)));
    cpu->t += 11;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_BC(Z80 *cpu) { // cp xh
+static Z80OPCODE opx_BC(Z80 *cpu) { // cp xh
    cp8(cpu, cpu->xh);
 }
-Z80OPCODE opx_BD(Z80 *cpu) { // cp xl
+static Z80OPCODE opx_BD(Z80 *cpu) { // cp xl
    cp8(cpu, cpu->xl);
 }
 //#endif
 //#ifndef Z80_COMMON
-Z80OPCODE opx_BE(Z80 *cpu) { // cp (ix+nn)
-   signed char ofs = cpu->MemIf->xm(cpu->pc++);
-   cp8(cpu, cpu->MemIf->rm(cpu->ix + ofs));
+static Z80OPCODE opx_BE(Z80 *cpu) { // cp (ix+nn)
+   signed char ofs = i8(cpu->MemIf->xm(cpu->pc++));
+   cp8(cpu, cpu->MemIf->rm(u32(int(cpu->ix) + ofs)));
    cpu->t += 11;
 }
-Z80OPCODE opx_E1(Z80 *cpu) { // pop ix
+static Z80OPCODE opx_E1(Z80 *cpu) { // pop ix
    cpu->xl = cpu->MemIf->rm(cpu->sp++);
    cpu->xh = cpu->MemIf->rm(cpu->sp++);
    cpu->t += 6;
 }
-Z80OPCODE opx_E3(Z80 *cpu) { // ex (sp),ix | M:6 T:23 (4, 4, 3, 4, 3, 5)
+static Z80OPCODE opx_E3(Z80 *cpu) { // ex (sp),ix | M:6 T:23 (4, 4, 3, 4, 3, 5)
    unsigned tmp = cpu->MemIf->rm(cpu->sp) + 0x100*cpu->MemIf->rm(cpu->sp + 1);
    cpu->MemIf->wm(cpu->sp, cpu->xl);
    cpu->MemIf->wm(cpu->sp+1, cpu->xh);
@@ -425,18 +425,18 @@ Z80OPCODE opx_E3(Z80 *cpu) { // ex (sp),ix | M:6 T:23 (4, 4, 3, 4, 3, 5)
    cpu->ix = tmp;
    cpu->t += 15;
 }
-Z80OPCODE opx_E5(Z80 *cpu) { // push ix | M:4 T:15 (4, 5, 3, 3)
+static Z80OPCODE opx_E5(Z80 *cpu) { // push ix | M:4 T:15 (4, 5, 3, 3)
    cpu->MemIf->wm(--cpu->sp, cpu->xh);
    cpu->MemIf->wm(--cpu->sp, cpu->xl);
    cpu->t += 7;
 }
 //#endif
 //#ifdef Z80_COMMON
-Z80OPCODE opx_E9(Z80 *cpu) { // jp (ix)
-   cpu->last_branch = cpu->pc-2;
+static Z80OPCODE opx_E9(Z80 *cpu) { // jp (ix)
+   cpu->last_branch = u16(cpu->pc-2);
    cpu->pc = cpu->ix;
 }
-Z80OPCODE opx_F9(Z80 *cpu) { // ld sp,ix
+static Z80OPCODE opx_F9(Z80 *cpu) { // ld sp,ix
    cpu->sp = cpu->ix;
    cpu->t += 2;
 }

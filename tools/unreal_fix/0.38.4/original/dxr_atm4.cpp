@@ -12,14 +12,15 @@
 static const int text0_ofs = 4*PAGE + 0x0;
 static const int text2_ofs = 4*PAGE + 0x800;
 
-void line_atm4_8(unsigned char *dst, unsigned char *src, unsigned *tab0, unsigned char *font)
+static void line_atm4_8(unsigned char *dst, unsigned char *src, unsigned *tab0, unsigned char *font)
 {
     for (unsigned x = 0; x < 640; x += 0x20)
     {
         unsigned p0 = *(unsigned*)(src + text0_ofs),
                  a0 = *(unsigned*)(src + text2_ofs);
         unsigned c, *tab;
-        tab = tab0 + ((a0 << 4) & 0xFF0), c = font[p0 & 0xFF];
+        tab = tab0 + ((a0 << 4) & 0xFF0);
+        c = font[p0 & 0xFF];
         *(unsigned*)(dst+x+0x00) = tab[((c >> 4)  & 0xF)];
         *(unsigned*)(dst+x+0x04) = tab[c & 0xF];
 
@@ -39,14 +40,15 @@ void line_atm4_8(unsigned char *dst, unsigned char *src, unsigned *tab0, unsigne
     }
 }
 
-void line_atm4_16(unsigned char *dst, unsigned char *src, unsigned *tab0, unsigned char *font)
+static void line_atm4_16(unsigned char *dst, unsigned char *src, unsigned *tab0, unsigned char *font)
 {
     for (unsigned x = 0; x < 640*2; x += 0x40)
     {
         unsigned p0 = *(unsigned*)(src + text0_ofs),
                  a0 = *(unsigned*)(src + text2_ofs);
         unsigned c, *tab;
-        tab = tab0 + ((a0 << 2) & 0x3FC), c = font[p0 & 0xFF];
+        tab = tab0 + ((a0 << 2) & 0x3FC);
+        c = font[p0 & 0xFF];
         *(unsigned*)(dst+x+0x00) = tab[((c >> 6)  & 0x03)];
         *(unsigned*)(dst+x+0x04) = tab[((c >> 4)  & 0x03)];
         *(unsigned*)(dst+x+0x08) = tab[((c >> 2)  & 0x03)];
@@ -74,7 +76,7 @@ void line_atm4_16(unsigned char *dst, unsigned char *src, unsigned *tab0, unsign
     }
 }
 
-void line_atm4_32(unsigned char *dst, unsigned char *src, unsigned *tab0, unsigned char *font)
+static void line_atm4_32(unsigned char *dst, unsigned char *src, unsigned *tab0, unsigned char *font)
 {
    for (unsigned x = 0; x < 640*4; x += 0x40)
    {
@@ -104,7 +106,7 @@ void line_atm4_32(unsigned char *dst, unsigned char *src, unsigned *tab0, unsign
 }
 
 // Textmode
-void rend_atm4(unsigned char *dst, unsigned pitch, int y)
+void rend_atm4(unsigned char *dst, unsigned pitch, unsigned y)
 {
    unsigned char *dst2 = dst + (temp.ox-640)*temp.obpp/16;
    if (temp.scy > 200) 

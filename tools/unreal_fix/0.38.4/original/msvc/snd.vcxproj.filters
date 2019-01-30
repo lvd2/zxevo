@@ -22,6 +22,9 @@
     <ClCompile Include="..\sndrender\sndrender.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\sndrender\emul_2203.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sndrender\saa1099.h">
@@ -37,6 +40,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sndrender\sndrender.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sndrender\emul_2203.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

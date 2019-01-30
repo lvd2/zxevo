@@ -19,12 +19,12 @@ void ISA_MODEM::open(int port)
    if (port < 1 || port > 255)
        return;
 
-   open_port = port;
+   open_port = u8(port);
 
    char portName[11];
    _snprintf(portName, _countof(portName), "\\\\.\\COM%d", port);
 
-   hPort = CreateFile(portName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
+   hPort = CreateFile(portName, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
    if (hPort == INVALID_HANDLE_VALUE)
    {
       errmsg("can't open modem on %s", portName); err_win32();
@@ -35,8 +35,8 @@ void ISA_MODEM::open(int port)
    memset(&OvW, 0, sizeof(OvW));
    memset(&OvR, 0, sizeof(OvR));
 
-   OvW.hEvent = CreateEvent(0, TRUE, TRUE, 0);
-   OvR.hEvent = CreateEvent(0, TRUE, TRUE, 0);
+   OvW.hEvent = CreateEvent(nullptr, TRUE, TRUE, nullptr);
+   OvR.hEvent = CreateEvent(nullptr, TRUE, TRUE, nullptr);
 
    COMMTIMEOUTS times;
    times.ReadIntervalTimeout = MAXDWORD;
@@ -90,7 +90,7 @@ void ISA_MODEM::io()
    bool WrReady = false;
    if(WaitForSingleObject(OvW.hEvent, 0) == WAIT_OBJECT_0)
    {
-       written = OvW.InternalHigh;
+       written = ULONG(OvW.InternalHigh);
        OvW.InternalHigh = 0;
        wtail = (wtail+written) & (BSIZE-1);
 /*
@@ -102,20 +102,20 @@ void ISA_MODEM::io()
        WrReady = true;
    }
 
-   int needwrite = whead - wtail;
+   int needwrite = int(whead - wtail);
    if (needwrite < 0)
        needwrite += BSIZE;
    if (needwrite && WrReady)
    {
       if (whead > wtail)
-          memcpy(tempwr, wbuf+wtail, needwrite);
+          memcpy(tempwr, wbuf+wtail, size_t(needwrite));
       else
       {
           memcpy(tempwr, wbuf+wtail, BSIZE-wtail);
           memcpy(tempwr+BSIZE-wtail, wbuf, whead);
       }
 
-      if (WriteFile(hPort, tempwr, needwrite, &written, &OvW))
+      if (WriteFile(hPort, tempwr, DWORD(needwrite), &written, &OvW))
       {
       // printf("\nsend: "); dump1(temp, written);
       // printf("writen : %d, %d\n", needwrite, written);
@@ -132,7 +132,7 @@ void ISA_MODEM::io()
    DWORD read = 0;
    if(WaitForSingleObject(OvR.hEvent, 0) == WAIT_OBJECT_0)
    {
-       read = OvR.InternalHigh;
+       read = ULONG(OvR.InternalHigh);
        OvR.InternalHigh = 0;
        if(read)
        {
@@ -146,12 +146,12 @@ void ISA_MODEM::io()
        RdReady = true;
    }
 
-   int canread = rtail - rhead - 1;
+   int canread = int(rtail - rhead - 1);
    if (canread < 0)
        canread += BSIZE;
    if (canread && RdReady)
    {
-      if (ReadFile(hPort, temprd, canread, &read, &OvR) && read)
+      if (ReadFile(hPort, temprd, DWORD(canread), &read, &OvR) && read)
       {
 //printf("\nrecv: "); dump1(temp, read);
       }
@@ -167,7 +167,10 @@ void ISA_MODEM::setup_int()
    reg[6] &= ~0x10;
 
    unsigned char mask = reg[5] & 1;
-   if (reg[5] & 0x20) mask |= 2, reg[6] |= 0x10;
+   if(reg[5] & 0x20)
+   {
+       mask |= 2; reg[6] |= 0x10;
+   }
    if (reg[5] & 0x1E) mask |= 4;
    // if (mask & reg[1]) cpu.nmi()
 

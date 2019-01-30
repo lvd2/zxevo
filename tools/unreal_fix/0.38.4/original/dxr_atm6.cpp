@@ -19,7 +19,7 @@ const int text2_ofs = -4*int(PAGE)+1;
 const int text3_ofs = -4*int(PAGE)+0x2000;
 
 
-void line_atm6_8(unsigned char *dst, unsigned char *src, unsigned *tab0, unsigned char *font, int src_offset)
+static void line_atm6_8(unsigned char *dst, unsigned char *src, unsigned *tab0, unsigned char *font, int src_offset)
 {
     for (unsigned x = 0; x < 640; x += 0x40) {
         src_offset &= 0x1FFF;
@@ -28,7 +28,8 @@ void line_atm6_8(unsigned char *dst, unsigned char *src, unsigned *tab0, unsigne
                  a0 = *(unsigned*)(src + src_offset + text2_ofs),
                  a1 = *(unsigned*)(src + src_offset + text3_ofs);
         unsigned c, *tab;
-        tab = tab0 + ((a1 << 4) & 0xFF0), c = font[p0 & 0xFF];
+        tab = tab0 + ((a1 << 4) & 0xFF0);
+        c = font[p0 & 0xFF];
         *(unsigned*)(dst+x+0x00) = tab[((c >> 4)  & 0xF)];
         *(unsigned*)(dst+x+0x04) = tab[c & 0xF];
         tab = tab0 + ((a0 << 4) & 0xFF0); c = font[p1 & 0xFF];
@@ -56,7 +57,7 @@ void line_atm6_8(unsigned char *dst, unsigned char *src, unsigned *tab0, unsigne
     }
 }
 
-void line_atm6_16(unsigned char *dst, unsigned char *src, unsigned *tab0, unsigned char *font, int src_offset)
+static void line_atm6_16(unsigned char *dst, unsigned char *src, unsigned *tab0, unsigned char *font, int src_offset)
 {
     for (unsigned x = 0; x < 640*2; x += 0x80) {
         src_offset &= 0x1FFF;
@@ -65,7 +66,8 @@ void line_atm6_16(unsigned char *dst, unsigned char *src, unsigned *tab0, unsign
                  a0 = *(unsigned*)(src + src_offset + text2_ofs),
                  a1 = *(unsigned*)(src + src_offset + text3_ofs);
         unsigned c, *tab;
-        tab = tab0 + ((a1 << 2) & 0x3FC), c = font[p0 & 0xFF];
+        tab = tab0 + ((a1 << 2) & 0x3FC);
+        c = font[p0 & 0xFF];
         *(unsigned*)(dst+x+0x00) = tab[((c >> 6)  & 0x03)];
         *(unsigned*)(dst+x+0x04) = tab[((c >> 4)  & 0x03)];
         *(unsigned*)(dst+x+0x08) = tab[((c >> 2)  & 0x03)];
@@ -109,7 +111,7 @@ void line_atm6_16(unsigned char *dst, unsigned char *src, unsigned *tab0, unsign
     }
 }
 
-void line_atm6_32(unsigned char *dst, unsigned char *src, unsigned *tab0, unsigned char *font, int src_offset)
+static void line_atm6_32(unsigned char *dst, unsigned char *src, unsigned *tab0, unsigned char *font, int src_offset)
 {
    for (unsigned x = 0; x < 640*4; x += 0x80) {
       unsigned c, *tab;
@@ -163,7 +165,7 @@ void line_atm6_32(unsigned char *dst, unsigned char *src, unsigned *tab0, unsign
 }
 
 // Textmode
-void rend_atm6(unsigned char *dst, unsigned pitch, int y, int Offset)
+void rend_atm6(unsigned char *dst, unsigned pitch, unsigned y, int Offset)
 {
    unsigned char *dst2 = dst + (temp.ox-640)*temp.obpp/16;
    if (temp.scy > 200) 

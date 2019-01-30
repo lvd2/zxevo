@@ -7,13 +7,13 @@
 #include "gsz80.h"
 #include "z80.h"
 #include "util.h"
+#include "sndrender/sndcounter.h"
+#include "sound.h"
 
 namespace z80fast
 {
 #include "z80_main.h"
 }
-
-#include "sndrender/sndcounter.h"
 
 int fmsoundon0=4; //Alone Coder
 int tfmstatuson0=2; //Alone Coder
@@ -231,7 +231,7 @@ unsigned char exitflag = 0; // avoid call exit() twice
 
 // beta128 vars
 unsigned trd_toload = 0; // drive to load
-unsigned DefaultDrive = -1; // Дисковод по умолчанию в который грузятся образы дисков при старте
+unsigned DefaultDrive = -1U; // ─шёъютюф яю єьюыўрэш■ т ъюЄюЁ√щ уЁєч Єё  юсЁрч√ фшёъют яЁш ёЄрЁЄх
 
 char trd_loaded[4]; // used to get first free drive with no account of autoloaded images
 char ininame[0x200];
@@ -331,6 +331,19 @@ static zxkey zxk_default[] =
    { "KDOWN",  &input.kjoy, u8(~4U) },
    { "KUP",    &input.kjoy, u8(~8U) },
    { "KFIRE",  &input.kjoy, u8(~16U)},
+   { "KFIRE1", &input.kjoy, u8(~16U) },
+   { "KFIRE2", &input.kjoy, u8(~32U) },
+   { "KFIRE3", &input.kjoy, u8(~64U) },
+
+   // fuller joystick
+   { "FRIGHT", &input.fjoy, u8(~8U) },
+   { "FLEFT",  &input.fjoy, u8(~4U) },
+   { "FDOWN",  &input.fjoy, u8(~2U) },
+   { "FUP",    &input.fjoy, u8(~1U) },
+   { "FFIRE",  &input.fjoy, u8(~128U)},
+   { "FFIRE1", &input.fjoy, u8(~128U) },
+   { "FFIRE2", &input.fjoy, u8(~64U) },
+   { "FFIRE3", &input.fjoy, u8(~32U) },
 
    { "ENT", input.kbd+6, u8(~0x01U) },
    { "SPC", input.kbd+7, u8(~0x01U) },
@@ -389,6 +402,19 @@ static zxkey zxk_bk08[] =
    { "KDOWN",  &input.kjoy, u8(~4U) },
    { "KUP",    &input.kjoy, u8(~8U) },
    { "KFIRE",  &input.kjoy, u8(~16U)},
+   { "KFIRE1", &input.kjoy, u8(~16U) },
+   { "KFIRE2", &input.kjoy, u8(~32U) },
+   { "KFIRE3", &input.kjoy, u8(~64U) },
+
+   // fuller joystick
+   { "FRIGHT", &input.fjoy, u8(~8U) },
+   { "FLEFT",  &input.fjoy, u8(~4U) },
+   { "FDOWN",  &input.fjoy, u8(~2U) },
+   { "FUP",    &input.fjoy, u8(~1U) },
+   { "FFIRE",  &input.fjoy, u8(~128U)},
+   { "FFIRE1", &input.fjoy, u8(~128U) },
+   { "FFIRE2", &input.fjoy, u8(~64U) },
+   { "FFIRE3", &input.fjoy, u8(~32U) },
 
    { "ALT", input.kbd+0, u8(~0x01U) },
    { "Z",   input.kbd+0, u8(~0x02U) },
@@ -462,6 +488,20 @@ static zxkey zxk_quorum[] =
    { "KDOWN",  &input.kjoy, u8(~4U) },
    { "KUP",    &input.kjoy, u8(~8U) },
    { "KFIRE",  &input.kjoy, u8(~16U)},
+   { "KFIRE1", &input.kjoy, u8(~16U) },
+   { "KFIRE2", &input.kjoy, u8(~32U) },
+   { "KFIRE3", &input.kjoy, u8(~64U) },
+
+   // fuller joystick
+   { "FRIGHT", &input.fjoy, u8(~8U) },
+   { "FLEFT",  &input.fjoy, u8(~4U) },
+   { "FDOWN",  &input.fjoy, u8(~2U) },
+   { "FUP",    &input.fjoy, u8(~1U) },
+   { "FFIRE",  &input.fjoy, u8(~128U)},
+   { "FFIRE1", &input.fjoy, u8(~128U) },
+   { "FFIRE2", &input.fjoy, u8(~64U) },
+   { "FFIRE3", &input.fjoy, u8(~32U) },
+
 
    { "ENT", input.kbd+6, u8(~0x01U) },
    { "SPC", input.kbd+7, u8(~0x01U) },
@@ -600,7 +640,8 @@ bool normal_exit = false; // true on correct exit, false on failure exit
 char *ayvols[64]; unsigned num_ayvols;
 char *aystereo[64]; unsigned num_aystereo;
 char *ulapreset[64]; unsigned num_ula;
-char presetbuf[0x4000], *setptr = presetbuf;
+static char presetbuf[0x4000];
+char *setptr = presetbuf;
 
 /*
 #include "fontdata.cpp"

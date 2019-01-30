@@ -71,7 +71,7 @@ extern TVideoSaver VideoSaver;
 
 int loadsnap(char *filename);
 int writeSNA(FILE *ff);
-void opensnap(int index);
+void opensnap(unsigned index);
 void savesnap(int diskindex);
 void main_scrshot();
 //void main_savevideo();

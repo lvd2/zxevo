@@ -11,7 +11,7 @@
 
 #include "util.h"
 
-unsigned char pastekeys[0x80-0x20] =
+static unsigned char pastekeys[0x80-0x20] =
 {
    // s     !     "     #     $     %     &     '     (     )     *     +     ,     -   .       /
    0x71, 0xB1, 0xD1, 0xB3, 0xB4, 0xB5, 0xC5, 0xC4, 0xC3, 0xC2, 0xF5, 0xE3, 0xF4, 0xE4, 0xF3, 0x85,
@@ -27,7 +27,7 @@ unsigned char pastekeys[0x80-0x20] =
    0x51, 0x21, 0x24, 0x12, 0x25, 0x54, 0x05, 0x22, 0x03, 0x55, 0x02, 0x94, 0x92, 0x95, 0x91, 0xC4
 }; //`=0x83, 127=' - Alone Coder
 
-unsigned char ruspastekeys[64] =
+static unsigned char ruspastekeys[64] =
 {
     'A','B','W','G','D','E','V','Z','I','J','K','L','M','N','O','P',
     'R','S','T','U','F','H','C','^','[',']',127,'Y','X','\\',64,'Q',
@@ -37,9 +37,9 @@ unsigned char ruspastekeys[64] =
 
 void K_INPUT::clear_zx()
 {
-   int i;
+   size_t i;
    for(i = 0; i < _countof(kbd_x4); i++)
-       kbd_x4[i] = -1;
+       kbd_x4[i] = -1U;
 }
 
 inline void K_INPUT::press_zx(unsigned char key)
@@ -70,9 +70,10 @@ bool K_INPUT::process_pc_layout()
 void K_INPUT::make_matrix()
 {
    unsigned char altlock = conf.input.altlock? (kbdpc[DIK_LMENU] | kbdpc[DIK_RMENU]) & 0x80 : 0;
-   int i;
+   size_t i;
 
    kjoy = 0xFF;
+   fjoy = 0xFF;
    switch (keymode)
    {
       case KM_DEFAULT:
@@ -98,8 +99,11 @@ void K_INPUT::make_matrix()
 
          if (conf.input.fire)
          {
-            if (!--firedelay)
-               firedelay = conf.input.firedelay, firestate ^= 1;
+             if(!--firedelay)
+             {
+                 firedelay = conf.input.firedelay;
+                 firestate ^= 1;
+             }
             zxkeymap *active_zxk = conf.input.active_zxk;
             if (firestate) *(active_zxk->zxk[conf.input.firenum].port) &= active_zxk->zxk[conf.input.firenum].mask;
          }
@@ -108,12 +112,22 @@ void K_INPUT::make_matrix()
       case KM_KEYSTICK:
          for(i = 0; i < _countof(kbd_x4); i++)
              kbd_x4[i] = rkbd_x4[i];
-         if (stick_delay) stick_delay--, altlock = 1;
-         if (!altlock)
-            for (i = 0; i < VK_MAX; i++)
-               if (kbdpc[i] & 0x80)
-                  *(inports[i].port1) ^= ~inports[i].mask1,
-                  *(inports[i].port2) ^= ~inports[i].mask2;
+         if(stick_delay)
+         {
+             stick_delay--;
+             altlock = 1;
+         }
+         if(!altlock)
+         {
+             for(i = 0; i < VK_MAX; i++)
+             {
+                 if(kbdpc[i] & 0x80)
+                 {
+                     *(inports[i].port1) ^= ~inports[i].mask1;
+                     *(inports[i].port2) ^= ~inports[i].mask2;
+                 }
+             }
+         }
          if ((kbd_x4[0] ^ rkbd_x4[0]) | (kbd_x4[1] ^ rkbd_x4[1])) stick_delay = 10;
          break;
 
@@ -138,7 +152,7 @@ void K_INPUT::make_matrix()
          {
             keymode = KM_DEFAULT;
             free(textbuffer);
-            textbuffer = 0;
+            textbuffer = nullptr;
             break;
          }
          tdelay = conf.input.paste_hold;
@@ -205,9 +219,9 @@ void K_INPUT::make_matrix()
    for (;;)
    {
       char done = 1;
-      for (int k = 0; k < _countof(kbd) - 1; k++)
+      for (size_t k = 0; k < _countof(kbd) - 1; k++)
       {
-         for (int j = k+1; j < _countof(kbd); j++)
+         for (size_t j = k+1; j < _countof(kbd); j++)
          {
             if (((kbd[k] | kbd[j]) != 0xFF) && (kbd[k] != kbd[j]))
             {
@@ -249,17 +263,17 @@ char K_INPUT::readdevices()
    }
 
    mbuttons = 0xFF;
-   msx_prev = msx, msy_prev = msy;
+   msx_prev = msx; msy_prev = msy;
    kbdpc[VK_LMB] = kbdpc[VK_RMB] = kbdpc[VK_MMB] = kbdpc[VK_MWU] = kbdpc[VK_MWD] = 0;
    if ((conf.fullscr || conf.lockmouse) && !nomouse)
    {
       unsigned cl1, cl2;
-      cl1 = abs(msx - msx_prev) * ay_reset_t / conf.frame;
-      cl2 = abs(msx - msx_prev);
-      ay_x0 += (cl2-cl1)*sign_pm(msx - msx_prev);
-      cl1 = abs(msy - msy_prev) * ay_reset_t / conf.frame;
-      cl2 = abs(msy - msy_prev);
-      ay_y0 += (cl2-cl1)*sign_pm(msy - msy_prev);
+      cl1 = unsigned(abs(msx - msx_prev)) * ay_reset_t / conf.frame;
+      cl2 = unsigned(abs(msx - msx_prev));
+      ay_x0 += int(cl2-cl1)*sign_pm(msx - msx_prev);
+      cl1 = unsigned(abs(msy - msy_prev)) * ay_reset_t / conf.frame;
+      cl2 = unsigned(abs(msy - msy_prev));
+      ay_y0 += int(cl2-cl1)*sign_pm(msy - msy_prev);
       ay_reset_t = 0;
 
 //      printf("%s\n", __FUNCTION__);
@@ -344,22 +358,26 @@ char K_INPUT::readdevices()
 
 void K_INPUT::aymouse_wr(unsigned char val)
 {
-   // reset by edge bit6: 1->0
-   if (ayR14 & ~val & 0x40) ay_x0 = ay_y0 = 8, ay_reset_t = cpu.t;
-   ayR14 = val;
+    // reset by edge bit6: 1->0
+    if(ayR14 & ~val & 0x40)
+    {
+        ay_x0 = ay_y0 = 8;
+        ay_reset_t = cpu.t;
+    }
+    ayR14 = val;
 }
 
 unsigned char K_INPUT::aymouse_rd()
 {
    unsigned coord;
    if (ayR14 & 0x40) {
-      unsigned cl1 = abs(msy - msy_prev) * ay_reset_t / conf.frame;
-      unsigned cl2 = abs(msy - msy_prev) * cpu.t / conf.frame;
-      coord = ay_y0 + (cl2-cl1)*sign_pm(msy - msy_prev);
+      unsigned cl1 = unsigned(abs(msy - msy_prev)) * ay_reset_t / conf.frame;
+      unsigned cl2 = unsigned(abs(msy - msy_prev)) * cpu.t / conf.frame;
+      coord = unsigned(ay_y0 + int(cl2-cl1)*sign_pm(msy - msy_prev));
    } else {
-      unsigned cl1 = abs(msx - msx_prev) * ay_reset_t / conf.frame;
-      unsigned cl2 = abs(msx - msx_prev) * cpu.t / conf.frame;
-      coord = ay_x0 + (cl2-cl1)*sign_pm(msx - msx_prev);
+      unsigned cl1 = unsigned(abs(msx - msx_prev)) * ay_reset_t / conf.frame;
+      unsigned cl2 = unsigned(abs(msx - msx_prev)) * cpu.t / conf.frame;
+      coord = unsigned(ay_x0 + int(cl2-cl1)*sign_pm(msx - msx_prev));
    }
 /*
    int coord = (ayR14 & 0x40)?
@@ -367,18 +385,18 @@ unsigned char K_INPUT::aymouse_rd()
      ay_x0 + 0x100 * (msx - msx_prev) * (int)(cpu.t - ay_reset_t) / (int)conf.frame;
 //   if ((coord & 0x0F)!=8 && !(ayR14 & 0x40)) printf("coord: %X, x0=%4d, frame_dx=%6d, dt=%d\n", (coord & 0x0F), ay_x0, msx-msx_prev, cpu.t-ay_reset_t);
 */
-   return 0xC0 | (coord & 0x0F) | (mbuttons << 4);
+   return 0xC0 | (coord & 0x0F) | u8(mbuttons << 4);
 }
 
 unsigned char K_INPUT::kempston_mx()
 {
-   int x = (cpu.t*msx + (conf.frame - cpu.t)*msx_prev) / conf.frame;
+   int x = (int(cpu.t)*msx + int(conf.frame - cpu.t)*msx_prev) / int(conf.frame);
    return (unsigned char)x;
 }
 
 unsigned char K_INPUT::kempston_my()
 {
-   int y = (cpu.t*msy + (conf.frame - cpu.t)*msy_prev) / conf.frame;
+   int y = (int(cpu.t)*msy + int(conf.frame - cpu.t)*msy_prev) / int(conf.frame);
    return (unsigned char)y;
 }
 
@@ -421,7 +439,7 @@ u8 K_INPUT::read_quorum(u8 scan)
 
 void K_INPUT::paste()
 {
-   free(textbuffer); textbuffer = 0;
+   free(textbuffer); textbuffer = nullptr;
    textsize = textoffset = 0;
    keymode = KM_DEFAULT;
    if (!OpenClipboard(wnd)) return;
@@ -430,7 +448,7 @@ void K_INPUT::paste()
       void *ptr = GlobalLock(hClip);
       if (ptr) {
          keymode = KM_PASTE_RELEASE; tdelay = 1;
-         textsize = strlen((char*)ptr) + 1;
+         textsize = unsigned(strlen((char*)ptr) + 1);
          memcpy(textbuffer = (unsigned char*)malloc(textsize), ptr, textsize);
          GlobalUnlock(hClip);
       }
@@ -554,7 +572,7 @@ void ATM_KBD::processzx(unsigned scancode, unsigned char pressed)
    if (!(x & 7))
        return;
 
-   unsigned char data = 1 << ((x & 7) - 1);
+   unsigned char data = u8(1 << ((x & 7) - 1));
    x = (x >> 4) & 7;
 
    if (pressed)

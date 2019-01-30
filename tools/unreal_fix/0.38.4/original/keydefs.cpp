@@ -15,6 +15,7 @@
 #include "dbgtrace.h"
 #include "dbglabls.h"
 #include "dbgmem.h"
+#include "funcs.h"
 
 action ac_main[] =
 {
@@ -72,14 +73,14 @@ action ac_main[] =
    { "main.border_full", main_border_full },
    { "main.help", main_help },
 
-   { 0, 0 },
+   { nullptr, nullptr },
 };
 
 action ac_main_xt[] =
 {
    { "main.xtkbd", main_atmkbd },
 
-   { 0, 0 },
+   { nullptr, nullptr },
 };
 
 #ifdef MOD_MONITOR
@@ -170,7 +171,7 @@ action ac_regs[] =
    { "reg.datajump", rdatajump },
    ac_mon
 
-   { 0, 0 },
+   { nullptr, nullptr },
 };
 
 action ac_trace[] =
@@ -211,7 +212,7 @@ action ac_trace[] =
    { "cpu.labels", cfliplabels },
    { "cpu.importl", c_lbl_import },
    ac_mon
-   { 0, 0 },
+   { nullptr, nullptr },
 };
 
 action ac_mem[] =
@@ -241,7 +242,7 @@ action ac_mem[] =
    { "mem.iy", miy },
    ac_mon
 
-   { 0, 0 },
+   { nullptr, nullptr },
 };
 
 #endif // MOD_MONITOR

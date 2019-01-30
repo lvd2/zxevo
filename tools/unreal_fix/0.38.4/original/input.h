@@ -44,6 +44,7 @@ struct K_INPUT
    unsigned char mousejoy;
    unsigned char kbdled, mouse_joy_led;
    unsigned char firedelay, firestate; // autofire vars
+   volatile u8 fjoy; // fuller joystick
 
    ATM_KBD atm51;
 
@@ -71,9 +72,9 @@ struct K_INPUT
 
    K_INPUT()
    {
-      textbuffer = 0;
+      textbuffer = nullptr;
       // random data on coords -> some programs detects mouse by this
-      ay_x0 = msx = 31,
+      ay_x0 = msx = 31;
       ay_y0 = msy = 85;
 
       nomouse = 0;

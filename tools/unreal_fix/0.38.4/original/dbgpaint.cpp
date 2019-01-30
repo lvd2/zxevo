@@ -38,7 +38,8 @@ void debugflip()
             *(unsigned*)(dst+x*8+0) = t.sctab8[0][(src[x*2] >>  4) + src[2*x+1]*16];
             *(unsigned*)(dst+x*8+4) = t.sctab8[0][(src[x*2] & 0xF) + src[2*x+1]*16];
          }
-         src += temp.scx/4, dst += 640;
+         src += temp.scx / 4;
+         dst += 640;
       }
       memcpy(rbuf, save_buf, rb2_offs);
    }
@@ -79,16 +80,16 @@ void debugflip()
    gdibmp.header.bmiHeader.biBitCount = 8;
    if(needclr)
        gdi_frame();
-   SetDIBitsToDevice(temp.gdidc, temp.gx, temp.gy, 640, 480, 0, 0, 0, 480, bptr, &gdibmp.header, DIB_RGB_COLORS);
-   gdibmp.header.bmiHeader.biBitCount = temp.obpp;
+   SetDIBitsToDevice(temp.gdidc, int(temp.gx), int(temp.gy), 640, 480, 0, 0, 0, 480, bptr, &gdibmp.header, DIB_RGB_COLORS);
+   gdibmp.header.bmiHeader.biBitCount = u16(temp.obpp);
 }
 
 void frame(unsigned x, unsigned y, unsigned dx, unsigned dy, unsigned char attr)
 {
-   frames[nfr].x = x;
-   frames[nfr].y = y;
-   frames[nfr].dx = dx;
-   frames[nfr].dy = dy;
+   frames[nfr].x = u8(x);
+   frames[nfr].y = u8(y);
+   frames[nfr].dx = u8(dx);
+   frames[nfr].dy = u8(dy);
    frames[nfr].c = attr;
    nfr++;
 }
@@ -96,23 +97,30 @@ void frame(unsigned x, unsigned y, unsigned dx, unsigned dy, unsigned char attr)
 void tprint(unsigned x, unsigned y, const char *str, unsigned char attr)
 {
    for (unsigned ptr = y*80 + x; *str; str++, ptr++) {
-      txtscr[ptr] = *str; txtscr[ptr+80*30] = attr;
+      txtscr[ptr] = u8(*str);
+      txtscr[ptr+80*30] = attr;
    }
 }
 
 void tprint_fg(unsigned x, unsigned y, const char *str, unsigned char attr)
 {
-   for (unsigned ptr = y*80 + x; *str; str++, ptr++) {
-      txtscr[ptr] = *str; txtscr[ptr+80*30] = (txtscr[ptr+80*30] & 0xF0) + attr;
-   }
+    for(unsigned ptr = y * 80 + x; *str; str++, ptr++)
+    {
+        txtscr[ptr] = u8(*str);
+        txtscr[ptr + 80 * 30] = (txtscr[ptr + 80 * 30] & 0xF0) + attr;
+    }
 }
 
 void filledframe(unsigned x, unsigned y, unsigned dx, unsigned dy, unsigned char color)
 {
-   for (unsigned yy = y; yy < (y+dy); yy++)
-      for (unsigned xx = x; xx < (x+dx); xx++)
-         txtscr[yy*80+xx] = ' ',
-         txtscr[yy*80+xx+30*80] = color;
+    for(unsigned yy = y; yy < (y + dy); yy++)
+    {
+        for(unsigned xx = x; xx < (x + dx); xx++)
+        {
+            txtscr[yy * 80 + xx] = ' ';
+            txtscr[yy * 80 + xx + 30 * 80] = color;
+        }
+    }
    nfr = 0; // delete other frames while dialog
    frame(x,y,dx,dy,FFRAME_FRAME);
 }
@@ -133,13 +141,13 @@ unsigned inputhex(unsigned x, unsigned y, unsigned sz, bool hex)
    {
       str[sz] = 0;
 
-      unsigned i;
+      size_t i;
       for (i = strlen(str); i < sz; i++)
           str[i] = ' ';
       for (i = 0; i < sz; i++)
       {
          unsigned vl = (unsigned char)str[i];
-         tprint(x+i,y,(char*)&vl,(i==cr) ? W_INPUTCUR : W_INPUTBG);
+         tprint(unsigned(x+i), unsigned(y), (char*)&vl,(i==cr) ? W_INPUTCUR : W_INPUTBG);
       }
 
       debugflip();
@@ -207,9 +215,9 @@ unsigned inputhex(unsigned x, unsigned y, unsigned sz, bool hex)
           if(CharToOemBuff((char *)&k, &m, 1))
           {
               int u = toupper(m);
-              if (hex && ((u >= '0' && u <= '9') || (u >= 'A' && u <= 'F')) || !hex)
+              if (!hex || ((u >= '0' && u <= '9') || (u >= 'A' && u <= 'F')))
               {
-                  str[cr++] = hex ? u : m;
+                  str[cr++] = char(hex ? u : m);
               }
           }
       }
@@ -218,49 +226,49 @@ unsigned inputhex(unsigned x, unsigned y, unsigned sz, bool hex)
    }
 }
 
-unsigned input4(unsigned x, unsigned y, unsigned val)
+int input4(unsigned x, unsigned y, unsigned val)
 {
    sprintf(str, "%04X", val);
    if (inputhex(x,y,4,true))
    {
        sscanf(str, "%x", &val);
-       return val;
+       return int(val);
    }
    return -1;
 }
 
-unsigned input2(unsigned x, unsigned y, unsigned val)
+int input2(unsigned x, unsigned y, unsigned val)
 {
    sprintf(str, "%02X", val);
    if (inputhex(x,y,2,true))
    {
        sscanf(str, "%x", &val);
-       return val;
+       return int(val);
    }
    return -1;
 }
 
 
-void format_item(char *dst, unsigned width, const char *text, MENUITEM::FLAGS flags)
+static void format_item(char *dst, size_t width, const char *text, MENUITEM::FLAGS flags)
 {
    memset(dst, ' ', width+2); dst[width+2] = 0;
-   unsigned sz = strlen(text), left = 0;
+   size_t sz = strlen(text), left = 0;
    if (sz > width) sz = width;
    if (flags & MENUITEM::RIGHT) left = width - sz;
    else if (flags & MENUITEM::CENTER) left = (width - sz)/2;
    memcpy(dst+left+1, text, sz);
 }
 
-void paint_items(MENUDEF *menu)
+static void paint_items(MENUDEF *menu)
 {
    char ln[80]; unsigned item;
 
-   unsigned maxlen = strlen(menu->title);
+   size_t maxlen = strlen(menu->title);
    for (item = 0; item < menu->n_items; item++) {
-      unsigned sz = strlen(menu->items[item].text);
+      size_t sz = strlen(menu->items[item].text);
       maxlen = max(maxlen, sz);
    }
-   unsigned menu_dx = maxlen+2, menu_dy = menu->n_items + 3;
+   unsigned menu_dx = unsigned(maxlen+2), menu_dy = menu->n_items + 3;
    unsigned menu_x = (80 - menu_dx)/2, menu_y = (30 - menu_dy)/2;
    filledframe(menu_x, menu_y, menu_dx, menu_dy, MENU_INSIDE);
    format_item(ln, maxlen, menu->title, MENUITEM::CENTER);
@@ -275,11 +283,11 @@ void paint_items(MENUDEF *menu)
    }
 }
 
-void menu_move(MENUDEF *menu, int dir)
+static void menu_move(MENUDEF *menu, int dir)
 {
    unsigned start = menu->pos;
    for (;;) {
-      menu->pos += dir;
+      menu->pos = unsigned(int(menu->pos) + dir);
       if ((int)menu->pos == -1) menu->pos = menu->n_items-1;
       if (menu->pos >= menu->n_items) menu->pos = 0;
       if (!(menu->items[menu->pos].flags & MENUITEM::DISABLED)) return;
@@ -318,7 +326,7 @@ char handle_menu(MENUDEF *menu)
           menu_move(menu, 1);
       if (key == VK_HOME || key == VK_PRIOR)
       {
-          menu->pos = -1;
+          menu->pos = -1U;
           menu_move(menu, 1);
       }
       if (key == VK_END || key == VK_NEXT)

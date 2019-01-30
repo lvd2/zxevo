@@ -1,3 +1,3 @@
 #pragma once
 
-void __declspec(noreturn) mainloop(const bool &Exit);
+void __declspec(noreturn) mainloop(const volatile bool &Exit);

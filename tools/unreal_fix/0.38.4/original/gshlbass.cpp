@@ -1,5 +1,9 @@
 #include "std.h"
 
+#include <io.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+
 #include "emul.h"
 #include "vars.h"
 #include "bass.h"
@@ -24,12 +28,10 @@ void GSHLE::reportError(const char *err, bool fatal)
 
 void GSHLE::runBASS()
 {
-   static bool Initialized = false;
-
-   if(Initialized)
+   if(BASS::Initialized)
        return;
 
-   if (BASS::Init(-1, conf.sound.fq, BASS_DEVICE_LATENCY, wnd, 0))
+   if (BASS::Init(-1, conf.sound.fq, BASS_DEVICE_LATENCY, wnd, nullptr))
    {
       DWORD len = BASS::GetConfig(BASS_CONFIG_UPDATEPERIOD);
       BASS_INFO info;
@@ -43,15 +45,17 @@ void GSHLE::runBASS()
    else
    {
       color(CONSCLR_WARNING);
-      printf("warning: can't use default BASS device, trying silence\n");
-      if (!BASS::Init(-2, 11025, 0, wnd, 0))
+      reportError("warning: can't use default BASS device, trying silence\n", false);
+      if (!BASS::Init(-2, 11025, 0, wnd, nullptr))
           errexit("can't init BASS");
    }
 
-   Initialized = true;
+   BASS::Initialized = true;
    hmod = 0;
    for (int ch = 0; ch < 4; ch++)
        chan[ch].bass_ch = 0;
+
+   DebugCh.bass_ch = 0;
 }
 
 void GSHLE::reset_sound()
@@ -69,10 +73,14 @@ void GSHLE::initChannels()
        return;
    for (int ch = 0; ch < 4; ch++)
    {
-      chan[ch].bass_ch = BASS::StreamCreate(11025, 1, BASS_SAMPLE_8BITS, gs_render, &chan[ch]);
+      chan[ch].bass_ch = BASS::StreamCreate(conf.sound.fq, 1, BASS_SAMPLE_8BITS, gs_render, &chan[ch]);
       if (!chan[ch].bass_ch)
           reportError("BASS_StreamCreate()");
    }
+
+   DebugCh.bass_ch = BASS::StreamCreate(conf.sound.fq, 1, BASS_SAMPLE_8BITS, gs_render, &DebugCh);
+   if(!DebugCh.bass_ch)
+       reportError("BASS_StreamCreate()");
 }
 
 void GSHLE::setmodvol(unsigned vol)
@@ -80,11 +88,25 @@ void GSHLE::setmodvol(unsigned vol)
    if (!hmod)
        return;
    runBASS();
-   float v = (vol * conf.sound.bass_vol) / float(8000 * 64);
-   assert(v<=1.0);
+   float v = (int(vol) * conf.sound.bass_vol) / float(8192 * 64);
+   assert(v <= 1.0f);
    if (!BASS::ChannelSetAttribute(hmod, BASS_ATTRIB_VOL, v))
        reportError("BASS_ChannelSetAttribute() [music volume]");
 }
+
+void GSHLE::SetModSpeed()
+{
+// Функция не отлажена, неизвестно в каких программах данная команда используется
+    if(!hmod)
+        return;
+    runBASS();
+
+    // printf("%s, speed=%u\n", __FUNCTION__, speed);
+
+    if(!BASS::ChannelSetAttribute(hmod, BASS_ATTRIB_MUSIC_SPEED, speed))
+        reportError("BASS_ChannelSetAttribute() [music speed]");
+}
+
 
 void GSHLE::init_mod()
 {
@@ -95,15 +117,18 @@ void GSHLE::init_mod()
    hmod = BASS::MusicLoad(1, mod, 0, modsize, BASS_MUSIC_LOOP | BASS_MUSIC_POSRESET | BASS_MUSIC_RAMP, 0);
    if (!hmod)
        reportError("BASS_MusicLoad()", false);
+
+   setmodvol(modvol); // Установка начальной громкости
 }
 
 void GSHLE::restart_mod(unsigned order, unsigned row)
 {
    if (!hmod)
        return;
-   if (!BASS::ChannelSetPosition(hmod, MAKELONG(order,row), BASS_POS_MUSIC_ORDER))
+   SetModSpeed();
+   if (!BASS::ChannelSetPosition(hmod, QWORD(MAKELONG(order,row)), BASS_POS_MUSIC_ORDER))
        reportError("BASS_ChannelSetPosition() [music]");
-   if (!BASS::ChannelFlags(hmod, BASS_MUSIC_LOOP | BASS_MUSIC_POSRESET | BASS_MUSIC_RAMP, -1))
+   if (!BASS::ChannelFlags(hmod, BASS_MUSIC_LOOP | BASS_MUSIC_POSRESET | BASS_MUSIC_RAMP, -1U))
        reportError("BASS_ChannelFlags() [music]");
    BASS::Start();
    if (!BASS::ChannelPlay(hmod, FALSE/*TRUE*/))
@@ -163,14 +188,28 @@ void GSHLE::startfx(CHANNEL *ch, float pan)
 {
    initChannels();
 
-   float vol = (ch->volume * conf.sound.gs_vol) / float(8000*64);
+   float vol = (int(ch->volume) * conf.sound.gs_vol) / float(8192*64);
+   assert(vol <= 1.0f);
+
+   if(BASS::ChannelIsActive(ch->bass_ch) == BASS_ACTIVE_PLAYING)
+   {
+       if(!BASS::ChannelStop(ch->bass_ch))
+           reportError("BASS_ChannelStop()");
+   }
+
    if (!BASS::ChannelSetAttribute(ch->bass_ch, BASS_ATTRIB_VOL, vol))
        reportError("BASS_ChannelSetAttribute() [vol]");
-   if (!BASS::ChannelSetAttribute(ch->bass_ch, BASS_ATTRIB_FREQ, float(ch->freq)))
+   if (!BASS::ChannelSetAttribute(ch->bass_ch, BASS_ATTRIB_FREQ, ch->freq))
        reportError("BASS_ChannelSetAttribute() [freq]");
    if (!BASS::ChannelSetAttribute(ch->bass_ch, BASS_ATTRIB_PAN, pan))
        reportError("BASS_ChannelSetAttribute() [pan]");
 
+   {
+       DWORD len = BASS::GetConfig(BASS_CONFIG_UPDATEPERIOD);
+       BASS_INFO info;
+       BASS::GetInfo(&info);
+       BASS::SetConfig(BASS_CONFIG_BUFFER, len + info.minbuf);
+   }
    if (!BASS::ChannelPlay(ch->bass_ch, FALSE))
        reportError("BASS_ChannelPlay()");
 }
@@ -178,7 +217,7 @@ void GSHLE::startfx(CHANNEL *ch, float pan)
 void GSHLE::flush_gs_frame()
 {
    unsigned lvl;
-   if (!hmod || (lvl = BASS::ChannelGetLevel(hmod)) == -1) lvl = 0;
+   if (!hmod || (lvl = BASS::ChannelGetLevel(hmod)) == -1U) lvl = 0;
 
    gsleds[0].level = LOWORD(lvl) >> (15-4);
    gsleds[0].attrib = 0x0D;
@@ -187,7 +226,7 @@ void GSHLE::flush_gs_frame()
 
    for (int ch = 0; ch < 4; ch++)
    {
-      if (chan[ch].bass_ch && (lvl = BASS::ChannelGetLevel(chan[ch].bass_ch)) != -1)
+      if (chan[ch].bass_ch && (lvl = BASS::ChannelGetLevel(chan[ch].bass_ch)) != -1U)
       {
          lvl = max(HIWORD(lvl), LOWORD(lvl));
          lvl >>= (15-4);
@@ -201,22 +240,42 @@ void GSHLE::flush_gs_frame()
 
 void GSHLE::debug_note(unsigned i)
 {
-   GSHLE::CHANNEL ch = { 0 };
-   ch.volume = 64; ch.ptr = 0;
-   ch.start = sample[i].start;
-   ch.loop = sample[i].loop;
-   ch.end = sample[i].end;
-   unsigned note = sample[i].note; if (note == 60) note = 50;
-   ch.freq = note2rate[note];
-   ch.bass_ch = BASS::StreamCreate(11025, 1, BASS_SAMPLE_8BITS, gs_render, &ch);
-   startfx(&ch, 0);
-   unsigned mx = (sample[i].loop < sample[i].end)? 5000 : 10000;
-   for (unsigned j = 0; j < mx/256; j++)
-   {
-      if (!ch.start)
-          break;
-      Sleep(256);
-   }
-   BASS::StreamFree(ch.bass_ch);
+    if(BASS::ChannelIsActive(DebugCh.bass_ch) == BASS_ACTIVE_PLAYING)
+    {
+        if(!BASS::ChannelStop(DebugCh.bass_ch))
+        {
+            reportError("BASS_ChannelStop()");
+        }
+    }
+
+    DebugCh.volume = sample[i].volume;
+    DebugCh.ptr = 0;
+    DebugCh.start = sample[i].start;
+    DebugCh.loop = sample[i].loop;
+    DebugCh.end = sample[i].end;
+    unsigned note = sample[i].note;
+    DebugCh.freq = note2rate[note];
+
+    startfx(&DebugCh, 0);
+}
+
+void GSHLE::debug_save_note(unsigned i, const char *FileName)
+{
+    int f = open(FileName, O_CREAT | O_TRUNC | O_BINARY | O_WRONLY, S_IREAD | S_IWRITE);
+    if(f >= 0)
+    {
+        write(f, sample[i].start, sample[i].end);
+        close(f);
+    }
+}
+
+void GSHLE::debug_save_mod(const char *FileName)
+{
+    int f = open(FileName, O_CREAT | O_TRUNC | O_BINARY | O_WRONLY, S_IREAD | S_IWRITE);
+    if(f >= 0)
+    {
+        write(f, mod, modsize);
+        close(f);
+    }
 }
 #endif

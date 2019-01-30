@@ -2,6 +2,7 @@
 
 #include "emul.h"
 #include "vars.h"
+#include "sndrender/sndcounter.h"
 #include "sound.h"
 #include "draw.h"
 #include "dx.h"
@@ -12,6 +13,8 @@
 #include "emulkeys.h"
 #include "vs1001.h"
 #include "z80.h"
+#include "mainloop.h"
+#include "funcs.h"
 
 #include "util.h"
 
@@ -125,7 +128,7 @@ void mainloop()
 }
 */
 
-void mainloop(const bool &Exit)
+void mainloop(const volatile bool &Exit)
 {
 //   printf("%s\n", __FUNCTION__);
    unsigned char skipped = 0;

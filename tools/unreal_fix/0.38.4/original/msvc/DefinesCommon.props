@@ -2,12 +2,20 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>_USING_V110_SDK71_;_CRT_SECURE_NO_DEPRECATE;USE_SND_EXTERNAL_BUFFER;_PREFIX_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>_M_IX86_FP=2;_USING_V110_SDK71_;_CRT_SECURE_NO_DEPRECATE;USE_SND_EXTERNAL_BUFFER;_PREFIX_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions>-Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
+    <Link>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup />
 </Project>

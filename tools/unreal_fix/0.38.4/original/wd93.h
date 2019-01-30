@@ -57,7 +57,7 @@ struct TRKCACHE
    // generic track data
    unsigned trklen;
     // pointer to data inside UDI
-   u8 *trkd; // данные
+   u8 *trkd; // данные (может быть NULL, если трэк без данных)
    u8 *trki; // битовая карта синхроимпульсов
    u8 *trkwp; // битовая карта сбойных байтов
    unsigned ts_byte;                 // cpu.t per byte
@@ -74,7 +74,7 @@ struct TRKCACHE
    void set_wp(unsigned pos) { set_bit(trkwp, pos); }
    bool test_wp(unsigned pos) { return test_bit(trkwp, pos); }
 
-   void write(unsigned pos, unsigned char byte, char index)
+   void write(unsigned pos, unsigned char byte, u8 index)
    {
        if(!trkd)
            return;
@@ -88,14 +88,14 @@ struct TRKCACHE
 
    void seek(FDD *d, unsigned cyl, unsigned side, SEEK_MODE fs);
    void format(); // before use, call seek(d,c,s,JUST_SEEK), set s and hdr[]
-   int write_sector(unsigned sec, unsigned char *data); // call seek(d,c,s,LOAD_SECTORS)
+   unsigned write_sector(unsigned sec, unsigned char *data); // call seek(d,c,s,LOAD_SECTORS)
    const SECHDR *get_sector(unsigned sec) const; // before use, call fill(d,c,s,LOAD_SECTORS)
 
    void dump();
    void clear()
    {
-       drive = 0;
-       trkd = 0;
+       drive = nullptr;
+       trkd = nullptr;
        ts_byte = Z80FQ/(MAX_TRACK_LEN * FDD_RPS);
    }
    TRKCACHE() { clear(); }
@@ -114,7 +114,11 @@ struct FDD
 
    unsigned char *rawdata;              // used in VirtualAlloc/VirtualFree
    unsigned rawsize;
-   unsigned cyls, sides;
+
+   // Начальное число дорожек (при загрузке образа или при создании пустого диска), может быть увеличено до MAX_CYLS
+   // путем форатирования дополнительных дорожек утилитами типа ADS и подобных
+   unsigned cyls;
+   unsigned sides;
    unsigned trklen[MAX_CYLS][2];
    u8 *trkd[MAX_CYLS][2]; // данные
    u8 *trki[MAX_CYLS][2]; // битовые карты синхроимпульсов
@@ -190,7 +194,8 @@ struct WD1793
       S_WAIT_HLT,
       S_WAIT_HLT_RW,
 
-      S_RESET
+      S_EJECT1,
+      S_EJECT2
    };
 
    __int64 next, time;
@@ -284,13 +289,18 @@ struct WD1793
 //   TRKCACHE trkcache;
    FDD fdd[4];
 
+   bool EjectPending;
+   void Eject(unsigned Drive);
+
    WD1793()
    {
        for(unsigned i = 0; i < 4; i++) // [vv] Для удобства отладки
-           fdd[i].Id = i;
+           fdd[i].Id = u8(i);
        seldrive = &fdd[0];
        idx_cnt = 0;
        idx_tmo = LLONG_MAX;
        sign_status = 0;
+       tshift = 0;
+       EjectPending = false;
    }
 };

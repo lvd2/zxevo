@@ -82,7 +82,7 @@ enum DBGWND
    WNDNO, WNDMEM, WNDTRACE, WNDREGS
 };
 
-enum { ED_MEM, ED_PHYS, ED_LOG, ED_CMOS, ED_NVRAM, ED_MAX };
+enum { ED_MEM, ED_PHYS, ED_LOG, ED_CMOS, ED_NVRAM, ED_COMP_PAL, ED_MAX };
 
 class TCpuMgr
 {
@@ -105,7 +105,7 @@ public:
 extern TCpuMgr CpuMgr;
 extern DBGWND activedbg;
 extern unsigned dbg_extport;
-extern unsigned char dgb_extval; // extended memory port like 1FFD or DFFD
+extern unsigned char dbg_extval; // extended memory port like 1FFD or DFFD
 
 extern unsigned mem_sz;
 extern unsigned mem_disk;

@@ -14,9 +14,11 @@
 #include "dxr_advm.h"
 #include "dxovr.h"
 #include "dxerr.h"
+#include "sndrender/sndcounter.h"
 #include "sound.h"
 #include "savesnd.h"
 #include "emulkeys.h"
+#include "funcs.h"
 #include "util.h"
 
 unsigned char active = 0, pause = 0;
@@ -32,33 +34,33 @@ static const DWORD SCU_LOCK_MOUSE = 0x50;
 
 #define SLEEP_DELAY 2
 
-static HMODULE D3d9Dll = 0;
-static IDirect3D9 *D3d9 = 0;
-static IDirect3DDevice9 *D3dDev = 0;
-static IDirect3DTexture9 *Texture = 0;
-static IDirect3DSurface9 *SurfTexture = 0;
+static HMODULE D3d9Dll = nullptr;
+static IDirect3D9 *D3d9 = nullptr;
+static IDirect3DDevice9 *D3dDev = nullptr;
+static IDirect3DTexture9 *Texture = nullptr;
+static IDirect3DSurface9 *SurfTexture = nullptr;
 
 LPDIRECTDRAW2 dd;
-LPDIRECTDRAWSURFACE sprim, surf0, surf1, surf2;
-static PVOID SurfMem1 = 0;
+LPDIRECTDRAWSURFACE sprim, surf0, surf1;
+static LPDIRECTDRAWSURFACE surf2;
+static PVOID SurfMem1 = nullptr;
 static ULONG SurfPitch1 = 0;
 
-LPDIRECTINPUTDEVICE dikeyboard;
-LPDIRECTINPUTDEVICE dimouse;
+static LPDIRECTINPUTDEVICE dikeyboard;
+static LPDIRECTINPUTDEVICE dimouse;
 LPDIRECTINPUTDEVICE2 dijoyst;
 
-LPDIRECTSOUND ds;
-LPDIRECTSOUNDBUFFER dsbf;
-LPDIRECTDRAWPALETTE pal;
-LPDIRECTDRAWCLIPPER clip;
+static LPDIRECTSOUND ds;
+static LPDIRECTSOUNDBUFFER dsbf;
+static LPDIRECTDRAWPALETTE pal;
+static LPDIRECTDRAWCLIPPER clip;
 
-static HANDLE EventBufStop = 0;
-unsigned dsoffset, dsbuffer_sz;
+static unsigned dsoffset, dsbuffer_sz;
 
 static void FlipBltAlign4();
 static void FlipBltAlign16();
 
-static void (*FlipBltMethod)() = 0;
+static void (*FlipBltMethod)() = nullptr;
 
 static void StartD3d(HWND Wnd);
 static void DoneD3d(bool DeInitDll = true);
@@ -87,27 +89,27 @@ RENDER renders[] =
    { "Chunky 16bit, hi-res, (flt,fullscr)", render_c16b,    "ch_b",      RF_16 | RF_2X | RF_BORDER | RF_USEC32 },
    { "Ch4x4 true color (fullscr)",render_c4x32b,  "ch4true",   RF_32 | RF_2X | RF_BORDER | RF_USEC32 },
 
-   { 0,0,0,0 }
+   { nullptr,nullptr,nullptr,0 }
 };
 
 size_t renders_count = _countof(renders);
 
 const RENDER drivers[] =
 {
-   { "video memory (8bpp)",  0, "ddraw",  RF_8 },
-   { "video memory (16bpp)", 0, "ddrawh", RF_16 },
-   { "video memory (32bpp)", 0, "ddrawt", RF_32 },
-   { "gdi device context",   0, "gdi",    RF_GDI },
-   { "overlay",              0, "ovr",    RF_OVR },
-   { "hardware blitter",     0, "blt",    RF_CLIP },
-   { "hardware 3d",          0, "d3d",    RF_D3D },
-   { "hardware 3d exclusive",0, "d3de",   RF_D3DE },
-   { 0,0,0,0 }
+   { "video memory (8bpp)",  nullptr, "ddraw",  RF_8 },
+   { "video memory (16bpp)", nullptr, "ddrawh", RF_16 },
+   { "video memory (32bpp)", nullptr, "ddrawt", RF_32 },
+   { "gdi device context",   nullptr, "gdi",    RF_GDI },
+   { "overlay",              nullptr, "ovr",    RF_OVR },
+   { "hardware blitter",     nullptr, "blt",    RF_CLIP },
+   { "hardware 3d",          nullptr, "d3d",    RF_D3D },
+   { "hardware 3d exclusive",nullptr, "d3de",   RF_D3DE },
+   { nullptr,nullptr,nullptr,0 }
 };
 
 inline void switch_video()
 {
-   static unsigned char eff7 = -1;
+   static unsigned char eff7 = u8(-1U);
    if ((comp.pEFF7 ^ eff7) & EFF7_HWMC)
    {
        video_timing_tables();
@@ -124,7 +126,7 @@ static void FlipGdi()
     }
     renders[conf.render].func(gdibuf, temp.ox*temp.obpp/8); // render to memory buffer
     // copy bitmap to gdi dc
-    SetDIBitsToDevice(temp.gdidc, temp.gx, temp.gy, temp.ox, temp.oy, 0, 0, 0, temp.oy, gdibuf, &gdibmp.header, DIB_RGB_COLORS);
+    SetDIBitsToDevice(temp.gdidc, int(temp.gx), int(temp.gy), temp.ox, temp.oy, 0, 0, 0, temp.oy, gdibuf, &gdibmp.header, DIB_RGB_COLORS);
 }
 
 static void FlipBltAlign16()
@@ -135,7 +137,7 @@ static void FlipBltAlign16()
 restore_lost:;
    DDSURFACEDESC desc;
    desc.dwSize = sizeof(desc);
-   HRESULT r = surf1->Lock(0, &desc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_WRITEONLY, 0);
+   HRESULT r = surf1->Lock(nullptr, &desc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_WRITEONLY, nullptr);
    if (r != DD_OK)
    {
        if(r == DDERR_SURFACELOST)
@@ -166,7 +168,7 @@ restore_lost:;
        DstPtr += desc.lPitch;
    }
 
-   r = surf1->Unlock(0);
+   r = surf1->Unlock(nullptr);
    if(r != DD_OK)
    {
        if(r == DDERR_SURFACELOST)
@@ -189,7 +191,7 @@ static void FlipBltAlign4()
 restore_lost:;
    DDSURFACEDESC desc;
    desc.dwSize = sizeof(desc);
-   HRESULT r = surf1->Lock(0, &desc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_WRITEONLY, 0);
+   HRESULT r = surf1->Lock(nullptr, &desc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_WRITEONLY, nullptr);
    if (r != DD_OK)
    {
        if(r == DDERR_SURFACELOST)
@@ -209,9 +211,9 @@ restore_lost:;
    }
 
    // Отрисовка в буфер выравненный на 4 байта
-   renders[conf.render].func(PUCHAR(desc.lpSurface), desc.lPitch);
+   renders[conf.render].func(PUCHAR(desc.lpSurface), unsigned(desc.lPitch));
 
-   r = surf1->Unlock(0);
+   r = surf1->Unlock(nullptr);
    if(r != DD_OK)
    {
        if(r == DDERR_SURFACELOST)
@@ -233,16 +235,16 @@ static bool CalcFlipRect(LPRECT R)
 {
    int w = temp.client.right - temp.client.left;
    int h = temp.client.bottom - temp.client.top;
-   int n = min(w / temp.ox, h / temp.oy);
+   int n = min(w / int(temp.ox), h / int(temp.oy));
 
    POINT P = { 0, 0 };
    ClientToScreen(wnd, &P);
    int x0 = P.x;
    int y0 = P.y;
-   R->left = (w - (temp.ox*n)) / 2;
-   R->right = (w + (temp.ox*n)) / 2;
-   R->top =  (h - (temp.oy*n)) / 2;
-   R->bottom = (h + (temp.oy*n)) / 2;
+   R->left = (w - (int(temp.ox)*n)) / 2;
+   R->right = (w + (int(temp.ox)*n)) / 2;
+   R->top =  (h - (int(temp.oy)*n)) / 2;
+   R->bottom = (h + (int(temp.oy)*n)) / 2;
    OffsetRect(R, x0, y0);
    return IsRectEmpty(R) == FALSE;
 }
@@ -256,8 +258,6 @@ restore_lost:;
 
    assert(!IsRectEmpty(&temp.client));
 
-   static int cnt = 0;
-
    DDBLTFX Fx;
    Fx.dwSize = sizeof(Fx);
    Fx.dwDDFX = 0;
@@ -268,7 +268,7 @@ restore_lost:;
 
    // Очистка back буфера
    Fx.dwFillColor = 0;
-   r = surf2->Blt(0, 0, 0, DDBLT_WAIT | DDBLT_ASYNC |  DDBLT_COLORFILL, &Fx);
+   r = surf2->Blt(nullptr, nullptr, nullptr, DDBLT_WAIT | DDBLT_ASYNC |  DDBLT_COLORFILL, &Fx);
    if (r != DD_OK)
    {
        if(r == DDERR_SURFACELOST)
@@ -283,7 +283,7 @@ restore_lost:;
    }
 
    // Рисование картинки с масштабированием в n раз из surf1 (320x240) -> surf2 (размер экрана)
-   r = surf2->Blt(&R, surf1, 0, DDBLT_WAIT | DDBLT_ASYNC | DDBLT_DDFX, &Fx);
+   r = surf2->Blt(&R, surf1, nullptr, DDBLT_WAIT | DDBLT_ASYNC | DDBLT_DDFX, &Fx);
    if (r != DD_OK)
    {
        if(r == DDERR_SURFACELOST)
@@ -299,7 +299,7 @@ restore_lost:;
    }
 
    // Копирование surf2 на surf0 (экран, размер экрана)
-   r = surf0->Blt(0, surf2, 0, DDBLT_WAIT | DDBLT_ASYNC | DDBLT_DDFX, &Fx);
+   r = surf0->Blt(nullptr, surf2, nullptr, DDBLT_WAIT | DDBLT_ASYNC | DDBLT_DDFX, &Fx);
    if (r != DD_OK)
    {
        if(r == DDERR_SURFACELOST)
@@ -319,12 +319,12 @@ static bool CalcFlipRectD3d(LPRECT R)
 {
    int w = temp.client.right - temp.client.left;
    int h = temp.client.bottom - temp.client.top;
-   int n = min(w / temp.ox, h / temp.oy);
+   int n = min(w / int(temp.ox), h / int(temp.oy));
 
-   R->left = (w - (temp.ox*n)) / 2;
-   R->right = (w + (temp.ox*n)) / 2;
-   R->top =  (h - (temp.oy*n)) / 2;
-   R->bottom = (h + (temp.oy*n)) / 2;
+   R->left = (w - (int(temp.ox)*n)) / 2;
+   R->right = (w + (int(temp.ox)*n)) / 2;
+   R->top =  (h - (int(temp.oy)*n)) / 2;
+   R->bottom = (h + (int(temp.oy)*n)) / 2;
 
    return IsRectEmpty(R) == FALSE;
 }
@@ -335,15 +335,15 @@ static void FlipD3d()
         return;
 
     HRESULT Hr;
-    IDirect3DSurface9 *SurfBackBuffer0 = 0;
+    IDirect3DSurface9 *SurfBackBuffer0 = nullptr;
 
     Hr = D3dDev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &SurfBackBuffer0);
     if (Hr != DD_OK)
     { printrdd("IDirect3DDevice9::GetBackBuffer(0)", Hr); exit(); }
 
-    D3DLOCKED_RECT Rect = { 0 };
+    D3DLOCKED_RECT Rect = { };
 
-    Hr = SurfTexture->LockRect(&Rect, 0, D3DLOCK_DISCARD);
+    Hr = SurfTexture->LockRect(&Rect, nullptr, D3DLOCK_DISCARD);
     if(FAILED(Hr))
     {
         printrdd("IDirect3DDevice9::LockRect()", Hr);
@@ -351,11 +351,17 @@ static void FlipD3d()
         exit();
     }
 
-    renders[conf.render].func((u8 *)Rect.pBits, Rect.Pitch);
+    renders[conf.render].func((u8 *)Rect.pBits, unsigned(Rect.Pitch));
 
-    SurfTexture->UnlockRect();
+    Hr = SurfTexture->UnlockRect();
+    if(FAILED(Hr))
+    {
+        printrdd("IDirect3DDevice9::UnlockRect()", Hr);
+        //        __debugbreak();
+        exit();
+    }
 
-    Hr = D3dDev->ColorFill(SurfBackBuffer0, 0, D3DCOLOR_XRGB(0, 0, 0));
+    Hr = D3dDev->ColorFill(SurfBackBuffer0, nullptr, D3DCOLOR_XRGB(0, 0, 0));
     if(FAILED(Hr))
     {
         printrdd("IDirect3DDevice9::ColorFill()", Hr);
@@ -371,7 +377,7 @@ static void FlipD3d()
         return;
     }
 
-    Hr = D3dDev->StretchRect(SurfTexture, 0, SurfBackBuffer0, &R, D3DTEXF_POINT);
+    Hr = D3dDev->StretchRect(SurfTexture, nullptr, SurfBackBuffer0, &R, D3DTEXF_POINT);
     if(FAILED(Hr))
     {
         printrdd("IDirect3DDevice9::StretchRect()", Hr);
@@ -381,7 +387,7 @@ static void FlipD3d()
     D3dDev->EndScene();
 
     // Present the backbuffer contents to the display
-    Hr = D3dDev->Present(0, 0, 0, 0);
+    Hr = D3dDev->Present(nullptr, nullptr, nullptr, nullptr);
     SurfBackBuffer0->Release();
 
     if(FAILED(Hr))
@@ -406,7 +412,7 @@ static void FlipVideoMem()
    DDSURFACEDESC desc;
    desc.dwSize = sizeof desc;
 restore_lost:;
-   HRESULT r = drawsurf->Lock(0, &desc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_WRITEONLY, 0);
+   HRESULT r = drawsurf->Lock(nullptr, &desc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_WRITEONLY, nullptr);
    if (r != DD_OK)
    {
       if (!active)
@@ -425,14 +431,14 @@ restore_lost:;
    if (needclr)
    {
        needclr--;
-       _render_black((unsigned char*)desc.lpSurface, desc.lPitch);
+       _render_black((unsigned char*)desc.lpSurface, unsigned(desc.lPitch));
    }
-   renders[conf.render].func((unsigned char*)desc.lpSurface + desc.lPitch*temp.ody + temp.odx, desc.lPitch);
-   drawsurf->Unlock(0);
+   renders[conf.render].func((unsigned char*)desc.lpSurface + unsigned(desc.lPitch)*temp.ody + temp.odx, unsigned(desc.lPitch));
+   drawsurf->Unlock(nullptr);
 
    if (conf.flip) // draw direct to video memory
    {
-      r = surf0->Flip(0, DDFLIP_WAIT);
+      r = surf0->Flip(nullptr, DDFLIP_WAIT);
       if (r != DD_OK)
       {
           if(r == DDERR_SURFACELOST)
@@ -455,7 +461,7 @@ void flip()
    switch_video();
 
    if (conf.flip && (temp.rflags & (RF_GDI | RF_CLIP)))
-      dd->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
+      dd->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, nullptr);
 
    if (temp.rflags & RF_GDI) // gdi
    {
@@ -490,7 +496,7 @@ void flip()
    FlipVideoMem();
 }
 
-static HWAVEOUT hwo = 0;
+static HWAVEOUT hwo = nullptr;
 static WAVEHDR wq[MAXWQSIZE];
 static unsigned char wbuffer[MAXWQSIZE*MAXDSPIECE];
 static unsigned wqhead, wqtail;
@@ -502,7 +508,7 @@ void __fastcall do_sound_none()
 
 void __fastcall do_sound_wave()
 {
-   HRESULT r;
+   MMRESULT r;
 
    for (;;) // release all done items
    {
@@ -556,7 +562,7 @@ void __fastcall do_sound_wave()
 
 // directsound part
 // begin
-void restore_sound_buffer()
+static void restore_sound_buffer()
 {
 //   for (;;) {
       DWORD status = 0;
@@ -572,7 +578,7 @@ void restore_sound_buffer()
 //   }
 }
 
-void clear_buffer()
+static void clear_buffer()
 {
 //   printf("%s\n", __FUNCTION__);
 //   __debugbreak();
@@ -589,7 +595,7 @@ void clear_buffer()
    dsbf->Unlock(ptr1, sz1, ptr2, sz2);
 }
 
-int maxgap;
+static int maxgap;
 
 void __fastcall do_sound_ds()
 {
@@ -614,14 +620,14 @@ void __fastcall do_sound_ds()
       if (gap < 0)
           gap += dsbuffer_sz;
 
-      int pos = dsoffset - play;
+      int pos = int(dsoffset) - play;
       if (pos < 0)
           pos += dsbuffer_sz;
       maxgap = max(maxgap, gap);
 
       if (pos < maxgap || pos > 10 * (int)maxgap)
       {
-         dsoffset = 3 * maxgap;
+         dsoffset = unsigned(3 * maxgap);
          clear_buffer();
          dsbf->Stop();
          dsbf->SetCurrentPosition(0);
@@ -636,6 +642,14 @@ void __fastcall do_sound_ds()
           if (r == DSERR_BUFFERLOST)
           {
               restore_sound_buffer();
+              return;
+          }
+
+          if (r == AUDCLNT_E_DEVICE_IN_USE)
+          {
+              printrds("IDirectSoundBuffer::Play()", r);
+              printf("sound device is used exclusively by another apllication, switching to no sound mode\n");
+              conf.sound.do_sound = do_sound_none;
               return;
           }
 
@@ -663,7 +677,7 @@ void __fastcall do_sound_ds()
            return;
        }
 //       __debugbreak();
-       printf("dsbuffer_sz=%d, dsoffset=%d, spbsize=%d\n", dsbuffer_sz, dsoffset, spbsize);
+       printf("dsbuffer_sz=%u, dsoffset=%u, spbsize=%u\n", dsbuffer_sz, dsoffset, spbsize);
        printrds("IDirectSoundBuffer::Lock()", r);
        exit();
    }
@@ -680,7 +694,7 @@ void __fastcall do_sound_ds()
            return;
        }
 //       __debugbreak();
-       printf("dsbuffer_sz=%d, dsoffset=%d, spbsize=%d\n", dsbuffer_sz, dsoffset, spbsize);
+       printf("dsbuffer_sz=%u, dsoffset=%u, spbsize=%u\n", dsbuffer_sz, dsoffset, spbsize);
        printrds("IDirectSoundBuffer::Unlock()", r);
        exit();
    }
@@ -691,7 +705,7 @@ void __fastcall do_sound_ds()
 // directsound part
 // end
 
-static int OldRflags = 0;
+static unsigned OldRflags = 0;
 
 void sound_play()
 {
@@ -816,25 +830,30 @@ void adjust_mouse_cursor()
    {
       RECT rc; GetClientRect(wnd, &rc);
       POINT p = { rc.left, rc.top };
-      ClientToScreen(wnd, &p); rc.left=p.x, rc.top=p.y;
-      p.x = rc.right, p.y = rc.bottom;
-      ClientToScreen(wnd, &p); rc.right=p.x, rc.bottom=p.y;
+      ClientToScreen(wnd, &p);
+      rc.left = p.x;
+      rc.top = p.y;
+      p.x = rc.right;
+      p.y = rc.bottom;
+      ClientToScreen(wnd, &p);
+      rc.right = p.x;
+      rc.bottom = p.y;
       ClipCursor(&rc);
-   } else ClipCursor(0);
+   } else ClipCursor(nullptr);
 }
 
-HCURSOR crs[9];
-unsigned char mousedirs[9] = { 10, 8, 9, 2, 0, 1, 6, 4, 5 };
+static HCURSOR crs[9];
+static unsigned char mousedirs[9] = { 10, 8, 9, 2, 0, 1, 6, 4, 5 };
 
 void updatebitmap()
 {
    RECT rc;
    GetClientRect(wnd, &rc);
-   DWORD newdx = rc.right - rc.left, newdy = rc.bottom - rc.top;
+   DWORD newdx = DWORD(rc.right - rc.left), newdy = DWORD(rc.bottom - rc.top);
    if (hbm && (bm_dx != newdx || bm_dy != newdy))
    {
        DeleteObject(hbm);
-       hbm = 0;
+       hbm = nullptr;
    }
    if(sprim)
        return; // don't trace window contents in overlay mode
@@ -842,18 +861,18 @@ void updatebitmap()
    if(hbm)
    {
         DeleteObject(hbm);
-        hbm = 0; // keeping bitmap is unsafe - screen paramaters may change
+        hbm = nullptr; // keeping bitmap is unsafe - screen paramaters may change
    }
 
    if(!hbm)
-       hbm = CreateCompatibleBitmap(temp.gdidc, newdx, newdy);
+       hbm = CreateCompatibleBitmap(temp.gdidc, int(newdx), int(newdy));
 
    HDC dc = CreateCompatibleDC(temp.gdidc);
 
    bm_dx = newdx; bm_dy = newdy;
    HGDIOBJ PrevObj = SelectObject(dc, hbm);
    //SetDIBColorTable(dc, 0, 0x100, (RGBQUAD*)pal0);
-   BitBlt(dc, 0, 0, newdx, newdy, temp.gdidc, 0, 0, SRCCOPY);
+   BitBlt(dc, 0, 0, int(newdx), int(newdy), temp.gdidc, 0, 0, SRCCOPY);
    SelectObject(dc, PrevObj);
    DeleteDC(dc);
 }
@@ -882,7 +901,7 @@ void updatebitmap()
      7           8
 */
 
-static const int rgimpimpiw[] = {1, 3, 2, 6};
+//static const int rgimpimpiw[] = {1, 3, 2, 6};
 static const int rgimpiwx[]   = 
 {
    0, // WMSZ_KEYSIZE
@@ -1047,7 +1066,7 @@ static void SizeRectY(MOVESIZEDATA *Msd, ULONG Pt)
 
 static void SizeRect(MOVESIZEDATA *Msd, ULONG Pt)
 {
-    if(Msd->cmd >= _countof(rgimpiwx))
+    if(size_t(Msd->cmd) >= _countof(rgimpiwx))
     {
         return;
     }
@@ -1056,10 +1075,8 @@ static void SizeRect(MOVESIZEDATA *Msd, ULONG Pt)
     SizeRectY(Msd, Pt);
 }
 
-LRESULT CALLBACK WndProc(HWND hwnd,UINT uMessage,WPARAM wparam,LPARAM lparam)
+static LRESULT CALLBACK WndProc(HWND hwnd,UINT uMessage,WPARAM wparam,LPARAM lparam)
 {
-   static bool moving = false;
-
    if(uMessage == WM_QUIT) // never heppens
    {
 //       __debugbreak();
@@ -1132,7 +1149,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMessage,WPARAM wparam,LPARAM lparam)
                }
                RECT r={};
                GetWindowRect(hwnd, &r);
-               SetWindowPos(hwnd, NULL, r.left+dx, r.top+dy, 0, 0, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOSIZE | SWP_NOSENDCHANGING);
+               SetWindowPos(hwnd, nullptr, r.left+dx, r.top+dy, 0, 0, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOSIZE | SWP_NOSENDCHANGING);
                x=p.x;y=p.y;
                return 0;
            }
@@ -1140,11 +1157,11 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMessage,WPARAM wparam,LPARAM lparam)
            {
                POINT p = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
                ClientToScreen(hwnd, &p);
-               ULONG pt = (p.y << 16) | (p.x & 0xFFFF);
+               ULONG pt = ULONG(p.y << 16) | (p.x & 0xFFFF);
                SizeRect(&Msd, pt);
                const RECT &r = Msd.rcDragCursor;
 //               printf("r={%d,%d,%d,%d} [%dx%d]\n", r.left, r.top, r.right, r.bottom, r.right - r.left, r.bottom - r.top);
-               SetWindowPos(hwnd, NULL, r.left, r.top, r.right - r.left, r.bottom - r.top, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOSENDCHANGING);
+               SetWindowPos(hwnd, nullptr, r.left, r.top, r.right - r.left, r.bottom - r.top, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOSENDCHANGING);
                return 0;
            }
        }
@@ -1186,17 +1203,13 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMessage,WPARAM wparam,LPARAM lparam)
            RECT rcDesktop;
            GetWindowRect(GetDesktopWindow(), &rcDesktop);
 
-           Msd.cmd = BrdSide;
+           Msd.cmd = int(BrdSide);
            CopyRect(&Msd.rcDragCursor, &rcWindow);
            LONG cw = rcClient.right - rcClient.left, ch = rcClient.bottom - rcClient.top;
            LONG ww = rcWindow.right - rcWindow.left, wh = rcWindow.bottom - rcWindow.top;
            LONG dw = rcDesktop.right - rcDesktop.left, dh = rcDesktop.bottom - rcDesktop.top;
-           //Msd.ptMinTrack = { LONG(temp.ox) + (ww - cw), LONG(temp.oy) + (wh - ch) };
-           Msd.ptMinTrack.x = LONG(temp.ox) + (ww - cw); // lvd
-           Msd.ptMinTrack.y = LONG(temp.oy) + (wh - ch); // lvd
-           //Msd.ptMaxTrack = { dw, dh };
-           Msd.ptMaxTrack.x = dw; //lvd
-           Msd.ptMaxTrack.y = dh; //lvd
+           Msd.ptMinTrack = { LONG(temp.ox) + (ww - cw), LONG(temp.oy) + (wh - ch) };
+           Msd.ptMaxTrack = { dw, dh };
 
            SetCapture(hwnd);
            Captured = true;
@@ -1228,8 +1241,8 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMessage,WPARAM wparam,LPARAM lparam)
       if (uMessage == WM_MOUSEMOVE)
       {
          RECT rc; GetClientRect(hwnd, &rc);
-         unsigned xx = LOWORD(lparam)*3/(rc.right - rc.left);
-         unsigned yy = HIWORD(lparam)*3/(rc.bottom - rc.top);
+         unsigned xx = LOWORD(lparam)*3/unsigned(rc.right - rc.left);
+         unsigned yy = HIWORD(lparam)*3/unsigned(rc.bottom - rc.top);
          unsigned nn = yy*3 + xx;
 //         SetClassLongPtr(hwnd, GCLP_HCURSOR, (LONG)crs[nn]); //Alone Coder
          SetCursor(crs[nn]); //Alone Coder
@@ -1266,8 +1279,8 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMessage,WPARAM wparam,LPARAM lparam)
 #endif
 
       GetClientRect(wnd, &temp.client);
-      temp.gdx = temp.client.right-temp.client.left;
-      temp.gdy = temp.client.bottom-temp.client.top;
+      temp.gdx = unsigned(temp.client.right-temp.client.left);
+      temp.gdy = unsigned(temp.client.bottom-temp.client.top);
       temp.gx = (temp.gdx > temp.ox) ? (temp.gdx-temp.ox)/2 : 0;
       temp.gy = (temp.gdy > temp.oy) ? (temp.gdy-temp.oy)/2 : 0;
       ClientToScreen(wnd, (POINT*)&temp.client.left);
@@ -1303,7 +1316,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMessage,WPARAM wparam,LPARAM lparam)
 //       printf("%s, WM_PAINT\n", __FUNCTION__);
          HDC hcom = CreateCompatibleDC(temp.gdidc);
          HGDIOBJ PrevObj = SelectObject(hcom, hbm);
-         BitBlt(temp.gdidc, 0, 0, bm_dx, bm_dy, hcom, 0, 0, SRCCOPY);
+         BitBlt(temp.gdidc, 0, 0, int(bm_dx), int(bm_dy), hcom, 0, 0, SRCCOPY);
          SelectObject(hcom, PrevObj);
          DeleteDC(hcom);
       }
@@ -1390,18 +1403,18 @@ void setpal(char system)
    { printrdd("IDirectDrawPalette::SetEntries()", r); exit(); }
 }
 
-void trim_right(char *str)
+static void trim_right(char *str)
 {
-   unsigned i; //Alone Coder 0.36.7
+   size_t i; //Alone Coder 0.36.7
    for (/*unsigned*/ i = strlen(str); i && str[i-1] == ' '; i--);
    str[i] = 0;
 }
 
 #define MAX_MODES 512
-struct MODEPARAM {
+static struct MODEPARAM {
    unsigned x,y,b,f;
 } modes[MAX_MODES];
-unsigned max_modes;
+static unsigned max_modes;
 
 // Для инициализации fullscreen режима необходимо выполнение несколтких условий:
 // 1. Размер окна должен совпадать с разрешением экрана, координаты левого верхнего угла должны быть 0, 0
@@ -1422,22 +1435,29 @@ static void SetVideoModeD3d(bool Exclusive)
     // release textures if exist
     if(SurfTexture)
     {
-        r = SurfTexture->Release();
-        if(FAILED(r))
+        ULONG RefCnt = SurfTexture->Release();
+        (void)RefCnt;
+/*
+#ifdef _DEBUG
+        if(RefCnt != 0)
         {
             __debugbreak();
         }
-        SurfTexture = 0;
+#endif
+*/
+        SurfTexture = nullptr;
     }
 
     if(Texture)
     {
-        r = Texture->Release();
-        if(FAILED(r))
+        ULONG RefCnt = Texture->Release();
+#ifdef _DEBUG
+        if(RefCnt != 0)
         {
             __debugbreak();
         }
-        Texture = 0;
+#endif
+        Texture = nullptr;
     }
 
     bool CreateDevice = false;
@@ -1457,7 +1477,7 @@ static void SetVideoModeD3d(bool Exclusive)
         printrdd("IDirect3D::GetAdapterDisplayMode()", r); exit();
     }
 
-    D3DPRESENT_PARAMETERS D3dPp = { 0 };
+    D3DPRESENT_PARAMETERS D3dPp = { };
     if(Exclusive) // exclusive full screen
     {
 #if 0
@@ -1467,7 +1487,7 @@ static void SetVideoModeD3d(bool Exclusive)
         printf("r1={%d,%d,%d,%d} [%dx%d]\n", rr.left, rr.top, rr.right, rr.bottom, rr.right - rr.left, rr.bottom - rr.top);
         printf("SetWindowPos(%p, HWND_TOPMOST, 0, 0, %u, %u)\n", wnd, DispMode.Width, DispMode.Height);
 #endif
-        if(!SetWindowPos(wnd, HWND_TOPMOST, 0, 0, DispMode.Width, DispMode.Height, 0)) // Установка WS_EX_TOPMOST
+        if(!SetWindowPos(wnd, HWND_TOPMOST, 0, 0, int(DispMode.Width), int(DispMode.Height), 0)) // Установка WS_EX_TOPMOST
         {
             __debugbreak();
         }
@@ -1536,7 +1556,7 @@ static void SetVideoModeD3d(bool Exclusive)
 
     // recreate textures
 //    printf("IDirect3DDevice9::CreateTexture(%d,%d)\n", temp.ox, temp.oy);
-    r = D3dDev->CreateTexture(temp.ox, temp.oy, 1, D3DUSAGE_DYNAMIC, DispMode.Format, D3DPOOL_DEFAULT, &Texture, 0);
+    r = D3dDev->CreateTexture(temp.ox, temp.oy, 1, D3DUSAGE_DYNAMIC, DispMode.Format, D3DPOOL_DEFAULT, &Texture, nullptr);
     if (r != DD_OK)
     { printrdd("IDirect3DDevice9::CreateTexture()", r); exit(); }
     r = Texture->GetSurfaceLevel(0, &SurfTexture);
@@ -1554,55 +1574,58 @@ void set_vidmode()
    if (pal)
    {
        pal->Release();
-       pal = 0;
+       pal = nullptr;
    }
 
    if (surf2)
    {
        surf2->Release();
-       surf2 = 0;
+       surf2 = nullptr;
    }
 
    if (surf1)
    {
        surf1->Release();
-       surf1 = 0;
+       surf1 = nullptr;
    }
 
    if (surf0)
    {
-       HRESULT r = surf0->Release();
-       if (r != DD_OK)
-       { printrdd("surf0->Release()", r); exit(); }
-       surf0 = 0;
+       ULONG RefCnt = surf0->Release();
+       if (RefCnt != 0)
+       { printf("surf0->Release(), RefCnt=%lu\n", RefCnt); exit(); }
+       surf0 = nullptr;
    }
 
    if (sprim)
    {
        sprim->Release();
-       sprim = 0;
+       sprim = nullptr;
    }
 
    if (clip)
    {
        clip->Release();
-       clip = 0;
+       clip = nullptr;
    }
 
    if(SurfTexture)
    {
        SurfTexture->Release();
-       SurfTexture = 0;
+       SurfTexture = nullptr;
    }
 
    if(Texture)
    {
-       HRESULT r = Texture->Release();
-       if(FAILED(r))
+       ULONG RefCnt = Texture->Release();
+       (void)RefCnt;
+#ifdef _DEBUG
+       if(RefCnt != 0)
        {
            __debugbreak();
        }
-       Texture = 0;
+#endif
+       Texture = nullptr;
    }
 
    HRESULT r;
@@ -1621,7 +1644,7 @@ void set_vidmode()
        DDCAPS Caps;
        Caps.dwSize = sizeof(Caps);
 
-       if((r = dd->GetCaps(&Caps, NULL)) == DD_OK)
+       if((r = dd->GetCaps(&Caps, nullptr)) == DD_OK)
        {
            if(Caps.dwMaxVisibleOverlays == 0)
            {
@@ -1639,11 +1662,11 @@ void set_vidmode()
        conf.fullscr = 1; // for chunks via blitter
 
    static RECT rc;
-   DWORD oldstyle = GetWindowLong(wnd, GWL_STYLE);
+   LONG oldstyle = GetWindowLong(wnd, GWL_STYLE);
    if (oldstyle & WS_CAPTION)
        GetWindowRect(wnd, &rc);
 
-   unsigned style = conf.fullscr ? WS_VISIBLE | WS_POPUP : WS_VISIBLE | WS_OVERLAPPEDWINDOW;
+   LONG style = LONG(conf.fullscr ? (WS_VISIBLE | WS_POPUP) : (WS_VISIBLE | WS_OVERLAPPEDWINDOW));
    if ((oldstyle ^ style) & WS_CAPTION)
    {
 //       printf("set style=%X, fullscr=%d\n", style, conf.fullscr);
@@ -1651,7 +1674,7 @@ void set_vidmode()
    }
 
    // select exclusive
-   char excl = conf.fullscr;
+   u8 excl = conf.fullscr;
    if ((temp.rflags & RF_CLIP) && (desc.ddpfPixelFormat.dwRGBBitCount == 8))
        excl = 1;
 
@@ -1674,11 +1697,11 @@ void set_vidmode()
           temp.oy /= 2;
    }
 
-   if (temp.rflags & RF_3X) temp.ox *= 3, temp.oy *= 3;
-   if (temp.rflags & RF_4X) temp.ox *= 4, temp.oy *= 4;
-   if (temp.rflags & RF_64x48) temp.ox = 64, temp.oy = 48;
-   if (temp.rflags & RF_128x96) temp.ox = 128, temp.oy = 96;
-   if (temp.rflags & RF_MON) temp.ox = 640, temp.oy = 480;
+   if(temp.rflags & RF_3X) { temp.ox *= 3; temp.oy *= 3; }
+   if(temp.rflags & RF_4X) { temp.ox *= 4; temp.oy *= 4; }
+   if(temp.rflags & RF_64x48) { temp.ox = 64; temp.oy = 48; }
+   if(temp.rflags & RF_128x96) { temp.ox = 128; temp.oy = 96; }
+   if(temp.rflags & RF_MON) { temp.ox = 640; temp.oy = 480; }
 
 //   printf("temp.ox=%d, temp.oy=%d\n", temp.ox, temp.oy);
 
@@ -1718,32 +1741,34 @@ void set_vidmode()
 
          if ((modes[i].x < newx || modes[i].y < newy) && (!conf.refresh || (modes[i].f == newfq)))
          {
-            newx = modes[i].x, newy = modes[i].y;
-            if (!conf.refresh && modes[i].f > newfq)
-                newfq = modes[i].f;
+             newx = modes[i].x;
+             newy = modes[i].y;
+             if(!conf.refresh && modes[i].f > newfq)
+                 newfq = modes[i].f;
          }
       }
 
       if (newx==100000)
       {
           color(CONSCLR_ERROR);
-          printf("can't find situable mode for %d x %d * %d bits\n", temp.ox, temp.oy, temp.obpp);
+          printf("can't find situable mode for %u x %u * %u bits\n", temp.ox, temp.oy, temp.obpp);
           exit();
       }
 
       // use minimal or current mode
       if (temp.rflags & (RF_OVR | RF_GDI | RF_CLIP | RF_D3D | RF_D3DE))
       {
-         // leave screen size, if enough width/height
-         newx = desc.dwWidth, newy = desc.dwHeight;
-         if (newx < minx || newy < miny)
-         {
+          // leave screen size, if enough width/height
+          newx = desc.dwWidth;
+          newy = desc.dwHeight;
+          if(newx < minx || newy < miny)
+          {
               newx = minx;
               newy = miny;
-         }
-         // leave color depth, until specified directly
-         if (!(temp.rflags & (RF_16 | RF_32)))
-             newb = desc.ddpfPixelFormat.dwRGBBitCount;
+          }
+          // leave color depth, until specified directly
+          if(!(temp.rflags & (RF_16 | RF_32)))
+              newb = desc.ddpfPixelFormat.dwRGBBitCount;
       }
 
       if (desc.dwWidth != newx || desc.dwHeight != newy || temp.ofq != newfq || desc.ddpfPixelFormat.dwRGBBitCount != newb)
@@ -1757,12 +1782,14 @@ void set_vidmode()
 
          NeedRestoreDisplayMode = true;
       }
-      temp.odx = temp.obpp*(newx - temp.ox)/16, temp.ody = (newy - temp.oy)/2;
-      temp.rsx = newx, temp.rsy = newy;
+      temp.odx = temp.obpp*(newx - temp.ox) / 16;
+      temp.ody = (newy - temp.oy) / 2;
+      temp.rsx = newx;
+      temp.rsy = newy;
 //      printf("vmode=%ux%u %uHz\n", newx, newy, newfq);
 //      ShowWindow(wnd, SW_SHOWMAXIMIZED);
 //      printf("SetWindowPos(%p, HWND_TOPMOST, 0, 0, %u, %u)\n", wnd, newx, newy);
-      if(!SetWindowPos(wnd, HWND_TOPMOST, 0, 0, newx, newy, 0)) // Установка WS_EX_TOPMOST
+      if(!SetWindowPos(wnd, HWND_TOPMOST, 0, 0, int(newx), int(newy), 0)) // Установка WS_EX_TOPMOST
       {
           __debugbreak();
       }
@@ -1804,21 +1831,22 @@ void set_vidmode()
    if (temp.rflags & RF_GDI)
    {
 
-      gdibmp.header.bmiHeader.biWidth = temp.ox;
-      gdibmp.header.bmiHeader.biHeight = -(int)temp.oy;
-      gdibmp.header.bmiHeader.biBitCount = temp.obpp;
+      gdibmp.header.bmiHeader.biWidth = LONG(temp.ox);
+      gdibmp.header.bmiHeader.biHeight = -LONG(temp.oy);
+      gdibmp.header.bmiHeader.biBitCount = WORD(temp.obpp);
 
    }
    else if (temp.rflags & RF_OVR)
    {
 
       temp.odx = temp.ody = 0;
-      if ((r = dd->CreateSurface(&desc, &sprim, 0)) != DD_OK)
+      if ((r = dd->CreateSurface(&desc, &sprim, nullptr)) != DD_OK)
       { printrdd("IDirectDraw2::CreateSurface() [primary,test]", r); exit(); }
 
       desc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
       desc.ddsCaps.dwCaps = DDSCAPS_OVERLAY | DDSCAPS_VIDEOMEMORY;
-      desc.dwWidth = temp.ox, desc.dwHeight = temp.oy;
+      desc.dwWidth = temp.ox;
+      desc.dwHeight = temp.oy;
 
       // conf.flip = 0; // overlay always synchronized without Flip()! on radeon videocards
                         // double flip causes fps drop
@@ -1839,13 +1867,13 @@ void set_vidmode()
 
       temp.hi15 = 0;
       desc.ddpfPixelFormat = ddpfOverlayFormat16;
-      r = dd->CreateSurface(&desc, &surf0, 0);
+      r = dd->CreateSurface(&desc, &surf0, nullptr);
 
       if (r == DDERR_INVALIDPIXELFORMAT)
       {
          temp.hi15 = 1;
          desc.ddpfPixelFormat = ddpfOverlayFormat15;
-         r = dd->CreateSurface(&desc, &surf0, 0);
+         r = dd->CreateSurface(&desc, &surf0, nullptr);
       }
 
       if (r == DDERR_INVALIDPIXELFORMAT /*&& !(temp.rflags & RF_RGB)*/)
@@ -1853,7 +1881,7 @@ void set_vidmode()
        YUY2:
          temp.hi15 = 2;
          desc.ddpfPixelFormat = ddpfOverlayFormatYUY2;
-         r = dd->CreateSurface(&desc, &surf0, 0);
+         r = dd->CreateSurface(&desc, &surf0, nullptr);
       }
 
       if (r != DD_OK)
@@ -1876,7 +1904,7 @@ void set_vidmode()
          desc.ddsCaps.dwCaps |= DDSCAPS_FLIP | DDSCAPS_COMPLEX;
       }
 
-      if ((r = dd->CreateSurface(&desc, &surf0, 0)) != DD_OK)
+      if ((r = dd->CreateSurface(&desc, &surf0, nullptr)) != DD_OK)
       { printrdd("IDirectDraw2::CreateSurface() [primary1]", r); exit(); }
 
       if (temp.rflags & RF_CLIP)
@@ -1890,10 +1918,10 @@ void set_vidmode()
          desc.dwWidth = SurfDesc.dwWidth; desc.dwHeight = SurfDesc.dwHeight;
          desc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_VIDEOMEMORY | DDSCAPS_LOCALVIDMEM;
 
-         if ((r = dd->CreateSurface(&desc, &surf2, 0)) != DD_OK)
+         if ((r = dd->CreateSurface(&desc, &surf2, nullptr)) != DD_OK)
          { printrdd("IDirectDraw2::CreateSurface() [2]", r); exit(); }
 
-         r = dd->CreateClipper(0, &clip, 0);
+         r = dd->CreateClipper(0, &clip, nullptr);
          if (r != DD_OK) { printrdd("IDirectDraw2::CreateClipper()", r); exit(); }
 
          r = clip->SetHWnd(0, wnd);
@@ -1922,7 +1950,7 @@ void set_vidmode()
          if(!(renders[conf.render].flags & RF_1X))
          {
              SurfPitch1 = (temp.ox * temp.obpp) >> 3;
-             SurfPitch1 = (SurfPitch1 + 15) & ~15; // Выравнивание на 16
+             SurfPitch1 = (SurfPitch1 + 15) & ~15U; // Выравнивание на 16
 
              if(SurfMem1)
                  _aligned_free(SurfMem1);
@@ -1935,7 +1963,7 @@ void set_vidmode()
              FlipBltMethod = FlipBltAlign4;
          }
 
-         r = dd->CreateSurface(&desc, &surf1, 0);
+         r = dd->CreateSurface(&desc, &surf1, nullptr);
          if (r != DD_OK) { printrdd("IDirectDraw2::CreateSurface()", r); exit(); }
       }
 
@@ -1956,7 +1984,7 @@ void set_vidmode()
       else if (temp.obpp == 8)
       {
 
-         if ((r = dd->CreatePalette(DDPCAPS_8BIT | DDPCAPS_ALLOW256, syspalette, &pal, 0)) != DD_OK)
+         if ((r = dd->CreatePalette(DDPCAPS_8BIT | DDPCAPS_ALLOW256, syspalette, &pal, nullptr)) != DD_OK)
          { printrdd("IDirectDraw2::CreatePalette()", r); exit(); }
          if ((r = surf0->SetPalette(pal)) != DD_OK)
          { printrdd("IDirectDrawSurface2::SetPalette()", r); exit(); }
@@ -1981,6 +2009,7 @@ void set_vidmode()
        case 1: ConvBgr24 = ConvRgb15ToBgr24; break; // RGB15
        case 2: ConvBgr24 = ConvYuy2ToBgr24; break; // YUY2
        }
+       break;
    case 32: ConvBgr24 = ConvBgr32ToBgr24; break;
    }
 
@@ -1996,7 +2025,7 @@ void set_vidmode()
    }
 }
 
-HRESULT SetDIDwordProperty(LPDIRECTINPUTDEVICE pdev, REFGUID guidProperty,
+static HRESULT SetDIDwordProperty(LPDIRECTINPUTDEVICE pdev, REFGUID guidProperty,
                    DWORD dwObject, DWORD dwHow, DWORD dwValue)
 {
    DIPROPDWORD dipdw;
@@ -2008,13 +2037,13 @@ HRESULT SetDIDwordProperty(LPDIRECTINPUTDEVICE pdev, REFGUID guidProperty,
    return pdev->SetProperty(guidProperty, &dipdw.diph);
 }
 
-BOOL CALLBACK InitJoystickInput(LPCDIDEVICEINSTANCE pdinst, LPVOID pvRef)
+static BOOL CALLBACK InitJoystickInput(LPCDIDEVICEINSTANCE pdinst, LPVOID pvRef)
 {
    HRESULT r;
    LPDIRECTINPUT pdi = (LPDIRECTINPUT)pvRef;
    LPDIRECTINPUTDEVICE dijoyst1;
    LPDIRECTINPUTDEVICE2 dijoyst;
-   if ((r = pdi->CreateDevice(pdinst->guidInstance, &dijoyst1, 0)) != DI_OK)
+   if ((r = pdi->CreateDevice(pdinst->guidInstance, &dijoyst1, nullptr)) != DI_OK)
    {
        printrdi("IDirectInput::CreateDevice() (joystick)", r);
        return DIENUM_CONTINUE;
@@ -2025,7 +2054,7 @@ BOOL CALLBACK InitJoystickInput(LPCDIDEVICEINSTANCE pdinst, LPVOID pvRef)
    {
       printrdi("IDirectInputDevice::QueryInterface(IID_IDirectInputDevice2) [dx5 not found]", r);
       dijoyst1->Release();
-      dijoyst1=0;
+      dijoyst1=nullptr;
       return DIENUM_CONTINUE;
    }
    dijoyst1->Release();
@@ -2111,8 +2140,10 @@ BOOL CALLBACK InitJoystickInput(LPCDIDEVICEINSTANCE pdinst, LPVOID pvRef)
    return DIENUM_CONTINUE;
 }
 
-HRESULT WINAPI callb(LPDDSURFACEDESC surf, void *lpContext)
+static HRESULT WINAPI callb(LPDDSURFACEDESC surf, void *lpContext)
 {
+    (void)lpContext;
+
    if (max_modes >= MAX_MODES)
        return DDENUMRET_CANCEL;
    modes[max_modes].x = surf->dwWidth;
@@ -2143,18 +2174,19 @@ void scale_normal()
 #endif
 #define D3D_DLL_NAME "d3d9.dll"
 
-void DbgPrint(const char *s)
+static void DbgPrint(const char *s)
 {
     OutputDebugStringA(s);
 }
 
 static void StartD3d(HWND Wnd)
 {
+    (void)Wnd;
+
 #if 0
     OutputDebugString(__FUNCTION__"\n");
     printf("%s\n", __FUNCTION__);
 #endif
-    HRESULT r;
     if(!D3d9Dll)
     {
         D3d9Dll = LoadLibrary(D3D_DLL_NAME);
@@ -2170,10 +2202,7 @@ static void StartD3d(HWND Wnd)
         typedef IDirect3D9 * (WINAPI *TDirect3DCreate9)(UINT SDKVersion);
         TDirect3DCreate9 Direct3DCreate9 = (TDirect3DCreate9)GetProcAddress(D3d9Dll, "Direct3DCreate9");
         D3d9 = Direct3DCreate9(D3D_SDK_VERSION);
-        if(!D3d9)
-            return;
     }
-
 }
 
 static void CalcWindowSize()
@@ -2205,15 +2234,19 @@ static void CalcWindowSize()
             temp.oy /= 2;
     }
 
-    if (temp.rflags & RF_3X) temp.ox *= 3, temp.oy *= 3;
-    if (temp.rflags & RF_4X) temp.ox *= 4, temp.oy *= 4;
-    if (temp.rflags & RF_64x48) temp.ox = 64, temp.oy = 48;
-    if (temp.rflags & RF_128x96) temp.ox = 128, temp.oy = 96;
-    if (temp.rflags & RF_MON) temp.ox = 640, temp.oy = 480;
+    if(temp.rflags & RF_3X) { temp.ox *= 3; temp.oy *= 3; }
+    if(temp.rflags & RF_4X) { temp.ox *= 4; temp.oy *= 4; }
+    if(temp.rflags & RF_64x48) { temp.ox = 64; temp.oy = 48; }
+    if(temp.rflags & RF_128x96) { temp.ox = 128; temp.oy = 96; }
+    if(temp.rflags & RF_MON) { temp.ox = 640; temp.oy = 480; }
 }
 
 static BOOL WINAPI DdEnumDevs(GUID *DevGuid, PSTR DrvDesc, PSTR DrvName, PVOID Ctx, HMONITOR Hm)
 {
+    (void)DrvDesc;
+    (void)DrvName;
+    (void)Hm;
+
     if(DevGuid)
     {
         memcpy(Ctx, DevGuid, sizeof(GUID));
@@ -2227,15 +2260,15 @@ void start_dx()
 //   printf("%s\n", __FUNCTION__);
    dsbuffer_sz = DSBUFFER_SZ;
 
-   WNDCLASSEX  wc = { 0 };
+   WNDCLASSEX  wc = { };
 
    wc.cbSize = sizeof(WNDCLASSEX);
 
    wc.lpfnWndProc = WndProc;
-   hIn = wc.hInstance = GetModuleHandle(0);
+   hIn = wc.hInstance = GetModuleHandle(nullptr);
    wc.lpszClassName = "EMUL_WND";
    wc.hIcon = LoadIcon(hIn, MAKEINTRESOURCE(IDI_ICON2));
-   wc.hCursor = LoadCursor(0, IDC_ARROW);
+   wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
    wc.style = CS_HREDRAW | CS_VREDRAW;
    RegisterClassEx(&wc);
 
@@ -2247,7 +2280,7 @@ void start_dx()
 //~
    CalcWindowSize();
 
-   int cx = temp.ox*temp.scale, cy = temp.oy*temp.scale;
+   int cx = int(temp.ox*temp.scale), cy = int(temp.oy*temp.scale);
 
    RECT Client = { 0, 0, cx, cy };
    AdjustWindowRect(&Client, WS_VISIBLE | WS_OVERLAPPEDWINDOW, 0);
@@ -2257,7 +2290,7 @@ void start_dx()
    int winy = rect1.top + (rect1.bottom - rect1.top - cy) / 2;
 
    wnd = CreateWindowEx(0, "EMUL_WND", "UnrealSpeccy", WS_VISIBLE|WS_OVERLAPPEDWINDOW,
-                    winx, winy, cx, cy, NULL, NULL, hIn, NULL);
+                    winx, winy, cx, cy, nullptr, nullptr, hIn, nullptr);
 
    if(!wnd)
    {
@@ -2272,7 +2305,7 @@ void start_dx()
    HMENU sys = GetSystemMenu(wnd, 0);
    if(sys)
    {
-       AppendMenu(sys, MF_SEPARATOR, 0, 0);
+       AppendMenu(sys, MF_SEPARATOR, 0, nullptr);
        AppendMenu(sys, MF_STRING, SCU_SCALE1, "x1");
        AppendMenu(sys, MF_STRING, SCU_SCALE2, "x2");
        AppendMenu(sys, MF_STRING, SCU_SCALE3, "x3");
@@ -2288,7 +2321,7 @@ void start_dx()
    { printrdd("DirectDrawEnumerate()", r); exit(); }
 
    LPDIRECTDRAW dd0;
-   if ((r = DirectDrawCreate(0 /*&DdDevGuid*/, &dd0, 0)) != DD_OK)
+   if ((r = DirectDrawCreate(nullptr /*&DdDevGuid*/, &dd0, nullptr)) != DD_OK)
    { printrdd("DirectDrawCreate()", r); exit(); }
 
    if ((r = dd0->QueryInterface(IID_IDirectDraw2, (void**)&dd)) != DD_OK)
@@ -2320,20 +2353,20 @@ void start_dx()
    }
    DDCAPS caps;
    caps.dwSize = sizeof caps;
-   dd->GetCaps(&caps, 0);
+   dd->GetCaps(&caps, nullptr);
 
    color(CONSCLR_HARDINFO);
 
    const u32 Vmem = caps.dwVidMemTotal;
-   printf("%s%uMb VRAM available\n", vmodel, Vmem/(1024U*1024U)+((Vmem%(1024U*1024U))>512U*1024U));
+   printf("%s%uMb VRAM available\n", vmodel, unsigned(Vmem/(1024U*1024U)+((Vmem%(1024U*1024U))>512U*1024U)));
 
    max_modes = 0;
-   dd->EnumDisplayModes(DDEDM_REFRESHRATES | DDEDM_STANDARDVGAMODES, 0, 0, callb);
+   dd->EnumDisplayModes(DDEDM_REFRESHRATES | DDEDM_STANDARDVGAMODES, nullptr, nullptr, callb);
 
    if((temp.rflags & (RF_D3D | RF_D3DE)))
        StartD3d(wnd);
 
-   WAVEFORMATEX wf = { 0 };
+   WAVEFORMATEX wf = { };
    wf.wFormatTag = WAVE_FORMAT_PCM;
    wf.nSamplesPerSec = conf.sound.fq;
    wf.nChannels = 2;
@@ -2343,19 +2376,25 @@ void start_dx()
 
    if (conf.sound.do_sound == do_sound_wave)
    {
-      if ((r = waveOutOpen(&hwo, WAVE_MAPPER, &wf, 0, 0, CALLBACK_NULL)) != MMSYSERR_NOERROR)
-      { printrmm("waveOutOpen()", r); hwo = 0; goto sfail; }
-      wqhead = 0, wqtail = 0;
+      MMRESULT mmr;
+      if ((mmr = waveOutOpen(&hwo, WAVE_MAPPER, &wf, 0, 0, CALLBACK_NULL)) != MMSYSERR_NOERROR)
+      { printrmm("waveOutOpen()", mmr); hwo = nullptr; goto sfail; }
+      wqhead = 0;
+      wqtail = 0;
    }
    else if (conf.sound.do_sound == do_sound_ds)
    {
 
-      if ((r = DirectSoundCreate(0, &ds, 0)) != DS_OK)
+      if ((r = DirectSoundCreate(nullptr, &ds, nullptr)) != DS_OK)
       { printrds("DirectSoundCreate()", r); goto sfail; }
 
       r = -1;
       if (conf.sound.dsprimary) r = ds->SetCooperativeLevel(wnd, DSSCL_WRITEPRIMARY);
-      if (r != DS_OK) r = ds->SetCooperativeLevel(wnd, DSSCL_NORMAL), conf.sound.dsprimary = 0;
+      if(r != DS_OK)
+      {
+          r = ds->SetCooperativeLevel(wnd, DSSCL_NORMAL);
+          conf.sound.dsprimary = 0;
+      }
       if (r != DS_OK) { printrds("IDirectSound::SetCooperativeLevel()", r); goto sfail; }
 
       DSBUFFERDESC dsdesc = { sizeof(DSBUFFERDESC) };
@@ -2366,8 +2405,8 @@ void start_dx()
 
          dsdesc.dwFlags = DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_PRIMARYBUFFER;
          dsdesc.dwBufferBytes = 0;
-         dsdesc.lpwfxFormat = 0;
-         r = ds->CreateSoundBuffer(&dsdesc, &dsbf, 0);
+         dsdesc.lpwfxFormat = nullptr;
+         r = ds->CreateSoundBuffer(&dsdesc, &dsbf, nullptr);
 
          if (r != DS_OK) { printrds("IDirectSound::CreateSoundBuffer() [primary]", r); }
          else
@@ -2384,7 +2423,7 @@ void start_dx()
          dsdesc.lpwfxFormat = &wf;
          dsdesc.dwFlags = DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_GLOBALFOCUS;
          dsbuffer_sz = dsdesc.dwBufferBytes = DSBUFFER_SZ;
-         if ((r = ds->CreateSoundBuffer(&dsdesc, &dsbf, 0)) != DS_OK)
+         if ((r = ds->CreateSoundBuffer(&dsdesc, &dsbf, nullptr)) != DS_OK)
          {
              printrds("IDirectSound::CreateSoundBuffer()", r);
              goto sfail;
@@ -2403,15 +2442,15 @@ void start_dx()
    }
 
    LPDIRECTINPUT di;
-   r = DirectInputCreate(hIn,DIRECTINPUT_VERSION,&di,0);
+   r = DirectInputCreate(hIn,DIRECTINPUT_VERSION,&di,nullptr);
 
-   if ((r != DI_OK) && (r = DirectInputCreate(hIn,0x0300,&di,0)) != DI_OK)
+   if ((r != DI_OK) && (r = DirectInputCreate(hIn,0x0300,&di,nullptr)) != DI_OK)
    {
        printrdi("DirectInputCreate()", r);
        exit();
    }
 
-   if((r = di->CreateDevice(GUID_SysKeyboard, &dikeyboard, 0)) != DI_OK)
+   if((r = di->CreateDevice(GUID_SysKeyboard, &dikeyboard, nullptr)) != DI_OK)
    {
        printrdi("IDirectInputDevice::CreateDevice() (keyboard)", r);
        exit();
@@ -2429,7 +2468,7 @@ void start_dx()
        exit();
    }
 
-   if ((r = di->CreateDevice(GUID_SysMouse, &dimouse, 0)) == DI_OK)
+   if ((r = di->CreateDevice(GUID_SysMouse, &dimouse, nullptr)) == DI_OK)
    {
       if ((r = dimouse->SetDataFormat(&c_dfDIMouse)) != DI_OK)
       {
@@ -2442,7 +2481,7 @@ void start_dx()
           printrdi("IDirectInputDevice::SetCooperativeLevel() (mouse)", r);
           exit();
       }
-      DIPROPDWORD dipdw = { 0 };
+      DIPROPDWORD dipdw = { };
       dipdw.diph.dwSize       = sizeof(dipdw);
       dipdw.diph.dwHeaderSize = sizeof(dipdw.diph);
       dipdw.diph.dwHow        = DIPH_DEVICE;
@@ -2457,7 +2496,7 @@ void start_dx()
    {
        color(CONSCLR_WARNING);
        printf("warning: no mouse\n");
-       dimouse = 0;
+       dimouse = nullptr;
    }
 
    if ((r = di->EnumDevices(DIDEVTYPE_JOYSTICK, InitJoystickInput, di, DIEDFL_ATTACHEDONLY)) != DI_OK)
@@ -2473,69 +2512,95 @@ void start_dx()
 static void DoneD3d(bool DeInitDll)
 {
 //    printf("%s(%d)\n", __FUNCTION__, DeInitDll);
-    HRESULT r;
+    ULONG RefCnt;
     if(SurfTexture)
     {
-        r = SurfTexture->Release();
-        if(FAILED(r))
+        RefCnt = SurfTexture->Release();
+        (void)RefCnt;
+/*
+#ifdef _DEBUG
+        if(RefCnt != 0)
         {
             __debugbreak();
         }
-        SurfTexture = 0;
+#endif
+*/
+        SurfTexture = nullptr;
     }
     if(Texture)
     {
-        r = Texture->Release();
-        if(FAILED(r))
+        RefCnt = Texture->Release();
+#ifdef _DEBUG
+        if(RefCnt != 0)
         {
             __debugbreak();
         }
-        Texture = 0;
+#endif
+        Texture = nullptr;
     }
     if(D3dDev)
     {
-        r = D3dDev->Release();
-        if(FAILED(r))
+        RefCnt = D3dDev->Release();
+#ifdef _DEBUG
+        if(RefCnt != 0)
         {
             __debugbreak();
         }
-        D3dDev = 0;
+#endif
+        D3dDev = nullptr;
     }
     if(D3d9)
     {
-        r = D3d9->Release();
-        if(FAILED(r))
+        RefCnt = D3d9->Release();
+#ifdef _DEBUG
+        if(RefCnt != 0)
         {
             __debugbreak();
         }
-        D3d9 = 0;
+#endif
+        D3d9 = nullptr;
     }
     if(DeInitDll && D3d9Dll)
     {
         FreeLibrary(D3d9Dll);
-        D3d9Dll = 0;
+        D3d9Dll = nullptr;
     }
 }
 
 void done_dx()
 {
    sound_stop();
-   if (pal) pal->Release(); pal = 0;
-   if (surf2) surf2->Release(); surf2 = 0;
-   if (surf1) surf1->Release(); surf1 = 0;
-   if (surf0) surf0->Release(); surf0 = 0;
-   if (sprim) sprim->Release(); sprim = 0;
-   if (clip) clip->Release(); clip = 0;
-   if (dd) dd->Release(); dd = 0;
-   if (SurfMem1) _aligned_free(SurfMem1); SurfMem1 = 0;
-   if (dikeyboard) dikeyboard->Unacquire(), dikeyboard->Release(); dikeyboard = 0;
-   if (dimouse) dimouse->Unacquire(), dimouse->Release(); dimouse = 0;
-   if (dijoyst) dijoyst->Unacquire(), dijoyst->Release(); dijoyst = 0;
+   if (pal) pal->Release(); pal = nullptr;
+   if (surf2) surf2->Release(); surf2 = nullptr;
+   if (surf1) surf1->Release(); surf1 = nullptr;
+   if (surf0) surf0->Release(); surf0 = nullptr;
+   if (sprim) sprim->Release(); sprim = nullptr;
+   if (clip) clip->Release(); clip = nullptr;
+   if (dd) dd->Release(); dd = nullptr;
+   if (SurfMem1) _aligned_free(SurfMem1); SurfMem1 = nullptr;
+   if(dikeyboard)
+   {
+       dikeyboard->Unacquire();
+       dikeyboard->Release();
+       dikeyboard = nullptr;
+   }
+   if(dimouse)
+   {
+       dimouse->Unacquire();
+       dimouse->Release();
+       dimouse = nullptr;
+   }
+   if(dijoyst)
+   {
+       dijoyst->Unacquire();
+       dijoyst->Release();
+       dijoyst = nullptr;
+   }
    if (hwo) { waveOutReset(hwo); /* waveOutUnprepareHeader()'s ? */ waveOutClose(hwo); }
-   if (dsbf) dsbf->Release(); dsbf = 0;
-   if (ds) ds->Release(); ds = 0;
-   if (hbm) DeleteObject(hbm); hbm = 0;
-   if (temp.gdidc) ReleaseDC(wnd, temp.gdidc); temp.gdidc = 0;
+   if (dsbf) dsbf->Release(); dsbf = nullptr;
+   if (ds) ds->Release(); ds = nullptr;
+   if (hbm) DeleteObject(hbm); hbm = nullptr;
+   if (temp.gdidc) ReleaseDC(wnd, temp.gdidc); temp.gdidc = nullptr;
    DoneD3d();
    if (wnd) DestroyWindow(wnd);
 }

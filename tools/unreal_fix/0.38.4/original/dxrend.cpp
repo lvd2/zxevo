@@ -13,6 +13,12 @@
 
 void rend_small(unsigned char *dst, unsigned pitch)
 {
+    if(temp.comp_pal_changed)
+    {
+        pixel_tables();
+        temp.comp_pal_changed = 0;
+    }
+
     if (temp.obpp == 8)  { rend_copy8 (dst, pitch); return; }
     if (temp.obpp == 16) { rend_copy16(dst, pitch); return; }
     if (temp.obpp == 32) { rend_copy32(dst, pitch); return; }
@@ -51,7 +57,13 @@ void __fastcall render_small(unsigned char *dst, unsigned pitch)
 
 void rend_dbl(unsigned char *dst, unsigned pitch)
 {
-   if (temp.oy > temp.scy && conf.fast_sl)
+    if(temp.comp_pal_changed)
+    {
+        pixel_tables();
+        temp.comp_pal_changed = 0;
+    }
+
+   if(temp.oy > temp.scy && conf.fast_sl)
        pitch *= 2;
 
    if (conf.noflic)
@@ -151,6 +163,12 @@ void __fastcall render_dbl(unsigned char *dst, unsigned pitch)
 
 void __fastcall render_3x(unsigned char *dst, unsigned pitch)
 {
+    if(temp.comp_pal_changed)
+    {
+        pixel_tables();
+        temp.comp_pal_changed = 0;
+    }
+
    if (conf.noflic) {
       if (temp.obpp == 8)  rend_copy8t_nf (dst, pitch);
       if (temp.obpp == 16) rend_copy16t_nf(dst, pitch);
@@ -167,7 +185,14 @@ void __fastcall render_3x(unsigned char *dst, unsigned pitch)
 
 void __fastcall render_quad(unsigned char *dst, unsigned pitch)
 {
-   if (conf.noflic) {
+    if(temp.comp_pal_changed)
+    {
+        pixel_tables();
+        temp.comp_pal_changed = 0;
+    }
+
+    if(conf.noflic)
+    {
       if (temp.obpp == 8)  rend_copy8q_nf (dst, pitch);
       if (temp.obpp == 16) rend_copy16q_nf(dst, pitch);
       if (temp.obpp == 32) rend_copy32q_nf(dst, pitch);
@@ -220,8 +245,8 @@ void __fastcall render_scale(unsigned char *dst, unsigned pitch)
    }
 }
 
-static u64 mask49 = 0x4949494949494949ULL;
-static u64 mask92 = 0x9292929292929292ULL;
+//static u64 mask49 = 0x4949494949494949ULL;
+//static u64 mask92 = 0x9292929292929292ULL;
 
 static void /*__declspec(naked)*/ __fastcall _bil_line1(unsigned char *dst, unsigned char *src)
 {
@@ -390,7 +415,7 @@ void __fastcall render_tv(unsigned char *dst, unsigned pitch)
                       line[j*2-4+8+1]+
                       line[j*2-8+8+1];
 */
-         line2[j*2] = Y>>4;
+         line2[j*2] = u8(Y>>4);
 //         line2[j*2+1] = U>>4;
          line2[j*2+1] = line[j*2+9];
       }

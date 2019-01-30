@@ -3,5 +3,5 @@
 extern char asmbuf[0x40];
 extern unsigned char asmresult[24];
 
-unsigned char *disasm(unsigned char *cmd, unsigned current, char labels);
-int assemble_cmd(unsigned char *cmd, unsigned addr);
+const unsigned char *disasm(const unsigned char *cmd, unsigned current, char labels);
+unsigned assemble_cmd(unsigned char *cmd, unsigned addr);

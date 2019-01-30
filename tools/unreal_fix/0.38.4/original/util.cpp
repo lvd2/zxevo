@@ -10,7 +10,7 @@
 static void cpuid(unsigned CpuInfo[4], unsigned _eax)
 {
 #ifdef _MSC_VER
-   __cpuid((int *)CpuInfo, _eax);
+   __cpuid((int *)CpuInfo, int(_eax));
 #endif
 
 #ifdef __GNUC__
@@ -88,7 +88,7 @@ unsigned __int64 GetCPUFrequency()
 
 void trim(char *dst)
 {
-   unsigned i = strlen(dst);
+   size_t i = strlen(dst);
    // trim right spaces
    while (i && isspace(u8(dst[i-1]))) i--;
    dst[i] = 0;
@@ -97,12 +97,6 @@ void trim(char *dst)
    strcpy(dst, dst+i);
 }
 
-
-const char clrline[] = "\r\t\t\t\t\t\t\t\t\t       \r";
-
-#define savetab(x) {FILE *ff=fopen("tab","wb");fwrite(x,sizeof(x),1,ff);fclose(ff);}
-
-#define tohex(a) ((a) < 10 ? (a)+'0' : (a)-10+'A')
 
 const char nop = 0;
 const char * const nil = &nop;
@@ -114,8 +108,8 @@ int ishex(char c)
 
 unsigned char hex(char p)
 {
-   p = tolower(p);
-   return (p < 'a') ? p-'0' : p-'a'+10;
+   p = char(tolower(p));
+   return u8((p < 'a') ? p-'0' : p-'a'+10);
 }
 
 unsigned char hex(const char *p)
@@ -128,7 +122,7 @@ unsigned process_msgs()
    MSG msg;
    unsigned key = 0;
 
-   while(PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+   while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
    {
 /*
       if (msg.message == WM_NCLBUTTONDOWN)
@@ -137,17 +131,17 @@ unsigned process_msgs()
       // mouse messages must be processed further
       if (msg.message == WM_LBUTTONDOWN)
       {
-          mousepos = msg.lParam;
+          mousepos = DWORD(msg.lParam);
           key = VK_LMB;
       }
       if (msg.message == WM_RBUTTONDOWN)
       {
-          mousepos = msg.lParam | 0x80000000;
+          mousepos = DWORD(msg.lParam | 0x80000000);
           key = VK_RMB;
       }
       if (msg.message == WM_MBUTTONDOWN)
       {
-          mousepos = msg.lParam | 0x80000000;
+          mousepos = DWORD(msg.lParam | 0x80000000);
           key = VK_MMB;
       }
 
@@ -168,7 +162,7 @@ unsigned process_msgs()
       if (msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN)
       {
          if (conf.atm.xt_kbd)
-             input.atm51.setkey(msg.lParam >> 16, 1);
+             input.atm51.setkey(unsigned(msg.lParam >> 16), 1);
          switch (( msg.lParam>>16)&0x1FF)
          {
             case 0x02a: kbdpcEX[0]=(kbdpcEX[0]^0x01)|0x80; break;
@@ -179,11 +173,11 @@ unsigned process_msgs()
             case 0x138: kbdpcEX[5]=(kbdpcEX[5]^0x01)|0x80; break;
          } //Dexus
 //         printf("%s, WM_KEYDOWN, WM_SYSKEYDOWN\n", __FUNCTION__);
-         key = msg.wParam;
+         key = unsigned(msg.wParam);
       }
       else if (msg.message == WM_KEYUP || msg.message == WM_SYSKEYUP)
       {
-         if (conf.atm.xt_kbd) input.atm51.setkey(msg.lParam >> 16, 0);
+         if (conf.atm.xt_kbd) input.atm51.setkey(unsigned(msg.lParam >> 16), 0);
          switch (( msg.lParam>>16)&0x1FF)
          {
             case 0x02a: kbdpcEX[0]&=0x01; kbdpcEX[1]&=0x01; break;
@@ -296,14 +290,14 @@ void dump1(BYTE *p, unsigned sz)
       for (; i < 16; i++) printf("   ");
       for (i = 0; i < chunk; i++) printf("%c", (p[i] < 0x20)? '.' : p[i]);
       printf("\n");
-      sz -= chunk, p += chunk;
+      sz -= chunk; p += chunk;
    }
    printf("\n");
 }
 
 void color(int ink)
 {
-   SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), ink);
+   SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), WORD(ink));
 }
 
 void err_win32(DWORD errcode)
@@ -311,9 +305,9 @@ void err_win32(DWORD errcode)
    if (errcode == 0xFFFFFFFF) errcode = GetLastError();
 
    char msg[512];
-   if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0, errcode,
+   if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, errcode,
                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                  msg, sizeof(msg), 0)) *msg = 0;
+                  msg, sizeof(msg), nullptr)) *msg = 0;
 
    trim(msg); CharToOem(msg, msg);
 

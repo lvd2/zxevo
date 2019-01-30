@@ -1,7 +1,7 @@
 #pragma once
 
-unsigned find1dlg(unsigned start);
-unsigned find2dlg(unsigned start);
+int find1dlg(unsigned start);
+int find2dlg(unsigned start);
 
 void mon_emul();
 void mon_setup_dlg();

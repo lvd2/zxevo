@@ -2,6 +2,7 @@
 #define _Z80_DEFS_H_INCLUDED
 
 #include <stddef.h>
+#include <stdint.h>
 #include "../sysdefs.h"
 struct Z80;
 
@@ -69,6 +70,7 @@ struct TZ80State
         {
             unsigned char c;
             unsigned char b;
+            u8 trash;
         };
     };
     union

@@ -29,7 +29,7 @@ void rend_atmframe8(unsigned char *dst, unsigned pitch)
    {
       line8(dst, src, t.sctab8[0]);
       line8(dst+scr_offs, src + atr_offs, t.sctab8[0]);
-      dst += pitch,
+      dst += pitch;
       src += delta;
    }
    temp.scx = scx;
@@ -62,7 +62,7 @@ void rend_atmframe16(unsigned char *dst, unsigned pitch)
    {
       line16(dst, src, t.sctab16[0]);
       line16(dst+scr_offs, src + atr_offs, t.sctab16d[0]);
-      dst += pitch,
+      dst += pitch;
       src += delta;
    }
 
@@ -95,7 +95,7 @@ void rend_atmframe32(unsigned char *dst, unsigned pitch)
    {
       line32(dst, src, t.sctab32[0]);
       line32(dst+scr_offs, src + atr_offs, t.sctab32[0]);
-      dst += pitch,
+      dst += pitch;
       src += delta;
    }
    temp.scx = scx;
@@ -152,10 +152,10 @@ void rend_atmframe_8d(unsigned char *dst, unsigned pitch)
    for (y = 0; y < 200; y++) {
       line8d(dst, src, t.sctab8d[0]);
       line8d(dst+scr_offs, src + atr_offs, t.sctab8d[0]);
-      dst += pitch,
+      dst += pitch;
       line8d(dst, src, t.sctab8d[1]);
       line8d(dst+scr_offs, src + atr_offs, t.sctab8d[1]);
-      dst += pitch,
+      dst += pitch;
       src += delta;
    }
    temp.scx = scx;
@@ -210,10 +210,10 @@ void rend_atmframe_16d(unsigned char *dst, unsigned pitch)
    for (y = 0; y < 200; y++) {
       line16d(dst, src, t.sctab16d[0]);
       line16d(dst+scr_offs, src + atr_offs, t.sctab16d[0]);
-      dst += pitch,
+      dst += pitch;
       line16d(dst, src, t.sctab16d[1]);
       line16d(dst+scr_offs, src + atr_offs, t.sctab16d[1]);
-      dst += pitch,
+      dst += pitch;
       src += delta;
    }
    temp.scx = scx;
@@ -268,10 +268,10 @@ void rend_atmframe_32d(unsigned char *dst, unsigned pitch)
    for (y = 0; y < 200; y++) {
       line32d(dst, src, t.sctab32[0]);
       line32d(dst+scr_offs, src + atr_offs, t.sctab32[0]);
-      dst += pitch,
+      dst += pitch;
       line32d(dst, src, t.sctab32[1]);
       line32d(dst+scr_offs, src + atr_offs, t.sctab32[1]);
-      dst += pitch,
+      dst += pitch;
       src += delta;
    }
    temp.scx = scx;

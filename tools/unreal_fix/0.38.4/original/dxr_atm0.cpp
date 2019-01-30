@@ -17,14 +17,14 @@ static void line_atm0_8(unsigned char *dst, unsigned char *src, unsigned *tab, i
     for (unsigned x = 0; x < 320; x += 8, ++src_offset)
     {
         src_offset &= 0x1FFF;
-        d[x+0] = tab[src[ega0_ofs + src_offset]];
-        d[x+1] = tab[src[ega0_ofs + src_offset]] >> 16;
-        d[x+2] = tab[src[ega1_ofs + src_offset]];
-        d[x+3] = tab[src[ega1_ofs + src_offset]] >> 16;
-        d[x+4] = tab[src[ega2_ofs + src_offset]];
-        d[x+5] = tab[src[ega2_ofs + src_offset]] >> 16;
-        d[x+6] = tab[src[ega3_ofs + src_offset]];
-        d[x+7] = tab[src[ega3_ofs + src_offset]] >> 16;
+        d[x+0] = u8(tab[src[ega0_ofs + src_offset]]);
+        d[x+1] = u8(tab[src[ega0_ofs + src_offset]] >> 16);
+        d[x+2] = u8(tab[src[ega1_ofs + src_offset]]);
+        d[x+3] = u8(tab[src[ega1_ofs + src_offset]] >> 16);
+        d[x+4] = u8(tab[src[ega2_ofs + src_offset]]);
+        d[x+5] = u8(tab[src[ega2_ofs + src_offset]] >> 16);
+        d[x+6] = u8(tab[src[ega3_ofs + src_offset]]);
+        d[x+7] = u8(tab[src[ega3_ofs + src_offset]] >> 16);
     }
 }
 
@@ -47,14 +47,14 @@ static void line_atm0_16(unsigned char *dst, unsigned char *src, unsigned *tab, 
     for (unsigned x = 0; x < 320; x += 8, ++src_offset)
     {
         src_offset &= 0x1FFF;
-        d[x+0] = tab[0+2*src[ega0_ofs + src_offset]];
-        d[x+1] = tab[1+2*src[ega0_ofs + src_offset]];
-        d[x+2] = tab[0+2*src[ega1_ofs + src_offset]];
-        d[x+3] = tab[1+2*src[ega1_ofs + src_offset]];
-        d[x+4] = tab[0+2*src[ega2_ofs + src_offset]];
-        d[x+5] = tab[1+2*src[ega2_ofs + src_offset]];
-        d[x+6] = tab[0+2*src[ega3_ofs + src_offset]];
-        d[x+7] = tab[1+2*src[ega3_ofs + src_offset]];
+        d[x+0] = u16(tab[0+2*src[ega0_ofs + src_offset]]);
+        d[x+1] = u16(tab[1+2*src[ega0_ofs + src_offset]]);
+        d[x+2] = u16(tab[0+2*src[ega1_ofs + src_offset]]);
+        d[x+3] = u16(tab[1+2*src[ega1_ofs + src_offset]]);
+        d[x+4] = u16(tab[0+2*src[ega2_ofs + src_offset]]);
+        d[x+5] = u16(tab[1+2*src[ega2_ofs + src_offset]]);
+        d[x+6] = u16(tab[0+2*src[ega3_ofs + src_offset]]);
+        d[x+7] = u16(tab[1+2*src[ega3_ofs + src_offset]]);
     }
 }
 
@@ -109,7 +109,7 @@ static void line_atm0_32d(unsigned char *dst, unsigned char *src, unsigned *tab,
     }
 }
 
-void rend_atm0_small(unsigned char *dst, unsigned pitch, int y, int Offset)
+void rend_atm0_small(unsigned char *dst, unsigned pitch, unsigned y, int Offset)
 {
     unsigned char *dst2 = dst + (temp.ox-320)*temp.obpp/16;
     if (temp.scy > 200)
@@ -134,7 +134,7 @@ void rend_atm0_small(unsigned char *dst, unsigned pitch, int y, int Offset)
 }
 
 // EGA 320x200, double
-void rend_atm0(unsigned char *dst, unsigned pitch, int y, int Offset)
+void rend_atm0(unsigned char *dst, unsigned pitch, unsigned y, int Offset)
 {
     unsigned char *dst2 = dst + (temp.ox-640)*temp.obpp/16;
     if (temp.scy > 200)
@@ -158,7 +158,7 @@ void rend_atm0(unsigned char *dst, unsigned pitch, int y, int Offset)
     }
     else
     {
-        dst2 += 2*y*pitch;
+        dst2 += unsigned(2*y)*pitch;
         switch(temp.obpp)
         {
         case 8:

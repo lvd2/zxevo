@@ -75,11 +75,11 @@ const unsigned char decf[] =
 
 unsigned char adcf[0x20000]; // flags for adc and add
 
-void make_adc()
+static void make_adc()
 {
-   for (int c = 0; c < 2; c++)
-      for (int x = 0; x < 0x100; x++)
-         for (int y = 0; y < 0x100; y++) {
+   for (unsigned c = 0; c < 2; c++)
+      for (unsigned x = 0; x < 0x100; x++)
+         for (unsigned y = 0; y < 0x100; y++) {
 
             unsigned res = x+y+c;
             unsigned char fl = 0;
@@ -87,7 +87,7 @@ void make_adc()
             fl |= (res & (F3|F5|SF));
             if (res >= 0x100) fl |= CF;
             if (((x&0x0F)+(y&0x0F)+c) & 0x10) fl |= HF;
-            int ri = (signed char)x + (signed char)y + c;
+            int ri = (signed char)x + (signed char)y + int(c);
             if (ri >= 0x80 || ri <= -0x81) fl |= PV;
 
             adcf[c*0x10000 + x*0x100 + y] = fl;
@@ -98,7 +98,7 @@ unsigned char sbcf[0x20000]; // flags for sub and sbc
 unsigned char cpf[0x10000];  // flags for cp
 unsigned char cpf8b[0x10000]; // flags for CPD/CPI/CPDR/CPIR
 
-void make_sbc()
+static void make_sbc()
 {
    for (int c = 0; c < 2; c++)
    for (int x = 0; x < 0x100; x++)
@@ -115,13 +115,13 @@ void make_sbc()
    }
    for (int i = 0; i < 0x10000; i++) {
       cpf[i] = (sbcf[i] & ~(F3|F5)) | (i & (F3|F5));
-      unsigned char tempbyte = (i >> 8) - (i & 0xFF) - ((sbcf[i] & HF) >> 4);
+      unsigned char tempbyte = u8((i >> 8) - (i & 0xFF) - ((sbcf[i] & HF) >> 4));
       cpf8b[i] = (sbcf[i] & ~(F3|F5|PV|CF)) + (tempbyte & F3) + ((tempbyte << 4) & F5);
    }
 }
 
 unsigned char log_f[0x100];
-void make_log()
+static void make_log()
 {
    for (int x = 0; x < 0x100; x++) {
       unsigned char fl = x & (F3|F5|SF);
@@ -209,12 +209,13 @@ const unsigned char rrcf[] = // rrc r. may be for rlca (0x3B mask)
        ,0x28,0xad,0x2c,0xa9,0x2c,0xa9,0x28,0xad
 };
 
-void make_rot()
+static void make_rot()
 {
    for (int i = 0; i < 0x100; i++) {
       rlcaf[i] = rlcf[i] & 0x3B;        // rra,rla uses same tables
       rrcaf[i] = rrcf[i] & 0x3B;
-      rol[i] = (i<<1)+(i>>7), ror[i] = (i>>1)+(i<<7);
+      rol[i] = u8((i << 1) + (i >> 7));
+      ror[i] = u8((i>>1)+(i<<7));
    }
 }
 
