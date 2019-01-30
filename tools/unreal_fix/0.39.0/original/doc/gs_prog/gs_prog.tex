@@ -1,0 +1,1481 @@
+%\tracingall
+\XeTeXtracingfonts=1
+
+\documentclass[a4paper,11pt]{article}
+\usepackage{metalogo}
+\usepackage{fontspec,unicode-math}
+\usepackage[a4paper,left=20mm,top=20mm,bottom=15mm,right=20mm,nohead,xetex]{geometry}
+\usepackage{polyglossia}
+
+\usepackage[pdfencoding=unicode,psdextra,xetex]{hyperref}
+\hypersetup{unicode=true,colorlinks=true}
+\usepackage[numbered,dvipdfm]{bookmark}
+\usepackage[indentafter,raggedright,newlinetospace,pagestyles]{titlesec}
+\usepackage{etoc}
+\usepackage{tabu}
+\usepackage{enumitem}
+
+%Доработанные шрифты с поддержкой перечеркнутого нуля
+\setmainfont{CMUSerif.otf}[Path=./,UprightFont = *-Roman,BoldFont = *-Bold,Numbers=SlashedZero]
+\setmonofont{CMUTypewriter.otf}[Path=./,UprightFont = *-Regular,Numbers=SlashedZero]
+
+\setmathfont{Latin Modern Math}
+
+% Точка после номера раздела в pdf bookmarks
+\makeatletter
+\renewcommand{\Hy@numberline}[1]{#1. }
+\makeatother
+
+% Оформление оглавления
+\etocsetstyle{section}{}{}{\etocsavedsectiontocline{\etoclink{\numberline{\etocifnumbered{\etocnumber.}{}}\sloppy\MakeUppercase{\etocthename}}}{\etocpage}}{}
+\etocsetstyle{subsection}{}{}{\etocsavedsubsectiontocline{\etoclink{\numberline{\etocifnumbered{\etocnumber.}{}}\sloppy\etocname}}{\etocpage}}{}
+\etocsetstyle{subsubsection}{}{}{\etocsavedsubsubsectiontocline{\etoclink{\numberline{\etocifnumbered{\etocnumber.}{}}\sloppy\etocname}}{\etocpage}}{}
+
+\setlist{nosep,after=\vspace{\baselineskip}}
+
+\DeclareRobustCommand{\Cyrax}{\texorpdfstring{\(^\circledast\)}{\circledast}}
+
+\setmainlanguage{russian}
+\setotherlanguage{english}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+
+\textbf{Recoded by Evgeny Muchkin 06.10.1998\\
+ SysOp of PALLY\_STATION  tel: 176-74-19\\
+Last update and correxion by Cyrax, Inc. 18.04.2002\\
+Former GS programmer\ldots{} ;) email: reptyle@mail.ru}
+ \vfill
+
+\textbf{\LARGE\copyright~STINGER \&\\
+\copyright~Cyrax, Inc.~--- \Cyrax\label{Cyrax}}
+
+ \medskip
+ \medskip
+
+\textbf{\LARGE{}Руководство по программированию\\
+General Sound}
+
+ \medskip
+ \medskip
+
+\textbf{\Large{}Версия v1.04. Редакция 006}
+
+ \vfill
+
+(отредактировал в документ CHRV)
+
+ \medskip
+
+Оставлен полностью авторский текст за исключением \\
+форматирования и исправления ошибок в тексте.\\
+Добавлено описание исправлений в GS ROM v1.05.
+
+ \medskip
+
+(преобразовал в \XeLaTeX{} deathsoft 01.07.2018)
+
+ \medskip
+
+\textbf{24.02.2012}
+\end{center}
+\end{titlepage}
+
+\newpage
+
+\tableofcontents 
+
+\newpage
+
+\section{Краткие технические характеристики GS}
+\begin{description}
+\item[Процессор:] Z80, 12MHz, без циклов wait
+\item[ROM:] 32k, 27256
+\item[RAM:] Static Ram 128k всего, 112k  доступно для модулей и сэмплов в  базовой версии
+\item[INT:] 37.5~kHz
+\item[Каналы:] 4 независимых 8-и битных канала,  каждый с 6-и битным контролем громкости.
+\end{description}
+
+\section{Краткое описание GS, или много всякой лабуды}
+GS --- музыкальная карточка,  предназначенная для проигрывания  музыкальных модулей и отдельных сэмплов (эффектов).
+
+Модули для GS --- это стандартные Амижные и PCшные 4-х канальные MOD файлы, а сэмплы --- как Амижные signed sample, так и PCшные unsigned sample.
+
+Проигрыватель MOD  файлов  в  GS  является  практически  полным  аналогом ProTracker'а на Амиге и создавался при интенсивном  использовании  исходников ProTracker'a. (Исходники были из Protracker'а v2.1A by Lars ``ZAP'' Hamre --- Amiga Freelancers)
+
+MOD Player поддерживает все команды Pro Tracker'а, за исключением двух:
+\begin{itemize}
+\item Е01 Filter On Амига-специфичная команда, включает фильтр высоких частот.
+\item EFX Invert Loop я еще не видел плеера,  который бы поддерживал эту команду. Возможно, она поддерживается на каких-то старых плеерах.
+\end{itemize}
+
+GS представляет из себя,  по-сути,  микропроцессорный комплекс  со  своим процессором, ПЗУ, ОЗУ и портами, и абсолютно не зависит от главного процессора Спектрума,  что позволяет, например, загрузить свой любимый модуль, сбросить Спектрум,  загрузить ассемблер и творить под любимую музыку. Soft внутри GS полностью берет на себя задачи проигрывания звука, интерпретации модуля и т.д. Программирование GS'а сводится к передаче байт за байтом модуля и/или сэмплов,  а затем требуется только подавать команды типа: запустить модуль,  установить глобальную громкость проигрывания модуля, запустить сэмпл \#09 в канале \#02 и т.д.
+
+Если предполагается загрузить модуль вместе с сэмплами, то в GENERAL требуется загружать вначале модуль, а затем сэмплы.
+
+При загрузке модуля очень рекомендуется оставить свободными  2к памяти, т.е. загружать модули длиной максимум 110K. Это условие не является необходимым, но его исполнение очень желательно в целях совместимости с последующими версиями.
+
+Аналогично очень рекомендуется оставлять по 80 байт для  каждого сэмпла, например, если требуется загрузить 63-х килобайтный модуль и 18 сэмплов, то имеем:
+\[\mathrm{Total\_Sample\_Length}=112\cdotp1024-63\cdotp1024-2\cdotp1024-18\cdotp80=46688\  \mathrm{байт}\]
+
+Это суммарная длина сэмплов, которые при таком положении вещей могут быть загружены.
+
+Если же, например, требуется вычислить,  сколько поместится в память GS'а 2-х килобайтных сэмплов, то это вычисляется следующим образом:
+\(112\cdotp\frac{1024}{2048+80}=53\) сэмпла.
+В GS'е имеются 4 физических канала, которые и проигрывают звук.
+
+Каналы 0 и 1~--- левые, а 2 и 3~--- правые.
+
+\section{Интерфейс со Спектрумом}
+На мир GS смотрит при помощи 4 регистров:
+\begin{enumerate}
+\item \textbf{Command register}~--- регистр команд,  доступный для записи порт по адресу 187 (\#BB). В этот регистр записываются команды.
+\item \textbf{Status register}~--- регистр состояния, доступный для чтения порт по адресу 187 (\#BB).
+
+\begin{minipage}{\textwidth}
+Биты регистра:
+\begin{description}
+\item[7] — Data bit, флаг данных
+\item[6] — Не определен
+\item[5] — Не определен
+\item[4] — Не определен
+\item[3] — Не определен
+\item[2] — Не определен
+\item[1] — Не определен
+\item[0] — Command bit, флаг команд
+\end{description}
+\end{minipage}
+
+Этот регистр позволяет определить состояние GS, в частности можно ли прочитать или записать очередной байт данных, или подать очередную команду,  и т.п.
+
+\item \textbf{Data register}~--- регистр данных, доступный для записи порт по адресу 179 (\#B3). В этот регистр Спектрум записывает данные, например, это могут быть аргументы команд.
+\item  \textbf{Output register}~--- регистр вывода, доступный для чтения порт по адресу 179 (\#B3). Из этого регистра Спектрум читает данные, идущие от GS.
+\end{enumerate}
+
+Command bit в регистре состояний устанавливается аппаратно после записи команды в регистр команд. Сбрасываться в 0 он может только из GS, что сигнализирует об определенном этапе исполнения команды.
+
+Data bit в регистре состояний может быть установлен или сброшен как по желанию Спектрума, так и по желанию GS: при записи Спектрумом в регистр данных он аппаратно устанавливается в 1, а после чтения GS'ом из этого регистра сбрасывается в 0. При записи GS в регистр вывода он (все тот же Data bit) аппаратно устанавливается в 1, а после чтения из этого порта Спектрумом сбрасывается аппаратно в 0.
+
+Несмотря на то, что регистр данных и регистр вывода расположены в пространстве адресов портов по одному и тому же адресу и воздействуют на один и тот же бит данных,  они являются двумя независимыми регистрами. Значение, один раз записанное в один из этих регистров, остается неизменным в нем до новой записи.
+
+Состояние бита данных очень часто не определено, и если в спецификации команд не определены значения этого бита на определенных этапах исполнения команды, недопустимо делать какие-либо предположения относительно значения этого бита.
+
+\section{Система команд GS}
+Вначале позволю себе небольшое отступление от собственно системы  команд. GS,  как известно,  предназначен в основном для проигрывания модулей и сэмплов. В данной версии (1.04) GS ROM допускается загрузка одного модуля и/или до 32 сэмплов.
+
+Каждый сэмпл при загрузке его в память получает свой уникальный идентификатор, который однозначно определяет обращение к данному сэмплу в командах, которые требуют номер сэмпла. Самый первый загруженный сэмпл получает номер (handle) = 1, следующий --- номер 2, и т.д.
+
+То же самое применимо и к модулям, и этот единственный загруженный модуль будет иметь handle=1 после загрузки.
+
+Особенностью данной версии является также то, что вначале требуется загружать модуль, а затем уже сэмплы.
+
+Особенности описания команд:
+
+\begin{minipage}{\textwidth}
+Команды описываются следующим образом:
+\begin{enumerate}
+\item Hex код команды
+\item Название команды
+\item Выполняемые действия при исполнении команды
+\item Формат команды
+\item Комментарии к команде
+\end{enumerate}
+\end{minipage}
+
+\begin{minipage}{\textwidth}
+Формат команды описывается следующим образом:
+\begin{verbatim}
+GSCOM EQU 187
+GSDAT EQU 179
+
+SC #NN  : Послать код команды в регистр команд
+          LD A,#NN
+          OUT (GSCOM),A
+
+WC      : Ожидание сброса Command bit
+     WCLP IN A,(GSCOM)
+          RRCA
+          JR C,WCLP
+
+SD Data : Послать данные в регистр данных
+          LD A,Data
+          OUT (GSDAT),A
+
+WD      : Ожидание сброса Data bit, по сути, ожидание, пока GS не примет
+          посланные ему данные
+     WDLP IN A,(GSCOM)
+          RLCA
+          JR C,WDLP
+
+GD Data : Принять данные из регистра данных
+          IN A,(GSDAT)
+
+WN      : Ожидание установки Data bit,по сути, ожидание очередных данных
+          от GS
+     WNLP IN A,(GSCOM)
+          RLCA
+          JR NC,WNLP
+(*):
+<PAUSE> - Просто небольшая задержка кадра два-три.
+\end{verbatim}
+\end{minipage}
+
+И напоследок — небольшая последовательность против зависания (иногда помогает)
+\begin{verbatim}
+          XOR A
+          OUT (#B3),A
+          OUT (#BB),A
+          IN A,(#BB)
+\end{verbatim}
+для верности можно и продублировать ;).
+
+\subsection{Команды GS:}
+
+\subsubsection{\#00 Reset flags}
+Сбрасывает флаги Data bit и Command bit.
+\begin{verbatim}
+    SC #00
+    WC
+    (Data bit=0, Command bit=0)
+\end{verbatim}
+
+\subsubsection{\#01 Set silence\Cyrax\label{cmd:01}}
+Выводит в ЦАПы всех каналов \#80. По сути устанавливает тишину.
+\begin{verbatim}
+    SC #01
+    WC
+\end{verbatim}
+
+\subsubsection{\#02 Set low volume\Cyrax}
+Устанавливает громкость ЦАПов всех каналов в ноль.
+\begin{verbatim}
+    SC #02
+    WC
+\end{verbatim}
+
+\subsubsection{\#03 Set high volume\Cyrax}
+Устанавливает громкость ЦАПов всех каналов в максимум.
+\begin{verbatim}
+    SC #03
+    WC
+\end{verbatim}
+
+\subsubsection{\#04 Set ‘E’ 3bits\Cyrax}
+Устанавливает в `E' регистре GS 3 младших бита в соответствии с заданным значением (2  младших бита в сущности являются номером канала \#00~---~\#03).
+\begin{verbatim}
+    SD Chan (#00-#07)
+    SC #04
+    WC
+\end{verbatim}
+
+\subsubsection{\#05 Out volume port\Cyrax}
+Устанавливает громкость канала, номер которого содержится в `E', в указанное значение. (Команда срабатывает при условии, что `E' находится в пределах \#00~---~\#03)
+\begin{verbatim}
+    SD Volume (#00-#3F)
+    SC #05
+    WC
+\end{verbatim}
+
+\subsubsection{\#06 Send to DAC\Cyrax}
+Выводит байт в ЦАП канала, указываемого по `E'.
+\begin{verbatim}
+    SD Byte
+    SC #06
+    WC
+\end{verbatim}
+
+\subsubsection{\#07 Send to DAC and to volume port\Cyrax}
+Выводит байт в ЦАП (`E') с заданной громкостью.
+\begin{verbatim}
+    SD Byte
+    SC #07
+    WC
+    SD Volume
+    WD
+\end{verbatim}
+
+\subsubsection{\#08 --- то же что и команда \#00}
+
+\subsubsection{\#09 Sets one's byte volume\Cyrax\label{cmd:09}}
+Установка громкости канала, номер которого задан в 2х старших битах.
+\begin{verbatim}
+    SD Byte (ccvvvvvv)
+    SC #09
+    WC
+\end{verbatim}
+
+cc --- Номер канала\\
+vvvvvv --- Его громкость
+
+\subsubsection{\#0A DAC output\Cyrax}
+Еще один непосредственный вывод в ЦАП.
+\begin{verbatim}
+    SD Byte
+    SC #0A
+    WC
+    SD Chan (#00-#03)
+    WD
+\end{verbatim}
+
+\subsubsection{\#0B DAC and Volume output\Cyrax\label{cmd:0B}}
+И наконец последний вывод в ЦАП с установкой громкости.
+\begin{verbatim}
+    SD Fbyte
+    SC #0B
+    WC
+    SD Sbyte (ccvvvvvv)
+    WD
+\end{verbatim}
+
+Назначение битов Sbyte как и у команды~\hyperref[cmd:09]{\#09}.
+Команды~\hyperref[cmd:01]{\#01}~---~\hyperref[cmd:0B]{\#0B} служат в основном для построения различных Covox'ов и проигрывателей, при этом не слишком углубляясь во внутреннюю структуру GS.
+
+\subsubsection{\#0C Call SounDrive Covox mode\Cyrax}
+Вызывает режим четырехканального Ковокса, последовательно копирует регистр данных по каналам. Выход из режима автоматически после вывода четвертого байта.
+\begin{verbatim}
+    SD CH1
+    SC #0C
+    WC
+    SD CH2
+    WD
+    SD CH3
+    WD
+    SD CH4
+    WD
+\end{verbatim}
+
+\subsubsection{\#0D Call Ultravox mode\Cyrax}
+Вызывает режим универсального Ковокса, последовательно копирует регистр данных по каналам, число которых регулируется (1~---~4). В отличие от предыдущего варианта синхронизация не производится. Выход также производится автоматически по записи последнего байта.
+\begin{verbatim}
+    SD CHANS
+    SC #0D
+    WC
+
+    SD CH1
+    SD CH2
+    SD CH3
+    SD CH4
+\end{verbatim}
+
+CHANS (4-е младших бита) указывает какие каналы будут задействованы --- для включения канала соответствующий бит нужно установить. Если канал выключен, то поступивший байт попадает на следующий включенный канал (если успеет :)
+
+\subsubsection{\#0E Go to LPT Covox mode}
+Переходит в режим одноканального Ковокса, напрямую копирует регистр данных в ЦАПы двух (правого и левого) каналов. Выход из этого режима ---  запись \#00 в регистр команд.
+\begin{verbatim}
+    SC #0E
+    WC
+
+    SD  \
+    SD   \
+    ...   Это вывод в ЦАПы
+         /
+    SD  /
+
+    SC #00
+    WC
+\end{verbatim}
+
+\subsubsection{\#0F Go in Profi Covox mode\Cyrax}
+Переходит в режим двухканального Ковокса, напрямую копирует регистр данных в ЦАПы одного канала, а регистр команд в ЦАПы второго канала. Выход из этого режима --- запись \#4Е в регистр данных, затем последовательно \#0F и \#AA в регистр команд.
+\begin{verbatim}
+    SD #59
+    SC #0F
+    WC
+
+    SD  \
+    SC   \
+    SD    \
+    SC      Это вывод в ЦАПы
+    ...   /
+    SD   /
+    SC  /
+
+    SD #4E
+    WD
+    SC #0F
+    WC
+    SC #AA
+    WC
+\end{verbatim}
+
+\subsubsection{\#10 Out to any port\Cyrax}
+Выводит байт вo внутренний порт GS (\#00~---~\#09).
+\begin{verbatim}
+    SD Port
+    SC #10
+    WC
+    SD Data
+    WD
+\end{verbatim}
+
+\subsubsection{\#11 In from any port\Cyrax}
+Читает байт из внутреннего порта GS (\#00~---~\#09).
+\begin{verbatim}
+    SD Port
+    SC #11
+    WC
+    GD Data
+    WN
+\end{verbatim}
+
+\subsubsection{\#12 OUT to 0 port\Cyrax}
+Выводит байт в порт конфигурации GS (\#00).
+\begin{verbatim}
+    SD Data
+    SC #12
+    WC
+\end{verbatim}
+
+\subsubsection{\#13 Jump to Address\Cyrax}
+Передает управление по заданному адресу.
+\begin{verbatim}
+    SD ADR.L
+    SC #13
+    WC
+    SD ADR.H
+    WD
+\end{verbatim}
+
+\subsubsection{\#14 Load memory block\Cyrax}
+Загрузка блока кодов по указанному адресу с заданной длиной.
+\begin{verbatim}
+    SD LEN.L
+    SC #14
+      <PAUSE> (мб WD)
+    SD LEN.H
+    WD
+    SD ADR.L
+    WD
+    SD ADR.H
+      <PAUSE>
+
+    SD \
+    WD  \
+    SD   \
+    WD     Блок данных длиной LEN
+    ...  /
+    SD  /
+    WD /
+\end{verbatim}
+
+\subsubsection{\#15 Get memory block\Cyrax}
+Выгрузка блока кодов по указанному адресу с заданной длиной.
+\begin{verbatim}
+    SD LEN.L
+    SC #15
+      <PAUSE> (мб WD)
+    SD LEN.H
+    WD
+    SD ADR.L
+    WD
+    SD ADR.H
+      <PAUSE>
+
+    GD \
+    WN  \
+    GD   \
+    WN     Блок данных длиной LEN
+    ...  /
+    GD  /
+    WN /
+    GD
+\end{verbatim}
+
+\subsubsection{\#16 Poke to address\Cyrax}
+Записывает единичный байт по указанному адресу.
+\begin{verbatim}
+    SD Byte
+    SC #16
+    WC
+    SD ADR.L
+    WD
+    SD ADR.H
+    WD
+\end{verbatim}
+
+\subsubsection{\#17 Peek from address\Cyrax}
+Считывает единичный байт из указанного адреса.
+\begin{verbatim}
+    SD ADR.L
+    SC #17
+    WD
+    SD ADR.H
+    GD Byte
+\end{verbatim}
+
+\subsubsection{\#18 Load DE Pair\Cyrax}
+Загружает регистровую пару DE (относящуюся к GS, не путать с одноименной парой Main CPU) указанным словом.
+\begin{verbatim}
+    SD Byte.E
+    SC #18
+    WC
+    SD Byte.D
+    WD
+\end{verbatim}
+
+\subsubsection{\#19 Poke to (DE) address\Cyrax}
+Записывает байт по адресу указанному в DE.
+\begin{verbatim}
+    SD Byte
+    SC #19
+    WC
+\end{verbatim}
+
+\subsubsection{\#1A Peek from (DE) address\Cyrax}
+Считывает содержимое адреса, указываемого по DE.
+\begin{verbatim}
+    SC #1A
+    WC
+    GD Byte
+    WN
+\end{verbatim}
+
+\subsubsection{\#1B Increment of DE Pair\Cyrax}
+Увеличивает пару DE на единичку.
+\begin{verbatim}
+    SC #1B
+    WC
+\end{verbatim}
+
+\subsubsection{\#1C Poke to (\#20XX) address\Cyrax}
+Записывает байт по адресу, старший байт которого равен \#20. Смысла команда никакого не имеет, так как по этим адресам находится ПЗУ карты. 
+\begin{verbatim}
+    SD ADR.L
+    SC #1C
+    WC
+    SD Byte
+    WD
+\end{verbatim}
+
+\subsubsection{\#1D Peek from (\#20XX) address\Cyrax}
+Читает байт с адреса, старший байт которого равен \#20.
+\begin{verbatim}
+    SD ADR.L
+    SC #1D
+    WC
+    GD Byte
+    WN
+\end{verbatim}
+
+\subsubsection{\#1E --- \#1F Зарезервированы.}
+
+\subsubsection{\#20 Get total RAM}
+Получить общий объем доступной памяти на GS. (В базовой версии это 112к)
+\begin{verbatim}
+    SC #20
+    WC
+    GD RAM.L(Младшая часть)
+    WN
+    GD RAM.M(Средняя часть)
+    WN
+    GD RAM.H(Старшая часть)
+\end{verbatim}
+
+\(\mathrm{Total\_RAM}=65536\cdotp\mathrm{RAM.H}+256\cdotp\mathrm{RAM.M}+\mathrm{RAM.L}\)
+
+\subsubsection{\#21 Get free RAM}
+Получить общий объем свободной памяти на GS.
+\begin{verbatim}
+    SC #20
+    WC
+    GD RAM.L(Младшая часть)
+    WN
+    GD RAM.M(Средняя часть)
+    WN
+    GD RAM.H(Старшая часть)
+\end{verbatim}
+
+\(\mathrm{Free\_RAM}=65536\cdotp\mathrm{RAM.H}+256\cdotp\mathrm{RAM.M}+\mathrm{RAM.L}\)
+
+\subsubsection{\#22 Get GS Variable\Cyrax}
+Получить значение переменной GS номер которой задан по Num. Переменные описывают текущее состояние карты, например номер паттерна, темп и т.п. Соответственно номеров переменных не приводится (в следствие несистематизированности и отрывочности данных, а так же по иным причинам).
+\begin{verbatim}
+      SD Num
+      SC #22
+      WC
+      GD Variable
+      WN
+\end{verbatim}
+
+\subsubsection{\#23 Get number of RAM Pages}
+Получить число страниц на  GS. (В базовой версии 3 страницы)
+\begin{verbatim}
+    SC #23
+    WC
+    GD Number_RAM_Pages
+\end{verbatim}
+
+\subsubsection{\#24 --- \#29 Зарезервированы}
+\subsubsection{\#2A Set Module Master Volume}
+Установить громкость проигрывания модулей.
+\begin{verbatim}
+    SD Module_Master_Volume [#00..#40]
+    SC #2A
+    WC
+    [GD Old_Master_Volume] - Старая громкость
+\end{verbatim}
+
+Маленький пример использования данной команды:
+(Предполагается, что играется модуль)
+\begin{verbatim}
+           LD B,#40
+
+     LOOP: LD A,B
+           OUT (GSDAT),A
+           LD A,#2A
+           OUT (GSCOM),A
+           EI
+           HALT
+           DJNZ LOOP
+
+           LD A,#32
+           OUT (GSCOM),A
+\end{verbatim}
+
+Вышеописанное плавно снижает громкость играющего модуля, а затем останавливает его.
+
+\subsubsection{\#2B Set FX Master Volume}
+Установить громкость проигрывания эффектов.
+\begin{verbatim}
+    SD FX_Master_Volume [#00..#40]
+    SC #2B
+    WC
+    [GD Old_FX_Volume] - Старая громкость
+\end{verbatim}
+
+Аналогично предыдущей команде, но действует на сэмплы.
+С помощью этих двух команд можно регулировать баланс громкости модуля и сэмплов, и т.п.
+
+\subsubsection{\#2E Set Current FX\label{cmd:2E}}
+Установить текущий эффект. Просто присваивает переменной CURFX это значение.
+Если какая-либо команда требует номер сэмпла (sample handle), то можно вместо этого номера подать ей \#00 и интерпретатор подставит вместо этого нуля значение переменной CURFX.
+(См. команды~\hyperref[cmd:38]{\#38}, \hyperref[cmd:39]{\#39}, \hyperref[cmd:40]{\#40}~---~\hyperref[cmd:49]{\#49} для понимания вышеизложенного.)
+\begin{verbatim}
+    SD Cur_FX
+    SC #2E
+    WC
+\end{verbatim}
+
+\subsubsection{\#30 Load Module}
+Загрузка модуля в память.
+\begin{verbatim}
+    SC #30
+    WC
+   [GD Module_Handle]-номер модуля
+   (Command bit=0, Data bit=0)
+    SC #D1 (Open Stream-открыть поток)
+    WC
+
+    SD \
+    WD  \
+    ...   Байты модуля
+    SD  /
+    WD /
+
+    SC #D2 (Close Stream-закрыть поток)
+    WC
+\end{verbatim}
+
+Пример:
+\begin{verbatim}
+             LD HL,Mod_adress
+             LD DE,0-Mod_length
+             LD C,GSCOM
+
+             LD A,#30
+             CALL SENDCOM
+             LD A,#D1
+             CALL SENDCOM
+
+             LD A,(HL)
+     LOOP:   IN B,(C)
+             JP P,READY
+             IN B,(C)
+             JP M,LOOP
+     READY:  OUT (GSDAT),A
+             INC HL
+             LD A,(HL)
+             INC E
+             JP NZ,LOOP
+             INC D
+             JP NZ,LOOP
+     WAIT:   IN B,(C)  ;Ждем принятия
+             JP M,WAIT ;последнего байта
+             LD A,#D2
+             CALL SENDCOM
+             IN A,(GSDAT) ; Номер модуля
+             OUT (GSDAT),A
+             LD A,#31
+
+    SENDCOM: OUT (GSCOM),A
+    WAITCOM: IN A,(GSCOM)
+             RRCA
+             JR C,WAITCOM
+             RET
+\end{verbatim}
+
+\subsubsection{\#31 Play module}
+Проигрывание модуля.
+\begin{verbatim}
+    SD Module_Handle - номер модуля
+    SC #31
+    WC
+\end{verbatim}
+
+\subsubsection{\#32 Stop module}
+Остановить проигрывание модуля.
+\begin{verbatim}
+    SC #32
+    WC
+\end{verbatim}
+
+\subsubsection{\#33 Continue module}
+Продолжить проигрывание модуля после остановки.
+\begin{verbatim}
+    SC #33
+    WC
+\end{verbatim}
+
+\subsubsection{\#35 Set Module Volume}
+Установить громкость проигрывания модулей.
+\begin{verbatim}
+    SD Module_Master_Volume [#00..#40]
+    SC #35
+    WC
+   [GD Old_Master_Volume] - Старая громкость
+\end{verbatim}
+
+\subsubsection{\#36 Data on\Cyrax}
+Устанавливает регистр данных в \#FF.
+\begin{verbatim}
+    SC #36
+    WC
+   [GD Data (#FF) ]
+\end{verbatim}
+
+\subsubsection{\#37 Reinitialisation\Cyrax}
+Переустанавливает внутренние переменные в исходное состояние.
+\begin{verbatim}
+    SC #37
+    WC
+\end{verbatim}
+
+\subsubsection{\#38 Load FX\label{cmd:38}}
+Загрузка сэмпла эффекта в память. Загружает беззнаковые сэмплы (PC type)
+\begin{verbatim}
+    SC #38
+    WC
+   [GD FX_Handle]-номер сэмпла
+   (Command bit=0, Data bit=0)
+    SC #D1 (Open Stream-открыть поток)
+    WC
+
+    SD \
+    WD  \
+    ...   Байты сэмпла
+    SD  /
+    WD /
+
+    SC #D2 (Close Stream-закрыть поток)
+    WC
+\end{verbatim}
+
+При загрузке каждого сэмпла, в памяти GS создается для этого сэмпла заголовок, в котором описываются различные параметры сэмпла. После загрузки эти параметры устанавливаются в определенные значения, как то:  Note=60,    Volume=\#40,    FineTune=0,    SeekFirst=\#0F,    SeekLast=\#0F, Priority=\#80,  No Loop и внутренняя переменная CurFX устанавливается равной FX\_Handle.
+Затем командами~\hyperref[cmd:40]{\#40}, \hyperref[cmd:41]{\#41}, \hyperref[cmd:42]{\#42}, \hyperref[cmd:45]{\#45},
+\hyperref[cmd:46]{\#46} и \hyperref[cmd:47]{\#47} можно эти значения по умолчанию сменить на свои.
+Это требуется потому что команда~\hyperref[cmd:39]{\#39} для инициации проигрывания сэмпла использует значения
+параметров из заголовка сэмпла.
+В своем естественном виде сэмплы обычно плохо пакуются компрессорами, но сжимаемость обычно можно поднять,
+если перевести сэмпл в Delta-вид, т.е. хранить не абсолютные значения сэмпла, а относительное смещение
+относительно предыдущего байта.  Примерно вот так вот можно перевести сэмпл в Delta-вид:
+\begin{verbatim}
+            LD HL,Start_of_sample
+            LD DE,0-Length_of_sample
+            LD C,#00
+
+      LOOP: LD A,(HL)
+            SUB C
+            LD C,(HL)
+            LD (HL),A
+            INC E
+            JP NZ,LOOP
+            INC D
+            JP NZ,LOOP
+\end{verbatim}
+
+А вот как можно закачать сэмпл:
+\begin{verbatim}
+             LD IX,Parameters
+             LD HL,Sample_address
+             LD DE,0-Sample_length
+             LD C,GSCOM
+
+             LD A,#38
+             CALL SENDCOM
+             LD A,#D1
+             CALL SENDCOM
+
+             LD A,(HL)
+     LOOP:   IN B,(C)
+             JP P,READY
+             IN B,(C)
+             JP M,LOOP
+     READY:  OUT (GSDAT),A
+             INC HL
+             ADD A,(HL)
+             INC E
+             JP NZ,LOOP
+             INC D
+             JP NZ,LOOP
+     WAIT:   IN B,(C)  ;Ждем принятия
+             JP M,WAIT ;последнего байта
+             LD A,#D2
+             CALL SENDCOM
+
+      ; Теперь переопределяем параметры
+      ; сэмпла по умолчанию своими
+      ; значениями
+
+             LD A,(IX+#00)
+             OUT (GSDAT),A  ; Нота
+             LD A,#40
+             CALL SENDCOM
+             LD A,(IX+#01)
+             OUT (GSDAT),A  ; Громкость
+             LD A,#41
+
+    SENDCOM: OUT (GSCOM), A
+    WAITCOM: IN A,(GSCOM)
+             RRCA
+             JR C,WAITCOM
+             RET
+\end{verbatim}
+
+\subsubsection{\#39 Play FX\label{cmd:39}}
+Проигрывание эффекта.
+\begin{verbatim}
+    SD FX_Handle - номер сэмпла
+    SC #39
+    WC
+\end{verbatim}
+
+При исполнении этой команды происходит следующее: смотрятся каналы, указанные в SeekFirst параметре нашего сэмпла,
+и если хотя-бы один из них свободен,  в нем и проигрывается сэмпл, в противном случае смотрятся  каналы,
+указанные в SeekLast и если один из них свободен, в нем и играется сэмпл, если свободных нет,
+то просматриваются все каналы, указанные SeekLast, из них выбирается канал с наименьшим приоритетом
+и сравнивается с приоритетом нашего сэмпла (имеется в виду сэмпл, который мы хотим проиграть),
+если  у этого сэмпла будет больший приоритет, чем у сэмпла, уже играющего в канале,
+то играющий в канале сэмпл будет остановлен, а наш сэмпл будет запущен в этом канале вместо старого сэмпла.
+Вот такая вот приоритетная схема\ldots
+
+Тогда сэмпл запускается в канале, то его нота, громкость и т.п. параметры записываются в область данных канала
+из заголовка сэмпла.
+
+В общем случае, чтобы проиграть сэмпл с нужными параметрами, вы можете установить эти параметры
+после загрузки сэмпла и смело использовать команду~\hyperref[cmd:39]{\#39}.
+Если же параметры должны меняться, то можно поступать следующим образом:
+командой~\hyperref[cmd:2E]{\#2E} сделать текущим требуемый сэмпл, командами  \#4x  изменить его параметры,
+а затем уже запускать его командой~\hyperref[cmd:39]{\#39}.
+
+Альтернативный метод запуска сэмплов предоставляют команды~\hyperref[cmd:80]{\#80}---\hyperref[cmd:9B]{\#9B},
+при исполнении этих команд вы прямо в коде команды указываете, в каком канале требуется запустить сэмпл,
+и кроме этого, вы можете также указать с какой нотой и/или громкостью требуется запустить сэмпл.
+
+\subsubsection{\#3A Stop FX in channels}
+Установка проигрывания эффектов в заданных каналах, которые указываются в маске каналов (Channel Mask). В ней единица в n-ном бите указывает на то, что эффект в n-ном канале требуется остановить
+\begin{verbatim}
+    SD Channel_Mask
+    SC #3A
+    WC
+\end{verbatim}
+
+Описанное выше есть идеальный вариант работы данной команды, но к сожалению не все так просто в этом мире, и эта команда действует не так, а именно: единица в бите 7 останавливает сэмпл в нулевом канале, и т.п. В следующих версиях это будет исправлено,  а пока я могу порекомендовать останавливать вообще все сэмплы маской \#FF.
+
+\subsubsection{\#3D Set FX Volume}
+Установить громкость проигрывания эффектов.
+\begin{verbatim}
+    SD FX Volume [#00..#40]
+    SC #3D
+    WC
+   [GD Old_FX_Volume] - Старая громкость
+\end{verbatim}
+
+\subsubsection{\#3E Load FX (Extended version)}
+Загрузка сэмпла эффекта в память. Позволяет загружать сэмплы со знаком. (Amiga type)
+\begin{verbatim}
+    SD #01 (Signed sample)
+    SC #3E
+    WC
+   [GD FX_Handle]-номер сэмпла
+   (Command bit=0, Data bit=0)
+    SC #D1 (Open Stream-открыть поток)
+    WC
+
+    SD \
+    WD  \
+    ...   Байты сэмпла
+    SD  /
+    WD /
+
+    SC #D2 (Close Stream-закрыть поток)
+    WC
+\end{verbatim}
+
+\subsubsection{\#40 Set FX Sample Playing Note\label{cmd:40}}
+Установка ноты по умолчанию для текущего эффекта.
+\begin{verbatim}
+    SD Note [0..95]
+    SC #40
+    WC
+\end{verbatim}
+
+\begin{verbatim}
+Note=
+ 0 C-0
+ 1 C#0
+12 C-1
+24 C-2
+36 C-3 (C-1 в Амиге)
+48 C-4 (C-2 в Амиге)
+60 C-5 (C-3 в Амиге)
+72 C-6
+84 C-7
+\end{verbatim}
+
+В данной версии Sound Generators Wave 2, 3 могут воспроизвести октавы 3, 4 и 5,  поэтому допустимым значением параметра Note является диапазон от 36 до 71.
+
+\subsubsection{\#41 Set FX Sample Volume\label{cmd:41}}
+Установка громкости по умолчанию для текущего эффекта.
+\begin{verbatim}
+    SD FX_Volume [#00..#40]
+    SC #41
+    WC
+\end{verbatim}
+
+\subsubsection{\#42 Set FX Sample Finetune\label{cmd:42}}
+Установка Finetune по умолчанию для текущего эффекта.
+\begin{verbatim}
+    SD FX_Finetune [#00..#40]
+    SC #42
+    WC
+\end{verbatim}
+
+\subsubsection{\#43 --- \#44 Зарезервированы}
+\subsubsection{\#45 Set FX Sample Priority\label{cmd:45}}
+
+Установка приоритета для текущего эффекта. (См. Команду~\hyperref[cmd:39]{\#39})
+\begin{verbatim}
+    SD FX_Priority [#01..#FE]
+    SC #45
+    WC
+\end{verbatim}
+
+После закачки каждому эффекту выставляется по умолчанию приоритет \#80. Эффекты, проигрываемые в модулях, имеют приоритет \#40.
+
+\subsubsection{\#46 Set FX Sample Seek First parameter\label{cmd:46}}
+Установка параметра Seek First для текущего эффекта. (См. Команду~\hyperref[cmd:39]{\#39})
+\begin{verbatim}
+    SD FX_SeekFirst
+    SC #46
+    WC
+\end{verbatim}
+
+В параметре FX\_SeekFirst используются 4 младших бита, номера каналов GS располагаются по возрастающей.
+\begin{verbatim}
+	бит 0 - канал 0
+	бит 1 - канал 1
+	бит 2 - канал 2
+	бит 3 - канал 3
+\end{verbatim}
+
+Например, байт 00001010 включит первый и третий каналы General Sound.
+
+\subsubsection{\#47 Set FX Sample Seek Last parameter\label{cmd:47}}
+Установка параметра Seek Last для текущего эффекта. (См. команду~\hyperref[cmd:39]{\#39})
+\begin{verbatim}
+    SD FX_SeekLast
+    SC #47
+    WC
+\end{verbatim}
+Формат FX\_SeekLast соответствует формату FX\_SeekFirst (См. команду~\hyperref[cmd:46]{\#46})
+
+\subsubsection{\#48 Set FX Sample Loop Begin\Cyrax}
+Установка начала цикла для текущего эффекта.
+\begin{verbatim}
+    SD LEN.L
+    SC #48
+    WC
+    SD LEN.M
+    WD
+    SD LEN.H
+    WD
+\end{verbatim}
+
+При равенстве LEN.H --- \#FF зацикливание не производится
+
+\subsubsection{\#49 Set FX Sample Loop End\Cyrax\label{cmd:49}}
+Установка конца цикла для текущего эффекта.
+\begin{verbatim}
+    SD LEN.L
+    SC #49
+    WC
+    SD LEN.M
+    WD
+    SD LEN.H
+    WD
+\end{verbatim}
+
+\subsubsection{\#4A --- \#4F Зарезервированы.}
+
+\subsubsection{\#51 --- \#5F Зарезервированы.}
+
+\subsubsection{\#60 Get Song Position}
+Получение значения переменной Song\_Position в текущем модуле.
+\begin{verbatim}
+    SC #60
+    WC
+    GD Song_Position  [#00..#FF]
+\end{verbatim}
+
+Можно интерпретировать как количество проигранных паттернов модуля. После старта модуля принимает значение 0 и увеличивается на единицу после проигрывания очередного паттерна. Эта переменная может использоваться для синхронизирования процессов в Спектруме с проигрыванием модуля. Для этого можно, например, в начале процедуры обработки прерывания сделать SC  \#60, затем выполнить процедуры различных операций с экраном, скроллинга строчек и т.п. (т.е. чтобы была достаточная для выполнения команды задержка), а затем прочитать значение порта 179 (GD Song\_Position), и сравнить его с требуемым и, в случае равенства, перейти на следующую часть демы, т.е.
+\begin{verbatim}
+  if (Song_Position==My_Position)
+  then goto Next_Part_Of_Demo
+\end{verbatim}
+
+\subsubsection{\#61 Get Pattern Position}
+Получение значения переменной Pattern\_Position в текущем модуле.
+\begin{verbatim}
+    SC #61
+    WC
+    GD Pattern_Position  [#00..#3F]
+\end{verbatim}
+
+Получить значение смещения в паттерне (текущий ROW), использование --- аналогично предыдущей команде, однако требуется заметить, что эта величина изменяется довольно быстро, и поэтому
+\begin{verbatim}
+ if (Pattern_Position>=My_Position)
+ then goto Next_Part_Of_Demo
+\end{verbatim}
+
+\subsubsection{\#62 Get Mixed Position}
+Получить значение Pattern\_Position, немного смешанной с Song\_Position.
+\begin{verbatim}
+    SC #62
+    WC
+    GD Mixed_Position
+\end{verbatim}
+
+    Mixed\_Position: (по битам)
+\begin{verbatim}
+    7-Song_Position.1
+    6-Song_Position.0
+    5-Pattern_Position.5
+    4-Pattern_Position.4
+    3-Pattern_Position.3
+    2-Pattern_Position.2
+    1-Pattern_Position.1
+    0-Pattern_Position.0
+\end{verbatim}
+
+Т.е. если получить Mixed\_Position и сделать с ним \texttt{AND} \#3F, то получится вылитый Pattern\_Position,
+ а если после получения его немного \texttt{RLCA}, \texttt{RLCA}, \texttt{AND} \#02 --- то это будут младшие два бита Song\_Position. См. примечания к командам \#60 и \#61.
+
+\subsubsection{\#63 Get Channel Notes\label{cmd:63}}
+Получить ноты всех каналов модуля.
+\begin{verbatim}
+    SC #63
+    WC
+    GD Note_of_channel_0
+    WN
+    GD Note_of_channel_1
+    WN
+    GD Note_of_channel_2
+    WN
+    GD Note_of_channel_3
+\end{verbatim}
+
+Если в каком-либо канале значение ноты изменилось с последнего исполнения команды~\hyperref[cmd:63]{\#63},
+то бит 7 полученного значения Note\_of\_channel\_N будет в нуле, если же это значение то же самое,
+что и было раньше, то этот бит будет в единице. Младшие семь битов и есть собственно нота от 0 до 95.
+Если это значение равно 127, то это означает, что никакие сэмплы в канале не играют.
+Данная команда предназначена в основном для построения на ее основе различных анализаторов.
+
+\subsubsection{\#64 Get Channel Volumes\label{cmd:64}}
+Получить громкости всех каналов модуля.
+\begin{verbatim}
+    SC #64
+    WC
+    GD Volume_of_channel_0
+    WN
+    GD Volume_of_channel_1
+    WN
+    GD Volume_of_channel_2
+    WN
+    GD Volume_of_channel_3
+\end{verbatim}
+
+См. описание команды \#63
+\subsubsection{\#65 Jump to position\Cyrax}
+Делает переход на заданную позицию.
+\begin{verbatim}
+    SD Position
+    SC #65
+    WC
+\end{verbatim}
+
+\subsubsection{\#66 Set speed/tempo\Cyrax}
+Установка скорости в пределах \#01~---~\#1F. При значениях \#20~---~\#FF устанавливается темп проигрывания. Значения темпа соответствуют оригинальным при скорости равной \#06.
+\begin{verbatim}
+    SD Speed/Tempo
+    SC #66
+    WC
+\end{verbatim}
+
+\subsubsection{\#67 Get speed value\Cyrax}
+Чтение текущей скорости.
+\begin{verbatim}
+    SC #67
+    WC
+    GD Speed
+    WD
+\end{verbatim}
+
+\subsubsection{\#68 Get tempo value\Cyrax}
+Чтение текущего темпа.
+\begin{verbatim}
+    SC #68
+    WC
+    GD Tempo
+    WD
+\end{verbatim}
+
+\subsubsection{\#69 Process Sound\Cyrax}
+Переход на следующий кварк (или тик) в процессе проигрывания звука. Может, в частности, использоваться  для синхронизации с выводом звука. Для этого нужно установить флаг занятости (Busy On — что вызовет остановку звука), а затем с нужной периодичностью  выдавать команду \#69 для дальнейшего проигрывания.
+\begin{verbatim}
+    SC #69
+    WC
+\end{verbatim}
+
+\subsubsection{\#6A --- \#7F зарезервированы.}
+
+\subsubsection{\#80 Direct Play FX Sample (\#80~---~\#83)\label{cmd:80}}
+Проигрывание сэмпла в заданном канале.
+\begin{verbatim}
+    SD Sample_Number
+    SC #80..#83 (Младшие биты определяют непосредственно номер канала, в
+                 котором требуется играть сэмпл) 
+    WC
+\end{verbatim}
+
+\subsubsection{\#88 Direct Play FX Sample (\#88~---~\#8B)}
+Проигрывание сэмпла в заданном канале с заданной нотой.
+\begin{verbatim}
+    SD Sample_Number
+    SC #88..#8B (Младшие биты определяют непосредственно номер канала, в
+                 котором требуется играть сэмпл) 
+    WC 
+    SD Note [0..95] 
+    WD
+\end{verbatim}
+
+\subsubsection{\#90 Direct Play FX Sample (\#90~---~\#93)}
+Проигрывание сэмпла в заданном канале с заданной громкостью.
+\begin{verbatim}
+    SD Sample_Number
+    SC #90..#93 (Младшие биты определяют непосредственно номер канала, в
+                 котором требуется играть сэмпл)
+    WC
+    SD Volume [#00..#40]
+    WD
+\end{verbatim}
+
+\subsubsection{\#98 Direct Play FX Sample (\#98~---~\#9B)\label{cmd:9B}}
+Проигрывание сэмпла в заданном канале с заданной нотой и громкостью.
+\begin{verbatim}
+    SD Sample_Number
+    SC #98..#9B (Младшие биты определяют непосредственно номер канала, в
+                 котором требуется играть сэмпл)
+    WC
+    SD Note [0..95]
+    WD
+    SD Volume [#00..#40]
+    WD
+\end{verbatim}
+
+\subsubsection{\#A0 Change Channel Note (\#A0~---~\#A3)\Cyrax}
+Смена текущей ноты в заданном канале. Производится «на лету».
+\begin{verbatim}
+      SD Note
+      SC #A0..#A3
+      WC
+\end{verbatim}
+
+\subsubsection{\#A8 Change Channel Volume (\#A8~---~\#AB)\Cyrax}
+Подобно предыдущей команде «на лету» меняет громкость канала.
+\begin{verbatim}
+      SD Volume
+      SC #A8..#AB
+      WC
+\end{verbatim}
+Предыдущие две команды работают вне зависимости от того, что проигрывается в данном канале --- семпл или модуль. Появлении в канале нового звука — от модуля либо семпла вернет все в исходное состояние — то есть громкость либо нота будут те, которые указаны вновь поступившего звука. В силу данной темперированности для получения требуемого эффекта данные команды следует вызывать с некоей периодичностью (устанавливается экспериментально).
+
+\subsubsection{\#B0 --- \#F0 Зарезервированы}
+
+\subsubsection{\#F1 --- \#F2 Зарезервированы}
+\subsubsection{\#F3 Warm restart\label{cmd:F3}}
+Сбрасывает полностью GS, но пропускает этапы определения количества страниц памяти и их проверки, что очень сильно ускоряет процесс инициализации.
+\begin{verbatim}
+    SC #F3
+    WC
+\end{verbatim}
+
+\subsubsection{\#F4 Cold restart\label{cmd:F4}}
+Полный перезапуск GS со всеми проверками. По сути, \texttt{JP \#0000}.
+\begin{verbatim}
+    SC #F4
+    WC
+\end{verbatim}
+
+\subsubsection{\#F5 Busy on}
+Устанавливает флаг занятости в \#FF
+\begin{verbatim}
+    SC #F5
+    WC
+\end{verbatim}
+
+\subsubsection{\#F6 Busy off}
+Устанавливает флаг занятости в \#00
+\begin{verbatim}
+    SC #F6
+    WC
+\end{verbatim}
+
+Изначально Busy = \#00. Исполнение всех команд в GS выполняется в  главном цикле командного интерпретатора. Этот цикл в условном виде можно представить так:
+\begin{verbatim}
+ 1 if Command bit=0 then go to 1
+ 2 Execute Command
+ 3 if Command bit=1 then go to 2
+ 4 if Playing=0 then go to 1
+ 5 if Busy=#FF then go to 1
+ 6 Process Sound
+ 7 go to 1
+\end{verbatim}
+
+Используя команды Busy можно например инициировать проигрывание сэмплов во всех каналах, потом скажем изменить параметры проигрывания в каналах, а потом запустить это все одновременно. Если же их не использовать, то возможна такая ситуация: инициируется первый (сэмпл станет проигрываться, а только потом инициируется второй сэмпл и т.д.).
+
+\subsubsection{\#F7 Get HX Register\Cyrax}
+Получить содержимое регистра HX (GS).
+HX участвует в обработке флага Busy (bit 7 0/1 – Busy On/Off).
+\begin{verbatim}
+    SC #F7
+    WC
+    GD HX
+    WN
+\end{verbatim}
+
+\subsubsection{\#F8 --- \#F9 Зарезервированы}
+
+\subsubsection{\#FA Out zero\_to\_zero}
+Вывод нуля в нулевой (конфигурационный) порт GS. Делает приостановку звучания музыки до следующего чтения из к.л. порта.
+\begin{verbatim}
+    SC #FA
+    WC
+\end{verbatim}
+
+\subsubsection{\#FA включение тестового режима\label{cmd:FA}}
+Специальная команда для тестирования General Sound: 250 (\#FA).
+Сначала в регистр команд кидается команда \#FA, после чего General Sound переходит в режим тестовых команд.
+Далее в тот же регистр команд кидаем следующие команды:\\
+\begin{tabu}{|l|X|}
+\hline
+\textbf{Команда} & \textbf{Действие}\\
+\hline
+2 --- 5 & запись в громкость 63 и потом в звук попеременно 0 и 255, до тех пор, пока не подана новая команда \\ \hline
+6 & пишет в регистр данных то 0, то 255 (для проверки считывания данных со стороны спектрума)\\ \hline
+7 --- 10 & пишет 255 в звук, затем 0 и 255 в громкость\\ \hline
+11 --- 14 & ставит максимальную громкость, пищит в канал 0 и 255, и громкость уменьшает\\ \hline
+15 & во всех каналах ставит максимальные громкости и выдает пилу на звук\\ \hline
+16 & забирает данные из регистра данных и сбрасывает флаг поступления команды\\ \hline
+17 & забирает данные и не сбрасывает флаг поступления команды\\ \hline
+18 --- 21 & при максимальной громкости пишет в звук то 0, то байт из регистра данных\\
+\hline
+\end{tabu}
+
+\subsubsection{\#FB --- \#FF Зарезервированы}
+
+\subsection{Примечания}
+\begin{enumerate}
+\item Команды, отмеченные как~\Cyrax,  являются недокументированными и в полной мере относятся только к версии 1.04.
+На работоспособность этих команд в последующих версиях автор описания (\hyperref[Cyrax]{2}) ответственности не несет.
+\item Напоминаю, что регистры (их имена), упомянутые в этом описании, относятся только и только к внутренним регистрам GS и никакого отношения к регистрам основного процессора не имеют.
+\item Данная редакция (006) является наиболее полной и точной на данный момент --- 18.04.2002. Так же она является последней и несет скорее познавательный характер (по крайней мере автор не видит иного применения данной сводки команд, кроме как для высокоуровневой эмуляции GS).
+На дополнение сего текста меня сподвиг тот факт, что после порядка 4х лет я узрел свой труд в сети, да еще в составе тех описаний карточки. Поэтому мне хотелось бы, чтобы дока была по возможности наиболее полной и точной\ldots
+\end{enumerate}
+
+\subsection{Соответствие нумерации каналов Amiga и General Sound\label{sec:chn}}
+Несмотря на то, что раскладка каналов по стерео в General Sound выполнена аналогично Amiga Protracker, нумерация каналов, принятая в трекерах, не соответствует нумерации каналов в командах управления General Sound.
+Раскладка каналов по стерео в Amiga Protracker:
+\begin{description}
+\item[AM1] --- левый канал
+\item[AM2] --- правый канал
+\item[AM3] --- правый канал
+\item[AM4] --- левый канал
+\end{description}
+
+Раскладка каналов по стерео в General Sound:
+\begin{description}
+\item[GS0] --- левый канал
+\item[GS1] --- левый канал
+\item[GS2] --- правый канал
+\item[GS3] --- правый канал
+\end{description}
+
+Таким образом, между собой каналы соответствуют друг-другу следующим образом:
+\begin{verbatim}
+GS0->AM1
+GS1->AM4
+GS2->AM2
+GS3->AM3
+\end{verbatim}
+
+Эта информация полезна при выставлении SeekFirst/SeekLast параметров для совмещения проигрывания модулей и эффектов.
+Если перевести нумерацию каналов параметра SeekFirst из GS в Amiga нумерацию, то раскладка каналов по битам SeekFirst/SeekLast будет следующей:
+\begin{verbatim}
+00001111
+    ||||
+    3241
+\end{verbatim}
+Например, если в Mod-трекере видно, что у модуля свободны каналы 1 и 3, то в большинстве случаев было бы разумно сначала попытаться проиграть сэмпл в этих каналах, а потом уже в любых других. Для этого в SeekFirst параметр следует выставить
+\%00001001, задействовав GS-каналы 0 и 3, которым соответствуют каналы трекера 1 и 3.
+
+\section{Heмнoгo лиpики...}
+\subsection{Автopы GS : ( 2 штуки ;)}
+\subsubsection{Cлaвa Dangеrous (X-Tradе)}
+Eму пpинaдлeжит идeя сoздaния GS'a, aппapaтнaя peaлизaция oнoгo, нeкoтopыe пoжeлaния oтнoситeльнo Soft'a GS'a, a тaкжe Amiga~1200, нa кoтopoй мнoю пpoизвoдились всячeскиe экспepимeнты. Oн eдинстeнный и нeпoвтopимый пpoизвoдитeль General Sound'a и имeннo oн зaвeдуeт пpoизвoдствoм и пpoдaжeй GS.
+
+\subsubsection{Stingеr}
+Этo я, aвтop сeгo oпусa и пo сoвмeститeльству душa и сepдцe GeneralSound'a.
+Я являюсь  paзpaбoтчикoм всeгo встpoeннoгo Soft'a в GS'e и пpeдпoлaгaю и дaльшe зaнимaться сим дeйствoм.
+(Дa, я тaкжe являюсь aвтopoм нeкoтopыx xитpыx нaвopoтoв в aппapaтнoй чaсти GS'a, и был бы aвтopoм eщe мнoгиx,
+eсли бы нe был всe вpeмя сдepживaeм Cлaвoй,  пoстoяннo oзaбoчeнным пpoблeмaми пoнижeния цeны.)
+
+Haписaв oкoлo 20 кб кoдa зa пoл-гoдa, пpизнaться, я нeмнoгo устaл, нo имeю дoвoльнo бoльшиe
+плaны oтнoситeльнo слeдующиx вepсий GS'a, кaк-тo:
+\begin{itemize}
+\item Wave 4 Sound Generators вoспpoизвoдящиx всe oктaвы
+\item Ускopeниe зa счeт oныx пpoцeнтoв нa 30~---~40 гeнepaции звукa
+\item Oчeнь xoтeлoсь бы пpoигpывaниe STM'oв oт PC
+\item Paзвитaя систeмa кoмaнд
+\item Paзличныe спeцэффeкты нaд сэмплaми
+\item Xpaнeниe пaттepнoв в зaкoмпpeссoвaннoм видe (oстaeтся oкoлo 15\% oт изнaчaльнoгo oбьeмa)
+\item И мнoгoe дpугoe
+\end{itemize}
+
+Bсe пpoгpaммнoe oбeспeчeниe дoлжнo paбoтaть и нa пoслeдующиx вepсияx пpoшивки, 
+eсли oнo нaписaнo в сooтвeтствии с мoими вышeизлoжeнными пoжeлaниями и тpeбoвaниями.
+Кpoмe oписaнныx кoмaнд в GS'e сущeствуeт eщe бoльшoe кoличeствo кoмaнд,  кoтopыe нe дoкумeнтиpoвaны,
+и я oстaвляю зa сoбoй пpaвo измeнять иx кaким-угoднo oбpaзoм и тoлькo oтнoситeльнo
+дoкумeнтиpoвaныx кoмaнд пpиeмлю зaкoнныe пpeтeнзии  типa:
+``B дoкумeнтaции нaписaнo тaк, a в пpoшивкe этo paбoтaeт пo дpугoму...''.
+
+Я плaниpую знaчитeльнoe paсшиpeниe систeмы кoмaнд, и буду paд кoнстpуктивным (жeлaтeльнo кoнкpeтным) пpeдлoжeниям.
+Taк чтo, eсли вы oзвучивaeтe игpушку или пишeтe музыкaльный peдaктop для GS и oбнapуживaeтe,
+чтo вaм oчeнь нe xвaтaeт кaкoй-либo кoмaнды, тo звoнитe мнe и выскaзывaйтe пpeдлoжeния.
+(Teлeфoн, я думaю, oсoбoгo тpудa узнaть нe сoстaвит ;)
+
+\subsection{Sanx 4 moral support:}
+Димa (X-Trade)
+SParker (XLD)
+
+\section{General Sound ROM v1.05a}
+\copyright~Stinger, 1997,
+bugfixed by psb \& Evgeny Muchkin, 2007.
+В данной версии прошивки исправлены глюки версии 1.04 Beta.
+\begin{enumerate}
+\item Глюк с модулями, в которых >= 63 паттерна (klisje.mod, tranceillusion.mod).
+\item Глюк со скоростью проигрывания ПОСЛЕДНЕЙ ноты модуля, её скорость выставлялась стандартной,
+во многих модулях при зацикливании была заметна задержка\\
+(напр., technostyle(z).mod).
+Более того, при зацикливании не на 1ю позицию, скорость все равно выставлялась стандартной!
+\item Пофиксена неправильная скорость проигрывания сэмплов. На некоторых модулях было заметно,
+что сэмплы играли немного быстрее чем надо (например, EightMayDay.mod).
+\item При начале проигрывания модуля GS сообщал, что играет какая-то нота, даже если в канале ничего не играло
+(команда~\hyperref[cmd:64]{\#64} возвращала не 127).
+\item Добавлена команда для плееров: \#6A --- Set player mode.
+После этой команды GS перестанет обращать внимание на команду останова в модуле (ком. F00).
+Полезно для некоторых модулей (bst.mod).\label{cmd:6A}
+\end{enumerate}
+
+Формат команды:
+\begin{verbatim}
+   SD #01	;#01 - On, #00 — Off
+   SC #6A
+   WC                              
+\end{verbatim}
+\begin{enumerate}[resume]
+\item Встроен релупер для модулей. Раньше, если в модуле играл сэмпл,
+длина лупа которого была слишком маленькой (десятки-сотни байт), GS тормозил или зависал.
+После этой команды сэмплы в загружаемом модуле фиксятся и GS не тормозит.\label{cmd:6B}
+\end{enumerate}
+
+Формат команды:
+\begin{verbatim}
+	    SD MinLoopLen_Low
+	    SC #6B
+	    WC
+	    SD MinLoopLen_High
+\end{verbatim}
+
+	Параметр MinLoopLen задается в СЛОВАХ и может быть в диапазоне от 0 до 16384
+(0 --- релупер выключен).
+	Возможен короткий формат команды:
+\begin{verbatim}
+    SC #6B
+    WC
+    SC ...	;следующая команда GS
+\end{verbatim}
+
+		В этом случае длина поумолчанию будет 512 слов.
+
+\textbf{ВНИМАНИЕ!} Настройки команд~\hyperref[cmd:6A]{\#6A} и \hyperref[cmd:6B]{\#6B}
+сбрасываются только аппаратным RESET или командой~\hyperref[cmd:F4]{\#F4}
+(командой~\hyperref[cmd:F3]{\#F3} не сбрасываются!).
+
+\textbf{P.S.} В прошивке по смещению \#0004 находится номер версии в BCD формате;
+по смещению \#0100 находятся оригинальные копирайты (3 строки по 24 символа);
+по смещению \#0080 находится информация о патче, строка заканчивается 0.
+
+\textbf{P.P.S.} Для работы старых плееров в новых режимах (п.\ref{cmd:6A} и \ref{cmd:6B}),
+достаточно перед их запуском дать из бейсика команды:
+\begin{verbatim}
+    OUT 179,1
+    OUT 187,106
+    OUT 187,107
+\end{verbatim}
+
+\textbf{P.P.P.S.} Хочется выразить особую благодарность следующим людям:
+\begin{description}
+\item[Stinger:] за прошивку и доступные исходники
+\item[Aprisobal:] без SjASMPlus не было бы ничего этого
+\item[Evgeny Muchkin:] за всяческое содействие при создании патча
+\item[Caro:] за IDA и моральную поддержку
+\item[SMT \& Alone Coder:] за UnrealSpeccy (и за исправление глюков в нем!;)
+\item[Half Elf:] за плагины к FAR'у
+\item[n1k-o \& Manwe:] за консультации по mod'ам
+\end{description}
+
+\section{История версий}
+
+24.02.2012: thx Evgeny Muchkin\\
+добавлен  пункт~\ref{cmd:FA}~\hyperref[cmd:FA]{\#FA} включение тестового режима.
+
+18.01.2011: thx  moroz1999\\
+дополнено описание~\ref{cmd:45}~\hyperref[cmd:45]{\#45} Set FX Sample Priority;\\
+дополнено описание~\ref{cmd:46}~\hyperref[cmd:46]{\#46} Set FX Sample Seek First parameter;\\
+дополнено описание~\ref{cmd:47}~\hyperref[cmd:47]{\#47} Set FX Sample Seek Last parameter;\\
+добавлен пункт~\ref{sec:chn} Соответствие нумерации каналов Amiga и General Sound.
+
+19.07.2009: базовая версия.
+\end{document}

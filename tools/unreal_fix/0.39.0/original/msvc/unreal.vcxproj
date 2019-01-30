@@ -1,0 +1,940 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="clang-Debug|Win32">
+      <Configuration>clang-Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="clang-Debug|x64">
+      <Configuration>clang-Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="clang-Release|Win32">
+      <Configuration>clang-Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="clang-Release|x64">
+      <Configuration>clang-Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="icl-Debug|Win32">
+      <Configuration>icl-Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="icl-Debug|x64">
+      <Configuration>icl-Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="icl-Release|Win32">
+      <Configuration>icl-Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="icl-Release|x64">
+      <Configuration>icl-Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C6001C32-3C0E-43EA-9665-BC26872A4B11}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <TargetPlatformVersion>10.0.15063.0</TargetPlatformVersion>
+    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <BasePlatformToolset>v141_xp</BasePlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='icl-Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <BasePlatformToolset>v141_xp</BasePlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>LLVM-vs2017_xp</PlatformToolset>
+    <BasePlatformToolset>v141_xp</BasePlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <BasePlatformToolset>v141_xp</BasePlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='icl-Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <BasePlatformToolset>v141_xp</BasePlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>LLVM-vs2017_xp</PlatformToolset>
+    <BasePlatformToolset>v141_xp</BasePlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <BasePlatformToolset>v141_xp</BasePlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='icl-Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <BasePlatformToolset>v141_xp</BasePlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>LLVM-vs2017_xp</PlatformToolset>
+    <BasePlatformToolset>v141_xp</BasePlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <BasePlatformToolset>v141_xp</BasePlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='icl-Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <BasePlatformToolset>v141_xp</BasePlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>LLVM-vs2017_xp</PlatformToolset>
+    <BasePlatformToolset>v141_xp</BasePlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="DefinesCommon.props" />
+    <Import Project="msvc.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='icl-Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="DefinesCommon.props" />
+    <Import Project="msvc.props" />
+    <Import Project="icl.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='clang-Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="DefinesCommon.props" />
+    <Import Project="llvm.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="DefinesCommon.props" />
+    <Import Project="msvc.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='icl-Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="DefinesCommon.props" />
+    <Import Project="msvc.props" />
+    <Import Project="icl.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='clang-Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="DefinesCommon.props" />
+    <Import Project="llvm.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="DefinesCommon.props" />
+    <Import Project="msvc.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='icl-Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="DefinesCommon.props" />
+    <Import Project="msvc.props" />
+    <Import Project="icl.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='clang-Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="DefinesCommon.props" />
+    <Import Project="llvm.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="DefinesCommon.props" />
+    <Import Project="msvc.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='icl-Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="DefinesCommon.props" />
+    <Import Project="msvc.props" />
+    <Import Project="icl.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='clang-Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="DefinesCommon.props" />
+    <Import Project="llvm.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath);$(ICLibDir)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='icl-Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath);$(ICLibDir)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath);$(ICLibDir)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath);$(ICLibDir)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='icl-Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath);$(ICLibDir)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath);$(ICLibDir)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath);$(ICLibDir)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='icl-Debug|x64'">
+    <OutDir>$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath);$(ICLibDir)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-Debug|x64'">
+    <OutDir>$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath);$(ICLibDir)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath);$(ICLibDir)</LibraryPath>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='icl-Release|x64'">
+    <OutDir>$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath);$(ICLibDir)</LibraryPath>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-Release|x64'">
+    <OutDir>$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <LibraryPath>$(LibraryPath);$(ICLibDir)</LibraryPath>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>std.h</PrecompiledHeaderFile>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <EnableExpandedLineNumberInfo>true</EnableExpandedLineNumberInfo>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <OptimizationDiagnosticLevel>Level4</OptimizationDiagnosticLevel>
+      <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <ForcedIncludeFiles>std.h</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>..\lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>-pdbaltpath:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='icl-Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>std.h</PrecompiledHeaderFile>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <EnableExpandedLineNumberInfo>true</EnableExpandedLineNumberInfo>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <OptimizationDiagnosticLevel>Level4</OptimizationDiagnosticLevel>
+      <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <ForcedIncludeFiles>std.h</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>..\lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>-pdbaltpath:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='clang-Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>std.h</PrecompiledHeaderFile>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <EnableExpandedLineNumberInfo>true</EnableExpandedLineNumberInfo>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <OptimizationDiagnosticLevel>Level4</OptimizationDiagnosticLevel>
+      <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <ForcedIncludeFiles>std.h</ForcedIncludeFiles>
+      <RemoveUnreferencedCodeData>false</RemoveUnreferencedCodeData>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>..\lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>std.h</PrecompiledHeaderFile>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <EnableExpandedLineNumberInfo>true</EnableExpandedLineNumberInfo>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <OptimizationDiagnosticLevel>Level4</OptimizationDiagnosticLevel>
+      <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <ForcedIncludeFiles>std.h</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalOptions>-pdbaltpath:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='icl-Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>std.h</PrecompiledHeaderFile>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <EnableExpandedLineNumberInfo>true</EnableExpandedLineNumberInfo>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <OptimizationDiagnosticLevel>Level4</OptimizationDiagnosticLevel>
+      <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <ForcedIncludeFiles>std.h</ForcedIncludeFiles>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <InterproceduralOptimization>MultiFile</InterproceduralOptimization>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalOptions>-pdbaltpath:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='clang-Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>std.h</PrecompiledHeaderFile>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <EnableExpandedLineNumberInfo>true</EnableExpandedLineNumberInfo>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <OptimizationDiagnosticLevel>Level4</OptimizationDiagnosticLevel>
+      <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <ForcedIncludeFiles>std.h</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='icl-Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='clang-Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeaderFile>std.h</PrecompiledHeaderFile>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <EnableExpandedLineNumberInfo>true</EnableExpandedLineNumberInfo>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <OptimizationDiagnosticLevel>Level4</OptimizationDiagnosticLevel>
+      <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ForcedIncludeFiles>std.h</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>..\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Console</SubSystem>
+      <AdditionalOptions>-pdbaltpath:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='icl-Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeaderFile>std.h</PrecompiledHeaderFile>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <EnableExpandedLineNumberInfo>true</EnableExpandedLineNumberInfo>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <OptimizationDiagnosticLevel>Level4</OptimizationDiagnosticLevel>
+      <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ForcedIncludeFiles>std.h</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>..\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Console</SubSystem>
+      <AdditionalOptions>-pdbaltpath:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='clang-Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeaderFile>std.h</PrecompiledHeaderFile>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <EnableExpandedLineNumberInfo>true</EnableExpandedLineNumberInfo>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <OptimizationDiagnosticLevel>Level4</OptimizationDiagnosticLevel>
+      <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <ForcedIncludeFiles>std.h</ForcedIncludeFiles>
+      <RemoveUnreferencedCodeData>false</RemoveUnreferencedCodeData>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>..\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='icl-Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='clang-Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeaderFile>std.h</PrecompiledHeaderFile>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <EnableExpandedLineNumberInfo>true</EnableExpandedLineNumberInfo>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <Optimization>Full</Optimization>
+      <InterproceduralOptimization>MultiFile</InterproceduralOptimization>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <UseProcessorExtensions>SSE42</UseProcessorExtensions>
+      <OptimizationDiagnosticLevel>Level4</OptimizationDiagnosticLevel>
+      <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ForcedIncludeFiles>std.h</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>..\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <AdditionalOptions>-pdbaltpath:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+    </Link>
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)..\unreal.manifest</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='icl-Release|x64'">
+    <ClCompile>
+      <PrecompiledHeaderFile>std.h</PrecompiledHeaderFile>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <EnableExpandedLineNumberInfo>true</EnableExpandedLineNumberInfo>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <Optimization>Full</Optimization>
+      <InterproceduralOptimization>MultiFile</InterproceduralOptimization>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <OptimizationDiagnosticLevel>Level4</OptimizationDiagnosticLevel>
+      <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ForcedIncludeFiles>std.h</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>..\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <AdditionalOptions>-pdbaltpath:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+    </Link>
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)..\unreal.manifest</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='clang-Release|x64'">
+    <ClCompile>
+      <PrecompiledHeaderFile>std.h</PrecompiledHeaderFile>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <EnableExpandedLineNumberInfo>true</EnableExpandedLineNumberInfo>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <Optimization>Full</Optimization>
+      <InterproceduralOptimization>MultiFile</InterproceduralOptimization>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <UseProcessorExtensions>SSE42</UseProcessorExtensions>
+      <OptimizationDiagnosticLevel>Level4</OptimizationDiagnosticLevel>
+      <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ForcedIncludeFiles>std.h</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>..\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+    </Link>
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)..\unreal.manifest</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\atm.cpp" />
+    <ClCompile Include="..\cheat.cpp" />
+    <ClCompile Include="..\config.cpp" />
+    <ClCompile Include="..\dbgbpx.cpp" />
+    <ClCompile Include="..\dbgcmd.cpp" />
+    <ClCompile Include="..\dbglabls.cpp" />
+    <ClCompile Include="..\dbgmem.cpp" />
+    <ClCompile Include="..\dbgoth.cpp" />
+    <ClCompile Include="..\dbgpaint.cpp" />
+    <ClCompile Include="..\dbgreg.cpp" />
+    <ClCompile Include="..\dbgrwdlg.cpp" />
+    <ClCompile Include="..\dbgtrace.cpp" />
+    <ClCompile Include="..\debug.cpp" />
+    <ClCompile Include="..\draw.cpp" />
+    <ClCompile Include="..\drawnomc.cpp" />
+    <ClCompile Include="..\draw_384.cpp" />
+    <ClCompile Include="..\dx.cpp" />
+    <ClCompile Include="..\dxerr.cpp" />
+    <ClCompile Include="..\dxovr.cpp" />
+    <ClCompile Include="..\dxrcopy.cpp" />
+    <ClCompile Include="..\dxrend.cpp" />
+    <ClCompile Include="..\dxrendch.cpp" />
+    <ClCompile Include="..\dxrframe.cpp" />
+    <ClCompile Include="..\dxr_4bpp.cpp" />
+    <ClCompile Include="..\dxr_512.cpp" />
+    <ClCompile Include="..\dxr_advm.cpp" />
+    <ClCompile Include="..\dxr_atm.cpp" />
+    <ClCompile Include="..\dxr_atm0.cpp" />
+    <ClCompile Include="..\dxr_atm2.cpp" />
+    <ClCompile Include="..\dxr_atm4.cpp" />
+    <ClCompile Include="..\dxr_atm6.cpp" />
+    <ClCompile Include="..\dxr_atm7.cpp" />
+    <ClCompile Include="..\dxr_atmf.cpp" />
+    <ClCompile Include="..\dxr_prof.cpp" />
+    <ClCompile Include="..\dxr_rsm.cpp" />
+    <ClCompile Include="..\dxr_text.cpp" />
+    <ClCompile Include="..\dxr_vd.cpp" />
+    <ClCompile Include="..\emul.cpp" />
+    <ClCompile Include="..\emulkeys.cpp" />
+    <ClCompile Include="..\fntsrch.cpp" />
+    <ClCompile Include="..\font.cpp" />
+    <ClCompile Include="..\font14.cpp" />
+    <ClCompile Include="..\font16.cpp" />
+    <ClCompile Include="..\font8.cpp" />
+    <ClCompile Include="..\fontatm2.cpp" />
+    <ClCompile Include="..\fontdata.cpp" />
+    <ClCompile Include="..\gs.cpp" />
+    <ClCompile Include="..\gshlbass.cpp" />
+    <ClCompile Include="..\gshle.cpp" />
+    <ClCompile Include="..\gsz80.cpp" />
+    <ClCompile Include="..\gui.cpp" />
+    <ClCompile Include="..\hdd.cpp" />
+    <ClCompile Include="..\hddio.cpp" />
+    <ClCompile Include="..\iehelp.cpp" />
+    <ClCompile Include="..\init.cpp" />
+    <ClCompile Include="..\input.cpp" />
+    <ClCompile Include="..\inputpc.cpp" />
+    <ClCompile Include="..\io.cpp" />
+    <ClCompile Include="..\keydefs.cpp" />
+    <ClCompile Include="..\leds.cpp" />
+    <ClCompile Include="..\mainloop.cpp" />
+    <ClCompile Include="..\memory.cpp" />
+    <ClCompile Include="..\modem.cpp" />
+    <ClCompile Include="..\opendlg.cpp" />
+    <ClCompile Include="..\profi.cpp" />
+    <ClCompile Include="..\savesnd.cpp" />
+    <ClCompile Include="..\savevid.cpp" />
+    <ClCompile Include="..\sdcard.cpp" />
+    <ClCompile Include="..\snapshot.cpp" />
+    <ClCompile Include="..\snd_bass.cpp" />
+    <ClCompile Include="..\sound.cpp" />
+    <ClCompile Include="..\sshot_png.cpp" />
+    <ClCompile Include="..\std.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='icl-Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='clang-Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='icl-Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='clang-Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='icl-Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='clang-Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='icl-Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='clang-Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\tape.cpp" />
+    <ClCompile Include="..\util.cpp" />
+    <ClCompile Include="..\vars.cpp" />
+    <ClCompile Include="..\vs1001.cpp" />
+    <ClCompile Include="..\wd93cmd.cpp" />
+    <ClCompile Include="..\wd93crc.cpp" />
+    <ClCompile Include="..\wd93dat.cpp" />
+    <ClCompile Include="..\wd93trk.cpp" />
+    <ClCompile Include="..\wldr_fdi.cpp" />
+    <ClCompile Include="..\wldr_isd.cpp" />
+    <ClCompile Include="..\wldr_pro.cpp" />
+    <ClCompile Include="..\wldr_td0.cpp" />
+    <ClCompile Include="..\wldr_trd.cpp" />
+    <ClCompile Include="..\wldr_udi.cpp" />
+    <ClCompile Include="..\z80.cpp" />
+    <ClCompile Include="..\z80asm.cpp" />
+    <ClCompile Include="..\zc.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\atm.h" />
+    <ClInclude Include="..\bass.h" />
+    <ClInclude Include="..\cheat.h" />
+    <ClInclude Include="..\config.h" />
+    <ClInclude Include="..\dbgbpx.h" />
+    <ClInclude Include="..\dbgcmd.h" />
+    <ClInclude Include="..\dbglabls.h" />
+    <ClInclude Include="..\dbgmem.h" />
+    <ClInclude Include="..\dbgoth.h" />
+    <ClInclude Include="..\dbgpaint.h" />
+    <ClInclude Include="..\dbgreg.h" />
+    <ClInclude Include="..\dbgrwdlg.h" />
+    <ClInclude Include="..\dbgtrace.h" />
+    <ClInclude Include="..\debug.h" />
+    <ClInclude Include="..\draw.h" />
+    <ClInclude Include="..\drawnomc.h" />
+    <ClInclude Include="..\dx.h" />
+    <ClInclude Include="..\dxerr.h" />
+    <ClInclude Include="..\DxErr9.h" />
+    <ClInclude Include="..\dxovr.h" />
+    <ClInclude Include="..\dxrcopy.h" />
+    <ClInclude Include="..\dxrend.h" />
+    <ClInclude Include="..\dxrendch.h" />
+    <ClInclude Include="..\dxrframe.h" />
+    <ClInclude Include="..\dxr_4bpp.h" />
+    <ClInclude Include="..\dxr_512.h" />
+    <ClInclude Include="..\dxr_advm.h" />
+    <ClInclude Include="..\dxr_atm.h" />
+    <ClInclude Include="..\dxr_atm0.h" />
+    <ClInclude Include="..\dxr_atm2.h" />
+    <ClInclude Include="..\dxr_atm4.h" />
+    <ClInclude Include="..\dxr_atm6.h" />
+    <ClInclude Include="..\dxr_atm7.h" />
+    <ClInclude Include="..\dxr_atmf.h" />
+    <ClInclude Include="..\dxr_prof.h" />
+    <ClInclude Include="..\dxr_rsm.h" />
+    <ClInclude Include="..\dxr_text.h" />
+    <ClInclude Include="..\emul.h" />
+    <ClInclude Include="..\emulkeys.h" />
+    <ClInclude Include="..\fntsrch.h" />
+    <ClInclude Include="..\font.h" />
+    <ClInclude Include="..\font14.h" />
+    <ClInclude Include="..\font16.h" />
+    <ClInclude Include="..\font8.h" />
+    <ClInclude Include="..\fontatm2.h" />
+    <ClInclude Include="..\fontdata.h" />
+    <ClInclude Include="..\funcs.h" />
+    <ClInclude Include="..\gs.h" />
+    <ClInclude Include="..\gshlbass.h" />
+    <ClInclude Include="..\gshle.h" />
+    <ClInclude Include="..\gsz80.h" />
+    <ClInclude Include="..\gui.h" />
+    <ClInclude Include="..\hdd.h" />
+    <ClInclude Include="..\hddio.h" />
+    <ClInclude Include="..\iehelp.h" />
+    <ClInclude Include="..\init.h" />
+    <ClInclude Include="..\input.h" />
+    <ClInclude Include="..\inputpc.h" />
+    <ClInclude Include="..\leds.h" />
+    <ClInclude Include="..\mainloop.h" />
+    <ClInclude Include="..\memory.h" />
+    <ClInclude Include="..\modem.h" />
+    <ClInclude Include="..\mods.h" />
+    <ClInclude Include="..\opendlg.h" />
+    <ClInclude Include="..\profi.h" />
+    <ClInclude Include="..\resource.h" />
+    <ClInclude Include="..\savesnd.h" />
+    <ClInclude Include="..\savevid.h" />
+    <ClInclude Include="..\sdcard.h" />
+    <ClInclude Include="..\snapshot.h" />
+    <ClInclude Include="..\snd_bass.h" />
+    <ClInclude Include="..\sound.h" />
+    <ClInclude Include="..\sshot_png.h" />
+    <ClInclude Include="..\std.h" />
+    <ClInclude Include="..\sysdefs.h" />
+    <ClInclude Include="..\tape.h" />
+    <ClInclude Include="..\util.h" />
+    <ClInclude Include="..\vars.h" />
+    <ClInclude Include="..\vs1001.h" />
+    <ClInclude Include="..\wd93.h" />
+    <ClInclude Include="..\wd93crc.h" />
+    <ClInclude Include="..\wd93dat.h" />
+    <ClInclude Include="..\z80.h" />
+    <ClInclude Include="..\z80asm.h" />
+    <ClInclude Include="..\z80_main.h" />
+    <ClInclude Include="..\zc.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\gsz80.inl" />
+    <None Include="..\res\cur00000.cur" />
+    <None Include="..\res\cur00001.cur" />
+    <None Include="..\res\cur00002.cur" />
+    <None Include="..\res\cur00003.cur" />
+    <None Include="..\res\cur00004.cur" />
+    <None Include="..\res\cur00005.cur" />
+    <None Include="..\res\cur00006.cur" />
+    <None Include="..\res\cur00007.cur" />
+    <None Include="..\res\cur00008.cur" />
+    <None Include="..\z80_main.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\settings.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="snd.vcxproj">
+      <Project>{d83ef518-4c10-46b6-8a64-138cef801212}</Project>
+    </ProjectReference>
+    <ProjectReference Include="z80.vcxproj">
+      <Project>{72b23501-7f3f-4ade-ba9e-3bea8ad74dc8}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\res\u1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="..\unreal.manifest" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
