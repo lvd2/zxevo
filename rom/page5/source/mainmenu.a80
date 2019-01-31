@@ -1,0 +1,63 @@
+
+;LAST UPDATE: 29.01.2019 savelij
+
+	TITLE "pack main menu"
+
+		PHASE 0
+		JP $
+
+		DUPL 0X0008-$,0XFF
+		JP $
+
+		DUPL 0X0010-$,0XFF
+		JP $
+
+		DUPL ADR_SEL_ROM-$,0XFF
+		OUT (C),A			;0014
+		NOP
+		RET
+
+		DUPL 0X0018-$,0XFF
+		JP $
+
+		DUPL 0X0020-$,0XFF
+		JP $ 
+
+		DUPL 0X0028-$,0XFF
+		JP $
+
+		DUPL 0X0030-$,0XFF
+		JP CALL2PAGE
+
+		DUPL 0X0038-$,0XFF
+		EI
+		RET
+
+		DUPL 0X0040-$,0XFF
+		JP UNP_MAINMENU
+
+		DUPL 0X0080-$,0XFF
+		include ../../dec40.a80
+
+		DUPL 0X00FF-$,0XFF
+		DW 0X0038
+
+UNP_MAINMENU	PUSH BC
+		LD HL,.LOADADR
+		CALL UNPACK
+		POP BC
+		XOR A
+		JP ADR_SEL_ROM
+
+.LOADADR
+	IFDEF DOS_FE
+		binclude ../../mainmenu/main_fe_pack.rom
+	ELSE
+		binclude ../../mainmenu/main_pack.rom
+	ENDIF
+
+		PHASE $&0X3FFF
+		DUPL 0X3FF8-$,0XFF
+		DB "MNMENU"
+		DW DATA_VERS
+		DEPHASE

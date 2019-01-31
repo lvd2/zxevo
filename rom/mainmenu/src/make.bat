@@ -15,5 +15,4 @@
 ..\..\..\tools\mhmt\mhmt -mlz cmosset.rom ..\cmosset_pack.rom
 ..\..\..\tools\mhmt\mhmt -mlz chars_eng.bin ..\chars_pack.rom
 
-del *.lst
 del *.rom

@@ -1,0 +1,87 @@
+
+;LAST UPDATE: 22.11.2018 savelij
+
+loc_3C47	xor	a
+		call	SET_PAGE
+LOC_3C4B	LD DE,0XFFFF
+		ld	a, 7
+		jp	loc_9
+
+loc_3C50	ld	sp, 0X5BFF
+		ld	a, 1Fh
+		call	SET_PAGE
+		ld	hl, 0C000h
+		ld	a, (hl)
+		cp	0C3h
+		jr	nz, loc_3C47
+		xor	a
+loc_3C61	add	a, (hl)
+		adc	a, 0
+		inc	hl
+		bit	7, h
+		jr	nz, loc_3C61
+		dec	a
+		jr	nz, loc_3C47
+		ld	a, 0AAh
+		dec	hl
+		cp	(hl)
+		jr	nz, loc_3C47
+		cpl
+		dec	hl
+		cp	(hl)
+		jr	nz, loc_3C47
+		ld	hl, 0D000h
+		ld	de, 5B00h
+		ld	bc, 2500h
+		ldir
+		ld	sp, TRD_5F00
+		ld	a, 1Eh
+		call	SET_PAGE
+		call	LDIR_HL_DE
+		ld	a, 3
+		call	SET_PAGE
+		call	LDIR_DE_HL
+		ld	a, 1Dh
+		call	SET_PAGE
+		call	LDIR_HL_DE
+		ld	a, 1
+		call	SET_PAGE
+		call	LDIR_DE_HL
+		ld	a, 1Ch
+		call	SET_PAGE
+		call	LDIR_HL_DE
+		xor	a
+		call	SET_PAGE
+		call	LDIR_DE_HL
+		ld	a, 1Bh
+		call	SET_PAGE
+		call	LDIR_HL_DE
+		xor	a
+		call	SET_PAGE
+		ld	sp, (0X5B73)
+		ret
+
+SET_PAGE	push	af
+		and	7
+		or	10h
+		ld	bc, 7FFDh
+		out	(c), a
+		pop	af
+		and	18h
+		cpl
+		ld	bc, 0FFF7h
+		out	(c), a
+		ret
+
+LDIR_DE_HL	ld	a, 0FFh
+		or	a
+		jr	loc_3CE0
+
+LDIR_HL_DE	xor	a
+loc_3CE0	ld	hl, 0C000h
+		ld	de, 8000h
+		ld	bc, 4000h
+		jr	z, loc_3CEC
+		ex	de, hl
+loc_3CEC	ldir
+		ret

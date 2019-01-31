@@ -45,10 +45,6 @@ cd ..\..\trdos_v6\source
 call make.bat
 del *.lst
 
-cd ..\..\sts6\source
-call make.bat
-del *.lst
-
 cd ..\..
 
 copy /B /Y page3\basic48_128.rom + page1\evo-dos_virt.rom + page5\rst8service.rom    + ff_16k.rom + page3\basic48_128.rom + page1\evo-dos_emu3d13.rom + page2\basic128.rom + page0\services.rom    ers.rom
