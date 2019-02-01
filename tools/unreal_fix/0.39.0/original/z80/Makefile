@@ -1,6 +1,6 @@
 !ifdef USE_CL
 CXX=cl -c
-ICL_FLAGS_COMMON=-Zc:externConstexpr
+ICL_FLAGS_COMMON=/wd4514 /wd4365 /wd4820 /D _NO_CRT_STDIO_INLINE /GF /Gm- /GS- /Gy /fp:precise /permissive- /Zc:inline /Zc:rvalueCast /std:c++latest /Gd /TP /analyze- /FC /errorReport:none -Zc:externConstexpr -constexpr:steps20000000
 ICL_FLAGS_RELEASE=
 ICL_IA32=
 CL_FLAGS_RELEASE=-Ox -GL
@@ -8,7 +8,7 @@ LIB=lib
 LIBFLAGS=-LTCG
 !else
 CXX=icl -c
-ICL_FLAGS_COMMON=-Wcheck -Qms0 -Qopt-report-embed- -notraceback
+ICL_FLAGS_COMMON=-Wcheck -Qms0 -Qstd:c++17 -Qopt-report-embed- -notraceback
 ICL_FLAGS_RELEASE=-O3 -Qipo
 ICL_IA32=-arch:IA32
 CL_FLAGS_RELEASE=

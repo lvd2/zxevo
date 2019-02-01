@@ -18,7 +18,7 @@ LFLAGS=-LTCG
 !endif #DEBUG
 
 CXX=cl -c
-ICL_FLAGS_COMMON=-Zc:externConstexpr
+ICL_FLAGS_COMMON=-Zc:externConstexpr -std:c++17
 ICL_FLAGS_RELEASE=
 ICL_IA32=
 CL_FLAGS_RELEASE=-Ox -GL
