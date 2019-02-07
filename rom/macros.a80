@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 31.01.2019 savelij
+;LAST UPDATE: 02.02.2019 savelij
 
 ;автоопределение кодировки работает неправильно
 
@@ -230,4 +230,12 @@ dIgIt0 := "\{dIgIt1}\{dIgIt2}\{dIgIt3}\{dIgIt4}"
 		DW NAME_{dIgIt0}
 NAME_TMPDIGIT := NAME_TMPDIGIT+1
 		ENDM
+		ENDM
+
+MALIGN		MACRO
+	IF LOW($) = 0
+		DUPL (HIGH($) << 8) - $,0
+	ELSE
+		DUPL ((HIGH($) + 1) << 8) - $,0
+	ENDIF
 		ENDM

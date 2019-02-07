@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 24.11.2018 savelij
+;LAST UPDATE: 07.02.2019 savelij
 
 PAGE
 		TITLE "evo-dos.a80"
@@ -13,7 +13,7 @@ PAGE
 		include macros.a80
 
 ;		     0123456789012345678
-NUMBER_VERS	EQU " EVO-DOS Ver 0.43  "
+NUMBER_VERS	EQU " EVO-DOS Ver 0.44  "
 ZASTV_X		EQU 7					;ŠŽŽ„ˆ€’€ X …—€’ˆ €„ˆ‘ˆ BETA128
 ZASTV_Y		EQU 7					;ŠŽŽ„ˆ€’€ Y …—€’ˆ €„ˆ‘ˆ BETA128
 ZASTV_PIX	EQU ZASTV_Y*0X20+0X4000+ZASTV_X+9	;€„…‘ ‚›‚Ž„€ ‘ŠŽ˜…›• “ƒŽ‹ŠŽ‚
@@ -2943,10 +2943,8 @@ FORMAT		ld	hl,0xffff
 		call	SET_FILENAME
 
 		DUPL 0X1EE1-$,0
-	IF EMU
 		CALL FORMAT_RAM
 		JR Z,END_FORMAT
-	ENDIF
 		ld	a,80
 loc_1EE8	ld	(TRD_5CD7),a			; ŽŒ…†“’Ž—›‰	‘’€’ ”€‰‹€ ˆ‹ˆ	ŠŽ‹-‚Ž ’…ŠŽ‚
 							; Ž‘‹…	Ž‚…Šˆ ’ˆ€ „ˆ‘ŠŽ‚Ž„€
