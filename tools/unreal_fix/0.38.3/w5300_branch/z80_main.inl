@@ -26,9 +26,9 @@ u8 xm(unsigned addr)
 		if((bankr[tmp] >= ROM_BASE_M)&&(tmp==(comp.wiznet.p82 & 0x03))){
 			if(comp.wiznet.p82&0x08)addr^=0x01;
 			if(addr & 0x2000){
-				return Wiz5300::RegRead((0x022e|(addr&0x01)|((addr>>3)&0x1c0))+((addr&0x1000)?2:0));
+				return Wiz5300_RegRead((0x022e|(addr&0x01)|((addr>>3)&0x1c0))+((addr&0x1000)?2:0));
 			}else{
-				return Wiz5300::RegRead(addr & 0x03ff);
+				return Wiz5300_RegRead(addr & 0x03ff);
 			}
 			return 0xff;
 		}
@@ -85,9 +85,9 @@ void wm(unsigned addr, unsigned char val)
 		if((bankr[tmp] >= ROM_BASE_M)&&(tmp==(comp.wiznet.p82 & 0x03))){
 			if(comp.wiznet.p82&0x08)addr^=0x01;
 			if(addr & 0x2000){
-				Wiz5300::RegWrite((0x022e|(addr&0x01)|((addr>>3)&0x1c0))+((addr&0x1000)?2:0),val);
+				Wiz5300_RegWrite((0x022e|(addr&0x01)|((addr>>3)&0x1c0))+((addr&0x1000)?2:0),val);
 			}else{
-				Wiz5300::RegWrite(addr & 0x03ff,val);
+				Wiz5300_RegWrite(addr & 0x03ff,val);
 			}
 			return;
 		}

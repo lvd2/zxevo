@@ -6,6 +6,7 @@
 #define DIRECT3D_VERSION    0x0900
 //#define _CRT_SECURE_NO_DEPRECATE
 #define _CRT_NONSTDC_NO_DEPRECATE
+#include <winsock2.h>
 #include <windows.h>
 #include <windowsx.h>
 #include <setupapi.h>
@@ -80,6 +81,8 @@ using std::max;
 #pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "dxerr.lib")
 #pragma comment(lib, "setupapi.lib")
+#pragma comment (lib, "Ws2_32.lib")
+#pragma comment (lib, "IPHLPAPI.lib")
 //#pragma comment(linker, "settings.res")
 
 #if _MSC_VER >= 1900

@@ -20,7 +20,7 @@
 #include "emulkeys.h"
 #include "util.h"
 #include "input.h"
-#include "w5300/w5300.h"
+#include "zxusbnet.h"
 
 void main_pause()
 {
@@ -468,7 +468,7 @@ void correct_exit()
 {
    sound_stop();
 	if(conf.wiznet)
-		Wiz5300::Close();
+		Wiz5300_Close();
    if(!done_fdd(true))
        return;
    nowait = 1;

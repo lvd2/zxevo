@@ -15,7 +15,7 @@
 #include "fontatm2.h"
 #include "sdcard.h"
 #include "zc.h"
-#include "w5300/w5300.h"
+#include "zxusbnet.h"
 
 #include "util.h"
 
@@ -137,7 +137,7 @@ void reset(ROM_MODE mode)
    comp.tfmstat=0x0e; //read register,fm disable, saa disable
 	
 	if(conf.wiznet){
-		Wiz5300::Close();
+		Wiz5300_Close();
 		comp.wiznet.p82=comp.wiznet.p82=0;
 		comp.wiznet.memEna=0;
 	}

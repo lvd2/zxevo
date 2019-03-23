@@ -19,7 +19,7 @@
 #include "dbgbpx.h"
 
 #include "util.h"
-#include "w5300/w5300.h"
+#include "zxusbnet.h"
 
 void cpu_info()
 {
@@ -138,8 +138,8 @@ void init_all(int argc, char **argv)
    init_bpx();
    temp.PngSupport = PngInit();
 	if(conf.wiznet){
-		Wiz5300::Init();
-		int i=(Wiz5300::RegRead(0xfe)<<8)|Wiz5300::RegRead(0xff);
+		Wiz5300_Init();
+		int i=(Wiz5300_RegRead(0xfe)<<8)|Wiz5300_RegRead(0xff);
 		printf("WizNet ID register = %x\n",i);
 	}
    if(!temp.PngSupport)

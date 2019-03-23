@@ -18,7 +18,7 @@
 #include "zc.h"
 #include "util.h"
 #include "init.h"
-#include "w5300/w5300.h"
+#include "zxusbnet.h"
 
 char load_errors;
 
@@ -1057,8 +1057,8 @@ void applyconfig()
 		comp.wiznet.p83=0;
 		comp.wiznet.p82=0;
 		comp.wiznet.p81=0;
-		Wiz5300::Close();
-		Wiz5300::Init();
+		Wiz5300_Close();
+		Wiz5300_Init();
 	}
    setpal(0);
 }

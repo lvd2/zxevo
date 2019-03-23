@@ -7,10 +7,10 @@ LFLAGS=-subsystem:console,5.02
 !else
 OUT_DIR=x32
 LIBPATH=lib32
-LFLAGS=-subsystem:console,5.01
+LFLAGS=/SUBSYSTEM:WINDOWS,"5.01" 
 !endif
 
-LFLAGS=$(LFLAGS) -osversion:5.0 -pdbaltpath:%_PDB%
+LFLAGS=$(LFLAGS) -osversion:5.0 -pdbaltpath:%_PDB% /MACHINE:X86
 
 !ifdef USE_CL
 !ifndef DEBUG
@@ -37,7 +37,7 @@ LFLAGS=$(LFLAGS) -qipo #-pdbpath:none
 #-RTCsu -Qtrapuv
 
 CFLAGS_COMMON=-nologo -W3 -EHa- -GR- -Zi -MP -Oi -Zc:threadSafeInit- $(ICL_FLAGS_COMMON) \
-         -D_CRT_SECURE_NO_DEPRECATE -DUSE_SND_EXTERNAL_BUFFER -D_PREFIX_ -D_USING_V110_SDK71_
+         -D_CRT_SECURE_NO_DEPRECATE -DUSE_SND_EXTERNAL_BUFFER -D_PREFIX_ /D _USING_V110_SDK71_
 
 !ifdef VGEMUL
 CFLAGS_COMMON=$(CFLAGS_COMMON) -DVG_EMUL
