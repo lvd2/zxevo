@@ -1056,6 +1056,7 @@ void applyconfig()
 	if(conf.wiznet){
 		comp.wiznet.p83=0;
 		comp.wiznet.p82=0;
+		comp.wiznet.p81=0;
 		Wiz5300::Close();
 		Wiz5300::Init();
 	}

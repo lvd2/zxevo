@@ -450,6 +450,7 @@ struct COMPUTER
 	struct{
 		u8 p83;	//#83AB Ц порт управлени€ прерывани€ми и сбросом
 		u8 p82;	//#82AB Ц порт управлени€ W5300
+		u8 p81;	//
 		u8 memEna;
 	}wiznet;
    
