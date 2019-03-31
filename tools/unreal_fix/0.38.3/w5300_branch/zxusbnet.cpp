@@ -503,6 +503,7 @@ void(*regWriteFunc[0x20])(sInfoStruct * s, u_char, u_char) = {
 u_char Wiz5300_RegRead(unsigned int Addr)
 {
 
+	if(comp.wiznet.p82&0x08)Addr^=0x01;
 	if (Addr >= 0x0200)
 		return regReadFunc[(Addr & 0x3f) >> 1](&soc[(Addr >> 6) & 0x07], Addr & 0x01);
 	if (Addr <= 0x00ff){
@@ -513,6 +514,7 @@ u_char Wiz5300_RegRead(unsigned int Addr)
 
 void Wiz5300_RegWrite(unsigned int Addr, unsigned char Data)
 {
+	if(comp.wiznet.p82&0x08)Addr^=0x01;
 	if (Addr >= 0x0200)
 		regWriteFunc[(Addr & 0x3f) >> 1](&soc[(Addr >> 6) & 0x07], Data, Addr & 0x01);
 	else if (Addr <= 0x00ff) {
