@@ -19,6 +19,7 @@
 #include "z80.h"
 
 #include "util.h"
+#include "zxusbnet.h"
 
 namespace z80gs
 {
@@ -136,6 +137,11 @@ void reset(ROM_MODE mode)
    comp.flags = 0;
    comp.active_ay = 0;
    comp.tfmstat=0x0e; //read register,fm disable, saa disable
+	if(conf.wiznet){ 
+		Wiz5300_Close(); 
+		comp.wiznet.p82=comp.wiznet.p82=0; 
+		comp.wiznet.memEna=0; 
+	} 
 
    comp.ula_plus_group = 0;
    comp.ula_plus_pal_idx = 0;

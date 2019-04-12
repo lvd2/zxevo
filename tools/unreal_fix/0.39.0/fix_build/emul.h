@@ -162,7 +162,8 @@ struct CONFIG
    unsigned char trdos_traps, wd93_nodelay;
    unsigned char trdos_wp[4];
    unsigned char trdos_IORam; //временный параметр, потом надо удалить
-
+	unsigned char wiznet;
+	
    unsigned char cache;
    unsigned char cmos;
    unsigned char smuc;
@@ -453,6 +454,13 @@ struct COMPUTER
    u8 pBE; // ATM3
    u16 brk_addr; // pentevo
    u8 fddIO2Ram_mask;
+	struct{ 
+		u8 p83; //
+		u8 p82; //
+		u8 p81; // 
+		u8 memEna; 
+	}wiznet; 
+
    unsigned char flags;
 
    // ÷вет бордюра (то, что выводитс€ в порт бордюра, значение 0..7, или 0..F (дл€ ATM, PROFI))

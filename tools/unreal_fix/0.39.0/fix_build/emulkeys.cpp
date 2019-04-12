@@ -22,6 +22,7 @@
 #include "funcs.h"
 #include "util.h"
 #include "input.h"
+#include "zxusbnet.h"
 
 void main_pause()
 {
@@ -492,6 +493,8 @@ void main_border_full() { SetBorderSize(2); }
 void correct_exit()
 {
    sound_stop();
+   if(conf.wiznet) Wiz5300_Close(); 
+
    if(!done_fdd(true))
        return;
 
