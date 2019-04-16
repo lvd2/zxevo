@@ -163,6 +163,7 @@ struct CONFIG
    unsigned char trdos_wp[4];
    unsigned char trdos_IORam; //временный параметр, потом надо удалить
 	unsigned char wiznet;
+	char cold_ram_pat[17];
 	
    unsigned char cache;
    unsigned char cmos;

@@ -521,6 +521,7 @@ void load_config(const char *fname)
    addpath(conf.appendboot);
    conf.trdos_IORam=GetPrivateProfileInt(beta128, "RamPageFddIO", 0, ininame); //временный код, потом надо удалить
    conf.wiznet=GetPrivateProfileInt(USBZXNET, "WizNet", 0, ininame);
+   GetPrivateProfileString(misc, "ColdRAM", "0000FFFF", conf.cold_ram_pat, sizeof conf.cold_ram_pat, ininame);
    
    conf.led.enabled = u8(GetPrivateProfileInt(leds, "leds", 1, ininame));
    conf.led.flash_ay_kbd = u8(GetPrivateProfileInt(leds, "KBD_AY", 1, ininame));

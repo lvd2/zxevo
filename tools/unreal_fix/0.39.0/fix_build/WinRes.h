@@ -1,5 +1,5 @@
 // This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) 1992-1999 Microsoft Corporation
+// Copyright (C) 1992-1998 Microsoft Corporation
 // All rights reserved.
 //
 // This source code is only intended as a supplement to the
@@ -26,10 +26,6 @@
 #endif
 
 #include <winresrc.h>
-
-#ifdef _MAC
-#define DS_WINDOWSUI    0x8000L
-#endif
 
 // operation messages sent to DLGINIT
 #define LB_ADDSTRING    (WM_USER+1)

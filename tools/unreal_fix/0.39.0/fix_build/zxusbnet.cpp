@@ -12,7 +12,6 @@
 #else
 #define DPRINTF(pa,pb)
 #endif // dbgmod
-#pragma once
 
 #define WRITE_REG_FUNC(f_n) void f_n(sInfoStruct * s, u_char d, u_char z)
 #define READ_REG_FUNC(f_n) u_char f_n(sInfoStruct * s, u_char z)

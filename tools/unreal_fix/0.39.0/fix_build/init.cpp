@@ -1,4 +1,5 @@
 #include "std.h"
+#include <time.h>
 
 #include "emul.h"
 #include "vars.h"
@@ -127,6 +128,24 @@ void init_all(int argc, char **argv)
    video_permanent_tables();
    init_ie_help();
    load_config(config);
+   {//clear memory
+	   unsigned char *tptr=RAM_BASE_M;
+	   char * a;
+	   union{
+			unsigned long long int l;
+			unsigned char b[8];
+	   }pattern;
+	   int i=0;
+	   pattern.l=strtoul(conf.cold_ram_pat,&a,16);
+	   int j=(a-conf.cold_ram_pat)>>sizeof(conf.cold_ram_pat[0]);
+	   srand((unsigned int)time(NULL));
+	   while(tptr!=(RAM_BASE_M + MAX_RAM_PAGES*PAGE)){
+		   if((rand()&0xff03)==0) *tptr=(unsigned char)(rand()&0xff);
+		   else *tptr=pattern.b[i];
+		   tptr++;
+		   if((++i)==j)i=0;
+	   }
+   }
    //make_samples();
    init_leds();
    init_tape();

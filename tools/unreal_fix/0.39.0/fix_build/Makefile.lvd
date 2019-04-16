@@ -50,7 +50,7 @@ LFLAGS=$(LFLAGS_DEBUG)
 
 #LIBS=$(LIBS) sndrender/snd.a z80/z80.a
 #LIBS=sndrender/*.o z80/*.o
-LIBS2=-lcomctl32 -lcomdlg32 -luser32 -lkernel32 -lgdi32 -lwinmm -ldxguid \
+LIBS2=-lws2_32 -lcomctl32 -lcomdlg32 -luser32 -lkernel32 -lgdi32 -lwinmm -ldxguid \
   -lddraw -ldsound -ldinput -ldxerr9 -lsetupapi -lgcc -lstdc++ 
 
 # top-level sources
