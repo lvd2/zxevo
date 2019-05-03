@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 03.09.2017 savelij
+;LAST UPDATE: 03.05.2019 savelij
 
 ;[‘Ž•€…ˆ… Š“‘Š€ Š€€]
 SAVE2X2		LD HL,(ADR_REST)
@@ -111,22 +111,41 @@ MOUOPT		LD H,(IX+_Y_COORD)
 		DJNZ $-4
 		LD A,E
 		CP L
-		RET C		;Š“‘Ž ‹…‚…… ŽŠ€
+		RET C			;Š“‘Ž ‹…‚…… ŽŠ€
 		LD A,L
 		ADD A,(IX+_H_SIZE)
 		DEC A
 		CP E
-		RET C		;Š“‘Ž €‚…… ŽŠ€
+		RET C			;Š“‘Ž €‚…… ŽŠ€
 		LD A,D
 		INC H
 		CP H
-		RET C		;Š“‘Ž ‚›˜… ŽŠ€ ˆ‹ˆ € ‚…•…‰ Ž‹Ž‘Š…
+		RET C			;Š“‘Ž ‚›˜… ŽŠ€ ˆ‹ˆ € ‚…•…‰ Ž‹Ž‘Š…
 		LD A,H
 		ADD A,(IX+_V_SIZE)
 		SUB 3
 		CP D
-		RET C		;Š“‘Ž ˆ†… ŽŠ€ ˆ‹ˆ € Ž‘‹…„…‰ Ž‹Ž‘Š…
+		RET C			;Š“‘Ž ˆ†… ŽŠ€ ˆ‹ˆ € Ž‘‹…„…‰ Ž‹Ž‘Š…
+;Š“‘Ž ‚ …„…‹€• €Ž—…‰ Ž‹€‘’ˆ
+		LD A,(IX+_NUM_KOL_H)
+		AND A
+		JR NZ,.L1		
+		OR (IX+_NUM_KOL_L)
+		JR Z,.L1
+;Ž‚…Š€ „‹Ÿ ŠŽ‹ˆ—…‘’‚€ “Š’Ž‚ Œ…œ˜… ‚›‘Ž’› ŽŠ€ - 2
+		PUSH HL
+		LD L,A
+		LD H,(IX+_NUM_KOL_H)
 		LD A,D
+		SUB (IX+_Y_COORD)
+		LD C,A
+		LD B,0
+		AND A
+		SBC HL,BC
+		POP HL
+		RET C
+
+.L1		LD A,D
 		SUB H
 		LD C,A
 		LD L,(IX+_TEK_PKT_L)
@@ -220,29 +239,29 @@ OPMSPL		LD E,(IX+_ADR_MOUSE_L)
 		SRL L
 		SRL L
 		SRL L			;HL=HL/8
-NXTPOS2		LD A,(IX+0)
+.NXTPOS2	LD A,(IX+0)
 		INC A
-		JR Z,ENDWI
+		JR Z,.ENDWI		;ŠŽ…– ‘ˆ‘Š€
 		LD A,L
 		CP (IX+1)
-		JR C,NXTPOS1		;Š“‘Ž ‹…‚……
+		JR C,.NXTPOS1		;Š“‘Ž ‹…‚……
 		LD A,(IX+1)
 		ADD A,(IX+4)
 		DEC A
 		CP L
-		JR C,NXTPOS1		;Š“‘Ž €‚……
+		JR C,.NXTPOS1		;Š“‘Ž €‚……
 		LD A,H
 		CP (IX+2)
-		JR C,NXTPOS1		;Š“‘Ž ‚›˜…
+		JR C,.NXTPOS1		;Š“‘Ž ‚›˜…
 		LD A,(IX+2)
 		ADD A,(IX+3)
 		DEC A
 		CP H
-		JR C,NXTPOS1		;Š“‘Ž ˆ†…
+		JR C,.NXTPOS1		;Š“‘Ž ˆ†…
 		LD A,(IX+5)		;Ž‹“—ˆ‹ˆ ŠŽ„ ŠŽŠˆ  
-ENDWI		POP IX			;Ž€‹ˆ ‚ ‡€„€“ž ‡Ž“
+.ENDWI		POP IX			;Ž€‹ˆ ‚ ‡€„€“ž ‡Ž“
 		RET			;‚›•Ž„ˆŒ
 
-NXTPOS1		LD DE,6			;ŽŠ€ ˆŠ“„€ … Ž€‹ˆ
+.NXTPOS1	LD DE,6			;ŽŠ€ ˆŠ“„€ … Ž€‹ˆ
 		ADD IX,DE		;……•Ž„ˆŒ Š Ž‚…Š… ‘‹…„“™…ƒŽ
-		JR NXTPOS2
+		JR .NXTPOS2

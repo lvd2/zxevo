@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 26.01.2019 savelij
+;LAST UPDATE: 26.04.2019 savelij
 
 ;последовательность для RST 8
 ;старый стек	HL AF BC RF ADR_RET DE	->
@@ -159,7 +159,7 @@ F_INTEXT_DRV	DB 0XFF				;флаги при внешних/внутренних вызовах драйверов
 NUMHDD		DB 0XFF
 VARS_TXT_DEC	DB "4294967295\0"
 
-		PHASE $-CPU6
+		PHASE $ & 0x3FFF
 		DUPL HIGH ($)*0X100+0XFF-$,0XFF
 		DW IM_EI_RET
 
@@ -912,4 +912,3 @@ ENMI_SERVICE
 HDDTIMEOUT	EQU EXTERN_PAL+0X10		;1
 
 		DEPHASE
-		PHASE $-CPU6

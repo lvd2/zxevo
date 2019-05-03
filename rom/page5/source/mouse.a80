@@ -1,5 +1,5 @@
 
-;LAST UPDATE; 30.08.2017 savelij
+;LAST UPDATE; 03.05.2019 savelij
 
 ;‘Ž•€…ˆ… Š“‘Š€ Š€€
 SAVE2X2		LD HL,FLAGS
@@ -131,7 +131,26 @@ MOUOPT		LD H,(IX+1)
 		SUB 3
 		CP D
 		RET C				;Š“‘Ž ˆ†… ŽŠ€ ˆ‹ˆ € Ž‘‹…„…‰ Ž‹Ž‘Š…
+;Š“‘Ž ‚ …„…‹€• €Ž—…‰ Ž‹€‘’ˆ
+		LD A,(IX+_NUM_KOL_H)
+		AND A
+		JR NZ,.L1		
+		OR (IX+_NUM_KOL_L)
+		JR Z,.L1
+;Ž‚…Š€ „‹Ÿ ŠŽ‹ˆ—…‘’‚€ “Š’Ž‚ Œ…œ˜… ‚›‘Ž’› ŽŠ€ - 2
+		PUSH HL
+		LD L,A
+		LD H,(IX+_NUM_KOL_H)
 		LD A,D
+		SUB (IX+_Y_COORD)
+		LD C,A
+		LD B,0
+		AND A
+		SBC HL,BC
+		POP HL
+		RET C
+
+.L1		LD A,D
 		SUB H
 		LD C,A
 		LD L,(IX+8)

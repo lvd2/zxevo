@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 04.09.2017 savelij
+;LAST UPDATE: 26.04.2019 savelij
 
 	TITLE "addons.a80 ROM_RST82"
 
@@ -495,8 +495,8 @@ UNPACK_DOS_FE	LD HL,PACK_DOS_FE
 		JP UNPACK+CPU3
 
 PACK_DOS_FE	binclude ../../page1/dos_fe_pack.rom
-		PHASE $-CPU3
 
+		PHASE $ & 0X3FFF
 		DUPL 0X3FF8-$,0XFF
 		DB "ADDONS"
 		DW DATA_VERS

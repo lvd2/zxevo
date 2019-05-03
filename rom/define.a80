@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 18.10.2018 savelij
+;LAST UPDATE: 03.05.2019 savelij
 
 ;номера функций RST 8
  INIT_VAR 0X40
@@ -116,18 +116,20 @@ _MEM_MODE_PENT	EQU %11000000			;MEMORY MODE PENT 1024 KB
  SETVAR _POSTF07				;ВЕРНУТЬ В "BC" ТЕКУЩИЙ НОМЕР "ЛЕГАЛЬНОЙ" ЗАПИСИ
 
 ;номера поддерживаемых расширений для RST 8
+;"TRDSCLFDITAPSPG$C FNTBMPROM"		;RST 8
+;"TRDSCLFDITAPSPG$C BMPSNA"		;MAINMENU
  INIT_VAR 1
- SETVAR _TRD
- SETVAR _SCL
- SETVAR _HOB1		;$??
- SETVAR _HOB2		;!??
- SETVAR _SPG
- SETVAR _FDI
- SETVAR _TAP
- SETVAR _HOB
- SETVAR _FNT
- SETVAR _BMP
- SETVAR _ROM
+ SETVAR _TRD		;TRD
+ SETVAR _SCL		;SCL
+ SETVAR _FDI		;FDI
+ SETVAR _TAP		;TAP
+ SETVAR _SPG		;SPG
+ SETVAR _HOB		;$C
+ SETVAR _FNT		;FNT
+ SETVAR _BMP		;BMP
+ SETVAR _ROM		;ROM
+; SETVAR _HOB1		;$??
+; SETVAR _HOB2		;!??
 
 ;[внутренние номера типов разделов]
  INIT_VAR

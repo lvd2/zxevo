@@ -1,24 +1,28 @@
 
+;LAST UPDATE: 26.04.2019 savelij
+
+; 26.04.2019 поправлено описание структуры
+
 LSNAST	STRUCT	;заголовок снапшотов
 RI		DB	?
-AHL		DW
-ADE		DW
-ABC		DW
-AAF		DW
-RHL		DW
-RDE		DW
-RBC		DW
-RIY		DW
-RIX		DW
-IFF2	DB
-RR		DB
-RAF		DW
-RSP		DW
-SIM		DB
-BORD	DB
-RPC		DW
-P7FFD	DB
-PDOS	DB
+AHL		DW	?
+ADE		DW	?
+ABC		DW	?
+AAF		DW	?
+RHL		DW	?
+RDE		DW	?
+RBC		DW	?
+RIY		DW	?
+RIX		DW	?
+IFF2		DB	?
+RR		DB	?
+RAF		DW	?
+RSP		DW	?
+SIM		DB	?
+BORD		DB	?
+RPC		DW	?
+P7FFD		DB	?
+PDOS		DB	?
 LSNAST	ENDSTRUCT
 
 RUNSNA_LP_M MACRO PF,PS
