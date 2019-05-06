@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 29.01.2019 savelij
+;LAST UPDATE: 06.05.2019 savelij
 
 		TITLE "mounter.a80 ROM_RST83"
 
@@ -62,6 +62,10 @@ LOAD_TAPE	LD A,RAM_TAPE
 		JR ILD_IMG1
 
 ILD_IMG2	POP AF
+		LD A,(EXT_TYPE)
+		SUB _TAP
+		RET Z					;если TAP то на выход
+;для TRD образа генерация таблицы секторов/дорожек
 		EVOPORT WIN_P5,RAM_DATARAMD		;нужна страница откуда начинается загруженный образ
 ILD_IMG3	LD HL,(CPU5+0X8E1)			;первый свободный трек сектор
 		LD A,L
