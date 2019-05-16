@@ -1,4 +1,4 @@
-// ZX-Evo Base Configuration (c) NedoPC 2008,2009,2010,2011,2012,2013,2014,2015,2016
+// ZX-Evo Base Configuration (c) NedoPC 2008,2009,2010,2011,2012,2013,2014,2015,2016,2019
 //
 // top-level
 
@@ -181,13 +181,16 @@ module top(
 
 
 	// config signals
-	wire [7:0] not_used;
+	wire [7:0] not_used0;
+	wire [7:0] not_used1;
 	wire cfg_vga_on;
 	//
 	wire [1:0] modes_raster;
 	wire       mode_contend_type = 1'b0; // 48/128/+2 or +2a/+3 TODO: take these signals from somewhere
 	wire       mode_contend_ena  = 1'b1; // contention enable
 	wire       contend;
+	//
+	wire [3:0] fdd_mask;
 
 	// nmi signals
 	wire gen_nmi;
@@ -757,7 +760,8 @@ module top(
 		.wait_read(wait_read),
 		.wait_rnw(wait_rnw),
 		.wait_end(wait_end),
-		.config0( { not_used[7:6], modes_raster, beeper_mux, tape_read, set_nmi[0], cfg_vga_on} ),
+		.config0( {not_used0[7:6], modes_raster, beeper_mux, tape_read, set_nmi[0], cfg_vga_on} ),
+		.config1( {not_used0[7:4], fdd_mask} ),
 
 		.sd_lock_out(avr_lock_claim),
 		.sd_lock_in (avr_lock_grant),
