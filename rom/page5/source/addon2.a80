@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 14.01.2019 savelij
+;LAST UPDATE: 06.07.2019 savelij
 
 	TITLE "addon2.a80 ROM_RST80"
 
@@ -59,6 +59,9 @@ MICRO_BOOT	binclude ../../fat_boot/micro_boot_fat_pack.rom
 CP866_FONT	binclude 866_code_pack.bin
 ATM_FONT	binclude atm_code_pack.bin
 
-		DUPL 0X3FF8-$,0XFF
+FREE_ADDON2	EQU 0X3FF6-$
+
+		DUPL FREE_ADDON2,0XFF
+		DW FREE_ADDON2			;€‡Œ… ‘‚„ƒ Œ…‘’€
 		DB "ADDON2"
 		DW DATA_VERS

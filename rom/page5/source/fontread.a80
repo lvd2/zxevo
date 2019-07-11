@@ -7,6 +7,8 @@
 
 ;ПЕРЕДЕЛКА ДЛЯ КОМПИЛЯЦИИ В СОСТАВЕ EVO RESET SERVICE 16.04.2012 savelij
 
+;LAST UPDATE: 30.06.2019 savelij
+
 ;START   EQU     #6000
  ;       ORG     START
 
@@ -73,10 +75,10 @@ OUTPAGE
 
 		XOR A
 		LD HL,CPU3+LATTR
-		PCALL CLSTXTMD1,ROM_RST82
+		ROMCALL CLSTXTMD1,ROM_RST82
 		XOR A
 		LD HL,CPU3+RATTR
-		PCALL CLSTXTMD1,ROM_RST82
+		ROMCALL CLSTXTMD1,ROM_RST82
 
         XOR     A         ; код печатаемого символа
         LD      HL,CPU3+LSYM	;0XC1C0  ; откуда начинаем печатать

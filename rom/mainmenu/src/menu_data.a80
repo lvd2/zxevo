@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 28.04.2019 savelij
+;LAST UPDATE: 10.07.2019 savelij
 
 ;Žˆ‘€’…‹œ ŽŠ€ (€„…‘ ‚ IX)
 ;+00 X ŠŽŽ„ˆ€’€
@@ -178,7 +178,7 @@ SETUPER2
 ;===============Œ…ž “‘’€Ž‚ŽŠ=============================
 
 ;[‚›Ž FAT “‘’Ž‰‘’‚€]
-SEL_FAT_DEV	DB 0X04,0X04,0X00,0X14,0X07,0X1F,%00100000,0
+SEL_FAT_DEV	DB 0X03,0X04,0X00,0X16,0X07,0X1F,%00100000,0
 		DW 0,0
 		DW SEL_FAT_DRV,0,0,0
 SELFATDEVEXE	EQU $-6
@@ -430,11 +430,11 @@ VERS_CONF	DB "NONE                            "
 		;   12345678901234567890123456789012
 VERS_BOOT	DB "NONE                            "
 ;€‘…—€’Š€ ‚…Œ…ˆ ˆ „€’› ‘ŽŠˆ ERS
-		IF BUILD_DEBUG=1
+	IF BUILD_DEBUG=1
 		DB 0X16,0X05,0X00,0X17,BLUE,"Build ERS:  ",TIME,"  "
 		TEXTDATE
 		DB "  "
-		ENDIF
+	ENDIF
 		DB 0X16,0X17,0X00,0X17,MAGENTA+BR_INK,"H.Help ",0X17,0XFF,0
 
 ;[’…Š‘’ ‘ŒŽ’ˆŽ‚€›• „ˆ‘ŠŽ‚]
@@ -552,13 +552,19 @@ ROMS		DB "ROM",0
 FONTS		DB "FNT",0
 
 ;’…Š‘’ „‹Ÿ Ž’Ž€†…ˆŸ €‰„…›• €‡„…‹Ž‚, Ž 16 €‰’ ‘’ŽŠ€
-TXT4MENU_DEVICE	   ;1234567890123456
-		DB ".ZContr  SDCard:"		;4
-		DB ".NeoGS   SDCard:"		;5
-		DB ".HDDNemo MASTER:"		;6-MASTER
-		DB ".HDDSmuc MASTER:"		;7-SLAVE
-		DB ".HDDNemo  SLAVE:"		;6-MASTER
-		DB ".HDDSmuc  SLAVE:"		;7-SLAVE
+TXT4MENU_DEVICE	   ;12345678901234567890
+		DB ".HDDNemo     MASTER:"
+		DB ".HDDNemo      SLAVE:"
+		DB ".HDDSmuc     MASTER:"
+		DB ".HDDSmuc      SLAVE:"
+		DB ".HDDDIVIDE   MASTER:"
+		DB ".HDDDIVIDE    SLAVE:"
+		DB ".HDDProfi    MASTER:"
+		DB ".HDDProfi     SLAVE:"
+		DB ".HDDTURBO2   MASTER:"
+		DB ".HDDTURBO2    SLAVE:"
+		DB ".NeoGS       SDCard:"
+		DB ".ZContr      SDCard:"
 
 ;’ˆ €‡„…‹€
 TXT4MENU_TYPE	DB "FAT12"

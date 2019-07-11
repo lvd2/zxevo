@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 29.01.2019 savelij
+;LAST UPDATE: 06.07.2019 savelij
 
 	TITLE "pack main menu"
 
@@ -56,8 +56,11 @@ UNP_MAINMENU	PUSH BC
 		binclude ../../mainmenu/main_pack.rom
 	ENDIF
 
+FREE_MAINMENU	EQU 0X3FF6-$
+
 		PHASE $&0X3FFF
-		DUPL 0X3FF8-$,0XFF
+		DUPL FREE_MAINMENU,0XFF
+		DW FREE_MAINMENU		;ëÇéÅéÑçéÖ åÖëíé
 		DB "MNMENU"
 		DW DATA_VERS
 		DEPHASE

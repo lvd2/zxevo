@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 06.05.2019 savelij
+;LAST UPDATE: 10.07.2019 savelij
 
 		TITLE "mounter.a80 ROM_RST83"
 
@@ -533,33 +533,25 @@ OPENMOUNT04	XOR A
 		RRCA
 		RRCA
 		LD E,A
+		LD A,B
 		LD D,HIGH (MOUNT_DRIVES)
 		LD IXH,D
 		LD IXL,E				;IX=адрес описателя примонтированного файла
 		LD (IX+_MOUNT_Mount_Num),B		;номер монтируемого дисковода
 		LD BC,0X20
-		LD A,B
 		LDIR
 		INC A
 		LD H,%11110111
 OPENMOUNT1	RLC H
 		DEC A
 		JR NZ,OPENMOUNT1
-	IF DELVAR
-		IN A,(RW_PORT0)
-	ELSE
 		LD A,(CPU2+VIRT_BITS)
-	ENDIF
 		AND H
 		LD L,A
 		LD A,H
 		CPL
 		OR L
-	IF DELVAR
-		OUT (RW_PORT0),A
-	ELSE
 		CALL WR_VIRT_BITS
-	ENDIF
 		EVOPORT WIN_P5,RAM_MOUNTER		;включили страницу с описателями примонтированных файлов
 		POP HL
 ;HL=адрес описателя монтируемого файла
@@ -578,10 +570,10 @@ IOPEN_MOUNT	LD DE,FILE_EXT
 		LD DE,BUF_TABLVOL			;адрес таблицы найденных разделов
 		ADD HL,DE
 		LD A,(HL)
-		CP SDZ
+		CP _SD_SDZ
 		LD HL,COMSDZ
 		JR Z,OPENMOUNT6
-		CP SDG
+		CP _SD_SDG
 		LD HL,COMSDG
 		JR Z,OPENMOUNT6
 		LD HL,COMHDDN
@@ -835,7 +827,7 @@ FINDMNTD09	LD A,(SETDVOL)
 		LD (SAVE_TEK_VOL),A			;сохранили текущее устройство
 		CALL SAVE_FNDVOL			;сохранили переменные текущего устройства
 		LD H,CMOS_BYTE_01
-		PCALL READCMOS,ROM_RST82
+		ROMCALL READCMOS,ROM_RST82
 		LD A,L
 		AND M_AUTOMOUNT				;определение нужно ли искать файл IMAGE.MNT
 		JP Z,FINDMNTD01
@@ -980,18 +972,10 @@ FINDMNT5	LD BC,0X40
 		LD A,IYH
 		AND 0XF0				;старшие 4 бита примонтированные файлы
 		LD D,A
-	IF DELVAR
-		IN A,(RW_PORT0)
-	ELSE
 		LD A,(CPU2+VIRT_BITS)
-	ENDIF
 		AND 0X0F				;младшие 4 бита реальный и виртуальные приводы
 		OR D					;совместили для записи обратно
-	IF DELVAR
-		OUT (RW_PORT0),A
-	ELSE
 		CALL WR_VIRT_BITS
-	ENDIF
 		LD A,(SAVE_TEK_VOL)
 		PUSH IY
 		LD IYL,INTERNAL
@@ -1025,7 +1009,7 @@ FINDMNTD0	CALL FINDMNTD1
 		LD IYH,A
 		RET
 
-;сохранение текущего пути
+;[сохранение текущего пути]
 STORE_PATH	PUSH AF
 		EVOPORT WIN_P5,RAM_MOUNTER
 		LD A,(SETDVOL)				;номер текущего устройства
@@ -1180,16 +1164,9 @@ CLOSEMOUNT	EVOPORT WIN_P5,RAM_MOUNTER
 		RLCA
 		DJNZ $-1
 		LD B,A
-	IF DELVAR
-		IN A,(RW_PORT0)
-		AND B
-		OUT (RW_PORT0),A
-		RET
-	ELSE
 		LD A,(CPU2+VIRT_BITS)
 		AND B
 		JP WR_VIRT_BITS
-	ENDIF
 
 ;[распаковщик пути к файлу]
 ;HL=адрес текстовой строки
@@ -1228,7 +1205,6 @@ FNDBUF3		LD B,3
 		JR Z,FNDBUF4
 		INC HL
 		JR FNDBUF4
-
 
 ;[получение текущего состояния битов смонтированных дисководов]
 GET_VIRT_BITS	LD HL,MOUNT_DRIVES
@@ -1269,7 +1245,7 @@ WR_VIRT_BITS	LD (CPU2+VIRT_BITS),A
 		OR 0X10
 		LD H,0XF0
 		LD L,A
-		PCALL WRITECMOS,ROM_RST82
+		ROMCALL WRITECMOS,ROM_RST82
 	ENDIF
 		POP HL
 		POP BC
@@ -1286,13 +1262,17 @@ MOUNT_RAMDISK	CALL CREATE4RAMDISK
 		RLCA
 		ENDM
 		AND B
-		RET NZ				;если смонтирован образ, то рамдиск не монтируется
+		JR NZ,.L1			;если смонтирован образ, то рамдиск не монтируется
 		LD A,B
 		OR C
 		JR WR_VIRT_BITS
 
+.L1		LD A,(CPU2+VIRT_BITS)
+		LD (RREG_A),A
+		RET
+
 CREATE4RAMDISK	LD H,VIRT_REAL_DRIVE
-		PCALL READCMOS,ROM_RST82
+		ROMCALL READCMOS,ROM_RST82
 		AND 3
 		INC A
 		LD B,A

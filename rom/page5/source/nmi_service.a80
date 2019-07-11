@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 26.04.2019 savelij
+;LAST UPDATE: 04.07.2019 savelij
 
 ;последовательность для RST 8
 ;старый стек	HL AF BC RF ADR_RET DE	->
@@ -11,7 +11,9 @@ REG_R_CORRECT	EQU 0X0D
 CODE_NMIRST
 		PHASE 0
 
-		JP CALL2PAGE
+		JP CALL2PAGE			;вызов кода в другой странице ROM
+
+		JP CALL2RAMPAGE			;вызов кода в другой странице RAM
 
 		DUPL ADR_SEL_ROM-$,0
 		OUT (C),A			;переключение страниц для переходов
@@ -621,10 +623,12 @@ GET_NUM_IM	PUSH HL
 		RET
 
 		PHASE $+CPU6
-;вызов подпрограмм из других страниц
+;вызов подпрограмм из других страниц ROM
 CALL2PAGE	EX (SP),HL
 		PUSH BC
 		PUSH AF
+		LD BC,WIN_A0
+.L1		LD (PORTCALL),BC
 		LD C,(HL)
 		INC HL
 		LD B,(HL)
@@ -646,6 +650,7 @@ TEKPAGE		EQU $-2
 		LD A,(HL)
 		INC HL
 		LD BC,WIN_A0
+PORTCALL	EQU $-2
 		OUT (C),A
 		POP AF
 		POP BC
@@ -663,6 +668,12 @@ ADRCALL		EQU $-2
 		POP AF
 		POP BC
 		RET
+
+CALL2RAMPAGE	EX (SP),HL
+		PUSH BC
+		PUSH AF
+		LD BC,WIN_P0
+		JR CALL2PAGE.L1
 
 ;вход в отладчик
 DEBUGGER	DI
@@ -715,7 +726,7 @@ DBG2MAINMENU	LD HL,CPU6+DEBUG_ONOFF
 ;возврат из NMI для отладчика. не восстанавливается:
 ;палитра, фонт, видеорежим
 NMI_EXIT_DBG	EVOPORT WIN_A0,ROM_RST82
-		PCALL RESTORE_AY,ROM_RST83	;восстановление рагистров AY
+		ROMCALL RESTORE_AY,ROM_RST83	;восстановление рагистров AY
 		LD HL,ADR_MAGIC
 		LD (HL),0XC9			;заглушка на MAGIC
 		IN A,(PEVO_CONF)
@@ -815,7 +826,75 @@ SET_CPU3	PUSH BC
 		POP BC
 		RET
 
-STEK_PAGES	DUPL 0X10,0XFF			;10
+	IF 0
+TO_USBDRV	EX AF,AF'
+		LD (.L3),A
+		LD A,IYL
+		AND A
+		LD A,(NEXTBYTERST8)
+		JR Z,.L1
+		EX (SP),HL
+		LD A,(HL)
+		INC HL
+		EX (SP),HL
+.L1		PUSH BC
+		PUSH AF
+		LD BC,WIN_P0
+		LD A,RAM_SCR_FONT
+		OUT (C),A
+		POP AF
+		POP BC
+		LD (.OLD_SP_USB),SP
+		LD SP,CPU1
+		ADD A,A
+		PUSH HL
+		LD HL,COMUSBF.RET4USBF
+		EX (SP),HL
+		PUSH HL
+		LD HL,COMUSBF.TBLUSBF
+		ADD A,L
+		LD L,A
+		ADC A,H
+		SUB L
+		LD H,A
+		LD A,(HL)
+		INC HL
+		LD H,(HL)
+		LD L,A
+		LD A,0
+.L3		EQU $-1
+		EX AF,AF'
+		EX (SP),HL
+		JP COMUSBF.IN_USBF
+
+.RET_USBF	LD SP,0
+.OLD_SP_USB	EQU $-2
+		RET
+	ENDIF
+
+;переменные для USB драйвера
+vars
+.bFlags		DW 0XFF
+.xferLen	DB 0XFF
+.data0		DB 0XFF
+.data1		DB 0XFF
+.cmd		DB 0XFF
+.intr		DB 0XFF
+.result		DB 0XFF
+.remainder	DB 0XFF
+.dataX		DB 0XFF
+.bufLen		DB 0XFF
+.addr		DB 0XFF
+.timeout	DB 0XFF
+
+.SL_OUT		DB 0XFF dup (8)
+.DBUF		DB 0XFF dup (64)
+.T_OUT		DB 0XFF dup (32)
+
+uDev		pUSBDEV
+usbstack	PKG
+
+STEK_PAGES	DUPL 0X10,0XFF			;10 стек страниц вызывов в ROM
 RST_FLAGS	DB 0XFF				;1
 TXT_COLOR	DB 0XFF				;1
 COORD_XY	DW 0XFF				;2
