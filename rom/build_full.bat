@@ -57,11 +57,8 @@ copy /B /Y ff_64k.rom + basics_std.rom + glukpent.rom + profrom\evoprofrom.rom +
 rem          64             64              64                   128               192
 copy /B /Y ff_64k.rom + basics_std.rom + glukpent.rom + profrom\evoprofrom.rom + ers_fe.rom zxevo_fe.rom
 
-rem for nedoos
-rem copy /B /Y zxevo.rom d:\yad\unrealspeccy\zxevo.rom
-rem copy /B /Y zxevo_fe.rom d:\yad\unrealspeccy\zxevo_fe.rom
-rem copy /B /Y zxevo.rom d:\yad\svn\nedoos\nedoos\us\zxevo.rom
-rem copy /B /Y zxevo.rom d:\_os\us\zxevo.rom
+copy /B /Y zxevo.rom d:\yad\unrealspeccy\zxevo.rom
+copy /B /Y zxevo_fe.rom d:\yad\unrealspeccy\zxevo_fe.rom
 
 del ers.rom
 del ers_fe.rom

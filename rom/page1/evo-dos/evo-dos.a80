@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 07.02.2019 savelij
+;LAST UPDATE: 14.07.2019 savelij
 
 PAGE
 		TITLE "evo-dos.a80"
@@ -13,7 +13,7 @@ PAGE
 		include macros.a80
 
 ;		     0123456789012345678
-NUMBER_VERS	EQU " EVO-DOS Ver 0.44  "
+NUMBER_VERS	EQU " EVO-DOS Ver 0.45  "
 ZASTV_X		EQU 7					;ŠŽŽ„ˆ€’€ X …—€’ˆ €„ˆ‘ˆ BETA128
 ZASTV_Y		EQU 7					;ŠŽŽ„ˆ€’€ Y …—€’ˆ €„ˆ‘ˆ BETA128
 ZASTV_PIX	EQU ZASTV_Y*0X20+0X4000+ZASTV_X+9	;€„…‘ ‚›‚Ž„€ ‘ŠŽ˜…›• “ƒŽ‹ŠŽ‚
@@ -3196,7 +3196,7 @@ WRITE_C_D_B
 		djnz	WRITE_C_D_B
 		ret
 
-FORMAT_DISK	ld	hl,TRD_5CD7				; ŽŒ…†“’Ž—›‰	‘’€’ ”€‰‹€ ˆ‹ˆ	ŠŽ‹-‚Ž ’…ŠŽ‚
+FORMAT_DISK	ld	hl,TRD_5CD7			; ŽŒ…†“’Ž—›‰	‘’€’ ”€‰‹€ ˆ‹ˆ	ŠŽ‹-‚Ž ’…ŠŽ‚
 							; Ž‘‹…	Ž‚…Šˆ ’ˆ€ „ˆ‘ŠŽ‚Ž„€
 		ld	b,(hl)
 		xor	a
