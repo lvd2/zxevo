@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 14.07.2019 savelij
+;LAST UPDATE: 28.07.2019 savelij
 
 		TITLE "mounter.a80 ROM_RST83"
 
@@ -22,11 +22,13 @@ TAB_MOUNTER	DW OPEN_MOUNT				;00 монтирование образа
 		DW GET_MOUNTED				;03 получение буфера описателей примонтированных образов
 		DW CLOSEMOUNT				;04 демонтирование образа
 		DW LOADIMAGE				;05 загрузка образа в рамдиск
-		DW STOR_NAMELOAD			;06 сохранение описателя файла загруженного в рамдиск
+		DW NOFUNC				;06
 		DW REST_NAMELOAD			;07 получение описателя файла загруженного в рамдиск
 		DW CMP_DRIVE				;08 проверка примонтированного образа на указанной букве
 		DW GET_VIRT_BITS			;09 получение битов смонтированных дисков
 		DW MOUNT_RAMDISK			;0A монтирование рамдиска
+
+NOFUNC		RET
 
 ;[загрузка образа в рамдиск]
 LOADIMAGE	LD IYL,INTERNAL
@@ -128,6 +130,15 @@ ELOAD_IMAGE	LD HL,CPU5+0X3FFF
 		LD (HL),"R"
 		DEC H
 		LD (HL),"D"
+		DEC H
+;перенос имени файла загруженного в рамдиск
+		LD DE,NAME_RAMDISK
+		LD B,8+3
+.L1		LD A,(DE)
+		LD (HL),A
+		INC DE
+		DEC H
+		DJNZ .L1
 		XOR A
 		RET
 
@@ -1112,15 +1123,16 @@ FINDMNTD3	PUSH HL
 		SCF
 		RET
 
+;получение описателя файла загруженного в рамдиск
 REST_NAMELOAD	LD HL,NAME_RAMDISK-CPU6
 		LD DE,(RREG_L)
 		LD BC,0X20
 		JP LDIR_BYTES
 
-STOR_NAMELOAD	LD HL,(RREG_L)
-		LD DE,NAME_RAMDISK-CPU6
-		LD BC,0X20
-		JP LDIR_BYTES
+;STOR_NAMELOAD	LD HL,(RREG_L)
+;		LD DE,NAME_RAMDISK-CPU6
+;		LD BC,0X20
+;		JP LDIR_BYTES
 
 GET_MOUNTED	EVOPORT WIN_P5,RAM_MOUNTER
 		LD HL,MOUNT_DRIVES-CPU6
@@ -1218,7 +1230,7 @@ GET_VIRT_BITS	LD HL,MOUNT_DRIVES
 		ADD A,L
 		LD L,A
 		JR NZ,.L2
-		CALL CREATE4RAMDISK
+		CALL GET_VIRTREAL
 		OR E
 ;[копирование установок виртуал/реал для EVO-DOS]
 WR_VIRT_BITS	LD (CPU2+VIRT_BITS),A
@@ -1252,7 +1264,7 @@ WR_VIRT_BITS	LD (CPU2+VIRT_BITS),A
 		RET
 
 ;[монтирование рамдиска]
-MOUNT_RAMDISK	CALL CREATE4RAMDISK
+MOUNT_RAMDISK	CALL GET_VIRTREAL
 		LD C,A
 		LD A,(CPU2+VIRT_BITS)
 		AND 0XF0
@@ -1271,7 +1283,7 @@ MOUNT_RAMDISK	CALL CREATE4RAMDISK
 		LD (RREG_A),A
 		RET
 
-CREATE4RAMDISK	LD H,VIRT_REAL_DRIVE
+GET_VIRTREAL	LD H,VIRT_REAL_DRIVE
 		ROMCALL READCMOS,ROM_RST82
 		AND 0X0F
 		RET

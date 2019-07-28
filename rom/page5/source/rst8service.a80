@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 06.07.2019 savelij
+;LAST UPDATE: 28.07.2019 savelij
 
 PAGE	
 	TITLE "rst8service.a80 ROM_RST83"
@@ -17,6 +17,7 @@ PAGE
 		include ../../nums_devices.a80
 		include fat/sl811_equ.a80
 		include struct_mount.a80
+		include ../../mainmenu/src/version.a80
 
 USB_ENABLE	EQU 0
 
@@ -163,7 +164,7 @@ CODE_TABL	DW AY_PRN_INIT_			;40
 		DW SCRDN_			;4A
 		DW SET_MODE_			;4B
 		DW MATH				;4C
-		DW RESERVED			;4D
+		DW VERSION_			;4D
 		DW RESERVED			;4E
 		DW RESERVED			;4F
 		DW COM_DEV			;50
@@ -203,6 +204,10 @@ CONT_MAGIC1	LD A,(CPU6+DEBUG_ONOFF)
 		BIT B_DBG_ACTIV,A
 		JP NZ,DEBUGGER			;если активен отладчик, то переход на его запуск
 		JP RESTART_NMI
+
+VERSION_	LD BC,VERSBIN >> 16
+		LD DE,VERSBIN & 0XFFFF
+		RET
 
 SETUP_FONT_	ROMCALL SETUP_FONT,ROM_RST81
 		RET

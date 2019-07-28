@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 03.05.2019 savelij
+;LAST UPDATE: 28.07.2019 savelij
 
 ;номера функций RST 8
  INIT_VAR 0X40
@@ -16,6 +16,7 @@
  SETVAR _SCROLL_DOWN
  SETVAR _SET_MODE
  SETVAR _MATH
+ SETVAR _VERSION
 
  INIT_VAR 0X4F
  SETVAR _BIOS
@@ -63,7 +64,7 @@ _MEM_MODE_PENT	EQU %11000000			;MEMORY MODE PENT 1024 KB
  SETVAR _GET_MOUNTED				; получение буфера описателей примонтированных образов
  SETVAR _CLOSEMOUNT				; демонтирование образа
  SETVAR _LOADIMAGE				; загрузка образа в рамдиск
- SETVAR _STOR_NAMELOAD				; сохранение описателя файла загруженного в рамдиск
+ ADDVAR 1					; функция отсцствует
  SETVAR _REST_NAMELOAD				; получение описателя файла загруженного в рамдиск
  SETVAR _CMP_DRIVE				; проверка примонтированного образа на указанной букве
  SETVAR _GET_VIRT_BITS				; получение битов смонтированных дисков
