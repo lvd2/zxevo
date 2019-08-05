@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 28.07.2019 savelij
+;LAST UPDATE: 05.08.2019 savelij
 
 		TITLE "mounter.a80 ROM_RST83"
 
@@ -22,7 +22,6 @@ TAB_MOUNTER	DW OPEN_MOUNT				;00 монтирование образа
 		DW GET_MOUNTED				;03 получение буфера описателей примонтированных образов
 		DW CLOSEMOUNT				;04 демонтирование образа
 		DW LOADIMAGE				;05 загрузка образа в рамдиск
-		DW NOFUNC				;06
 		DW REST_NAMELOAD			;07 получение описателя файла загруженного в рамдиск
 		DW CMP_DRIVE				;08 проверка примонтированного образа на указанной букве
 		DW GET_VIRT_BITS			;09 получение битов смонтированных дисков

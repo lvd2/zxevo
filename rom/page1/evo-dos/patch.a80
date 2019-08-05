@@ -8,6 +8,7 @@ SET_CURRDRV	LD B,A
 		CALL SET_CURRVIRT
 		LD A,(NUM_ALT_PAGE)
 		CP ROM_ADD_BAS48 | 0X80
+		LD A,B
 		CALL NZ,COM_01			;настройка на диск только для реальной дискеты
 		JP ERR_OK
 
