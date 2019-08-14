@@ -1,13 +1,19 @@
 
-;LAST UPDATE: 22.11.2018 savelij
+;LAST UPDATE: 14.08.2019 savelij
 
-loc_3C47	xor	a
-		call	SET_PAGE
+loc_3C47	LD BC,WIN_A3
+		LD A,0XFF
+		OUT (C),A		;возврат привязки к порту 7FDD
+;		xor	a
+;		call	SET_PAGE
 LOC_3C4B	LD DE,0XFFFF
 		ld	a, 7
 		jp	loc_9
 
 loc_3C50	ld	sp, 0X5BFF
+		LD BC,WIN_A3
+		LD A,0X40
+		OUT (C),A		;разблокировка привязки к порту 7FFD
 		ld	a, 1Fh
 		call	SET_PAGE
 		ld	hl, 0C000h
@@ -61,17 +67,22 @@ loc_3C61	add	a, (hl)
 		ld	sp, (0X5B73)
 		ret
 
-SET_PAGE	push	af
-		and	7
-		or	10h
-		ld	bc, 7FFDh
-		out	(c), a
-		pop	af
-		and	18h
-		cpl
-		ld	bc, 0FFF7h
-		out	(c), a
-		ret
+SET_PAGE
+;		push	af
+;		and	7
+;		or	10h
+;		ld	bc, 7FFDh
+;		out	(c), a
+;		pop	af
+;		and	18h
+;		cpl
+;		ld	bc, 0FFF7h
+;		out	(c), a
+;		ret
+		LD BC,WIN_P3
+		CPL
+		OUT (C),A
+		RET
 
 LDIR_DE_HL	ld	a, 0FFh
 		or	a

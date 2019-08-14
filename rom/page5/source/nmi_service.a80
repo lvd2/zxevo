@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 04.07.2019 savelij
+;LAST UPDATE: 13.08.2019 savelij
 
 ;последовательность для RST 8
 ;старый стек	HL AF BC RF ADR_RET DE	->
@@ -362,8 +362,17 @@ NMISERV002	INIR
 		DEC B				;прерывания запрещены
 NMISERV001	XOR A
 		LD I,A				;обработчик прерывания переставилии для адреса 00FF
-		PEC_ON M_SHADOW_BF
 		CALL GET_NUM_IM
+		PEC_OFF M_SHADOW_BF
+		LD A,(N_EFF7-CPU2)
+		AND %11101111
+		LD BC,PENT_CONF
+		OUT (C),A
+		PEC_ON M_SHADOW_BF
+		LD A,(N_77-CPU2)
+		AND %11110111
+		LD BC,0XFF77
+		OUT (C),A			;установка 7.0Mhz для NMI сервиса
 
 ;		LD DE,0XA70F			;дальше сохраняем текущую палитру
 ;		LD BC,0XBD77
