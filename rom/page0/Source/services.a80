@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 29.01.2019 savelij
+;LAST UPDATE: 18.08.2019 savelij
 
 		include ../../macros.a80
 		include ../../define.a80
@@ -79,6 +79,7 @@ INITPAGE3	RST8 _CMOS_RW,_INIT_CMOS
 		LD A,0XEF
 		IN A,(0XFE)
 		RRCA				;‚…€ €†€’  "0"  ‘‘…
+		CALL NC,RES_REZIDENT
 		JR NC,RSTRAM			;‘‘ ‚ ‘‚… ‡“
 		RRCA
 		RRCA
@@ -377,6 +378,17 @@ READCMOS	PUSH BC
 		IN L,(C)
 		LD A,L
 		POP BC
+		RET
+
+;α΅ΰ®α Άª«ξη¥­­®£® ΰ¥§¨¤¥­β 
+RES_REZIDENT	PUSH AF
+		PUSH HL
+		LD H,CMOS_BYTE_01
+		CALL READCMOS
+		RES B_REZIDENT,L
+		RST8 _CMOS_RW,_WRITE_CMOS
+		POP HL
+		POP AF
 		RET
 
 ;„‹ …‡„…’€ HONEY COMANDER

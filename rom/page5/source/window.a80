@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 30.06.2019 savelij
+;LAST UPDATE: 20.08.2019 savelij
 
 ;Žˆ‘€’…‹œ ŽŠ€ (€„…‘ ‚ IX)
 ;+00 X ŠŽŽ„ˆ€’€
@@ -75,9 +75,9 @@ WINW		LD HL,FLAGS
 		LD IX,(RREG_IXL)
 		LD A,(R_77)
 		AND 7
-WINW0		CP 3
+WINW0		CP NUM_ZXSCR
 		JP Z,WINW_ZX
-		CP 7
+		CP NUM_TXTSCR
 		RET NZ
 		EXX
 		LD BC,WIN_P6

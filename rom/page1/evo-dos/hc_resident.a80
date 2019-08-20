@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 14.08.2019 savelij
+;LAST UPDATE: 18.08.2019 savelij
 
 loc_3C47	LD BC,WIN_A3
 		LD A,0XFF
@@ -20,6 +20,8 @@ loc_3C50	ld	sp, 0X5BFF
 		ld	a, (hl)
 		cp	0C3h
 		jr	nz, loc_3C47
+		LD A,MEMORY_128 | TURBO_3
+		RST8D _SET_MODE		;установка 3,5Мгц и память 128К
 		xor	a
 loc_3C61	add	a, (hl)
 		adc	a, 0
@@ -36,7 +38,12 @@ loc_3C61	add	a, (hl)
 		dec	hl
 		cp	(hl)
 		jr	nz, loc_3C47
-		ld	hl, 0D000h
+		LD H,CMOS_BYTE_03
+		CALL READCMOS
+		AND M_KILL_REZIDENT
+		JR Z,.L1
+		LD (0XC000),A		;портим резидент
+.L1		ld	hl, 0D000h
 		ld	de, 5B00h
 		ld	bc, 2500h
 		ldir
@@ -64,6 +71,9 @@ loc_3C61	add	a, (hl)
 		call	LDIR_HL_DE
 		xor	a
 		call	SET_PAGE
+		LD BC,WIN_A3
+		LD A,0XFF
+		OUT (C),A		;возврат привязки к порту 7FDD
 		ld	sp, (0X5B73)
 		ret
 
