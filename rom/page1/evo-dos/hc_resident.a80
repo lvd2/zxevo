@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 21.08.2019 savelij
+;LAST UPDATE: 22.08.2019 savelij
 
 loc_3C47	LD BC,WIN_A3
 		LD A,0XFF
@@ -14,8 +14,10 @@ loc_3C50	ld	sp, 0X5BFF
 		LD BC,WIN_A3
 		LD A,0X40
 		OUT (C),A		;разблокировка привязки к порту 7FFD
-		ld	a, 1Fh
-		call	SET_PAGE
+		ld	a, 1Fh ! 0XFF
+;		call	SET_PAGE
+		LD BC,WIN_P3
+		OUT (C),A
 		ld	hl, 0C000h
 		ld	a, (hl)
 		cp	0C3h
@@ -47,37 +49,71 @@ loc_3C61	add	a, (hl)
 		ld	de, 5B00h
 		ld	bc, 2500h
 		ldir
-		ld	sp, 0x4100;TRD_5F00
-		ld	a, 1Eh
-		call	SET_PAGE
-		call	LDIR_HL_DE
-		ld	a, 3
-		call	SET_PAGE
-		call	LDIR_DE_HL
-		ld	a, 1Dh
-		call	SET_PAGE
-		call	LDIR_HL_DE
-		ld	a, 1
-		call	SET_PAGE
-		call	LDIR_DE_HL
-		ld	a, 1Ch
-		call	SET_PAGE
-		call	LDIR_HL_DE
-		xor	a
-		call	SET_PAGE
-		call	LDIR_DE_HL
-		ld	a, 1Bh
-		call	SET_PAGE
-		call	LDIR_HL_DE
-		xor	a
-		call	SET_PAGE
+;		ld	sp, TRD_5F00
+		LD BC,WIN_P3		;порт установки номера страницы
+		ld	a, 1Eh ! 0XFF
+;		call	SET_PAGE
+;		call	LDIR_HL_DE
+		LD HL,LDIR_HL_DE
+		LD DE,.E1
+		JP (HL)
+
+.E1		ld	a, 3 ! 0XFF
+;		call	SET_PAGE
+;		call	LDIR_DE_HL
+		LD HL,LDIR_DE_HL
+		LD DE,.E2
+		JP (HL)
+
+.E2		ld	a, 1Dh ! 0XFF
+;		call	SET_PAGE
+;		call	LDIR_HL_DE
+		LD HL,LDIR_HL_DE
+		LD DE,.E3
+		JP (HL)
+
+.E3		ld	a, 1 ! 0XFF
+;		call	SET_PAGE
+;		call	LDIR_DE_HL
+		LD HL,LDIR_DE_HL
+		LD DE,.E4
+		JP (HL)
+
+.E4		ld	a, 1Ch ! 0XFF
+;		call	SET_PAGE
+;		call	LDIR_HL_DE
+		LD HL,LDIR_HL_DE
+		LD DE,.E5
+		JP (HL)
+
+.E5
+;		xor	a
+;		call	SET_PAGE
+		LD A, 0 ! 0XFF
+;		call	LDIR_DE_HL
+		LD HL,LDIR_DE_HL
+		LD DE,.E6
+		JP (HL)
+
+.E6		ld	a, 1Bh ! 0XFF
+;		call	SET_PAGE
+;		call	LDIR_HL_DE
+		LD HL,LDIR_HL_DE
+		LD DE,.E7
+		JP (HL)
+
+.E7
+;		xor	a
+;		call	SET_PAGE
+		LD A,0 ! 0XFF
+		OUT (C),A		;вернули страницу
 		LD BC,WIN_A3
 		LD A,0XFF
 		OUT (C),A		;возврат привязки к порту 7FDD
 		ld	sp, (0X5B73)
 		ret
 
-SET_PAGE
+;SET_PAGE
 ;		push	af
 ;		and	7
 ;		or	10h
@@ -89,20 +125,25 @@ SET_PAGE
 ;		ld	bc, 0FFF7h
 ;		out	(c), a
 ;		ret
-		LD BC,WIN_P3
-		CPL
-		OUT (C),A
-		RET
+;		LD BC,WIN_P3
+;		CPL
+;		OUT (C),A
+;		RET
 
-LDIR_DE_HL	ld	a, 0FFh
+LDIR_DE_HL	OUT (C),A
+		ld	a, 0FFh
 		or	a
 		jr	loc_3CE0
 
-LDIR_HL_DE	xor	a
-loc_3CE0	ld	hl, 0C000h
+LDIR_HL_DE	OUT (C),A
+		xor	a
+loc_3CE0	EXX
+		ld	hl, 0C000h
 		ld	de, 8000h
 		ld	bc, 4000h
 		jr	z, loc_3CEC
 		ex	de, hl
 loc_3CEC	ldir
-		ret
+		EXX
+		EX DE,HL
+		JP (HL)
