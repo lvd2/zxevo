@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 14.08.2019 savelij
+;LAST UPDATE: 12.09.2019 savelij
 
 ;автоопределение кодировки работает неправильно
 
@@ -7,7 +7,7 @@
 		CPU Z80UNDOC
 
 BUILD_DEBUG	EQU 0
-REZIDENT			;включение рездента в сборку
+REZIDENT	;включение резидента в сборку
 
 DZ		MACRO DEFZ
 		DB DEFZ,0
@@ -211,41 +211,6 @@ INITVAR := 0
 		ENDIF
 		ENDM
 
-;инициализация переменной для генерации таблицы смещений
-INIT_GETADR	MACRO NAME
-NAME_DIGIT := 0
-	IF MOMPASS = 1
-NAME_DIGITMAX := NAME_DIGIT
-	ENDIF
-		ENDM
-
-;генерация имени переменной для таблицы смещений
-GETADR		MACRO NAME
-dIgIt1 := CHARFROMSTR("\{NAME_DIGIT >> 12}",0)
-dIgIt2 := CHARFROMSTR("\{NAME_DIGIT >> 8}",0)
-dIgIt3 := CHARFROMSTR("\{NAME_DIGIT >> 4}",0)
-dIgIt4 := CHARFROMSTR("\{NAME_DIGIT & 0X0F}",0)
-dIgIt0 := "\{dIgIt1}\{dIgIt2}\{dIgIt3}\{dIgIt4}"
-NAME_{dIgIt0}	EQU $-2
-NAME_DIGIT := NAME_DIGIT+1
-	IF NAME_DIGITMAX < NAME_DIGIT
-NAME_DIGITMAX := NAME_DIGITMAX + 1
-	ENDIF
-		ENDM
-
-;генерация таблицы смещений
-PUTADR		MACRO NAME
-NAME_TMPDIGIT := 0
-		REPT NAME_DIGITMAX
-dIgIt1 := CHARFROMSTR("\{NAME_TMPDIGIT >> 12}",0)
-dIgIt2 := CHARFROMSTR("\{NAME_TMPDIGIT >> 8}",0)
-dIgIt3 := CHARFROMSTR("\{NAME_TMPDIGIT >> 4}",0)
-dIgIt4 := CHARFROMSTR("\{NAME_TMPDIGIT & 0X0F}",0)
-dIgIt0 := "\{dIgIt1}\{dIgIt2}\{dIgIt3}\{dIgIt4}"
-		DW NAME_{dIgIt0}
-NAME_TMPDIGIT := NAME_TMPDIGIT+1
-		ENDM
-		ENDM
 
 MALIGN		MACRO
 	IF LOW($) = 0
@@ -253,4 +218,27 @@ MALIGN		MACRO
 	ELSE
 		DUPL ((HIGH($) + 1) << 8) - $,0
 	ENDIF
+		ENDM
+
+; выравнивание до сектора с учетом адреса компиляции
+DALIGN		MACRO ADDRESS
+	IF LOW(ADDRESS)
+		DB LOW (-$)+LOW(ADDRESS) DUP(0)
+	ELSE
+		DB LOW (-$) DUP (0)
+	ENDIF
+		ENDM
+
+; преобразование 16 битного числа в текст
+WORD2TXT	MACRO WORD
+$$DEC1 := (WORD)/10000
+$$TMP := WORD-$$DEC1*10000
+$$DEC2 := $$TMP/1000
+$$TMP := $$TMP-$$DEC2*1000
+$$DEC3 := $$TMP/100
+$$TMP := $$TMP-$$DEC3*100
+$$DEC4 := $$TMP/10
+$$TMP := $$TMP-$$DEC4*10
+$$DEC5 := $$TMP
+	DB $$DEC1+'0',$$DEC2+'0',$$DEC3+'0',$$DEC4+'0',$$DEC5+'0'
 		ENDM
