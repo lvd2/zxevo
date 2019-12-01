@@ -1,0 +1,183 @@
+
+;last update: 16.06.2019 savelij
+
+sl811clock	EQU 12000000
+
+MAX_EP		EQU 5
+BUFFER_LENGTH	EQU 1024
+
+;Usb Ethernet ports
+;#define UE_INT_RES	0x83AB
+;#define UE_CONTROL	0x82AB
+;#define UE_MAPW5300	0x81AB
+;#define SL811H_ADDR	0x80ab//	0x08000 
+;#define SL811H_DATA	0x00ab//	0x08001 
+UE_INT_RES	EQU 0X83AB
+UE_CONTROL	EQU 0X82AB
+UE_MAPW5300	EQU 0X81AB
+SL811H_ADDR	EQU 0X80AB
+SL811H_DATA	EQU 0X00AB
+
+RBC_CMD_READ10				EQU 0x28 
+RBC_CMD_READCAPACITY			EQU 0x25 
+RBC_CMD_WRITE10				EQU 0x2A 
+SPC_CMD_INQUIRY				EQU 0x12 
+SPC_CMD_PRVENTALLOWMEDIUMREMOVAL	EQU 0x1E 
+SPC_CMD_REQUESTSENSE			EQU 0x03 
+SPC_CMD_TESTUNITREADY			EQU 0x00 
+
+bFlags			struct
+SLAVE_IS_ATTACHED	DB ?	; 
+SLAVE_REMOVED		DB ?	; 
+SLAVE_FOUND		DB ?	;	// Slave USB device found 
+SLAVE_ENUMERATED	DB ?	;	// slave USB device enumeration done 
+SLAVE_ONLINE		DB ?	; 
+TIMEOUT_ERR		DB ?	;	// timeout error during data endpoint transfer 
+DATA_STOP		DB ?	;	// device unplugged during data transfer 
+bData1			DB ?	; 
+bMassDevice		DB ?	; 
+BULK_OUT_DONE		DB ?	;
+DATA_INPROCESS		DB ?	;
+bFlags			endstruct
+
+pUSBDEV			struct
+wVID			DW ?
+wPID			DW ?
+bClass			DB ?
+bNumOfEPs		DB ?
+iMfg			DB ?
+iPdt			DB ?
+bId1			DB ?
+bId2			DB ?
+bEPAddr			DB MAX_EP dup (?)
+bAttr			DB MAX_EP dup (?)
+wPayLoad		DW MAX_EP dup (?)
+bInterval		DW MAX_EP dup (?)
+bData1			DB MAX_EP dup (?)
+pUSBDEV			endstruct
+
+SetupPKG		struct
+bmRequest		DB ?
+bRequest		DB ?
+wValue			DW ?
+wIndex			DW ?
+wLength			DW ?
+SetupPKG		endstruct
+
+PKG			struct
+usbaddr			DB ?
+endpoint		DB ?
+pid			DB ?
+wPayload		DB ?
+wLen			DW ?
+buffer			DW ?
+setup		SetupPKG
+epbulkin		DB ?
+epbulkout		DB ?
+PKG			endstruct
+
+;-------------------------------------------------------------------------
+; EP0 use for configuration and Vendor Specific command interface 
+;-------------------------------------------------------------------------
+EP0_Buf		EQU 0x10	;define start of EP0 64-byte buffer 
+EP1_Buf		EQU 0x40	;define start of EP1 64-byte buffer 
+ 
+;------------------------------------------------------------------------- 
+; SL811H Register Control memory map 
+; --Note:  
+;      --SL11H only has one control register set from 0x00-0x04 
+;      --SL811H has two control register set from 0x00-0x04 and 0x08-0x0c 
+;-------------------------------------------------------------------------
+ 
+EP0Control	EQU 0x00
+EP0Address	EQU 0x01
+EP0XferLen	EQU 0x02
+EP0Status	EQU 0x03
+EP0Counter	EQU 0x04
+
+EP1Control	EQU 0x08 
+EP1Address	EQU 0x09 
+EP1XferLen	EQU 0x0a 
+EP1Status	EQU 0x0b 
+EP1Counter	EQU 0x0c 
+
+CtrlReg		EQU 0x05
+IntEna		EQU 0x06
+
+IntStatus	EQU 0x0d 
+cDATASet	EQU 0x0e 
+cSOFcnt		EQU 0x0f	;Master=1 Slave=0, D+/D-Pol Swap=1 0=not [0-5] SOF Count  
+				;0xAE = 1100 1110 
+				;0xEE = 1110 1110 
+cSOFMasterMode	EQU 0x80
+cSOFLowSpeed	EQU 0x40
+cSOFSlaveMode	EQU 0x00
+cSOFFullSpeed	EQU 0x00
+msSOFHighCountFS	EQU ((sl811clock / 1000) >> 8) & 0x3f ;for FullSpeed 1ms rtfm
+msSOFLowCountFS	EQU ((sl811clock / 1000) & 0xff) ;for FullSpeed 1ms rtfm
+
+IntMask		EQU 0x57	;Reset|DMA|EP0|EP2|EP1 for IntEna
+HostMask	EQU 0x47	;Host request command  for IntStatus
+ReadMask	EQU 0xd7	;Read mask interrupt   for IntStatus
+
+;Interrupt Status Mask 
+USB_A_DONE	EQU 0x01 
+USB_B_DONE	EQU 0x02 
+BABBLE_DETECT	EQU 0x04 
+INT_RESERVE	EQU 0x08 
+SOF_TIMER	EQU 0x10 
+INSERT_REMOVE	EQU 0x20 
+USB_RESET	EQU 0x40 
+USB_DPLUS	EQU 0x80 
+INT_CLEAR	EQU 0xFF 
+ 
+;EP0 Status Mask 
+EP0_ACK		EQU 0x01	;EPxStatus bits mask during a read 
+EP0_ERROR	EQU 0x02
+EP0_TIMEOUT	EQU 0x04 
+EP0_SEQUENCE	EQU 0x08 
+EP0_SETUP	EQU 0x10 
+EP0_OVERFLOW	EQU 0x20 
+EP0_NAK		EQU 0x40 
+EP0_STALL	EQU 0x80 
+ 
+;------------------------------------------------------------------------- 
+; Standard Chapter 9 definition 
+;------------------------------------------------------------------------- 
+GET_STATUS	EQU 0x00																   
+CLEAR_FEATURE	EQU 0x01 
+SET_FEATURE	EQU 0x03 
+SET_ADDRESS	EQU 0x05 
+GET_DESCRIPTOR	EQU 0x06 
+SET_DESCRIPTOR	EQU 0x07 
+GET_CONFIG	EQU 0x08 
+SET_CONFIG	EQU 0x09 
+GET_INTERFACE	EQU 0x0a 
+SET_INTERFACE	EQU 0x0b 
+SYNCH_FRAME	EQU 0x0c 
+
+DEVICE		EQU 0x01 
+CONFIGURATION	EQU 0x02 
+STRING		EQU 0x03 
+INTERFACE	EQU 0x04 
+ENDPOINT	EQU 0x05 
+
+STDCLASS	EQU 0x00 
+ 
+;------------------------------------------------------------------------- 
+; SL11H/SL811H definition 
+;------------------------------------------------------------------------- 
+				;USB-A, USB-B Host Control Register [00H, 08H] 
+				;Pre  Reserved 
+				;DatT Dir [1=Trans, 0=Recv] 
+				;OF Enable 
+				;ISO  Arm  
+DATA0_WR	EQU 0x07	;0000 0111 (      Data0 +       OUT + Enable + Arm) 
+sDATA0_WR	EQU 0x27	;0010 0111 (      Data0 + SOF + OUT + Enable + Arm) 
+
+DATA0_RD	EQU 0x03	;0000 0011 (      Data0 +       IN +  Enable + Arm) 
+sDATA0_RD	EQU 0x23	;0010 0011 (      Data0 + SOF + IN +  Enable + Arm) 
+
+PID_SETUP	EQU 0xD0
+PID_IN		EQU 0x90
+PID_OUT		EQU 0x10

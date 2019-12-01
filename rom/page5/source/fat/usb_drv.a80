@@ -1,0 +1,1085 @@
+
+;LAST UPDATE: 06.07.2019 savelij
+
+;		include sl811_equ.a80
+
+TIMEOUT_RETRY	EQU 6
+
+;bFlags
+ BITMASK bMassDevice,		7
+ BITMASK bData1,		6
+ BITMASK DATA_STOP,		5
+ BITMASK TIMEOUT_ERR,		4
+ BITMASK SLAVE_ENUMERATED,	3
+ BITMASK SLAVE_FOUND,		2
+ BITMASK SLAVE_REMOVED,		1
+ BITMASK SLAVE_IS_ATTACHED,	0
+
+;входные параметры общие:
+;HL-адрес загрузки в память
+;BCDE-32-х битный номер сектора
+;A-количество секторов (512 байт)
+;только для многоблочной записи/чтении
+
+;ПОРТИТСЯ РЕГИСТР IX
+
+;общая точка входа для работы
+COMUSBF		EX AF,AF'
+		LD (NUMHDD),A
+		LD A,IYL
+		AND A
+		LD A,(NEXTBYTERST8)
+		JR Z,.L1
+		EX (SP),HL
+		LD A,(HL)
+		INC HL
+		EX (SP),HL
+.L1		ADD A,A
+		PUSH IX
+		PUSH IY
+		PUSH HL
+		LD HL,.L2
+		EX (SP),HL
+		PUSH HL
+		LD HL,.TBLUSBF
+		ADD A,L
+		LD L,A
+		ADC A,H
+		SUB L
+		LD H,A
+		LD A,(HL)
+		INC HL
+		LD H,(HL)
+		LD L,A
+		LD A,(NUMHDD)
+		EX AF,AF'
+		EX (SP),HL
+		RET
+
+.L2		POP IY
+		POP IX
+		PUSH AF
+		LD A,IYL
+		AND A
+		JR NZ,.L3
+		LD (RREG_L),HL
+		EX (SP),HL
+		LD (RREG_F),HL
+		EX (SP),HL
+.L3		POP AF
+		RET
+
+.TBLUSBF	DW sl811_init_my
+		DW USBOFF
+		DW RBC_Read			;READ MULTI
+		DW RBC_Write			;WRITE MULTI
+		DW USBOFF
+
+;=============== инициализация
+
+sl811_init_my	CALL sl811_reset
+		CALL SL11HardReset
+		LD HL,vars.bFlags
+		LD (HL),0
+;		RES B_SLAVE_FOUND,(HL)
+;		RES B_SLAVE_ENUMERATED,(HL)
+;		RES B_DATA_STOP,(HL)
+		LD IXH,50
+.L1		XOR A
+		DEC IXH
+		RET Z
+		CALL USBReset
+		LD HL,IntStatus << 8 + INT_CLEAR
+		CALL SL_WRITE
+		CALL SL_READ
+		XOR A
+		BIT 6,L
+		RET NZ
+		BIT 7,L
+		JR Z,.L1
+		LD HL,CtrlReg << 8 + 5
+		CALL SL_WRITE
+		LD HL,EP0Status << 8 + 0x50
+		CALL SL_WRITE
+		LD HL,EP0Counter << 8
+		CALL SL_WRITE
+		LD HL,EP0Control << 8 + 1
+		CALL SL_WRITE
+		LD HL,IntStatus << 8 + INT_CLEAR
+		CALL SL_WRITE
+		LD E,1
+		CALL EnumUsbDev
+		AND A
+		RET Z
+		XOR A
+		LD HL,vars.bFlags
+		BIT B_bMassDevice,(HL)
+		RET Z
+		RES B_bMassDevice,(HL)
+		PUSH HL
+		CALL EnumMassDev
+		POP HL
+		AND A
+		RET Z
+		SET B_SLAVE_IS_ATTACHED,(HL)
+		LD L,(HL)
+USBOFF		XOR A
+		RET
+
+SL11HardReset:	LD BC,UE_INT_RES
+		IN A,(C)
+		AND %11011111
+		OUT (C),A
+		LD B,HIGH (UE_CONTROL)
+		IN A,(C)
+		OR %01000000
+		OUT (C),A
+		EI
+		HALT
+		DI
+		IN A,(C)
+		AND %10101111
+		OUT (C),A
+		LD B,HIGH (UE_INT_RES)
+		IN A,(C)
+		OR %00100000
+		OUT (C),A
+.L1		LD B,HIGH (UE_INT_RES)
+		IN A,(C)
+		AND 0X10
+		LD D,A
+		OUT (C),A
+		LD B,HIGH (UE_INT_RES)
+		SET 5,D
+		OUT (C),D
+		LD B,HIGH (UE_MAPW5300)
+		XOR A
+		OUT (C),A
+		LD HL,CtrlReg << 8
+		CALL SL_WRITE
+		LD HL,cDATASet << 8 + msSOFLowCountFS
+		CALL SL_WRITE
+		LD HL,cSOFcnt << 8 + cSOFMasterMode | cSOFFullSpeed | msSOFHighCountFS
+		CALL SL_WRITE
+		LD HL,IntEna << 8
+		CALL SL_WRITE
+		LD H,IntStatus
+		CALL SL_READ
+		CP 5
+		JR Z,.L1
+		RET
+
+sl811_reset:	LD BC,UE_MAPW5300
+		XOR A
+		OUT (C),A
+		LD B,HIGH (UE_INT_RES)
+		LD A,%00100000
+		OUT (C),A
+
+USBReset:	LD H,CtrlReg
+		CALL SL_READ
+		LD A,L
+		LD L,8
+		CALL SL_WRITE
+		EI
+		HALT
+;		LD L,0x18
+;		CALL SL_WRITE
+;		HALT
+;		LD L,8
+;		CALL SL_WRITE
+;		HALT
+		DI
+		LD L,A
+		JP SL_WRITE
+
+;=============== работа с портами
+
+SL_READ		LD BC,SL811H_ADDR
+		OUT (C),H
+		LD B,HIGH (SL811H_DATA)
+		IN L,(C)
+.L1		LD B,HIGH (SL811H_ADDR)
+		OUT (C),H
+		LD B,HIGH (SL811H_DATA)
+		IN A,(C)
+		CP L
+		RET Z
+		LD L,A
+		JR .L1
+
+SL_WRITE	LD BC,SL811H_ADDR
+		OUT (C),H
+		LD B,HIGH (SL811H_DATA)
+		OUT (C),L
+		RET
+
+SL_READBUF	LD BC,SL811H_ADDR
+		OUT (C),E
+		INC E
+		LD B,HIGH (SL811H_DATA)
+		INI
+		DEC D
+		JR NZ,SL_READBUF
+		RET
+
+SL_WRITEBUF	LD BC,SL811H_ADDR
+		OUT (C),E
+		INC E
+		LD B,HIGH (SL811H_DATA) + 1
+		OUTI
+		DEC D
+		JR NZ,SL_WRITEBUF
+		RET
+
+;=============== чтение/запись USB
+
+EnumMassDev:	CALL SPC_Inquiry
+		OR A
+;		LD A,0x81
+		RET Z
+		CALL SPC_TestUnit
+		OR A
+;		LD A,0x82
+		RET Z
+		CALL SPC_LockMedia
+		OR A
+;		LD A,0x83
+		RET Z
+		CALL SPC_RequestSense
+		OR A
+;		LD A,0x84
+		RET Z
+		CALL SPC_TestUnit
+		OR A
+;		LD A,0x85
+		RET Z
+		CALL RBC_ReadCapacity
+		OR A
+;		LD A,0x86
+		RET Z
+		CALL SPC_RequestSense
+		OR A
+;		LD A,0x87
+		RET Z
+		CALL SPC_TestUnit
+		OR A
+;		LD A,0x88
+		RET Z
+		CALL RBC_ReadCapacity
+		OR A
+;		LD A,0x89
+		RET Z
+	IF 0
+		LD HL,vars.DBUF
+		LD A,1
+		LD DE,0
+		LD B,D
+		LD C,E
+		CALL RBC_Read
+		OR A
+;		LD A,0x8A
+		RET Z
+	ENDIF
+		LD A,TRUE
+		RET
+
+SPC_Inquiry:	LD BC,0x15
+		CALL SET_T_OUT
+		LD C,0x1F
+		CALL T_OUT_SEND
+		OR A
+		RET Z
+		LD BC,0x24
+		LD DE,vars.DBUF
+		CALL epBulkRcv
+		OR A
+		RET Z
+		JP T_OUT13_RECV
+
+SPC_RequestSense:
+		LD BC,0x15
+		CALL SET_T_OUT
+		LD A,14
+		LD (vars.T_OUT+8),A
+		LD A,SPC_CMD_REQUESTSENSE
+		LD (vars.T_OUT+15),A
+		LD A,14
+		LD (vars.T_OUT+19),A
+		LD C,31
+		CALL T_OUT_SEND
+		OR A
+		RET Z
+		LD BC,18
+		CALL T_OUT_RECV
+		OR A
+		RET Z
+		JP T_OUT13_RECV
+
+SPC_TestUnit:	LD BC,0x15
+		CALL SET_T_OUT
+		XOR A
+		LD (vars.T_OUT+8),A
+		LD (vars.T_OUT+12),A
+		LD (vars.T_OUT+15),A		;SPC_CMD_TESTUNITREADY
+		LD (vars.T_OUT+19),A
+		LD C,0x1F
+		CALL T_OUT_SEND
+		OR A
+		RET Z
+		JP T_OUT13_RECV
+
+SPC_LockMedia:	LD BC,0x15
+		CALL SET_T_OUT
+		XOR A
+		LD (vars.T_OUT+8),A
+		LD (vars.T_OUT+12),A
+		INC A
+		LD (vars.T_OUT+19),A
+		LD A,5
+		LD (vars.T_OUT+14),A
+		LD A,SPC_CMD_PRVENTALLOWMEDIUMREMOVAL
+		LD (vars.T_OUT+15),A
+		LD C,0x1F
+		CALL T_OUT_SEND
+		OR A
+		RET Z
+		JP T_OUT13_RECV
+
+RBC_ReadCapacity:
+		LD BC,0x19
+		CALL SET_T_OUT
+		LD A,8
+		LD (vars.T_OUT+8),A
+		LD A,10
+		LD (vars.T_OUT+14),A
+		LD A,RBC_CMD_READCAPACITY
+		LD (vars.T_OUT+15),A
+		XOR A
+		LD (vars.T_OUT+19),A
+		LD C,0x1F
+		CALL T_OUT_SEND
+		OR A
+		RET Z
+		LD BC,8
+		LD DE,vars.DBUF
+		CALL epBulkRcv
+		OR A
+		RET Z
+		JP T_OUT13_RECV
+
+;HL - адрес буфера
+;BCDE - номер сектора LBA
+;A - количество секторов
+RBC_Read:	PUSH HL				;адрес буфера
+		CALL SET_LBA
+		PUSH DE				;длина в байтах
+		ADC HL,HL
+		LD (vars.T_OUT+10),HL
+		LD A,0x80
+		LD (vars.T_OUT+12),A
+		LD A,10
+		LD (vars.T_OUT+14),A
+		LD A,RBC_CMD_READ10
+		LD (vars.T_OUT+15),A
+		XOR A
+		LD (vars.T_OUT+13),A
+		LD (vars.T_OUT+16),A
+		LD (vars.T_OUT+21),A
+		LD (vars.T_OUT+24),A
+		LD BC,0x1F
+		CALL T_OUT_SEND
+		OR A
+		POP BC			;длина в байтах
+		POP DE			;адрес буфера
+		RET Z
+		CALL epBulkRcv
+		OR A
+		RET Z
+		JP T_OUT13_RECV
+
+SET_LBA		LD HL,vars.T_OUT+17
+		LD (HL),B
+		INC HL
+		LD (HL),C
+		INC HL
+		LD (HL),D
+		INC HL
+		LD (HL),E
+		LD BC,8
+		LD DE,vars.T_OUT
+		LD HL,T_DATA0
+		LDIR
+		LD H,A
+		LD L,B
+		LD (vars.T_OUT+22),HL
+		LD D,B
+		LD E,B
+		ADD HL,HL
+		LD (vars.T_OUT+8),HL
+		EX DE,HL
+		RET
+
+;HL - адрес буфера
+;BCDE - номер сектора LBA
+;A - количество секторов
+RBC_Write:	PUSH HL				;адрес буфера
+		CALL SET_LBA
+		PUSH DE				;длина в байтах
+		ADC HL,HL
+		LD (vars.T_OUT+10),HL
+		LD A,10
+		LD (vars.T_OUT+14),A
+		LD A,RBC_CMD_WRITE10
+		LD (vars.T_OUT+15),A
+		XOR A
+		LD (vars.T_OUT+12),A
+		LD (vars.T_OUT+13),A
+		LD (vars.T_OUT+16),A
+		LD (vars.T_OUT+21),A
+		LD (vars.T_OUT+24),A
+		LD BC,0x1F
+		CALL T_OUT_SEND
+		OR A
+		POP BC			;длина в байтах
+		POP DE			;адрес буфера
+		RET Z
+		CALL epBulkSend
+		OR A
+		RET Z
+T_OUT13_RECV	LD BC,13
+T_OUT_RECV	LD DE,vars.T_OUT
+		CALL epBulkRcv
+		OR A
+		RET Z
+		LD A,TRUE
+		RET
+
+T_OUT13_SEND	LD BC,13
+T_OUT_SEND	LD DE,vars.T_OUT
+		JP epBulkSend
+
+SET_T_OUT	LD HL,T_DATA0
+		LD DE,vars.T_OUT
+		LDIR
+		RET
+
+;=============== работа с SL811
+
+;input:
+;none
+usbXfer:	LD HL,vars.bFlags
+		RES B_DATA_STOP,(HL)
+		RES B_TIMEOUT_ERR,(HL)
+		LD A,EP0_Buf
+		LD (vars.data0),A
+		LD A,(usbstack_wPayload)
+		ADD A,16
+		LD (vars.data1),A
+		XOR A
+		LD (vars.timeout),A
+		LD (vars.dataX),A
+		LD BC,(usbstack_wPayload)
+		LD B,A
+		LD HL,(usbstack_wLen)
+		LD A,L			;usbstack_wLen
+		AND A
+		SBC HL,BC
+		JR C,.L1
+		LD A,C			;usbstack_wPayload
+.L1		LD (vars.xferLen),A
+		LD A,(usbstack_pid)
+		CP PID_IN
+		JR NZ,.L2
+		LD A,sDATA0_RD
+		JP .L8
+
+.L2		CP PID_OUT
+		LD A,(vars.xferLen)
+		JR NZ,.L6
+		OR A
+		JR Z,.L3
+		LD DE,(vars.data0)
+		LD D,A
+		LD HL,(usbstack_buffer)
+		CALL SL_WRITEBUF
+.L3		LD A,sDATA0_WR
+		LD (vars.cmd),A
+		LD HL,(usbstack_endpoint)
+		LD H,0
+		LD D,H
+		LD BC,uDev_bData1
+		ADD HL,BC
+		LD A,(vars.bFlags)
+		AND %10111111
+		LD B,A
+		LD A,(HL)
+		RRCA
+		RRCA
+		AND %01000000
+		OR B
+		LD (vars.bFlags),A
+		LD HL,(usbstack_endpoint)
+		LD H,D
+		LD BC,uDev_bData1
+		ADD HL,BC
+		LD A,(HL)
+		OR A
+		LD A,1
+		JR Z,.L5
+		XOR A
+.L5		LD HL,(usbstack_endpoint)
+		LD H,D
+		LD BC,uDev_bData1
+		ADD HL,BC
+		LD (HL),A
+		LD HL,(vars.bFlags)
+		BIT B_bData1,L
+		JR Z,.L9
+		LD HL,vars.cmd
+		SET 6,(HL)
+		JR .L9
+
+.L6		OR A
+		JR Z,.L7
+		LD A,(usbstack_setup_wLength)
+		LD (vars.intr),A
+		LD HL,usbstack_setup_bmRequest
+		LD DE,vars.SL_OUT
+		LD BC,SetupPKG_len
+		LDIR
+		LD A,(vars.xferLen)
+		LD DE,(vars.data0)
+		LD D,A
+		LD HL,vars.SL_OUT
+		CALL SL_WRITEBUF
+		LD HL,(vars.intr)
+		LD H,0
+		LD (usbstack_setup_wLength),HL
+.L7		LD A,sDATA0_WR
+.L8		LD (vars.cmd),A
+.L9		LD A,(usbstack_endpoint)
+		OR A
+		JR NZ,.L10
+		LD A,(usbstack_pid)
+		CP PID_SETUP
+		JR Z,.L10
+		LD HL,vars.cmd
+		SET 6,(HL)
+.L10		LD HL,usbstack_pid
+		LD A,(usbstack_endpoint)
+		AND 0x0F
+		OR (HL)
+		LD L,A
+		LD H,EP0Status
+		CALL SL_WRITE
+		LD HL,(usbstack_usbaddr)
+		LD H,EP0Counter
+		CALL SL_WRITE
+		LD HL,(vars.data0)
+		LD H,EP0Address
+		CALL SL_WRITE
+		LD HL,(vars.xferLen)
+		LD H,EP0XferLen
+		CALL SL_WRITE
+		CALL S_0178
+.L11		LD H,IntStatus
+		CALL SL_READ
+		LD (vars.intr),A
+		BIT 6,A
+		JR NZ,.L12
+		BIT 5,A
+		JR Z,.L13
+.L12		LD HL,vars.bFlags
+		SET B_DATA_STOP,(HL)
+		XOR A
+		RET
+
+.L13		BIT 0,A
+		JR Z,.L11
+		LD HL,IntStatus << 8 + INT_CLEAR
+		CALL SL_WRITE
+		LD H,EP0Status
+		CALL SL_READ
+		LD (vars.result),A
+		LD H,EP0Counter
+		CALL SL_READ
+		LD (vars.remainder),A
+		LD A,(vars.result)
+		BIT 0,A
+		JP Z,.L20
+		LD A,(usbstack_pid)
+		CP PID_SETUP
+		JP Z,.L25
+		CP PID_OUT
+		JP Z,.L25
+		CP PID_IN
+		JP NZ,.L20
+		LD HL,(usbstack_wLen)
+		LD BC,(vars.xferLen)
+		XOR A
+		LD B,A
+		SBC HL,BC
+		LD (usbstack_wLen),HL
+		LD HL,vars.cmd
+		LD A,0x40
+		XOR (HL)
+		LD (HL),A
+		LD HL,vars.dataX
+		INC (HL)
+		LD HL,vars.xferLen
+		LD BC,vars.remainder
+		LD A,(BC)
+		CP (HL)
+		LD A,(HL)
+		JR NZ,.L14
+		XOR A
+.L14		LD (vars.bufLen),A
+		LD A,(BC)
+		OR A
+		JR NZ,.L17
+		LD HL,(usbstack_wLen)
+		LD A,H
+		OR L
+		JR Z,.L17
+		LD A,(vars.dataX)
+		BIT 0,A
+		LD A,(vars.data0)
+		JR Z,.L15
+		LD A,(vars.data1)
+.L15		LD (vars.addr),A
+		LD BC,(usbstack_wPayload)
+		XOR A
+		LD B,A
+		SBC HL,BC
+		LD A,(usbstack_wLen)
+		JR C,.L16
+		LD A,(usbstack_wPayload)
+.L16		LD (vars.xferLen),A
+		LD HL,vars.cmd
+		SET 5,(HL)
+		LD L,A
+		LD H,EP0XferLen
+		CALL SL_WRITE
+		LD HL,(vars.addr)
+		LD H,EP0Address
+		CALL SL_WRITE
+		CALL S_0178
+.L17		LD A,(vars.bufLen)
+		OR A
+		JR Z,.L19
+		LD D,A
+		LD A,(vars.dataX)
+		BIT 0,A
+		LD HL,vars.data1
+		JR Z,.L18
+		LD HL,vars.data0
+.L18		LD E,(HL)
+		LD HL,(usbstack_buffer)
+		PUSH HL
+		CALL SL_READBUF
+		POP HL
+		LD BC,(vars.bufLen)
+		LD B,0
+		ADD HL,BC
+		LD (usbstack_buffer),HL
+.L19		LD A,(vars.remainder)
+		OR A
+		JR NZ,.L25
+		LD HL,(usbstack_wLen)
+		LD A,H
+		OR L
+		JR Z,.L25
+.L20		LD A,(vars.result)
+		BIT 6,A
+		JR Z,.L21
+		CALL S_0178
+		XOR A
+		LD (vars.result),A
+.L21		BIT 2,A
+		JR Z,.L24
+		LD A,(usbstack_endpoint)
+		OR A
+		JR NZ,.L23
+		LD HL,vars.timeout
+		INC (HL)
+		LD A,(HL)
+		CP TIMEOUT_RETRY
+		JR C,.L22
+		DEC (HL)
+		JR .L25
+
+.L23		LD HL,vars.bFlags
+		SET B_TIMEOUT_ERR,(HL)
+		JR .L25
+
+.L22		CALL S_0178
+.L24		LD A,(vars.result)
+		LD B,A
+		OR A
+		LD A,TRUE
+		RET M
+		BIT 5,B
+		JP Z,.L11
+.L25		LD A,(vars.result)
+		BIT 0,A
+		RET Z
+		LD A,TRUE
+		RET
+
+S_0178:		LD HL,IntStatus << 8 + INT_CLEAR
+		CALL SL_WRITE
+		LD HL,(vars.cmd)
+		LD H,EP0Control
+		JP SL_WRITE
+
+;input:
+;none
+ep0Xfer:	XOR A
+		LD (usbstack_endpoint),A
+		LD A,PID_SETUP
+		LD (usbstack_pid),A
+		LD HL,8
+		LD (usbstack_wLen),HL
+		CALL usbXfer
+		OR A
+		RET Z
+		LD A,PID_IN
+		LD (usbstack_pid),A
+		LD HL,(usbstack_setup_wLength)
+		LD (usbstack_wLen),HL
+		LD A,H
+		OR L
+		JR Z,.L1
+		LD A,(usbstack_setup_bmRequest)
+		OR A
+		JP P,.L2
+		LD A,PID_IN
+		LD (usbstack_pid),A
+		CALL usbXfer
+		OR A
+		RET Z
+		LD A,PID_OUT
+		JR .L3
+
+.L2		LD A,PID_OUT
+		LD (usbstack_pid),A
+		CALL usbXfer
+		OR A
+		RET Z
+		LD A,PID_IN
+.L3		LD (usbstack_pid),A
+.L1		LD HL,0
+		LD (usbstack_wLen),HL
+		CALL usbXfer
+		OR A
+		RET Z
+		LD A,TRUE
+		RET
+
+;input:
+;BC - длина
+;DE - адрес буфера
+epBulkSend:	LD A,1
+		LD (usbstack_usbaddr),A
+		LD A,(usbstack_epbulkout)
+		LD (usbstack_endpoint),A
+		LD A,PID_OUT
+		LD (usbstack_pid),A
+		LD A,64
+		LD (usbstack_wPayload),A
+		LD (usbstack_wLen),BC			;длина передачи
+		LD (usbstack_buffer),DE			;адрес буфера
+		LD D,B
+		LD E,C
+.L2		LD A,D
+		OR E
+		LD A,TRUE
+		RET Z
+		LD HL,(usbstack_wPayload)
+		XOR A
+		LD H,A
+		LD (usbstack_wLen),HL
+		SBC HL,DE
+		JR C,.L1
+		LD (usbstack_wLen),BC
+.L1		PUSH DE
+		CALL usbXfer
+		POP HL
+		AND A
+		RET Z
+		LD BC,(usbstack_wLen)
+		SBC HL,BC
+		EX DE,HL
+		LD HL,(usbstack_buffer)
+		ADD HL,BC
+		LD (usbstack_buffer),HL
+		JR .L2
+
+;input:
+;BC - длина
+;DE - адрес буфера
+epBulkRcv:	LD A,1
+		LD (usbstack_usbaddr),A
+		LD A,(usbstack_epbulkin)
+		LD (usbstack_endpoint),A
+		LD A,PID_IN
+		LD (usbstack_pid),A
+		LD A,64
+		LD (usbstack_wPayload),A
+		LD (usbstack_wLen),BC			;длина передачи
+		LD (usbstack_buffer),DE			;адрес буфера
+		LD A,B
+		OR C
+		LD A,TRUE
+		RET Z
+		CALL usbXfer
+		AND A
+		RET Z
+		LD A,TRUE
+		RET
+
+;input:
+;E-адрес
+SetAddress:	LD A,SET_ADDRESS
+		LD (usbstack_setup_bRequest),A
+		XOR A
+		LD (usbstack_usbaddr),A
+		LD (usbstack_setup_bmRequest),A
+		LD L,E
+		LD H,A
+		LD (usbstack_setup_wValue),HL
+		LD L,A
+		LD (usbstack_setup_wIndex),HL
+		LD (usbstack_setup_wLength),HL
+		JR CALL_EP0XFER
+
+;input:
+;none
+Set_Configuration:
+		LD A,SET_CONFIG
+		LD (usbstack_setup_bRequest),A
+		XOR A
+		LD (usbstack_setup_bmRequest),A
+		LD H,A
+		LD L,A
+		LD (usbstack_setup_wIndex),HL
+		LD (usbstack_setup_wLength),HL
+		LD (usbstack_buffer),HL
+		JR CALL_EP0XFER
+
+;input:
+;none
+GetDesc:	LD A,0x80
+		LD (usbstack_setup_bmRequest),A
+		LD A,GET_DESCRIPTOR
+		LD (usbstack_setup_bRequest),A
+		LD A,(uDev_wPayLoad)
+		LD (usbstack_wPayload),A
+		LD HL,(usbstack_setup_wValue)
+		LD A,L
+		LD L,H
+		LD H,A
+		LD (usbstack_setup_wValue),HL
+CALL_EP0XFER	PUSH DE
+		CALL ep0Xfer
+		POP DE
+		RET
+
+;input:
+;E - usbaddr
+EnumUsbDev:	LD HL,0x40
+		LD (uDev_wPayLoad),HL
+		DEC E
+		INC E
+		CALL Z,USBReset
+		XOR A
+		LD (usbstack_usbaddr),A
+		LD HL,1
+		LD (usbstack_setup_wValue),HL
+		DEC L
+		LD (usbstack_setup_wIndex),HL
+		LD L,0x12
+		LD (usbstack_setup_wLength),HL
+		LD HL,vars.DBUF
+		LD (usbstack_buffer),HL
+		CALL GetDesc
+		OR A
+		RET Z
+		LD HL,(vars.DBUF+7)
+		LD H,0
+		LD (uDev_wPayLoad),HL
+		CALL SetAddress
+		OR A
+		RET Z
+		LD A,E
+		LD (usbstack_usbaddr),A
+		LD HL,(vars.DBUF)
+		LD H,0
+		LD (usbstack_setup_wLength),HL
+		LD L,1
+		LD (usbstack_setup_wValue),HL
+		DEC L
+		LD (usbstack_setup_wIndex),HL
+		LD HL,vars.DBUF
+		LD (usbstack_buffer),HL
+		LD IXH,A
+		CALL GetDesc
+		OR A
+		RET Z
+		LD A,(vars.DBUF+14)
+		LD (uDev_iMfg),A
+		LD A,(vars.DBUF+15)
+		LD (uDev_iPdt),A
+		LD HL,vars.DBUF+8
+		LD C,(HL)
+		INC HL
+		LD B,(HL)
+		INC HL
+		LD (uDev_wVID),BC
+		LD C,(HL)
+		INC HL
+		LD B,(HL)
+		LD (uDev_wPID),BC
+		LD A,IXH
+		LD (usbstack_usbaddr),A
+		LD HL,2
+		LD (usbstack_setup_wValue),HL
+		LD L,H
+		LD (usbstack_setup_wIndex),HL
+		LD L,0x40
+		LD (usbstack_setup_wLength),HL
+		LD HL,vars.DBUF
+		LD (usbstack_buffer),HL
+		CALL GetDesc
+		OR A
+		RET Z
+		LD HL,vars.DBUF+14
+		LD A,(HL)
+		LD (uDev_bClass),A
+		DEC HL
+		LD A,MAX_EP
+		CP (HL)
+		JR C,.L1
+		LD A,(HL)
+.L1		LD (uDev_bNumOfEPs),A
+		LD A,(uDev_bClass)
+		CP 8
+		JR NZ,.L2
+		LD HL,vars.bFlags
+		SET B_bMassDevice,(HL)
+.L2		LD A,IXH
+		LD (usbstack_usbaddr),A
+		LD HL,1
+		LD (usbstack_setup_wValue),HL
+		CALL Set_Configuration
+		OR A
+		RET Z
+		LD IXL,0
+		LD D,1
+.L3		LD A,(uDev_bNumOfEPs)
+		CP D
+		LD A,TRUE
+		RET C
+		LD HL,vars.DBUF+20
+		LD C,IXL
+		LD B,0
+		ADD HL,BC
+		LD A,(HL)
+		LD HL,uDev_bEPAddr
+		LD C,D
+		ADD HL,BC
+		LD (HL),A
+		LD HL,vars.DBUF+21
+		LD C,IXL
+		ADD HL,BC
+		LD A,(HL)
+		LD HL,uDev_bAttr
+		LD C,D
+		ADD HL,BC
+		LD (HL),A
+		LD HL,uDev_wPayLoad
+		LD C,D
+		ADD HL,BC
+		ADD HL,BC
+		PUSH HL
+		LD HL,vars.DBUF+23
+		LD C,IXL
+		ADD HL,BC
+		POP BC
+		INC BC
+		LD A,(HL)
+		LD (BC),A
+		INC HL
+		DEC BC
+		LD A,(HL)
+		LD (BC),A
+		LD HL,vars.DBUF+24
+		LD C,IXL
+		ADD HL,BC
+		LD A,(HL)
+		LD HL,uDev_bInterval
+		LD C,D
+		LD B,0
+		ADD HL,BC
+		ADD HL,BC
+		LD (HL),A
+		INC HL
+		LD (HL),B
+		LD HL,uDev_bData1
+		LD C,D
+		ADD HL,BC
+		LD (HL),B
+		LD A,IXL
+		ADD A,7
+		LD IXL,A
+		INC D
+		LD HL,uDev_bAttr
+		ADD HL,BC
+		LD B,(HL)
+		DEC B
+		DEC B
+		JP NZ,.L3
+		LD HL,uDev_bEPAddr
+		ADD HL,BC
+		LD A,(HL)
+		OR A
+		LD HL,uDev_bEPAddr
+		ADD HL,BC
+		LD A,(HL)
+		LD (usbstack_epbulkout),A
+		JP P,.L3  
+		LD (usbstack_epbulkin),A
+		JP .L3
+
+T_DATA0:	DB "USBC",0x60,0xA6,0x24,0xDE
+		DB 0x24,0,0,0,0x80,0,6
+		DB SPC_CMD_INQUIRY
+		DB 0,0,0,0x24,0,0,0,0
+
+	IF 0
+vars
+
+.bFlags		DW 0
+
+.xferLen	DB 0
+.data0		DB 0
+.data1		DB 0
+.cmd		DB 0
+.intr		DB 0
+.result		DB 0
+.remainder	DB 0
+.dataX		DB 0
+.bufLen		DB 0
+.addr		DB 0
+.timeout	DB 0
+
+.SL_OUT		DB 0 dup (8)
+.DBUF		DB 0 dup (64);512;1024
+.T_OUT		DB 0 dup (32)
+
+uDev		pUSBDEV
+usbstack	PKG
+	ENDIF
+ECOMUSBF
+
