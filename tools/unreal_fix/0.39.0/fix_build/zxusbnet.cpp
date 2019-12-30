@@ -114,20 +114,32 @@ static struct sInfoStruct
 	u_char * tx_ptr;
 	SOCKET list; //socket
 	u_char PROTOR;
+	u_char BINDED;
 }soc[8];
-static char myIP[4];
+//static char myIP[4];
 static sockaddr_in sa_in;
-static u_long len_test;
+static sockaddr_in r_sa_in;
+//static u_long len_test;
 static TIMEVAL select_timeout;
 static u_char stat_regs[0x0100]; 
 static u_char regs[sizeof(stat_regs)];
 static int ns, iResult;
 static u_char data;
-static char * s_ptr;
+//static char * s_ptr;
 static fd_set fd_s;
-static fd_set fd_s1;
+//static fd_set fd_s1;
 static u_long is_blocked = 0, non_blocked = 1;
 WSADATA wsaData;
+
+void soc_bind(sInfoStruct * s){
+	ZeroMemory(&sa_in, sizeof(sa_in));
+	sa_in.sin_family = AF_INET;
+	memcpy(&sa_in.sin_addr.S_un.S_addr, &stat_regs[0x0018], 4);
+	//sa_in.sin_addr.s_addr = htonl(INADDR_ANY);;
+	sa_in.sin_port = (s->PORTR[1] << 8) | s->PORTR[0];
+	bind(s->s, (sockaddr *)&sa_in, sizeof(sa_in));
+	s->BINDED = 1;
+}
 
 void WizRecv(sInfoStruct * s){
 	if (s->rx_ptr)return;
@@ -137,12 +149,17 @@ void WizRecv(sInfoStruct * s){
 			len = recv(s->s, (char*)&s->rx[2], buf_size, 0);
 			break;
 		case Sn_MR_UDP:
-			iResult = sizeof(s->sa_in);
-			len=recvfrom(s->s, (char*)&s->rx[8], buf_size, 0, (sockaddr *)&s->sa_in, &iResult);
+			if(s->BINDED == 0) soc_bind(s);
+			//ZeroMemory(&r_sa_in, sizeof(r_sa_in));
+			iResult = sizeof(r_sa_in);
+			len=recvfrom(s->s, (char*)&s->rx[8], buf_size, 0, (sockaddr *)&r_sa_in, &iResult);
 			break;	
 		case Sn_MR_IPRAW:
-			iResult = sizeof(s->sa_in);
-			len=recvfrom(s->s, (char*)&s->rx[6], buf_size, 0, (sockaddr *)&s->sa_in, &iResult);
+			if(s->BINDED == 0) soc_bind(s);
+			//ZeroMemory(&r_sa_in, sizeof(r_sa_in));
+			iResult = sizeof(r_sa_in);
+			len=recvfrom(s->s, (char*)&s->rx[6], buf_size, 0, (sockaddr *)&r_sa_in, &iResult);
+			//printf("res=%d, errno=%d\r\n",len,errno);
 			break;	
 	}
 	if(len>0)DPRINTF("Recv %d bytes\r\n", len);
@@ -165,14 +182,14 @@ void WizRecv(sInfoStruct * s){
 			s->RX_RSR = (len + 3) & 0x0001fffe;
 			break;
 		case Sn_MR_UDP:
-			*((ULONG*)s->rx) = s->sa_in.sin_addr.S_un.S_addr;
-			*((u_short*)&s->rx[4]) = s->sa_in.sin_port;
+			*((ULONG*)s->rx) = r_sa_in.sin_addr.S_un.S_addr;
+			*((u_short*)&s->rx[4]) = r_sa_in.sin_port;
 			s->rx[6] = (len & 0xff00) >> 8;
 			s->rx[7] = len & 0x00ff;
 			s->RX_RSR = (len + 9) & 0x0001fffe;
 			break;	
 		case Sn_MR_IPRAW:
-			*((ULONG*)s->rx) = s->sa_in.sin_addr.S_un.S_addr;
+			*((ULONG*)s->rx) = r_sa_in.sin_addr.S_un.S_addr;
 			s->rx[4] = (len & 0xff00) >> 8;
 			s->rx[5] = len & 0x00ff;
 			s->RX_RSR = (len + 7) & 0x0001fffe;
@@ -202,7 +219,7 @@ READ_REG_FUNC(read_SSR){
 		return SOCK_CLOSED;
 	if (s->tcpState == TCP_STATE::LISTEN){
 		s->list = accept(s->s, (sockaddr *)&s->sa_in, &ns);
-		if (s->list != SOCKET_ERROR){
+		if (s->list != (unsigned int)SOCKET_ERROR){
 			ioctlsocket(s->s, FIONBIO, &is_blocked);
 			closesocket(s->s);
 			s->s = s->list;
@@ -359,8 +376,7 @@ u_char(*regReadFunc[0x20])(sInfoStruct *, u_char) = {
 	read_ZERO, read_ZERO, read_TX_FSR32, read_TX_FSR10, read_RX_RSR32, read_RX_RSR10, read_ZERO, read_ZERO,
 	read_RX, read_ZERO, read_ZERO, read_ZERO, read_ZERO, read_ZERO, read_ZERO, read_ZERO,
 };
-void WIZ_CLOSE_SOC(sInfoStruct * s)
-{
+void WIZ_CLOSE_SOC(sInfoStruct * s){
 	if (s->s != INVALID_SOCKET){
 		ioctlsocket(s->s, FIONBIO, &is_blocked);
 		iResult = closesocket(s->s);
@@ -372,23 +388,27 @@ void WIZ_CLOSE_SOC(sInfoStruct * s)
 
 void WizOpenSocket(sInfoStruct * s){
 	bool bOptVal = true;
+	DWORD tout = 3000;
 	if (s->s != INVALID_SOCKET) return;
 	s->RX_RSR = 0;
+	memset(&s->sa_in.sin_addr,0x00,sizeof(s->sa_in.sin_addr));
 	s->sa_in.sin_family = AF_INET;
 	s->rx_ptr = NULL;
 	s->tx_ptr = s->tx;
 	s->tcpState = TCP_STATE::NONE;
+	s->BINDED = 0;
 	switch (s->MR[1])
 	{
 	case Sn_MR_TCP:
 		s->s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-		setsockopt(s->s, SOL_SOCKET, SO_KEEPALIVE, (char*)bOptVal, sizeof(bOptVal));
+		setsockopt(s->s, SOL_SOCKET, SO_KEEPALIVE, (char*)&bOptVal, sizeof(bOptVal));
 		DPRINTF("Opensocket %u ", s->s);
 		break;
 	case Sn_MR_UDP:
 		s->s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 		break;
 	case Sn_MR_IPRAW:
+		setsockopt(s->s, SOL_SOCKET, SO_RCVTIMEO, (char*)&tout, sizeof(tout));
 		s->s = socket(AF_INET, SOCK_RAW, s->PROTOR);
 		break;
 	default:
@@ -421,6 +441,7 @@ void WisListen(sInfoStruct *s){
 	sa_in.sin_addr.S_un.S_addr = 0;
 	sa_in.sin_port = (s->PORTR[1] << 8) | s->PORTR[0];
 	bind(s->s, (sockaddr *)&sa_in, sizeof(sa_in));
+	s->BINDED = 1;
 	listen(s->s, 1);
 	ns = sizeof(s->sa_in);
 }
@@ -435,6 +456,7 @@ void WizSend(sInfoStruct *s){
 		DPRINTF("Send %d bytes\r\n", iResult);
 	}
 	else if ((s->MR[1] == Sn_MR_UDP) || (s->MR[1] == Sn_MR_IPRAW)){
+		if(s->BINDED == 0) soc_bind(s);
 		sendto(s->s, (char*)s->tx, (int)(s->TX_WRSR.ul & 0x01ffff), 0, (sockaddr *)&s->sa_in, sizeof(sa_in));
 		s->tx_ptr = s->tx;
 		s->TX_WRSR.ul = 0;
@@ -506,7 +528,7 @@ WRITE_REG_FUNC(write_DIPR34){
 }
 
 WRITE_REG_FUNC(write_PROTOR){
-	if (z)s->sa_in.sin_addr.S_un.S_un_b.s_b3 = d;
+	if (z)s->PROTOR = d;
 }
 
 WRITE_REG_FUNC(write_TX_WRSR32){

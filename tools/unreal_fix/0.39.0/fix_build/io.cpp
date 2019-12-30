@@ -149,49 +149,42 @@ void out(unsigned port, unsigned char val)
 
    if(conf.mem_model == MM_ATM3)
    {
-       // Порт расширений пентевы
-       if((port & 0xFF) == 0xBF)
-       {
-			if((comp.pBF ^ val) & comp.pBF & 8) // D3: 1->0
-			{
-				nmi_pending  = 1;
-				trdos_in_nmi = comp.flags&CF_TRDOS;
-			}
-           comp.pBF = val;
-           set_banks();
-           return;
-       }
-
-       // Порт разблокировки RAM0 АТМ3
-       if((port & 0xFF) == 0xBE)
-       {
-		   if(cpu.nmi_in_progress&&(cpu.nmi_in_progress==conf.trdos_IORam))
-		   {
-			  if(trdos_in_nmi)
-			      comp.flags |= CF_SETDOSROM|CF_TRDOS;
-              cpu.nmi_in_progress = false;
-              set_banks();
-			  return;
-		   }
-           comp.pBE = 2; // счетчик для выхода из nmi
-           return;
-       }
-	   
-	   // порт адреса брякпоинта
-	   if((port & 0xFF) == 0xBD)
-	   {
-			if( port&0x0100 )
-			{ // high part of address
-				comp.brk_addr &= 0x00FF;
-				comp.brk_addr |= ( ((u16)val) << 8 )&0xFF00;
-			}
-			else
-			{ // low part
-				comp.brk_addr &= 0xFF00;
-				comp.brk_addr |= ((u16)val)&0x00FF;
-			}
-			
-			return;
+	   switch(port & 0xFF){
+		   case 0xBF:	// Порт расширений пентевы
+				if((comp.pBF ^ val) & comp.pBF & 8) // D3: 1->0
+				{
+					nmi_pending  = 1;
+					trdos_in_nmi = comp.flags&CF_TRDOS;
+				}
+			   comp.pBF = val;
+			   set_banks();
+			   return;
+		   case 0xBE:	// Порт разблокировки RAM0 АТМ3
+			   if(cpu.nmi_in_progress&&(cpu.nmi_in_progress==conf.trdos_IORam))
+			   {
+				  if(trdos_in_nmi)
+					  comp.flags |= CF_SETDOSROM|CF_TRDOS;
+				  cpu.nmi_in_progress = false;
+				  set_banks();
+				  return;
+			   }
+			   comp.pBE = 2; // счетчик для выхода из nmi
+			   return;
+		   case 0xBD:	// порт адреса брякпоинта и маски перехвата портов FDD
+			   switch(port & 0xEFFF){
+				   case 0x00BD:
+					   comp.brk_addr &= 0xFF00;
+					   comp.brk_addr |= ((u16)val)&0x00FF;
+					   break;
+				   case 0x01BD:
+					   comp.brk_addr &= 0x00FF;
+					   comp.brk_addr |= ( ((u16)val) << 8 )&0xFF00;
+					   break;
+				   case 0x03BD:
+					   comp.fddIO2Ram_mask = val;
+					   break;					   
+			   }
+			   return;
 	   }
    }
 
@@ -739,9 +732,10 @@ set1FFD:
       }
       if (port == (0xBFF7 & mask))
       {
-	     if (comp.cmos_addr >= 0xF0 && (val & 0xf0) == 0x10 && conf.mem_model == MM_ATM3){
+	     /*if (comp.cmos_addr >= 0xF0 && (val & 0xf0) == 0x10 && conf.mem_model == MM_ATM3){
 			comp.fddIO2Ram_mask=val;
-		 }else if (comp.cmos_addr >= 0xF0 && val <= 2 && conf.mem_model == MM_ATM3)
+		 }else */
+		 if (comp.cmos_addr >= 0xF0 && val <= 2 && conf.mem_model == MM_ATM3)
          {//thims added
             if (val < 2)
             {
