@@ -54,47 +54,73 @@ void wait_for_atx_power(void)
 void atx_power_task(void)
 {
 	static UWORD last_count = 0;
-	UBYTE j = 50;
+//	UBYTE j = 50;
 
 	if ( atx_counter > 1700 )
 	{
-		if ( ( SOFTRES_PIN & (1<<SOFTRES) ) == 0 )
+		//here if either SOFTRES_PIN or F12 held for more than ~5 seconds
+
+//		if ( ( SOFTRES_PIN & (1<<SOFTRES) ) == 0 )
+//		{
+//			//atx power off button pressed (~5 sec)
+//
+//			//switch off atx power
+//			atxpwron_port &= ~(1<<atxpwron);
+//
+//			// wait for power to drop 
+//		}
+//		else
+//		{
+//			//enable hard reset
+//			flags_register |= FLAG_HARD_RESET;
+//		}
+
+		UBYTE was_soft_rst = !(SOFTRES_PIN & (1<<SOFTRES));
+
+		// switch off ATX power
+		ATXPWRON_PORT &= ~(1<<ATXPWRON);
+
+		// wait for ATX power to drop
+		while( nCONFIG_PIN & (1<<nCONFIG) );
+
+		// if it was soft reset switch initiated -- wait for it to release
+		if( was_soft_rst )
 		{
-			//atx power off button pressed (~5 sec)
+			while( !(SOFTRES_PIN & (1<<SOFTRES)) );
 
-			//switch off atx power
-			ATXPWRON_PORT &= ~(1<<ATXPWRON);
+			_delay_ms(50); // and then debounce it
 		}
-		else
-		{
-			//enable hard reset
-			flags_register |= FLAG_HARD_RESET;
-		}
-	}
-
-	if ( ( last_count > 0 ) && ( atx_counter == 0 ) )
-	{
-		//soft reset (reset Z80 only)
-		zx_spi_send(SPI_RST_REG, 0, 0x7F);
-	}
-	last_count = atx_counter;
-
-	if ( ( nCONFIG_PIN & (1<<nCONFIG) ) == 0 )
-	{
-		//power down
 
 		//power led off (timer output disconnect from led pin)
 		TCCR2 &= ~((1<<COM20)|(1<<COM21));
 
-		//wait for button released
-		while (  ( SOFTRES_PIN & (1<<SOFTRES) ) == 0 );
-
-		//1 sec delay
-		do _delay_ms(20); while(--j);
-
-		last_count = 0;
-
-		//enable hard reset
+		// signal HARD_RESET to exit out of mainloop in main.c -- and eventually return to wait_for_atx_power()
 		flags_register |= FLAG_HARD_RESET;
 	}
+	else if ( ( last_count > 0 ) && ( atx_counter == 0 ) )
+	{
+		//soft reset (reset Z80 only) -- F12 or softreset pressed for less than 1700 ticks
+		zx_spi_send(SPI_RST_REG, 0, 0x7F);
+	}
+	last_count = atx_counter;
+
+//	if ( ( nCONFIG_PIN & (1<<nCONFIG) ) == 0 )
+//	{
+//		//power down
+//
+//		//power led off (timer output disconnect from led pin)
+//		TCCR2 &= ~((1<<COM20)|(1<<COM21));
+//
+//		//wait for button released
+//		while (  ( SOFTRES_PIN & (1<<SOFTRES) ) == 0 );
+//
+//		//1 sec delay
+//		do _delay_ms(20); while(--j);
+//
+//		last_count = 0;
+//
+//		//enable hard reset
+//		flags_register |= FLAG_HARD_RESET;
+//	}
+
 }
