@@ -38,16 +38,14 @@ void wait_for_atx_power(void)
 			 (j & (1<<PORF)) )
 		while( SOFTRES_PIN&(1<<SOFTRES) );
 
-		//switch on ATX power
+		//switch on ATX power (PF3 pin in PORTF)
 		ATXPWRON_PORT |= (1<<ATXPWRON);
 
 		//1 sec delay
-		j=50;
-		do _delay_ms(20); while(--j);
+		UBYTE i=50;
+		do {_delay_ms(20);} while(--i);
 	}
 
-	//init port F
-	PORTF = 0b11111000;
 	//clear counter
 	atx_counter = 0;
 }

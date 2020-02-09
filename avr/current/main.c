@@ -65,8 +65,13 @@ void hardware_init(void)
 	PORTG = 0b11111111;
 	DDRG  = 0b00000000; // inputs pulled up
 
-//	PORTF = 0b11110000; // ATX off (zero output), fpga config/etc inputs
-	DDRF  = 0b00001000;
+	// reset value for PORTF is zero (incl. ATX poweron pin),
+	// if no HW reset happens, it keeps previous value
+	//
+	///PORTF = 0b11110000; // ATX off (zero output), fpga config/etc inputs
+	PORTF |=   0b11110000 ;
+	PORTF &= ~(0b00000111);
+	DDRF   =   0b00001000;
 
 	PORTE = 0b11110011;
 	DDRE  = 0b00000000; // PLL to 2X [E2=Z,E3=Z], inputs pulled up
@@ -140,34 +145,50 @@ start:
 
 	spi_init();
 
-	DDRF |= (1<<nCONFIG); // pull low for a time
-	_delay_ms(50);
-	DDRF &= ~(1<<nCONFIG);
-	while( !(PINF & (1<<nSTATUS)) ); // wait ready
 
-	curFpga = GET_FAR_ADDRESS(fpga); // prepare for data fetching
-#ifdef LOGENABLE
+	// config loop
+	do
 	{
-	char log_fpga[]="F........\r\n";
-	UBYTE b = (UBYTE)((curFpga>>24)&0xFF);
-	log_fpga[1] = ((b >> 4) <= 9 )?'0'+(b >> 4):'A'+(b >> 4)-10;
-	log_fpga[2] = ((b & 0x0F) <= 9 )?'0'+(b & 0x0F):'A'+(b & 0x0F)-10;
-	b = (UBYTE)((curFpga>>16)&0xFF);
-	log_fpga[3] = ((b >> 4) <= 9 )?'0'+(b >> 4):'A'+(b >> 4)-10;
-	log_fpga[4] = ((b & 0x0F) <= 9 )?'0'+(b & 0x0F):'A'+(b & 0x0F)-10;
-	b = (UBYTE)((curFpga>>8)&0xFF);
-	log_fpga[5] = ((b >> 4) <= 9 )?'0'+(b >> 4):'A'+(b >> 4)-10;
-	log_fpga[6] = ((b & 0x0F) <= 9 )?'0'+(b & 0x0F):'A'+(b & 0x0F)-10;
-	b = (UBYTE)(curFpga&0xFF);
-	log_fpga[7] = ((b >> 4) <= 9 )?'0'+(b >> 4):'A'+(b >> 4)-10;
-	log_fpga[8] = ((b & 0x0F) <= 9 )?'0'+(b & 0x0F):'A'+(b & 0x0F)-10;
- 	to_log(log_fpga);
-	}
-#endif
-	depacker_dirty();
+		// power led OFF
+		LED_PORT |= 1<<LED;
+
+		DDRF |= (1<<nCONFIG); // pull low for a time
+		_delay_ms(20);
+		DDRF &= ~(1<<nCONFIG);
+		while( !(PINF & (1<<nSTATUS)) ); // wait ready
+
+		curFpga = GET_FAR_ADDRESS(fpga); // prepare for data fetching
 #ifdef LOGENABLE
-	to_log("depacker_dirty OK\r\n");
+		{
+		char log_fpga[]="F........\r\n";
+		UBYTE b = (UBYTE)((curFpga>>24)&0xFF);
+		log_fpga[1] = ((b >> 4) <= 9 )?'0'+(b >> 4):'A'+(b >> 4)-10;
+		log_fpga[2] = ((b & 0x0F) <= 9 )?'0'+(b & 0x0F):'A'+(b & 0x0F)-10;
+		b = (UBYTE)((curFpga>>16)&0xFF);
+		log_fpga[3] = ((b >> 4) <= 9 )?'0'+(b >> 4):'A'+(b >> 4)-10;
+		log_fpga[4] = ((b & 0x0F) <= 9 )?'0'+(b & 0x0F):'A'+(b & 0x0F)-10;
+		b = (UBYTE)((curFpga>>8)&0xFF);
+		log_fpga[5] = ((b >> 4) <= 9 )?'0'+(b >> 4):'A'+(b >> 4)-10;
+		log_fpga[6] = ((b & 0x0F) <= 9 )?'0'+(b & 0x0F):'A'+(b & 0x0F)-10;
+		b = (UBYTE)(curFpga&0xFF);
+		log_fpga[7] = ((b >> 4) <= 9 )?'0'+(b >> 4):'A'+(b >> 4)-10;
+		log_fpga[8] = ((b & 0x0F) <= 9 )?'0'+(b & 0x0F):'A'+(b & 0x0F)-10;
+	 	to_log(log_fpga);
+		}
 #endif
+		depacker_dirty();
+#ifdef LOGENABLE
+		to_log("depacker_dirty OK\r\n");
+#endif
+
+		// power led ON
+		LED_PORT &= ~(1<<LED);
+
+		// wait a bit and check CONF_DONE
+		_delay_ms(20);
+	} while( !(CONF_DONE_PIN & (1<<CONF_DONE)) );
+
+
 
 	//power led OFF
 	LED_PORT |= 1<<LED;
