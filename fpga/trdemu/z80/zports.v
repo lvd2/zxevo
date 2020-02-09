@@ -78,7 +78,7 @@ module zports(
 	output wire        vg_cs_n,
 	input  wire        vg_intrq,
 	input  wire        vg_drq, // from vg93 module - drq + irq read
-	output wire        vg_wrFF,        // write strobe of #FF port
+	output wire        vg_wrFF_fclk, // write strobe of #FF port
 
 	output wire        sd_cs_n_val,
 	output wire        sd_cs_n_stb,
@@ -302,7 +302,7 @@ module zports(
 
 
 
-	reg [5:0] vgFF;
+	//reg [5:0] vgFF;
 
 
 	reg [7:0] up_lastwritten;
@@ -428,7 +428,7 @@ module zports(
 		//PORTFD:
 
 		VGSYS:
-			dout = { vg_intrq, vg_drq, vgFF }; // 6'b111111 };
+			dout = { vg_intrq, vg_drq, /* vgFF }; */ 6'b111111 };
 
 		KJOY:
 			dout = {3'b000, kj_in};
@@ -483,9 +483,9 @@ module zports(
 	assign portf7_rd    = ( (loa==PORTF7) && (a[8]==1'b1) && port_rd && (!shadow) ) ||
 	                      ( (loa==PORTF7) && (a[8]==1'b0) && port_rd &&   shadow  ) ;
 
-	assign vg_wrFF = ( ( (loa==VGSYS)&&shadow ) && port_wr);
-	always @(posedge zclk) if( vg_wrFF )
-		vgFF <= din[5:0];
+//	assign vg_wrFF = ( ( (loa==VGSYS)&&shadow ) && port_wr);
+//	always @(posedge zclk) if( vg_wrFF )
+//		vgFF <= din[5:0];
 
 	assign comport_wr   = ( (loa==COMPORT) && port_wr);
 	assign comport_rd   = ( (loa==COMPORT) && port_rd);
@@ -499,7 +499,7 @@ module zports(
 
 	// break address write
 	always @(posedge fclk)
-	if( zxevbd_wr_fclk && addr[12:9]==(BD_LOBRK>>1) )
+	if( zxevbd_wr_fclk && a[12:9]==(BD_LOBRK>>1) )
 	begin
 		if( !a[8] )
 			brk_addr[ 7:0] <= din;
@@ -509,7 +509,7 @@ module zports(
 
 	// fdd mask write
 	always @(posedge fclk)
-	if( zxevbd_wr_fclk && addr[12:8]==BD_FDDMASK )
+	if( zxevbd_wr_fclk && a[12:8]==BD_FDDMASK )
 		fdd_mask <= din[3:0];
 
 
@@ -884,7 +884,7 @@ module zports(
 
 
 	// atm palette strobe and data
-	wire vg_wrFF_fclk;
+	//wire vg_wrFF_fclk;
 
 	assign vg_wrFF_fclk = ( ( (loa==VGSYS)&&shadow ) && port_wr_fclk);
 
