@@ -181,7 +181,7 @@ start:
 
 
 	//init some counters and registers
-    ps2keyboard_count = 12;
+	ps2keyboard_count = 12;
 	ps2keyboard_cmd_count = 0;
 	ps2keyboard_cmd = 0;
 	ps2mouse_count = 12;
@@ -223,11 +223,11 @@ start:
 
 	//main loop
 	do
-    {
-	    tape_task();
+	{
+		tape_task();
 		ps2mouse_task();
-        ps2keyboard_task();
-        zx_task(ZX_TASK_WORK);
+		ps2keyboard_task();
+		zx_task(ZX_TASK_WORK);
 		zx_mouse_task();
 		joystick_task();
 		rs232_task();
@@ -243,8 +243,8 @@ start:
 			zx_wait_task( status );
 		}
 
-		atx_power_task();
-    }
+		atx_power_task(); // must be last in loop!
+	}
 	while( (flags_register&FLAG_HARD_RESET) == 0 );
 
 	goto start;

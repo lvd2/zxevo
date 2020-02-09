@@ -78,7 +78,7 @@ ISR(TIMER2_OVF_vect)
 	else
 	{
 		//not pressed
-		atx_counter >>= 1;
+		atx_counter = 0;
 	}
 
 	if ( scankbd==0 )
