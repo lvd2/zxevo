@@ -948,6 +948,9 @@ module zports(
 
 	BD_WRDISRD: portbdmux = wrdisables;
 
+	BD_FDDMASK: portbdmux = { 4'bXXXX, fdd_mask };
+
+
 	default: portbdmux = 8'bXXXXXXXX;
 
 	endcase

@@ -55,6 +55,9 @@ module atm_pager(
 	                           // RAM page. analoguous to pent1m_ram0_0
 				   // but has higher priority
 
+	input  wire        in_trdemu, // like 'in_nmi', page 0xFE
+
+
 	input  wire        atmF7_wr, // write strobe for the xxF7 ATM port
 
 
@@ -118,14 +121,14 @@ module atm_pager(
 		end
 		else // pager on
 		begin
-			if( (ADDR==2'b00) && (pent1m_ram0_0 || in_nmi) ) // pent ram0 OR nmi
+			if( (ADDR==2'b00) && (pent1m_ram0_0 || in_nmi || in_trdemu) )
 			begin
 				wrdisable <= 1'b0;
 
-				if( in_nmi )
+				if( in_nmi || in_trdemu )
 				begin
 					romnram <= 1'b0;
-					page    <= 8'hFF;
+					page    <= { 7'h7F, in_nmi };
 				end
 				else // if( pent1m_ram0_0 )
 				begin

@@ -196,6 +196,7 @@ module top(
 	wire gen_nmi;
 	wire clr_nmi;
 	wire in_nmi;
+	wire in_trdemu;
 	wire [1:0] set_nmi;
 	wire imm_nmi;
 	wire nmi_buf_clr;
@@ -500,7 +501,8 @@ module top(
 				.pent1m_1m_on (pent1m_1m_on),
                                 
                                 
-				.in_nmi(in_nmi),
+				.in_nmi   (in_nmi   ),
+				.in_trdemu(in_trdemu),
                                 
 				.atmF7_wr(atmF7_wr_fclk),
                                 
