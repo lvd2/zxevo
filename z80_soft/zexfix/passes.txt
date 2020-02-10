@@ -1,7 +1,9 @@
 lvd:
-z84c0020 @ pentevo -- all OK
+z84c0020 @ pentevo (14MHz) -- all OK
 
 ua3mqj:
-кр1858вм1 @ ленинград -- all OK
+кр1858вм1 @ ленинград (3.5MHz) -- all OK
 
+chrv:
+Z84C0010PEC @ pentevo (14MHz) -- all OK
 
