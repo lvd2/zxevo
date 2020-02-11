@@ -32,11 +32,32 @@ void wait_for_atx_power(void)
 	//check power
 	if ( (nCONFIG_PIN & (1<<nCONFIG)) == 0 )
 	{
-		//if not external reset
-		//then wait for atx power on button (SOFTRESET)
-		if ( !(j & ((1<<JTRF)|(1<<WDRF)|(1<<BORF)|(1<<EXTRF))) ||
-			 (j & (1<<PORF)) )
-		while( SOFTRES_PIN&(1<<SOFTRES) );
+		// only after poweron reset we should wait for soft reset button before powering on
+		if(  !(j & ((1<<JTRF)|(1<<WDRF)|(1<<BORF)|(1<<EXTRF)))  ||  (j & (1<<PORF))  )
+		{
+			// have at least 2 sec pause before turning on, as this hopefully gives enough time
+			// for FPGA voltages to drop and it will powerup cleanly without compromising the firmware
+			UBYTE soft_rst_pressed = 0;
+			UBYTE i = PRE_PWRON_WAIT;
+
+			do
+			{
+				// blink power LED
+				if( i&7 )
+					LED_PORT |=  (1<<LED);
+				else
+					LED_PORT &= ~(1<<LED);
+
+				_delay_ms(20);
+
+				// if soft reset was pressed during wait, remember it and go poweron immediately after the wait ends
+				soft_rst_pressed |= !(SOFTRES_PIN & (1<<SOFTRES));
+
+			} while(--i);
+
+			// wait further for soft reset press
+			if( !soft_rst_pressed ) while( SOFTRES_PIN&(1<<SOFTRES) );
+		}
 
 		//switch on ATX power (PF3 pin in PORTF)
 		ATXPWRON_PORT |= (1<<ATXPWRON);
@@ -60,20 +81,6 @@ void atx_power_task(void)
 	{
 		//here if either SOFTRES_PIN or F12 held for more than ~5 seconds
 
-//		if ( ( SOFTRES_PIN & (1<<SOFTRES) ) == 0 )
-//		{
-//			//atx power off button pressed (~5 sec)
-//
-//			//switch off atx power
-//			atxpwron_port &= ~(1<<atxpwron);
-//
-//			// wait for power to drop 
-//		}
-//		else
-//		{
-//			//enable hard reset
-//			flags_register |= FLAG_HARD_RESET;
-//		}
 
 
 		// no more need in executing mainloop and servicing interrupts
@@ -116,23 +123,5 @@ void atx_power_task(void)
 	}
 	last_count = atx_counter;
 
-//	if ( ( nCONFIG_PIN & (1<<nCONFIG) ) == 0 )
-//	{
-//		//power down
-//
-//		//power led off (timer output disconnect from led pin)
-//		TCCR2 &= ~((1<<COM20)|(1<<COM21));
-//
-//		//wait for button released
-//		while (  ( SOFTRES_PIN & (1<<SOFTRES) ) == 0 );
-//
-//		//1 sec delay
-//		do _delay_ms(20); while(--j);
-//
-//		last_count = 0;
-//
-//		//enable hard reset
-//		flags_register |= FLAG_HARD_RESET;
-//	}
 
 }

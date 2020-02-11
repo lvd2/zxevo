@@ -21,6 +21,9 @@
 // ATX poweroff wait time (in 20ms increments)
 #define PWROFF_WAIT (100)
 
+// pause before ATX poweron (in 20ms increments)
+#define PRE_PWRON_WAIT (100)
+
 
 /** Counter for atx power off delay. */
 extern volatile UWORD atx_counter;
