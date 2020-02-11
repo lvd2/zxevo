@@ -22,7 +22,7 @@ ISR(TIMER2_OVF_vect)
 	static BYTE cskey=0xff;
 
 	counter++; // just fucking shit to fadein-fadeout LED :-)))
-	if( counter&128 )
+	if( counter & 8 )
 	{
 		counter=0;
 

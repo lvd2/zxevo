@@ -57,6 +57,12 @@ UWORD ps2_encode(UBYTE byte)
 	return t;
 }
 
+volatile UBYTE ps2_was_release = 0;
+volatile UBYTE ps2_was_E0 = 0;
+volatile UBYTE ps2_last_scancode = 0;
+volatile UBYTE ps2_last_scancode_E0 = 1;
+volatile UBYTE ps2_skipshit = 0;
+
 volatile UWORD ps2keyboard_shifter;
 volatile UBYTE ps2keyboard_count;
 volatile UBYTE ps2keyboard_timeout;
@@ -66,6 +72,20 @@ volatile UBYTE ps2keyboard_cmd;
 volatile UBYTE  ps2keyboard_log[16];
 volatile UBYTE  ps2keyboard_log_start;
 volatile UBYTE  ps2keyboard_log_end;
+
+void ps2keyboard_init(void)
+{
+	ps2keyboard_count = 12;
+	ps2keyboard_cmd_count = 0;
+	ps2keyboard_cmd = 0;
+
+	ps2_was_release = 0;
+	ps2_was_E0 = 0;
+	ps2_last_scancode = 0;
+	ps2_last_scancode_E0 = 1;
+	ps2_skipshit = 0;
+}
+
 
 void ps2keyboard_to_log(UBYTE data)
 {
@@ -328,17 +348,10 @@ void ps2keyboard_send_cmd(UBYTE cmd)
 
 void ps2keyboard_parse(UBYTE recbyte)
 {
-	static UBYTE was_release = 0;
-	static UBYTE was_E0 = 0;
-
-	static UBYTE last_scancode = 0;
-	static UBYTE last_scancode_E0 = 1;
-
-	static UBYTE skipshit = 0;
 
 #ifdef LOGENABLE
 	char log_ps2keyboard_parse[] = "KB..\r\n";
-	if ( skipshit ) log_ps2keyboard_parse[1] = skipshit + '0';
+	if ( ps2_skipshit ) log_ps2keyboard_parse[1] = ps2_skipshit + '0';
 	log_ps2keyboard_parse[2] = ((recbyte >> 4) <= 9 )?'0'+(recbyte >> 4):'A'+(recbyte >> 4)-10;
 	log_ps2keyboard_parse[3] = ((recbyte & 0x0F) <= 9 )?'0'+(recbyte & 0x0F):'A'+(recbyte & 0x0F)-10;
 	to_log(log_ps2keyboard_parse);
@@ -350,7 +363,7 @@ void ps2keyboard_parse(UBYTE recbyte)
 	if( recbyte==0xAA ) return;
 
 	//start write to log only for full key data
-	if( (recbyte!=0xE1) && (skipshit==0) ) //PAUSE not logged
+	if( (recbyte!=0xE1) && (ps2_skipshit==0) ) //PAUSE not logged
 	{
 		if( ps2keyboard_log_start == 0xFF )
 		{
@@ -358,76 +371,76 @@ void ps2keyboard_parse(UBYTE recbyte)
 			ps2keyboard_log_end = 0xFE;
 			ps2keyboard_log_start = 0;
 		}
-		if( (ps2keyboard_log_end!=0xFE) || ((was_release==0) && (was_E0==0)/* && (skipshit==0)*/) )
+		if( (ps2keyboard_log_end!=0xFE) || ((ps2_was_release==0) && (ps2_was_E0==0)/* && (ps2_skipshit==0)*/) )
 		{
 		   	ps2keyboard_to_log(recbyte);
 		}
 	}
 
-	if( skipshit )
+	if( ps2_skipshit )
 	{
-		skipshit--;
+		ps2_skipshit--;
 		return;
 	}
 
 	if( recbyte==0xE0 )
 	{
-		was_E0 = 1;
+		ps2_was_E0 = 1;
 		return;
 	}
 
 
 	if( recbyte==0xF0 )
 	{
-		was_release = 1;
+		ps2_was_release = 1;
 		return;
 	}
 
 	if( recbyte==0xE1 ) // pause pressed
 	{
-		skipshit=7;
+		ps2_skipshit=7;
 		return; // skip next 7 bytes
 	}
 
-	if( (recbyte==last_scancode) && (was_E0==last_scancode_E0) )
+	if( (recbyte==ps2_last_scancode) && (ps2_was_E0==ps2_last_scancode_E0) )
 	{
-		if( was_release )
+		if( ps2_was_release )
 		{
-			last_scancode = 0x00;
-			last_scancode_E0 = 1; // impossible scancode: E0 00
+			ps2_last_scancode = 0x00;
+			ps2_last_scancode_E0 = 1; // impossible scancode: E0 00
 		}
 		else // was depress
 		{
-			was_E0 = 0;
+			ps2_was_E0 = 0;
 			return;
 		}
 	}
 
-	if( !was_release )
+	if( !ps2_was_release )
 	{
-		last_scancode = recbyte;
-		last_scancode_E0 = was_E0;
+		ps2_last_scancode = recbyte;
+		ps2_last_scancode_E0 = ps2_was_E0;
 	}
 
-	if( (recbyte==0x12) && was_E0 ) // skip E0 12
+	if( (recbyte==0x12) && ps2_was_E0 ) // skip E0 12
 	{
-		was_E0 = 0;
-		was_release = 0;
+		ps2_was_E0 = 0;
+		ps2_was_release = 0;
 		return;
 	}
 
-	to_zx( recbyte, was_E0, was_release ); // send valid scancode to zx decoding stage
+	to_zx( recbyte, ps2_was_E0, ps2_was_release ); // send valid scancode to zx decoding stage
 #ifdef LOGENABLE
 	char log_ps2keyboard_parse2[] = "KB(..,.,.)\r\n";
 	log_ps2keyboard_parse2[3] = ((recbyte >> 4) <= 9 )?'0'+(recbyte >> 4):'A'+(recbyte >> 4)-10;
 	log_ps2keyboard_parse2[4] = ((recbyte & 0x0F) <= 9 )?'0'+(recbyte & 0x0F):'A'+(recbyte & 0x0F)-10;
-	log_ps2keyboard_parse2[6] = (was_E0)?'1':'0';
-	log_ps2keyboard_parse2[8] = (was_release)?'1':'0';
+	log_ps2keyboard_parse2[6] = (ps2_was_E0)?'1':'0';
+	log_ps2keyboard_parse2[8] = (ps2_was_release)?'1':'0';
 	to_log(log_ps2keyboard_parse2);
 #endif
 
-	was_E0 = 0;
-	was_release = 0;
+	ps2_was_E0 = 0;
+	ps2_was_release = 0;
 
 	return;
 }

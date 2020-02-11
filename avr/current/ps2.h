@@ -74,6 +74,10 @@ UBYTE ps2keyboard_from_log(void);
  */
 void ps2keyboard_send_cmd(UBYTE cmd);
 
+
+/** PS/2 keyboard init */
+void ps2keyboard_init(void);
+
 /** PS/2 keyboard task. */
 void ps2keyboard_task(void);
 
