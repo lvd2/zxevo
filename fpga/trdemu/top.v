@@ -227,6 +227,7 @@ module top(
 
 	wire intrq,drq;
 	wire vg_wrFF_fclk;
+	wire vg_rdwr_fclk;
 
 
 	wire        up_ena;
@@ -543,7 +544,14 @@ module top(
 
 	           .cpm_n(cpm_n),
 
-	           .dos(dos)
+	           .dos(dos),
+
+
+	           .in_trdemu   (in_trdemu   ),
+	           .clr_nmi     (clr_nmi     ),
+	           .vg_rdwr_fclk(vg_rdwr_fclk),
+	           .fdd_mask    (fdd_mask    ),
+	           .vg_a        (vg_ddrv     )
 	         );
 
 
@@ -788,6 +796,7 @@ module top(
 	               .ay_bdir(ay_bdir), .ay_bc1(ay_bc1), .border(border),
 	               .p7ffd(p7ffd), .peff7(peff7), .mreq_n(mreq_n), .m1_n(m1_n), .dos(dos),
 	               .vg_intrq(intrq), .vg_drq(drq), .vg_wrFF_fclk(vg_wrFF_fclk), .vg_cs_n(vg_cs_n),
+	               .vg_rdwr_fclk(vg_rdwd_fclk),
 	               .idein(idein), .ideout(ideout), .idedataout(idedataout),
 	               .ide_a(ide_a), .ide_cs0_n(ide_cs0_n), .ide_cs1_n(ide_cs1_n),
 	               .ide_wr_n(ide_wr_n), .ide_rd_n(ide_rd_n),

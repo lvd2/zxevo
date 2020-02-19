@@ -80,6 +80,9 @@ module zports(
 	input  wire        vg_drq, // from vg93 module - drq + irq read
 	output wire        vg_wrFF_fclk, // write strobe of #FF port
 
+	output wire        vg_rdwr_fclk, // pulses when ANY port of TR-DOS controller was read or written
+
+
 	output wire        sd_cs_n_val,
 	output wire        sd_cs_n_stb,
 	output wire        sd_start,
@@ -892,6 +895,17 @@ module zports(
 	assign atm_palwr = vg_wrFF_fclk & atm_pen2;
 
 	assign atm_paldata = { ~din[4], ~din[7], ~din[1], ~din[6], ~din[0], ~din[5] };
+
+
+
+	// TR-DOS any port access
+	assign vg_rdwr_fclk = ((loa==VGCOM) ||
+	                       (loa==VGTRK) ||
+	                       (loa==VGSEC) ||
+	                       (loa==VGDAT) ||
+	                       (loa==VGSYS) ) && shadow && (port_wr_fclk || port_rd_fclk);
+	                       
+
 
 
 

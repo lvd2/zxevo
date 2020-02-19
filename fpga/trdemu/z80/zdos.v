@@ -35,15 +35,18 @@ module zdos(
 	input  wire        cpm_n,
 
 
-	output reg         dos
+	output reg         dos,
+
+
+	// control of page #FE for emulation
+	output reg         in_trdemu,
+	input  wire        clr_nmi, // out (#BE),a
+	input  wire        vg_rdwr_fclk,
+	input  wire [ 3:0] fdd_mask,
+	input  wire [ 1:0] vg_a
 );
 
-
-
-
-
-
-
+	// control of 'DOS' signal
 	always @(posedge fclk, negedge rst_n)
 	if( !rst_n )
 	begin
@@ -62,7 +65,14 @@ module zdos(
 
 
 
-
+	// vg emulator RAM turn on/off
+	always @(posedge fclk, negedge rst_n)
+	if( !rst_n )
+		in_trdemu <= 1'b0;
+	else if( clr_nmi )
+		in_trdemu <= 1'b0;
+	else if( vg_rdwr_fclk && fdd_mask[vg_a] )
+		in_trdemu <= 1'b1;
 
 
 endmodule
