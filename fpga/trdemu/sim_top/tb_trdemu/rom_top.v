@@ -9,15 +9,7 @@ module rom(
 
 	wire [7:0] word;
 
-`ifdef SPITEST
-	spitest_rom spitest_rom( .in_addr(addr), .out_word(word) );
-`else
- `ifdef NMITEST
-	nmitest_rom nmitest_rom( .in_addr(addr), .out_word(word) );
- `else
-	bin2v zxevo_rom( .in_addr(addr), .out_word(word) );
- `endif
-`endif
+	bin2v #(.FILENAME("ers_test.rom")) zxevo_rom( .in_addr(addr), .out_word(word) );
 
 	always @*
 	begin

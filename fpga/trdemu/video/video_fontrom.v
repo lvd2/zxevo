@@ -98,7 +98,7 @@ module video_fontrom (
 
 	initial
 	begin
-		fd = $fopen("../video/atm.fnt","rb");
+		fd = $fopen("../../video/atm.fnt","rb");
 
 		if( 2048!=$fread(font,fd) )
 		begin

@@ -8,6 +8,8 @@ module bin2v
 	output reg  [ 7:0] out_word
 );
 
+	parameter FILENAME="zxevo.rom";
+
 	integer fd;
 
 
@@ -18,7 +20,7 @@ module bin2v
 	// load file
 	initial
 	begin
-		fd = $fopen("zxevo.rom","rb");
+		fd = $fopen(FILENAME,"rb");
 
 		if( 524288!=$fread(mem,fd) )
 		begin
