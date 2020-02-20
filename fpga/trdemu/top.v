@@ -228,6 +228,7 @@ module top(
 	wire intrq,drq;
 	wire vg_wrFF_fclk;
 	wire vg_rdwr_fclk;
+	wire [1:0] vg_ddrv;
 
 
 	wire        up_ena;
@@ -949,7 +950,6 @@ module top(
 
 
 
-	wire [1:0] vg_ddrv;
 	assign vg_a[0] = vg_ddrv[0] ? 1'b1 : 1'b0; // possibly open drain?
 	assign vg_a[1] = vg_ddrv[1] ? 1'b1 : 1'b0;
 
