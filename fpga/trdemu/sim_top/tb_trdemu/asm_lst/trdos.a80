@@ -1,0 +1,107 @@
+
+;LAST UPDATE: 13.02.2020 savelij
+
+; TR-DOS
+
+		include ../../svn/pentevo/rom/macros.a80
+		include ../../svn/pentevo/rom/global_vars.a80
+		include ../../svn/pentevo/rom/define.a80
+		include ../../svn/pentevo/rom/evodos_vars.a80
+		include define.a80
+
+DIHALT		MACRO
+		DI
+		HALT
+		NOP
+		NOP
+		NOP
+		NOP
+		ENDM
+
+		ORG 0
+		DI
+		LD A,0X3C
+		OUT (0XFF),A
+		LD A,1
+RESTART		LD BC,BD_FDD_MASK
+		OUT (C),A
+		LD HL,0
+		JP START_TEST
+
+		DUPL 0X300-$
+START_TEST	LD A,0X3C
+		OUT (0XFF),A
+		DIHALT
+		IN A,(0XFF)
+		DIHALT
+		OUT (0X7F),A
+		DIHALT
+		IN A,(0X7F)
+		DIHALT
+		OUT (0X5F),A
+		DIHALT
+		IN A,(0X5F)
+		DIHALT
+		OUT (0X3F),A
+		DIHALT
+		IN A,(0X3F)
+		DIHALT
+		OUT (0X1F),A
+		DIHALT
+		IN A,(0X1F)
+		DIHALT
+		LD BC,0XFF
+		OUT (C),A
+		DIHALT
+		IN A,(C)
+		DIHALT
+		LD C,0X7F
+		OUT (C),A
+		DIHALT
+		LD C,0X5F
+		IN A,(C)
+		DIHALT
+		LD C,0X3F
+		OUT (C),A
+		DIHALT
+		IN A,(C)
+		DIHALT
+		LD C,0X1F
+		OUT (C),A
+		DIHALT
+		IN A,(C)
+		DIHALT
+		LD C,0XFF
+		INI
+		DIHALT
+		OUTI
+		DIHALT
+		LD C,0X7F
+		INI
+		DIHALT
+		OUTI
+		DIHALT
+		LD C,0X5F
+		INI
+		DIHALT
+		OUTI
+		DIHALT
+		LD C,0X3F
+		INI
+		DIHALT
+		OUTI
+		DIHALT
+		LD C,0X1F
+		INI
+		DIHALT
+		OUTI
+		DIHALT
+		LD HL,0
+		XOR A
+		JP RESTART
+
+		DUPL 0X3D2F-$
+		NOP
+		RET
+
+		DUPL 0X4000-$
