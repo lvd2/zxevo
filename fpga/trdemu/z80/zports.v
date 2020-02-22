@@ -79,8 +79,11 @@ module zports(
 	input  wire        vg_intrq,
 	input  wire        vg_drq, // from vg93 module - drq + irq read
 	output wire        vg_wrFF_fclk, // write strobe of #FF port
+	input  wire [ 1:0] vg_a,
 
 	output wire        vg_rdwr_fclk, // pulses when ANY port of TR-DOS controller was read or written
+	// FDD mask
+	output reg  [ 3:0] fdd_mask,
 
 
 	output wire        sd_cs_n_val,
@@ -153,10 +156,8 @@ module zports(
 
 	// break enable & address
 	output reg         brk_ena,
-	output reg  [15:0] brk_addr,
+	output reg  [15:0] brk_addr
 
-	// FDD mask
-	output reg  [ 3:0] fdd_mask
 );
 
 
@@ -305,7 +306,7 @@ module zports(
 
 
 
-	//reg [5:0] vgFF;
+	wire vg_matched_n;
 
 
 	reg [7:0] up_lastwritten;
@@ -785,7 +786,9 @@ module zports(
 
 
 	// VG93 control
-	assign vg_cs_n =  (~shadow) | iorq_n | (rd_n & wr_n) | ( ~((loa==VGCOM)|(loa==VGTRK)|(loa==VGSEC)|(loa==VGDAT)) );
+	assign vg_matched_n = fdd_mask[vg_a];
+
+	assign vg_cs_n =  vg_matched_n | (~shadow) | iorq_n | (rd_n & wr_n) | ( ~((loa==VGCOM)|(loa==VGTRK)|(loa==VGSEC)|(loa==VGDAT)) );
 
 
 

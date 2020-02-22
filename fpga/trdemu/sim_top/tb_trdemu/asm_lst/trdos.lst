@@ -1,4 +1,4 @@
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 1 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 1 - 2/22/2020 21:3:58
 
 
        1/       0 :                     
@@ -61,7 +61,7 @@
 (1)   52/       0 :                     
 (1)   53/       0 :                     DUPL		MACRO LEN,FILL
 (1)   54/       0 :                     DUPL:
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 2 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 2 - 2/22/2020 21:3:58
 
 
 (1)   55/       0 :                     $$N		EQU (LEN) / 1024
@@ -124,7 +124,7 @@
 (1)  112/       0 :                     		AND BYTE!0XFF
 (1)  113/       0 :                     		OUT (PEVO_CONF),A
 (1)  114/       0 :                     		ENDM
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 3 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 3 - 2/22/2020 21:3:58
 
 
 (1)  115/       0 :                     
@@ -134,7 +134,7 @@
 (1)  119/       0 :                     		ENDM
 (1)  120/       0 :                     
 (1)  121/       0 : =9H                 SIZEDATE	EQU STRLEN (DATE)
-(1)  122/       0 : =8H                 SIZETIME	EQU STRLEN (TIME)
+(1)  122/       0 : =7H                 SIZETIME	EQU STRLEN (TIME)
 (1)  123/       0 :                     
 (1)  124/       0 : =>FALSE             		IF SIZEDATE=10
 (1)  125/       0 :                     MMOUNTH		EQU (CHARFROMSTR (DATE,0)-'0')*10+(CHARFROMSTR (DATE,1)-'0')
@@ -146,7 +146,7 @@
 (1)  131/       0 :                     YYEAR		EQU (CHARFROMSTR (DATE,6)-'0')*10+(CHARFROMSTR (DATE,7)-'0')
 (1)  132/       0 : =>TRUE              		ELSEIF (CHARFROMSTR (DATE,1))=0X2F
 (1)  133/       0 : =2H                 MMOUNTH		EQU (CHARFROMSTR (DATE,0)-'0')
-(1)  134/       0 : =10H                DDATE		EQU (CHARFROMSTR (DATE,2)-'0')*10+(CHARFROMSTR (DATE,3)-'0')
+(1)  134/       0 : =16H                DDATE		EQU (CHARFROMSTR (DATE,2)-'0')*10+(CHARFROMSTR (DATE,3)-'0')
 (1)  135/       0 : =14H                YYEAR		EQU (CHARFROMSTR (DATE,7)-'0')*10+(CHARFROMSTR (DATE,8)-'0')
 (1)  136/       0 : =>FALSE             		ELSE
 (1)  137/       0 :                     MMOUNTH		EQU (CHARFROMSTR (DATE,0)-'0')*10+(CHARFROMSTR (DATE,1)-'0')
@@ -154,20 +154,20 @@
 (1)  139/       0 :                     YYEAR		EQU (CHARFROMSTR (DATE,7)-'0')*10+(CHARFROMSTR (DATE,8)-'0')
 (1)  140/       0 : [124]               		ENDIF
 (1)  141/       0 :                     
-(1)  142/       0 : =>FALSE             		IF SIZETIME=7
-(1)  143/       0 :                     HHOUR		EQU (CHARFROMSTR (TIME,0)-'0')
-(1)  144/       0 :                     MMINUTE		EQU (CHARFROMSTR (TIME,2)-'0')*10+(CHARFROMSTR (TIME,3)-'0')
-(1)  145/       0 :                     SSECUND		EQU (CHARFROMSTR (TIME,5)-'0')*10+(CHARFROMSTR (TIME,6)-'0')
-(1)  146/       0 : =>TRUE              		ELSE
-(1)  147/       0 : =AH                 HHOUR		EQU (CHARFROMSTR (TIME,0)-'0')*10+(CHARFROMSTR (TIME,1)-'0')
-(1)  148/       0 : =AH                 MMINUTE		EQU (CHARFROMSTR (TIME,3)-'0')*10+(CHARFROMSTR (TIME,4)-'0')
-(1)  149/       0 : =11H                SSECUND		EQU (CHARFROMSTR (TIME,6)-'0')*10+(CHARFROMSTR (TIME,7)-'0')
+(1)  142/       0 : =>TRUE              		IF SIZETIME=7
+(1)  143/       0 : =2H                 HHOUR		EQU (CHARFROMSTR (TIME,0)-'0')
+(1)  144/       0 : =67H                MMINUTE		EQU (CHARFROMSTR (TIME,2)-'0')*10+(CHARFROMSTR (TIME,3)-'0')
+(1)  145/       0 : =39H                SSECUND		EQU (CHARFROMSTR (TIME,5)-'0')*10+(CHARFROMSTR (TIME,6)-'0')
+(1)  146/       0 : =>FALSE             		ELSE
+(1)  147/       0 :                     HHOUR		EQU (CHARFROMSTR (TIME,0)-'0')*10+(CHARFROMSTR (TIME,1)-'0')
+(1)  148/       0 :                     MMINUTE		EQU (CHARFROMSTR (TIME,3)-'0')*10+(CHARFROMSTR (TIME,4)-'0')
+(1)  149/       0 :                     SSECUND		EQU (CHARFROMSTR (TIME,6)-'0')*10+(CHARFROMSTR (TIME,7)-'0')
 (1)  150/       0 : [142]               		ENDIF
 (1)  151/       0 :                     
-(1)  152/       0 : =A850H              DATA_VERS	EQU DDATE+(MMOUNTH<<5)+(YYEAR<<9)+0X8000			;ã¦¥ ã¯ ª®¢ ­®
+(1)  152/       0 : =A856H              DATA_VERS	EQU DDATE+(MMOUNTH<<5)+(YYEAR<<9)+0X8000			;ã¦¥ ã¯ ª®¢ ­®
 (1)  153/       0 :                     
-(1)  154/       0 : =5050H              FAT_DATE	EQU DDATE+(MMOUNTH<<5)+((2000+YYEAR-1980)&0x7F)<<9
-(1)  155/       0 : =5148H              FAT_TIME	EQU SSECUND/2+(MMINUTE<<5)+(HHOUR<<11)
+(1)  154/       0 : =5056H              FAT_DATE	EQU DDATE+(MMOUNTH<<5)+((2000+YYEAR-1980)&0x7F)<<9
+(1)  155/       0 : =1CFCH              FAT_TIME	EQU SSECUND/2+(MMINUTE<<5)+(HHOUR<<11)
 (1)  156/       0 :                     
 (1)  157/       0 :                     TEXTDATE	MACRO
 (1)  158/       0 :                     TDATE		DB ((DDATE/10)+'0'),(DDATE#10)+'0'
@@ -187,7 +187,7 @@
 (1)  172/       0 :                     		DB N3
 (1)  173/       0 :                     		ENDIF
 (1)  174/       0 :                     		ENDM
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 4 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 4 - 2/22/2020 21:3:58
 
 
 (1)  175/       0 :                     
@@ -250,7 +250,7 @@
 (1)  232/       0 :                     ; ¯à¥®¡à §®¢ ­¨¥ 16 ¡¨â­®£® ç¨á«  ¢ â¥ªáâ
 (1)  233/       0 :                     WORD2TXT	MACRO WORD
 (1)  234/       0 :                     $$DEC1 := (WORD)/10000
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 5 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 5 - 2/22/2020 21:3:58
 
 
 (1)  235/       0 :                     $$TMP := WORD-$$DEC1*10000
@@ -313,7 +313,7 @@
 (1)   46/       0 : =BH                 ROM_ADD_BAS48	EQU 0X0B			;ŽŒ… ‘’€ˆ–› ROM BASIC 48
 (1)   47/       0 : =18H                ROM_BAS48_STD	EQU 0X18			;ŽŒ… ‘’€ˆ–› ROM BASIC 48 (‘’€„€’€Ÿ ‚…‘ˆŸ)
 (1)   48/       0 : =19H                ROM_BAS128_STD	EQU 0X19			;ŽŒ… ‘’€ˆ–› ROM BASIC 128 (‘’€„€’€Ÿ ‚…‘ˆŸ)
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 6 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 6 - 2/22/2020 21:3:58
 
 
 (1)   49/       0 : =1AH                ROM_BAS48_128	EQU 0X1A			;ŽŒ… ‘’€ˆ–› ROM BASIC 48 (‘’€„€’€Ÿ ‚…‘ˆŸ „‹Ÿ BASIC128)
@@ -376,7 +376,7 @@
 (1)  100/       0 : =FEEFH              RS232_MDM_STAT	EQU 0XFEEF
 (1)  101/       0 : =FFEFH              RS232_WORK_REG	EQU 0XFFEF
 (1)  102/       0 :                     
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 7 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 7 - 2/22/2020 21:3:58
 
 
 (1)  103/       0 :                     ;[‘ŠŽŽ‘’ˆ RS232]
@@ -413,300 +413,302 @@
 (1)  134/       0 : =11BEH              BREAK_HIGH_RD	EQU 0X11BE			;‘’€˜ˆ‰ €‰’ €„…‘€ Ž’€ € —’…ˆ… €„…‘€ BREAK
 (1)  135/       0 : =13BEH              NUM_LINE	EQU 0X13BE			;ŽŒ… ‘’ŽŠˆ €‘’€ (0-159)
 (1)  136/       0 :                     
-(1)  137/       0 : =BDH                BREAK_LOW_WR	EQU 0X00BD			;Œ‹€„˜ˆ‰ €‰’ €„…‘€ Ž’€ € ‡€ˆ‘œ €„…‘€ BREAK
-(1)  138/       0 : =1BDH               BREAK_HIGH_WR	EQU 0X01BD			;‘’€˜ˆ‰ €‰’ €„…‘€ Ž’€ € ‡€ˆ‘œ €„…‘€ BREAK
-(1)  139/       0 :                     
-(1)  140/       0 :                     ;[Ž„Ž‘’€ˆ—›‰ ’…Š‘’ŒŽ„]
-(1)  141/       0 : =1C0H               LSYM		EQU 0X01C0			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ ‹…‚›• ‘ˆŒ‚Ž‹Ž‚ ’…Š‘’ŒŽ„€
-(1)  142/       0 : =31C0H              LATTR		EQU 0X31C0			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ ‹…‚›• €’ˆ“’Ž‚ ‘ˆŒ‚Ž‹Ž‚
-(1)  143/       0 : =11C0H              RSYM		EQU 0X11C0			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ €‚›• ‘ˆŒ‚Ž‹Ž‚ ’…Š‘’ŒŽ„€
-(1)  144/       0 : =21C1H              RATTR		EQU 0X21C1			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ €‚›• €’ˆ“’Ž‚ ‘ˆŒ‚Ž‹Ž‚ 
-(1)  145/       0 :                     
-(1)  146/       0 :                     ;[ATM ’…‘’ŒŽ„]
-(1)  147/       0 : =1C0H               ALSYM		EQU 0X01C0			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ ‹…‚›• ‘ˆŒ‚Ž‹Ž‚ ’…Š‘’ŒŽ„€
-(1)  148/       0 : =21C0H              ALATTR		EQU 0X21C0			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ ‹…‚›• €’ˆ“’Ž‚ ‘ˆŒ‚Ž‹Ž‚
-(1)  149/       0 : =21C0H              ARSYM		EQU 0X21C0			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ €‚›• ‘ˆŒ‚Ž‹Ž‚ ’…Š‘’ŒŽ„€
-(1)  150/       0 : =1C1H               ARATTR		EQU 0X01C1			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ €‚›• €’ˆ“’Ž‚ ‘ˆŒ‚Ž‹Ž‚
-(1)  151/       0 :                     
-(1)  152/       0 :                     ;[–‚…’€ ˆ ŸŠŽ‘’ˆ]
-(1)  153/       0 : =0H                 BLACK		EQU 0
-(1)  154/       0 : =1H                 BLUE		EQU 1
-(1)  155/       0 : =2H                 RED		EQU 2
-(1)  156/       0 : =3H                 MAGENTA		EQU 3
-(1)  157/       0 : =4H                 GREEN		EQU 4
-(1)  158/       0 : =5H                 CYAN		EQU 5
-(1)  159/       0 : =6H                 YELLOW		EQU 6
-(1)  160/       0 : =7H                 WHITE		EQU 7
-(1)  161/       0 : =40H                BR_INK		EQU 0X40
-(1)  162/       0 : =80H                BR_PAPER	EQU 0X80
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 8 - 2/16/2020 10:10:17
+(1)  137/       0 : =13BDH              FDD_EMU_PORT	EQU 0X13BD
+(1)  138/       0 :                     
+(1)  139/       0 : =BDH                BREAK_LOW_WR	EQU 0X00BD			;Œ‹€„˜ˆ‰ €‰’ €„…‘€ Ž’€ € ‡€ˆ‘œ €„…‘€ BREAK
+(1)  140/       0 : =1BDH               BREAK_HIGH_WR	EQU 0X01BD			;‘’€˜ˆ‰ €‰’ €„…‘€ Ž’€ € ‡€ˆ‘œ €„…‘€ BREAK
+(1)  141/       0 :                     
+(1)  142/       0 :                     ;[Ž„Ž‘’€ˆ—›‰ ’…Š‘’ŒŽ„]
+(1)  143/       0 : =1C0H               LSYM		EQU 0X01C0			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ ‹…‚›• ‘ˆŒ‚Ž‹Ž‚ ’…Š‘’ŒŽ„€
+(1)  144/       0 : =31C0H              LATTR		EQU 0X31C0			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ ‹…‚›• €’ˆ“’Ž‚ ‘ˆŒ‚Ž‹Ž‚
+(1)  145/       0 : =11C0H              RSYM		EQU 0X11C0			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ €‚›• ‘ˆŒ‚Ž‹Ž‚ ’…Š‘’ŒŽ„€
+(1)  146/       0 : =21C1H              RATTR		EQU 0X21C1			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ €‚›• €’ˆ“’Ž‚ ‘ˆŒ‚Ž‹Ž‚ 
+(1)  147/       0 :                     
+(1)  148/       0 :                     ;[ATM ’…‘’ŒŽ„]
+(1)  149/       0 : =1C0H               ALSYM		EQU 0X01C0			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ ‹…‚›• ‘ˆŒ‚Ž‹Ž‚ ’…Š‘’ŒŽ„€
+(1)  150/       0 : =21C0H              ALATTR		EQU 0X21C0			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ ‹…‚›• €’ˆ“’Ž‚ ‘ˆŒ‚Ž‹Ž‚
+(1)  151/       0 : =21C0H              ARSYM		EQU 0X21C0			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ €‚›• ‘ˆŒ‚Ž‹Ž‚ ’…Š‘’ŒŽ„€
+(1)  152/       0 : =1C1H               ARATTR		EQU 0X01C1			;‘Œ…™…ˆ… ‚ ‘’€ˆ–… €—€‹€ €‚›• €’ˆ“’Ž‚ ‘ˆŒ‚Ž‹Ž‚
+(1)  153/       0 :                     
+(1)  154/       0 :                     ;[–‚…’€ ˆ ŸŠŽ‘’ˆ]
+(1)  155/       0 : =0H                 BLACK		EQU 0
+(1)  156/       0 : =1H                 BLUE		EQU 1
+(1)  157/       0 : =2H                 RED		EQU 2
+(1)  158/       0 : =3H                 MAGENTA		EQU 3
+(1)  159/       0 : =4H                 GREEN		EQU 4
+(1)  160/       0 : =5H                 CYAN		EQU 5
+(1)  161/       0 : =6H                 YELLOW		EQU 6
+(1)  162/       0 : =7H                 WHITE		EQU 7
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 8 - 2/22/2020 21:3:58
 
 
-(1)  163/       0 :                     
-(1)  164/       0 :                     ;[–‚…’€ „‹Ÿ ATM ‚ˆ„…Ž…†ˆŒŽ‚]
-(1)  165/       0 : =80H                G_L		EQU %10000000
-(1)  166/       0 : =10H                G_H		EQU %00010000
-(1)  167/       0 : =40H                R_L		EQU %01000000
-(1)  168/       0 : =2H                 R_H		EQU %00000010
-(1)  169/       0 : =20H                B_L		EQU %00100000
-(1)  170/       0 : =1H                 B_H		EQU %00000001
-(1)  171/       0 :                     
-(1)  172/       0 :                     ;[Œ€‘Š€ Ž’€ 7FFD]
-(1)  173/       0 : =8H                 ZX_SCREEN	EQU %00001000
-(1)  174/       0 : =10H                ZX_ROM		EQU %00010000
-(1)  175/       0 :                     
-(1)  176/       0 :                     ;[Œ€‘Š€ Ž’€ 0XBF]
-(1)  177/       0 : (MACRO)              BITMASK RST8_BF,	6
-(1)  177/       0 : =6H                 B_RST8_BF          EQU 6
-(1)  177/       0 : =40H                M_RST8_BF          EQU 1<<6
-(1)  178/       0 : (MACRO)              BITMASK EMUVG_BF,	5	
-(1)  178/       0 : =5H                 B_EMUVG_BF          EQU 5
-(1)  178/       0 : =20H                M_EMUVG_BF          EQU 1<<5
-(1)  179/       0 : (MACRO)              BITMASK BREAK_BF,	4			;ˆ’ €‡…˜…ˆŸ ‘€€’›‚€ˆŸ BREAK € €„…‘…
-(1)  179/       0 : =4H                 B_BREAK_BF          EQU 4
-(1)  179/       0 : =10H                M_BREAK_BF          EQU 1<<4
-(1)  180/       0 : (MACRO)              BITMASK NMI_BF,	3			;ˆ’ ƒ……€–ˆˆ NMI
-(1)  180/       0 : =3H                 B_NMI_BF          EQU 3
-(1)  180/       0 : =8H                 M_NMI_BF          EQU 1<<3
-(1)  181/       0 : (MACRO)              BITMASK FONT_BF,	2			;ˆ’ €‡…˜…ˆŸ ˆ‡Œ……ˆŸ ˜ˆ”’€
-(1)  181/       0 : =2H                 B_FONT_BF          EQU 2
-(1)  181/       0 : =4H                 M_FONT_BF          EQU 1<<2
-(1)  182/       0 : (MACRO)              BITMASK FLASH_BF,	1			;ˆ’ €‡…˜…ˆŸ Žƒ€ŒŒˆŽ‚€ˆŸ FLASH
-(1)  182/       0 : =1H                 B_FLASH_BF          EQU 1
-(1)  182/       0 : =2H                 M_FLASH_BF          EQU 1<<1
-(1)  183/       0 : (MACRO)              BITMASK SHADOW_BF,	0			;ˆ’ €‡…˜…ˆŸ „Ž‘’“€ Š ’……‚›Œ Ž’€Œ
-(1)  183/       0 : =0H                 B_SHADOW_BF          EQU 0
-(1)  183/       0 : =1H                 M_SHADOW_BF          EQU 1<<0
-(1)  184/       0 :                     
-(1)  185/       0 :                     ;[Œ€‘Š€ Ž’€ 0XEFF7]
-(1)  186/       0 : (MACRO)              BITMASK PENT_CMOS,	7			;ˆ’ €‡…˜…ˆŸ „Ž‘’“€ Š ŠŒŽ‘“
-(1)  186/       0 : =7H                 B_PENT_CMOS          EQU 7
-(1)  186/       0 : =80H                M_PENT_CMOS          EQU 1<<7
-(1)  187/       0 : (MACRO)              BITMASK PENT_TURBO,	4			;’“Ž…†ˆŒ …’€ƒŽ€
-(1)  187/       0 : =4H                 B_PENT_TURBO          EQU 4
-(1)  187/       0 : =10H                M_PENT_TURBO          EQU 1<<4
-(1)  188/       0 :                     
-(1)  189/       0 :                     ;[Œ€‘Šˆ …†ˆŒŽ‚]
-(1)  190/       0 : =10H                MEMORY_ALL	EQU %00010000			;„Ž‘’“ Š …‚ŽŒ“ Œ…ƒ€€‰’“ —……‡ Ž’ EFF7
-(1)  191/       0 : =20H                MEMORY_48	EQU %00100000			;„Ž‘’“… ’Ž‹œŠŽ 48Kb €ŒŸ’ˆ
-(1)  192/       0 : =30H                MEMORY_128	EQU %00110000			;„Ž‘’“Ž ’Ž‹œŠŽ 128Kb €ŒŸ’ˆ
-(1)  193/       0 : =40H                TURBO_3		EQU %01000000			;—€‘’Ž’€ Ž–…‘‘Ž€ 3,5 Œƒæ 
-(1)  194/       0 : =80H                TURBO_7		EQU %10000000			;—€‘’Ž’€ Ž–…‘‘Ž€ 7 Œƒæ
-(1)  195/       0 : =C0H                TURBO_14	EQU %11000000			;—€‘’Ž’€ Ž–…‘‘Ž€ 14 Œƒæ
-(1)  196/       0 : =0H                 NUM_EGA		EQU %00000000			;ŽŒ… ‚ˆ„…Ž…†ˆŒ€ „‹Ÿ ATM Ž’€ (EGA ŒŽ„ 320*200)
-(1)  197/       0 : =2H                 NUM_APPMULTI	EQU %00000010			;ŽŒ… ‚ˆ„…Ž…†ˆŒ€ „‹Ÿ ATM Ž’€ (€€€’›‰ Œ“‹œ’ˆŠŽ‹Ž 640*200)
-(1)  198/       0 : =3H                 NUM_ZXSCR	EQU %00000011			;ŽŒ… ‚ˆ„…Ž…†ˆŒ€ „‹Ÿ ATM Ž’€ (ZX SCREEN 6912)
-(1)  199/       0 : =6H                 NUM_TXTATM	EQU %00000110			;ŽŒ… ‚ˆ„…Ž…†ˆŒ€ „‹Ÿ ATM Ž’€ (ATM ’…Š‘’ŒŽ„ 80*25)
-(1)  200/       0 : =7H                 NUM_TXTSCR	EQU %00000111			;ŽŒ… ‚ˆ„…Ž…†ˆŒ€ „‹Ÿ ATM Ž’€ (Ž„Ž‘’€ˆ—›‰ ’…Š‘’ŒŽ„ 80*25)
-(1)  201/       0 :                     
-(1)  202/       0 : =8H                 SET_VIDEOMODE	EQU %00001000
+(1)  163/       0 : =40H                BR_INK		EQU 0X40
+(1)  164/       0 : =80H                BR_PAPER	EQU 0X80
+(1)  165/       0 :                     
+(1)  166/       0 :                     ;[–‚…’€ „‹Ÿ ATM ‚ˆ„…Ž…†ˆŒŽ‚]
+(1)  167/       0 : =80H                G_L		EQU %10000000
+(1)  168/       0 : =10H                G_H		EQU %00010000
+(1)  169/       0 : =40H                R_L		EQU %01000000
+(1)  170/       0 : =2H                 R_H		EQU %00000010
+(1)  171/       0 : =20H                B_L		EQU %00100000
+(1)  172/       0 : =1H                 B_H		EQU %00000001
+(1)  173/       0 :                     
+(1)  174/       0 :                     ;[Œ€‘Š€ Ž’€ 7FFD]
+(1)  175/       0 : =8H                 ZX_SCREEN	EQU %00001000
+(1)  176/       0 : =10H                ZX_ROM		EQU %00010000
+(1)  177/       0 :                     
+(1)  178/       0 :                     ;[Œ€‘Š€ Ž’€ 0XBF]
+(1)  179/       0 : (MACRO)              BITMASK RST8_BF,	6
+(1)  179/       0 : =6H                 B_RST8_BF          EQU 6
+(1)  179/       0 : =40H                M_RST8_BF          EQU 1<<6
+(1)  180/       0 : (MACRO)              BITMASK EMUVG_BF,	5	
+(1)  180/       0 : =5H                 B_EMUVG_BF          EQU 5
+(1)  180/       0 : =20H                M_EMUVG_BF          EQU 1<<5
+(1)  181/       0 : (MACRO)              BITMASK BREAK_BF,	4			;ˆ’ €‡…˜…ˆŸ ‘€€’›‚€ˆŸ BREAK € €„…‘…
+(1)  181/       0 : =4H                 B_BREAK_BF          EQU 4
+(1)  181/       0 : =10H                M_BREAK_BF          EQU 1<<4
+(1)  182/       0 : (MACRO)              BITMASK NMI_BF,	3			;ˆ’ ƒ……€–ˆˆ NMI
+(1)  182/       0 : =3H                 B_NMI_BF          EQU 3
+(1)  182/       0 : =8H                 M_NMI_BF          EQU 1<<3
+(1)  183/       0 : (MACRO)              BITMASK FONT_BF,	2			;ˆ’ €‡…˜…ˆŸ ˆ‡Œ……ˆŸ ˜ˆ”’€
+(1)  183/       0 : =2H                 B_FONT_BF          EQU 2
+(1)  183/       0 : =4H                 M_FONT_BF          EQU 1<<2
+(1)  184/       0 : (MACRO)              BITMASK FLASH_BF,	1			;ˆ’ €‡…˜…ˆŸ Žƒ€ŒŒˆŽ‚€ˆŸ FLASH
+(1)  184/       0 : =1H                 B_FLASH_BF          EQU 1
+(1)  184/       0 : =2H                 M_FLASH_BF          EQU 1<<1
+(1)  185/       0 : (MACRO)              BITMASK SHADOW_BF,	0			;ˆ’ €‡…˜…ˆŸ „Ž‘’“€ Š ’……‚›Œ Ž’€Œ
+(1)  185/       0 : =0H                 B_SHADOW_BF          EQU 0
+(1)  185/       0 : =1H                 M_SHADOW_BF          EQU 1<<0
+(1)  186/       0 :                     
+(1)  187/       0 :                     ;[Œ€‘Š€ Ž’€ 0XEFF7]
+(1)  188/       0 : (MACRO)              BITMASK PENT_CMOS,	7			;ˆ’ €‡…˜…ˆŸ „Ž‘’“€ Š ŠŒŽ‘“
+(1)  188/       0 : =7H                 B_PENT_CMOS          EQU 7
+(1)  188/       0 : =80H                M_PENT_CMOS          EQU 1<<7
+(1)  189/       0 : (MACRO)              BITMASK PENT_TURBO,	4			;’“Ž…†ˆŒ …’€ƒŽ€
+(1)  189/       0 : =4H                 B_PENT_TURBO          EQU 4
+(1)  189/       0 : =10H                M_PENT_TURBO          EQU 1<<4
+(1)  190/       0 :                     
+(1)  191/       0 :                     ;[Œ€‘Šˆ …†ˆŒŽ‚]
+(1)  192/       0 : =10H                MEMORY_ALL	EQU %00010000			;„Ž‘’“ Š …‚ŽŒ“ Œ…ƒ€€‰’“ —……‡ Ž’ EFF7
+(1)  193/       0 : =20H                MEMORY_48	EQU %00100000			;„Ž‘’“… ’Ž‹œŠŽ 48Kb €ŒŸ’ˆ
+(1)  194/       0 : =30H                MEMORY_128	EQU %00110000			;„Ž‘’“Ž ’Ž‹œŠŽ 128Kb €ŒŸ’ˆ
+(1)  195/       0 : =40H                TURBO_3		EQU %01000000			;—€‘’Ž’€ Ž–…‘‘Ž€ 3,5 Œƒæ 
+(1)  196/       0 : =80H                TURBO_7		EQU %10000000			;—€‘’Ž’€ Ž–…‘‘Ž€ 7 Œƒæ
+(1)  197/       0 : =C0H                TURBO_14	EQU %11000000			;—€‘’Ž’€ Ž–…‘‘Ž€ 14 Œƒæ
+(1)  198/       0 : =0H                 NUM_EGA		EQU %00000000			;ŽŒ… ‚ˆ„…Ž…†ˆŒ€ „‹Ÿ ATM Ž’€ (EGA ŒŽ„ 320*200)
+(1)  199/       0 : =2H                 NUM_APPMULTI	EQU %00000010			;ŽŒ… ‚ˆ„…Ž…†ˆŒ€ „‹Ÿ ATM Ž’€ (€€€’›‰ Œ“‹œ’ˆŠŽ‹Ž 640*200)
+(1)  200/       0 : =3H                 NUM_ZXSCR	EQU %00000011			;ŽŒ… ‚ˆ„…Ž…†ˆŒ€ „‹Ÿ ATM Ž’€ (ZX SCREEN 6912)
+(1)  201/       0 : =6H                 NUM_TXTATM	EQU %00000110			;ŽŒ… ‚ˆ„…Ž…†ˆŒ€ „‹Ÿ ATM Ž’€ (ATM ’…Š‘’ŒŽ„ 80*25)
+(1)  202/       0 : =7H                 NUM_TXTSCR	EQU %00000111			;ŽŒ… ‚ˆ„…Ž…†ˆŒ€ „‹Ÿ ATM Ž’€ (Ž„Ž‘’€ˆ—›‰ ’…Š‘’ŒŽ„ 80*25)
 (1)  203/       0 :                     
-(1)  204/       0 :                     ;[ŽŒ…€ ‚ˆ„…Ž…†ˆŒŽ‚ ‘ Œ€‘ŠŽ‰ „‹Ÿ ‡€ˆ‘ˆ ‚ Ž’]
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 9 - 2/16/2020 10:10:17
+(1)  204/       0 : =8H                 SET_VIDEOMODE	EQU %00001000
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 9 - 2/22/2020 21:3:58
 
 
-(1)  205/       0 : =A0H                V_EGA		EQU NUM_EGA	 | 0XA0
-(1)  206/       0 : =A2H                V_APPMULTI	EQU NUM_APPMULTI | 0XA0
-(1)  207/       0 : =A3H                V_ZXSCR		EQU NUM_ZXSCR	 | 0XA0
-(1)  208/       0 : =A6H                V_TXTATM	EQU NUM_TXTATM	 | 0XA0
-(1)  209/       0 : =A7H                V_TXT1PAGE	EQU NUM_TXTSCR	 | 0XA0
-(1)  210/       0 :                     
-(1)  211/       0 :                     ;[Œ€‘Šˆ Ž’‹€„—ˆŠ€]
-(1)  212/       0 : (MACRO)              BITMASK DBG_ACTIV,	7			;€Š’ˆ‚… Ž’‹€„—ˆŠ
-(1)  212/       0 : =7H                 B_DBG_ACTIV          EQU 7
-(1)  212/       0 : =80H                M_DBG_ACTIV          EQU 1<<7
-(1)  213/       0 : (MACRO)              BITMASK TRACE_DBG,	6			;’€‘‘ˆŽ‚Š€
-(1)  213/       0 : =6H                 B_TRACE_DBG          EQU 6
-(1)  213/       0 : =40H                M_TRACE_DBG          EQU 1<<6
-(1)  214/       0 : (MACRO)              BITMASK STEP_DBG,	5			;Ž˜€ƒŽ‚€Ÿ Ž’‹€„Š€
-(1)  214/       0 : =5H                 B_STEP_DBG          EQU 5
-(1)  214/       0 : =20H                M_STEP_DBG          EQU 1<<5
-(1)  215/       0 :                     ; BITMASK CASH_INST,	4			;“‘’€Ž‚‹… CASH REMEMBER
-(1)  216/       0 :                     ; BITMASK CASH_ACTIV,	3			;€Š’ˆ‚… CASH REMEMBER
-(1)  217/       0 :                     
-(1)  218/       0 :                     ;[‘Œ…™…ˆŸ FDI Ž€‡€]
-(1)  219/       0 : =4000H              FDI_TABLE_CYL	EQU 0X4000			;€„…‘ ’€‹ˆ–› €—€‹ „ŽŽ†…Š ‚ Ž€‡…
-(1)  220/       0 : =40FFH              FDI_PAGE_START	EQU 0X40FF			;‘Œ…™…ˆ… ‚ ‘’€ˆ–€• €—€‹€ ‘…Š’ŽŽ‚ Ž€‡€
-(1)  221/       0 : =41FEH              FDI_BYTE_SMESH	EQU 0X41FE			;‘Œ…™…ˆ… ‚ €‰’€• €—€‹€ Ž€‡€ ‡€ƒ“†…ŽƒŽ ‚ €Œ„ˆ‘Š
-(1)  222/       0 : =41FFH              FDI_BLOCK_SMESH	EQU 0X41FF			;‘Œ…™…ˆ… ‚ ‹ŽŠ€• (Ž 256 €‰’) €—€‹€ ‘…Š’ŽŽ‚ Ž€‡€
-(1)  223/       0 : =4400H              FDI_IMAGE1SECT	EQU 0X4400			;€„…‘ ‡€ƒ“‡Šˆ …‚ŽƒŽ ‘…Š’Ž€ „‹Ÿ Ž…„…‹…ˆŸ ‘Œ…™…ˆŸ
-(1)  224/       0 :                     
-(1)  225/       0 :                     ;Ÿ—…‰Šˆ ‚ CMOS
-(1)  226/       0 : =0H                 _CMOS_SECOND	EQU 0				;‘…Š“„›
-(1)  227/       0 : =1H                 _CMOS_SECOND_AL	EQU 1				;‘…Š“„› “„ˆ‹œˆŠ€
-(1)  228/       0 : =2H                 _CMOS_MINUTE	EQU 2				;Œˆ“’›
-(1)  229/       0 : =3H                 _CMOS_MINUTE_AL	EQU 3				;Œˆ“’› “„ˆ‹œˆŠ€
-(1)  230/       0 : =4H                 _CMOS_HOUR	EQU 4				;—€‘›
-(1)  231/       0 : =5H                 _CMOS_HOUR_AL	EQU 5				;—€‘› “„ˆ‹œˆŠ€
-(1)  232/       0 : =6H                 _CMOS_DAY	EQU 6				;„…œ …„…‹ˆ
-(1)  233/       0 : =7H                 _CMOS_DAY_MONTH	EQU 7				;„…œ Œ…‘Ÿ–€
-(1)  234/       0 : =8H                 _CMOS_MONTH	EQU 8				;Œ…‘Ÿ–
-(1)  235/       0 : =9H                 _CMOS_YEAR	EQU 9				;ƒŽ„
-(1)  236/       0 :                     
-(1)  237/       0 :                     ;[ŽŒ…€ Ÿ—……Š CMOS ˆ ˆ• ‘Ž„…†ˆŒŽ…]
-(1)  238/       0 : =EFH                CRCCMOSHIGH	EQU 0XEF			;‘’€˜ˆ‰ €‰’ CRC CMOS
-(1)  239/       0 : =EEH                CRCCMOSLOW	EQU 0XEE			;Œ‹€„˜ˆ‰ €‰’ CRC CMOS
-(1)  240/       0 : =EDH                CMOS_BYTE_00	EQU 0XED			;€„…‘ •€…ˆŸ ‚ CMOS
-(1)  241/       0 : =ECH                CMOS_BYTE_01	EQU 0XEC			;€„…‘ •€…ˆŸ ‚ CMOS
-(1)  242/       0 : =EBH                VIRT_REAL_DRIVE	EQU 0XEB			;•€…ˆ… ŽŒ…€ …€‹œŽƒŽ ˆ ‚ˆ’“€‹œŽƒŽ „ˆ‘ŠŽ‚Ž„€, ’ˆ DOS
-(1)  243/       0 : =EAH                HDD_TIMEOUT	EQU 0XEA			;‡€„…†Š€ Ž…„…ˆŸ €‹ˆ—ˆŸ ‚ˆ’€ Ž‘‹… ‚Š‹ž—…ˆŸ ˆ’€ˆŸ
-(1)  244/       0 : =E9H                CMOS_BYTE_02	EQU 0XE9			;€„…‘ •€…ˆŸ ‚ CMOS
-(1)  245/       0 : =E8H                CMOS_BYTE_03	EQU 0XE8			;€„…‘ •€…ˆŸ ‚ CMOS
-(1)  246/       0 :                     
-(1)  247/       0 :                     ;[Ÿ—…‰Š€ CMOS 0XED CMOS_BYTE_00]
-(1)  248/       0 : (MACRO)              BITMASK TURBO14,	7			;€‡…˜…ˆ… ‚Š‹ž—…ˆŸ TURBO 14MHZ
-(1)  248/       0 : =7H                 B_TURBO14          EQU 7
-(1)  248/       0 : =80H                M_TURBO14          EQU 1<<7
-(1)  249/       0 : (MACRO)              BITMASK EMUL_TAPE,	6			;€‡…˜…ˆ… Œ“‹Ÿ–ˆˆ ‡€ƒ“‡Šˆ ‘ ‹…’›
-(1)  249/       0 : =6H                 B_EMUL_TAPE          EQU 6
-(1)  249/       0 : =40H                M_EMUL_TAPE          EQU 1<<6
-(1)  250/       0 : (MACRO)              BITMASK PRINTER_AY,	5			;€‡…˜…ˆ… Ž„Œ…› „€‰‚…€ …—€’ˆ ‚ BASIC48
-(1)  250/       0 : =5H                 B_PRINTER_AY          EQU 5
-(1)  250/       0 : =20H                M_PRINTER_AY          EQU 1<<5
-(1)  251/       0 : (MACRO)              BITMASK RELOAD_FONT,	4			;€‡…˜…ˆ… ……‡€ƒ“‡Šˆ ˜ˆ”’€ ˆ ‘Ž‘…
-(1)  251/       0 : =4H                 B_RELOAD_FONT          EQU 4
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 10 - 2/16/2020 10:10:17
+(1)  205/       0 :                     
+(1)  206/       0 :                     ;[ŽŒ…€ ‚ˆ„…Ž…†ˆŒŽ‚ ‘ Œ€‘ŠŽ‰ „‹Ÿ ‡€ˆ‘ˆ ‚ Ž’]
+(1)  207/       0 : =A0H                V_EGA		EQU NUM_EGA	 | 0XA0
+(1)  208/       0 : =A2H                V_APPMULTI	EQU NUM_APPMULTI | 0XA0
+(1)  209/       0 : =A3H                V_ZXSCR		EQU NUM_ZXSCR	 | 0XA0
+(1)  210/       0 : =A6H                V_TXTATM	EQU NUM_TXTATM	 | 0XA0
+(1)  211/       0 : =A7H                V_TXT1PAGE	EQU NUM_TXTSCR	 | 0XA0
+(1)  212/       0 :                     
+(1)  213/       0 :                     ;[Œ€‘Šˆ Ž’‹€„—ˆŠ€]
+(1)  214/       0 : (MACRO)              BITMASK DBG_ACTIV,	7			;€Š’ˆ‚… Ž’‹€„—ˆŠ
+(1)  214/       0 : =7H                 B_DBG_ACTIV          EQU 7
+(1)  214/       0 : =80H                M_DBG_ACTIV          EQU 1<<7
+(1)  215/       0 : (MACRO)              BITMASK TRACE_DBG,	6			;’€‘‘ˆŽ‚Š€
+(1)  215/       0 : =6H                 B_TRACE_DBG          EQU 6
+(1)  215/       0 : =40H                M_TRACE_DBG          EQU 1<<6
+(1)  216/       0 : (MACRO)              BITMASK STEP_DBG,	5			;Ž˜€ƒŽ‚€Ÿ Ž’‹€„Š€
+(1)  216/       0 : =5H                 B_STEP_DBG          EQU 5
+(1)  216/       0 : =20H                M_STEP_DBG          EQU 1<<5
+(1)  217/       0 :                     ; BITMASK CASH_INST,	4			;“‘’€Ž‚‹… CASH REMEMBER
+(1)  218/       0 :                     ; BITMASK CASH_ACTIV,	3			;€Š’ˆ‚… CASH REMEMBER
+(1)  219/       0 :                     
+(1)  220/       0 :                     ;[‘Œ…™…ˆŸ FDI Ž€‡€]
+(1)  221/       0 : =4000H              FDI_TABLE_CYL	EQU 0X4000			;€„…‘ ’€‹ˆ–› €—€‹ „ŽŽ†…Š ‚ Ž€‡…
+(1)  222/       0 : =40FFH              FDI_PAGE_START	EQU 0X40FF			;‘Œ…™…ˆ… ‚ ‘’€ˆ–€• €—€‹€ ‘…Š’ŽŽ‚ Ž€‡€
+(1)  223/       0 : =41FEH              FDI_BYTE_SMESH	EQU 0X41FE			;‘Œ…™…ˆ… ‚ €‰’€• €—€‹€ Ž€‡€ ‡€ƒ“†…ŽƒŽ ‚ €Œ„ˆ‘Š
+(1)  224/       0 : =41FFH              FDI_BLOCK_SMESH	EQU 0X41FF			;‘Œ…™…ˆ… ‚ ‹ŽŠ€• (Ž 256 €‰’) €—€‹€ ‘…Š’ŽŽ‚ Ž€‡€
+(1)  225/       0 : =4400H              FDI_IMAGE1SECT	EQU 0X4400			;€„…‘ ‡€ƒ“‡Šˆ …‚ŽƒŽ ‘…Š’Ž€ „‹Ÿ Ž…„…‹…ˆŸ ‘Œ…™…ˆŸ
+(1)  226/       0 :                     
+(1)  227/       0 :                     ;Ÿ—…‰Šˆ ‚ CMOS
+(1)  228/       0 : =0H                 _CMOS_SECOND	EQU 0				;‘…Š“„›
+(1)  229/       0 : =1H                 _CMOS_SECOND_AL	EQU 1				;‘…Š“„› “„ˆ‹œˆŠ€
+(1)  230/       0 : =2H                 _CMOS_MINUTE	EQU 2				;Œˆ“’›
+(1)  231/       0 : =3H                 _CMOS_MINUTE_AL	EQU 3				;Œˆ“’› “„ˆ‹œˆŠ€
+(1)  232/       0 : =4H                 _CMOS_HOUR	EQU 4				;—€‘›
+(1)  233/       0 : =5H                 _CMOS_HOUR_AL	EQU 5				;—€‘› “„ˆ‹œˆŠ€
+(1)  234/       0 : =6H                 _CMOS_DAY	EQU 6				;„…œ …„…‹ˆ
+(1)  235/       0 : =7H                 _CMOS_DAY_MONTH	EQU 7				;„…œ Œ…‘Ÿ–€
+(1)  236/       0 : =8H                 _CMOS_MONTH	EQU 8				;Œ…‘Ÿ–
+(1)  237/       0 : =9H                 _CMOS_YEAR	EQU 9				;ƒŽ„
+(1)  238/       0 :                     
+(1)  239/       0 :                     ;[ŽŒ…€ Ÿ—……Š CMOS ˆ ˆ• ‘Ž„…†ˆŒŽ…]
+(1)  240/       0 : =EFH                CRCCMOSHIGH	EQU 0XEF			;‘’€˜ˆ‰ €‰’ CRC CMOS
+(1)  241/       0 : =EEH                CRCCMOSLOW	EQU 0XEE			;Œ‹€„˜ˆ‰ €‰’ CRC CMOS
+(1)  242/       0 : =EDH                CMOS_BYTE_00	EQU 0XED			;€„…‘ •€…ˆŸ ‚ CMOS
+(1)  243/       0 : =ECH                CMOS_BYTE_01	EQU 0XEC			;€„…‘ •€…ˆŸ ‚ CMOS
+(1)  244/       0 : =EBH                VIRT_REAL_DRIVE	EQU 0XEB			;•€…ˆ… ŽŒ…€ …€‹œŽƒŽ ˆ ‚ˆ’“€‹œŽƒŽ „ˆ‘ŠŽ‚Ž„€, ’ˆ DOS
+(1)  245/       0 : =EAH                HDD_TIMEOUT	EQU 0XEA			;‡€„…†Š€ Ž…„…ˆŸ €‹ˆ—ˆŸ ‚ˆ’€ Ž‘‹… ‚Š‹ž—…ˆŸ ˆ’€ˆŸ
+(1)  246/       0 : =E9H                CMOS_BYTE_02	EQU 0XE9			;€„…‘ •€…ˆŸ ‚ CMOS
+(1)  247/       0 : =E8H                CMOS_BYTE_03	EQU 0XE8			;€„…‘ •€…ˆŸ ‚ CMOS
+(1)  248/       0 :                     
+(1)  249/       0 :                     ;[Ÿ—…‰Š€ CMOS 0XED CMOS_BYTE_00]
+(1)  250/       0 : (MACRO)              BITMASK TURBO14,	7			;€‡…˜…ˆ… ‚Š‹ž—…ˆŸ TURBO 14MHZ
+(1)  250/       0 : =7H                 B_TURBO14          EQU 7
+(1)  250/       0 : =80H                M_TURBO14          EQU 1<<7
+(1)  251/       0 : (MACRO)              BITMASK EMUL_TAPE,	6			;€‡…˜…ˆ… Œ“‹Ÿ–ˆˆ ‡€ƒ“‡Šˆ ‘ ‹…’›
+(1)  251/       0 : =6H                 B_EMUL_TAPE          EQU 6
+(1)  251/       0 : =40H                M_EMUL_TAPE          EQU 1<<6
+(1)  252/       0 : (MACRO)              BITMASK PRINTER_AY,	5			;€‡…˜…ˆ… Ž„Œ…› „€‰‚…€ …—€’ˆ ‚ BASIC48
+(1)  252/       0 : =5H                 B_PRINTER_AY          EQU 5
+(1)  252/       0 : =20H                M_PRINTER_AY          EQU 1<<5
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 10 - 2/22/2020 21:3:58
 
 
-(1)  251/       0 : =10H                M_RELOAD_FONT          EQU 1<<4
-(1)  252/       0 : (MACRO)              BITMASK TYPE_FONT,	3			;‚›Ž ŠŽ„ˆŽ‚Šˆ ˜ˆ”’€
-(1)  252/       0 : =3H                 B_TYPE_FONT          EQU 3
-(1)  252/       0 : =8H                 M_TYPE_FONT          EQU 1<<3
-(1)  253/       0 : (MACRO)              BITMASK AUTO_TAPE,	2			;€‚’Ž‡€“‘Š TAP ”€‰‹Ž‚
-(1)  253/       0 : =2H                 B_AUTO_TAPE          EQU 2
-(1)  253/       0 : =4H                 M_AUTO_TAPE          EQU 1<<2
-(1)  254/       0 :                     
-(1)  255/       0 :                     ;[ŽŒ…€ ‘Ž‘Ž‚, ˆ’› 1-0 Ÿ—…‰Šˆ 0XED (CMOS_BYTE_00)]
-(1)  256/       0 : =3H                 RESET2CUSTOM	EQU 3				;‘Ž‘ ‚ CUSTOM ROM
-(1)  257/       0 : =2H                 RESET2PROFROM	EQU 2				;‘Ž‘ ‚ PROFROM
-(1)  258/       0 : =1H                 RESET2GLUK	EQU 1				;‘Ž‘ ‚ GLUK SERVICE
-(1)  259/       0 : =0H                 RESET2EVOSERV	EQU 0				;‘Ž‘ ‚ EVO SERVICE
-(1)  260/       0 :                     
-(1)  261/       0 :                     ;[Ÿ—…‰Š€ CMOS 0XEC CMOS_BYTE_01]
-(1)  262/       0 : (MACRO)              BITMASK TURBO357,	7			;’“Ž …†ˆŒ 3,5 ˆ‹ˆ 7 Œƒ–
-(1)  262/       0 : =7H                 B_TURBO357          EQU 7
-(1)  262/       0 : =80H                M_TURBO357          EQU 1<<7
-(1)  263/       0 : (MACRO)              BITMASK SD_NGS_ONOFF,	6			;‚Š‹ž—…ˆ…/‚›Š‹ž—…ˆ… „Ž‘’“€ Š SD Š€’… NEOGS
-(1)  263/       0 : =6H                 B_SD_NGS_ONOFF          EQU 6
-(1)  263/       0 : =40H                M_SD_NGS_ONOFF          EQU 1<<6
-(1)  264/       0 : (MACRO)              BITMASK AUTOMOUNT,	5			;‚Š‹/‚›Š‹ €‚’ŽŒŽ’ˆŽ‚€ˆŸ ˆ‡ ”€‰‹€
-(1)  264/       0 : =5H                 B_AUTOMOUNT          EQU 5
-(1)  264/       0 : =20H                M_AUTOMOUNT          EQU 1<<5
-(1)  265/       0 : (MACRO)              BITMASK CLOCK_VIEW,	4			;•€…ˆ… Ž’Ž€†…ˆ… —€‘Ž‚
-(1)  265/       0 : =4H                 B_CLOCK_VIEW          EQU 4
-(1)  265/       0 : =10H                M_CLOCK_VIEW          EQU 1<<4
-(1)  266/       0 : (MACRO)              BITMASK SOUNDKEYS,	3			;€‡…˜…ˆ… Ž‡‚“—ˆ‚€ˆŸ €†€’›• Š‹€‚ˆ˜
-(1)  266/       0 : =3H                 B_SOUNDKEYS          EQU 3
-(1)  266/       0 : =8H                 M_SOUNDKEYS          EQU 1<<3
-(1)  267/       0 : (MACRO)              BITMASK REZIDENT,	2			;€‡…˜…ˆ… Ž‚…Šˆ €‹ˆ—ˆŸ …‡ˆ„…’€
-(1)  267/       0 : =2H                 B_REZIDENT          EQU 2
-(1)  267/       0 : =4H                 M_REZIDENT          EQU 1<<2
-(1)  268/       0 :                     
-(1)  269/       0 :                     ;[ŽŒ…€ ŒŽ„…‹…‰ €ŒŸ’ˆ, ˆ’› 1-0 Ÿ—…‰Šˆ 0XEC (CMOS_BYTE_01)]
-(1)  270/       0 : =2H                 _128K		EQU 2				;€ŒŸ’œ 128 Š¡
-(1)  271/       0 : =1H                 _48K		EQU 1				;€ŒŸ’œ 48 Š¡
-(1)  272/       0 : =0H                 _1MB		EQU 0				;€ŒŸ’œ 1 Œ¡
-(1)  273/       0 :                     
-(1)  274/       0 : =4H                 KOL_MODES	EQU 4				;ŠŽ‹ˆ—…‘’‚Ž …†ˆŒŽ‚ ‘Ž‘€
-(1)  275/       0 : =3H                 MKOL_MODES	EQU 3				;Œ€‘Š€ „‹Ÿ ŠŽ‹ˆ—…‘’‚€ …†ˆŒŽ‚ ‘Ž‘€
-(1)  276/       0 :                     
-(1)  277/       0 :                     ;[Ÿ—…‰Š€ CMOS 0XEB]
-(1)  278/       0 : (MACRO)              BITMASK ACCESSZCSD,	7			;€‡…˜…ˆ… „Ž‘’“€ Š ZC SD CARD
-(1)  278/       0 : =7H                 B_ACCESSZCSD          EQU 7
-(1)  278/       0 : =80H                M_ACCESSZCSD          EQU 1<<7
-(1)  279/       0 : (MACRO)              BITMASK ACCESSSDG,	6			;€‡…˜…ˆŸ „Ž‘’“€ Š SD Š€’… NEOGS
-(1)  279/       0 : =6H                 B_ACCESSSDG          EQU 6
-(1)  279/       0 : =40H                M_ACCESSSDG          EQU 1<<6
-(1)  280/       0 : (MACRO)              BITMASK ACCESSHDDM,	5			;€‡…˜…ˆ… „Ž‘’“€ Š HDD MASTER
-(1)  280/       0 : =5H                 B_ACCESSHDDM          EQU 5
-(1)  280/       0 : =20H                M_ACCESSHDDM          EQU 1<<5
-(1)  281/       0 : (MACRO)              BITMASK ACCESSHDDS,	4			;€‡…˜…ˆ… „Ž‘’“€ Š HDD SLAVE
-(1)  281/       0 : =4H                 B_ACCESSHDDS          EQU 4
-(1)  281/       0 : =10H                M_ACCESSHDDS          EQU 1<<4
-(1)  282/       0 : =CH                 _REAL_DRIVE	EQU %00001100			;Œ€‘Š€ ŽŒ…€ …€‹œŽƒŽ „ˆ‘ŠŽ‚Ž„€
-(1)  283/       0 : =3H                 _VIRT_DRIVE	EQU %00000011			;Œ€‘Š€ ŽŒ…€ ‚ˆ’“€‹œŽƒŽ „ˆ‘ŠŽ‚Ž„€
-(1)  284/       0 :                     
-(1)  285/       0 :                     ;[Ÿ—…‰Š€ CMOS 0XE9]
-(1)  286/       0 : (MACRO)              BITMASK AUTOBOOT,	7			;€‚’Ž‘’€’ ‡€ƒ“†€…ŒŽƒŽ “‘’Ž‰‘’‚€
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 11 - 2/16/2020 10:10:17
+(1)  253/       0 : (MACRO)              BITMASK RELOAD_FONT,	4			;€‡…˜…ˆ… ……‡€ƒ“‡Šˆ ˜ˆ”’€ ˆ ‘Ž‘…
+(1)  253/       0 : =4H                 B_RELOAD_FONT          EQU 4
+(1)  253/       0 : =10H                M_RELOAD_FONT          EQU 1<<4
+(1)  254/       0 : (MACRO)              BITMASK TYPE_FONT,	3			;‚›Ž ŠŽ„ˆŽ‚Šˆ ˜ˆ”’€
+(1)  254/       0 : =3H                 B_TYPE_FONT          EQU 3
+(1)  254/       0 : =8H                 M_TYPE_FONT          EQU 1<<3
+(1)  255/       0 : (MACRO)              BITMASK AUTO_TAPE,	2			;€‚’Ž‡€“‘Š TAP ”€‰‹Ž‚
+(1)  255/       0 : =2H                 B_AUTO_TAPE          EQU 2
+(1)  255/       0 : =4H                 M_AUTO_TAPE          EQU 1<<2
+(1)  256/       0 :                     
+(1)  257/       0 :                     ;[ŽŒ…€ ‘Ž‘Ž‚, ˆ’› 1-0 Ÿ—…‰Šˆ 0XED (CMOS_BYTE_00)]
+(1)  258/       0 : =3H                 RESET2CUSTOM	EQU 3				;‘Ž‘ ‚ CUSTOM ROM
+(1)  259/       0 : =2H                 RESET2PROFROM	EQU 2				;‘Ž‘ ‚ PROFROM
+(1)  260/       0 : =1H                 RESET2GLUK	EQU 1				;‘Ž‘ ‚ GLUK SERVICE
+(1)  261/       0 : =0H                 RESET2EVOSERV	EQU 0				;‘Ž‘ ‚ EVO SERVICE
+(1)  262/       0 :                     
+(1)  263/       0 :                     ;[Ÿ—…‰Š€ CMOS 0XEC CMOS_BYTE_01]
+(1)  264/       0 : (MACRO)              BITMASK TURBO357,	7			;’“Ž …†ˆŒ 3,5 ˆ‹ˆ 7 Œƒ–
+(1)  264/       0 : =7H                 B_TURBO357          EQU 7
+(1)  264/       0 : =80H                M_TURBO357          EQU 1<<7
+(1)  265/       0 : (MACRO)              BITMASK SD_NGS_ONOFF,	6			;‚Š‹ž—…ˆ…/‚›Š‹ž—…ˆ… „Ž‘’“€ Š SD Š€’… NEOGS
+(1)  265/       0 : =6H                 B_SD_NGS_ONOFF          EQU 6
+(1)  265/       0 : =40H                M_SD_NGS_ONOFF          EQU 1<<6
+(1)  266/       0 : (MACRO)              BITMASK AUTOMOUNT,	5			;‚Š‹/‚›Š‹ €‚’ŽŒŽ’ˆŽ‚€ˆŸ ˆ‡ ”€‰‹€
+(1)  266/       0 : =5H                 B_AUTOMOUNT          EQU 5
+(1)  266/       0 : =20H                M_AUTOMOUNT          EQU 1<<5
+(1)  267/       0 : (MACRO)              BITMASK CLOCK_VIEW,	4			;•€…ˆ… Ž’Ž€†…ˆ… —€‘Ž‚
+(1)  267/       0 : =4H                 B_CLOCK_VIEW          EQU 4
+(1)  267/       0 : =10H                M_CLOCK_VIEW          EQU 1<<4
+(1)  268/       0 : (MACRO)              BITMASK SOUNDKEYS,	3			;€‡…˜…ˆ… Ž‡‚“—ˆ‚€ˆŸ €†€’›• Š‹€‚ˆ˜
+(1)  268/       0 : =3H                 B_SOUNDKEYS          EQU 3
+(1)  268/       0 : =8H                 M_SOUNDKEYS          EQU 1<<3
+(1)  269/       0 : (MACRO)              BITMASK REZIDENT,	2			;€‡…˜…ˆ… Ž‚…Šˆ €‹ˆ—ˆŸ …‡ˆ„…’€
+(1)  269/       0 : =2H                 B_REZIDENT          EQU 2
+(1)  269/       0 : =4H                 M_REZIDENT          EQU 1<<2
+(1)  270/       0 :                     
+(1)  271/       0 :                     ;[ŽŒ…€ ŒŽ„…‹…‰ €ŒŸ’ˆ, ˆ’› 1-0 Ÿ—…‰Šˆ 0XEC (CMOS_BYTE_01)]
+(1)  272/       0 : =2H                 _128K		EQU 2				;€ŒŸ’œ 128 Š¡
+(1)  273/       0 : =1H                 _48K		EQU 1				;€ŒŸ’œ 48 Š¡
+(1)  274/       0 : =0H                 _1MB		EQU 0				;€ŒŸ’œ 1 Œ¡
+(1)  275/       0 :                     
+(1)  276/       0 : =4H                 KOL_MODES	EQU 4				;ŠŽ‹ˆ—…‘’‚Ž …†ˆŒŽ‚ ‘Ž‘€
+(1)  277/       0 : =3H                 MKOL_MODES	EQU 3				;Œ€‘Š€ „‹Ÿ ŠŽ‹ˆ—…‘’‚€ …†ˆŒŽ‚ ‘Ž‘€
+(1)  278/       0 :                     
+(1)  279/       0 :                     ;[Ÿ—…‰Š€ CMOS 0XEB]
+(1)  280/       0 : (MACRO)              BITMASK ACCESSZCSD,	7			;€‡…˜…ˆ… „Ž‘’“€ Š ZC SD CARD
+(1)  280/       0 : =7H                 B_ACCESSZCSD          EQU 7
+(1)  280/       0 : =80H                M_ACCESSZCSD          EQU 1<<7
+(1)  281/       0 : (MACRO)              BITMASK ACCESSSDG,	6			;€‡…˜…ˆŸ „Ž‘’“€ Š SD Š€’… NEOGS
+(1)  281/       0 : =6H                 B_ACCESSSDG          EQU 6
+(1)  281/       0 : =40H                M_ACCESSSDG          EQU 1<<6
+(1)  282/       0 : (MACRO)              BITMASK ACCESSHDDM,	5			;€‡…˜…ˆ… „Ž‘’“€ Š HDD MASTER
+(1)  282/       0 : =5H                 B_ACCESSHDDM          EQU 5
+(1)  282/       0 : =20H                M_ACCESSHDDM          EQU 1<<5
+(1)  283/       0 : (MACRO)              BITMASK ACCESSHDDS,	4			;€‡…˜…ˆ… „Ž‘’“€ Š HDD SLAVE
+(1)  283/       0 : =4H                 B_ACCESSHDDS          EQU 4
+(1)  283/       0 : =10H                M_ACCESSHDDS          EQU 1<<4
+(1)  284/       0 : =CH                 _REAL_DRIVE	EQU %00001100			;Œ€‘Š€ ŽŒ…€ …€‹œŽƒŽ „ˆ‘ŠŽ‚Ž„€
+(1)  285/       0 : =3H                 _VIRT_DRIVE	EQU %00000011			;Œ€‘Š€ ŽŒ…€ ‚ˆ’“€‹œŽƒŽ „ˆ‘ŠŽ‚Ž„€
+(1)  286/       0 :                     
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 11 - 2/22/2020 21:3:58
 
 
-(1)  286/       0 : =7H                 B_AUTOBOOT          EQU 7
-(1)  286/       0 : =80H                M_AUTOBOOT          EQU 1<<7
-(1)  287/       0 : =3H                 BOOTDEVICE	EQU %00000011			;ŽŒ… ‡€ƒ“†€…ŒŽƒŽ “‘’Ž‰‘’‚€
-(1)  288/       0 :                     
-(1)  289/       0 :                     ;[Ÿ—…‰Š€ CMOS 0XE8]
-(1)  290/       0 : (MACRO)              BITMASK KILL_REZIDENT,	7			;ˆ‡Œ……ˆ… …‡ˆ„…’€ ……„ ‡€“‘ŠŽŒ
-(1)  290/       0 : =7H                 B_KILL_REZIDENT          EQU 7
-(1)  290/       0 : =80H                M_KILL_REZIDENT          EQU 1<<7
-(1)  291/       0 :                     
-(1)  292/       0 :                     ;[ŽŒ…€ ‡€ƒ“†€…Œ›• “‘’Ž‰‘’‚]
-(1)  293/       0 : =2H                 _SD		EQU 2				;SD Š€’€
-(1)  294/       0 : =1H                 _HDD		EQU 1				;‚ˆ—…‘’…
-(1)  295/       0 : =0H                 _FDD		EQU 0				;„ˆ‘ŠŽ‚Ž„
-(1)  296/       0 :                     
-(1)  297/       0 : =80H                _SD_NONE	EQU 0X80			;ˆ‡€Š … ‚‘’€‚‹…Ž‰ Š€’›
+(1)  287/       0 :                     ;[Ÿ—…‰Š€ CMOS 0XE9]
+(1)  288/       0 : (MACRO)              BITMASK AUTOBOOT,	7			;€‚’Ž‘’€’ ‡€ƒ“†€…ŒŽƒŽ “‘’Ž‰‘’‚€
+(1)  288/       0 : =7H                 B_AUTOBOOT          EQU 7
+(1)  288/       0 : =80H                M_AUTOBOOT          EQU 1<<7
+(1)  289/       0 : =3H                 BOOTDEVICE	EQU %00000011			;ŽŒ… ‡€ƒ“†€…ŒŽƒŽ “‘’Ž‰‘’‚€
+(1)  290/       0 :                     
+(1)  291/       0 :                     ;[Ÿ—…‰Š€ CMOS 0XE8]
+(1)  292/       0 : (MACRO)              BITMASK KILL_REZIDENT,	7			;ˆ‡Œ……ˆ… …‡ˆ„…’€ ……„ ‡€“‘ŠŽŒ
+(1)  292/       0 : =7H                 B_KILL_REZIDENT          EQU 7
+(1)  292/       0 : =80H                M_KILL_REZIDENT          EQU 1<<7
+(1)  293/       0 :                     
+(1)  294/       0 :                     ;[ŽŒ…€ ‡€ƒ“†€…Œ›• “‘’Ž‰‘’‚]
+(1)  295/       0 : =2H                 _SD		EQU 2				;SD Š€’€
+(1)  296/       0 : =1H                 _HDD		EQU 1				;‚ˆ—…‘’…
+(1)  297/       0 : =0H                 _FDD		EQU 0				;„ˆ‘ŠŽ‚Ž„
 (1)  298/       0 :                     
-(1)  299/       0 :                     ;[……Œ…›… „‹Ÿ 0 ŽŠ€ Ž…–ˆŽ‚€ˆŸ]
-(1)  300/       0 : =13H                DEBUG_ONOFF	EQU 0X0013			;‚Š‹/‚›Š‹ Ž’‹€„—ˆŠ€
-(1)  301/       0 : =14H                ADR_SEL_ROM	EQU 0X0014			;€„…‘ ……Š‹ž—…ˆŸ ‘’€ˆ– ROM
-(1)  302/       0 : =2CH                CONT_RST8	EQU 0X002C			;€„…‘ Ž„Ž‹†…ˆŸ Ž€Ž’Šˆ RST 8
-(1)  303/       0 : =34H                CONTINUE_MAGIC	EQU 0X0034			;€„…‘ ……•Ž„€ Ž„Ž‹†…ˆŸ Ž€Ž’—ˆŠ€ MAGIC
-(1)  304/       0 : =36H                ADR_PERFECT	EQU 0X0036			;€„…‘ €‘Ž‹Ž†…ˆŸ PERFECT COMANDER
-(1)  305/       0 : =3EH                EI_RET		EQU 0X003E			;€„…‘ €‘Ž‹Ž†…ˆŸ EI:RET
-(1)  306/       0 : =40H                UNP_DOS_FE	EQU 0X0040			;€„…‘ €‘€ŠŽ‚™ˆŠ€ DOS FE
-(1)  307/       0 : =80H                UNPACK		EQU 0X0080			;€„…‘ €‘€ŠŽ‚™ˆŠ€
-(1)  308/       0 : =100H               _BIOS_JUMPS	EQU 0X0100			;€„…‘ €—€‹€ ’€‹ˆ–› ……•Ž„Ž‚ ‚ „€‰‚…› „…‚€‰‘Ž‚
-(1)  309/       0 : =569H               ADRBRK_EMUTAP	EQU 0X0569			;€„…‘ “‘’€Ž‚Šˆ ŸŠ€ „‹Ÿ Œ“‹Ÿ–ˆˆ ‡€ƒ“‡Šˆ TAP
-(1)  310/       0 : =C000H              START_STS	EQU 0XC000			;€„…‘ ‚•Ž„€ ‚ Ž’‹€„—ˆŠ
-(1)  311/       0 : =3CE8H              ADR_RST8END	EQU 0X3CE8			;€„…‘ ‚Ž‡‚€’€ ˆ‡ RST 8
-(1)  312/       0 : =8000H              ICALL2PAGE	EQU 0X8000			;€„…‘ ‚›‡›‚Ž‚ ŠŽ„€ ˆ‡ „“ƒŽ‰ ‘’€ˆ–›
-(1)  313/       0 :                     
-(1)  314/       0 : =0H                 OFFSET_FNTSAVE	EQU 0				;800 ‘Œ…™…ˆ… ‚ ‘’€ˆ–… „‹Ÿ ‘Ž•€…ˆŸ ‘—ˆ’€ŽƒŽ ˜ˆ”’€
-(1)  315/       0 : =800H               OFFSET_BUFSYM	EQU OFFSET_FNTSAVE+0X800	;800 ‘Œ…™…ˆ… ‚ ‘’€ˆ–… ’…Š“™…ƒŽ ˜ˆ”’€
-(1)  316/       0 : =1000H              OFFSET_SCRSAVE	EQU OFFSET_BUFSYM+0X800		;1B00 ‘Œ…™…ˆ… ‚ ‘’€ˆ–… „‹Ÿ ‘Ž•€…ˆŸ Š€€
-(1)  317/       0 : =2B00H              OFFSET_USBDRV	EQU OFFSET_SCRSAVE+0X1B00	;??? ‘Œ…™…ˆ… „Ž €—€‹€ USB „€‰‚…€
-(1)  318/       0 :                     
-(1)  319/       0 : =BE00H              BUF_512		EQU CPU3-0X200			;200 “”… ‘…Š’Ž€
-(1)  320/       0 : =BD00H              BUF_TABLVOL	EQU BUF_512-0X100		;100 “”… ’€‹ˆ–› €‰„…›• €‡„…‹Ž‚
-(1)  321/       0 : =BC00H              BUF_TEKVOL	EQU BUF_TABLVOL-0X100		;100 “”… ‚›€ŽƒŽ €‡„…‹€
-(1)  322/       0 : =B400H              BUF_TDIRCLS	EQU BUF_TEKVOL-0X800		;800 “”… Š‹€‘’…Ž‚ ’…Š“™…‰ „ˆ…Š’Žˆˆ
-(1)  323/       0 : =B300H              BUF_256		EQU BUF_TDIRCLS-0X100		;100 “”… 256 €‰’ „‹Ÿ ……Ž‘Ž‚
-(1)  324/       0 : =B200H              BUF_PATH	EQU BUF_256-0X100		;100 “”… ’…Š“™…ƒŽ “’ˆ
-(1)  325/       0 : =B100H              MOUNT_DRIVES	EQU BUF_PATH-0X100		;100 “”… Žˆ‘€’…‹…‰ ˆŒŽ’ˆŽ‚€›• ”€‰‹Ž‚
-(1)  326/       0 : =B000H              BUF_LEVELDIR	EQU MOUNT_DRIVES-0X100		;200 “”… ‘Ž•€…ˆŸ Ž‡ˆ–ˆ‰ ŽŠŽ ˆ ……•Ž„€• Ž „ˆ…Š’ŽˆŸŒ
-(1)  327/       0 : =AC00H              BUF_WINPATH	EQU BUF_LEVELDIR-0X400		;400 “”… ‘Ž•€…ˆŸ Ž‡ˆ–ˆ‰ ‚ ŽŠ… ˆ •Ž†„…ˆˆ Ž „ˆ…Š’ŽˆŸŒ
-(1)  328/       0 :                     
-(1)  329/       0 :                     ;[……Œ…›… „‹Ÿ Œ……„†…€ “‘’Ž‰‘’‚]
-(1)  330/       0 : =BDE0H              DEVICES		EQU BUF_TABLVOL+0XE0		;10 ‘ˆ‘ŽŠ Ž€“†…›• „…‚€‰‘Ž‚
-(1)  331/       0 : =BDF0H              GO_DEV		EQU DEVICES+0X10		;2 €„…‘ ‚›‡Ž‚€ „€‰‚…€ “‘’Ž‰‘’‚€
-(1)  332/       0 : =BDF2H              KOLDVOL		EQU GO_DEV+2			;1 ŠŽ‹ˆ—…‘’‚Ž €‰„…›• €‡„…‹Ž‚
-(1)  333/       0 : =BDF3H              SETDVOL		EQU KOLDVOL+1			;1 ŽŒ… ‚›€ŽƒŽ €‡„…‹€
-(1)  334/       0 : =BDF4H              ADRTEKV		EQU SETDVOL+1			;2 €„…‘ Žˆ‘€’…‹Ÿ ’…Š“™…ƒŽ €‡„…‹€
-(1)  335/       0 : =BDF6H              SAVE_TEK_VOL	EQU ADRTEKV+2			;1 ‚…Œ…Ž… ‘Ž•€…ˆ… ’…Š“™…ƒŽ €‡„…‹€
-(1)  336/       0 : =BDF7H              TEK_TYPE	EQU SAVE_TEK_VOL+1		;1 ‚…Œ…Ž… •€…ˆ… ’ˆ€ ’…Š“™…ƒŽ “‘’Ž‰‘’‚€
-(1)  337/       0 : =BDF8H              FLAGS_DRV	EQU TEK_TYPE+1			;1 ”‹€ƒŽ‚›‰ €‰’ „€‰‚…Ž‚
-(1)  338/       0 :                     ;7 =0-„€‰‚… SD Š€’› NEOGS … “‘’€Ž‚‹…, =1-“‘’€Ž‚‹…
-(1)  339/       0 :                     ;6
-(1)  340/       0 :                     ;5
-(1)  341/       0 :                     ;4
-(1)  342/       0 :                     ;3
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 12 - 2/16/2020 10:10:17
+(1)  299/       0 : =80H                _SD_NONE	EQU 0X80			;ˆ‡€Š … ‚‘’€‚‹…Ž‰ Š€’›
+(1)  300/       0 :                     
+(1)  301/       0 :                     ;[……Œ…›… „‹Ÿ 0 ŽŠ€ Ž…–ˆŽ‚€ˆŸ]
+(1)  302/       0 : =13H                DEBUG_ONOFF	EQU 0X0013			;‚Š‹/‚›Š‹ Ž’‹€„—ˆŠ€
+(1)  303/       0 : =14H                ADR_SEL_ROM	EQU 0X0014			;€„…‘ ……Š‹ž—…ˆŸ ‘’€ˆ– ROM
+(1)  304/       0 : =2CH                CONT_RST8	EQU 0X002C			;€„…‘ Ž„Ž‹†…ˆŸ Ž€Ž’Šˆ RST 8
+(1)  305/       0 : =34H                CONTINUE_MAGIC	EQU 0X0034			;€„…‘ ……•Ž„€ Ž„Ž‹†…ˆŸ Ž€Ž’—ˆŠ€ MAGIC
+(1)  306/       0 : =36H                ADR_PERFECT	EQU 0X0036			;€„…‘ €‘Ž‹Ž†…ˆŸ PERFECT COMANDER
+(1)  307/       0 : =3EH                EI_RET		EQU 0X003E			;€„…‘ €‘Ž‹Ž†…ˆŸ EI:RET
+(1)  308/       0 : =40H                UNP_DOS_FE	EQU 0X0040			;€„…‘ €‘€ŠŽ‚™ˆŠ€ DOS FE
+(1)  309/       0 : =80H                UNPACK		EQU 0X0080			;€„…‘ €‘€ŠŽ‚™ˆŠ€
+(1)  310/       0 : =100H               _BIOS_JUMPS	EQU 0X0100			;€„…‘ €—€‹€ ’€‹ˆ–› ……•Ž„Ž‚ ‚ „€‰‚…› „…‚€‰‘Ž‚
+(1)  311/       0 : =569H               ADRBRK_EMUTAP	EQU 0X0569			;€„…‘ “‘’€Ž‚Šˆ ŸŠ€ „‹Ÿ Œ“‹Ÿ–ˆˆ ‡€ƒ“‡Šˆ TAP
+(1)  312/       0 : =C000H              START_STS	EQU 0XC000			;€„…‘ ‚•Ž„€ ‚ Ž’‹€„—ˆŠ
+(1)  313/       0 : =3CE8H              ADR_RST8END	EQU 0X3CE8			;€„…‘ ‚Ž‡‚€’€ ˆ‡ RST 8
+(1)  314/       0 : =8000H              ICALL2PAGE	EQU 0X8000			;€„…‘ ‚›‡›‚Ž‚ ŠŽ„€ ˆ‡ „“ƒŽ‰ ‘’€ˆ–›
+(1)  315/       0 :                     
+(1)  316/       0 : =0H                 OFFSET_FNTSAVE	EQU 0				;800 ‘Œ…™…ˆ… ‚ ‘’€ˆ–… „‹Ÿ ‘Ž•€…ˆŸ ‘—ˆ’€ŽƒŽ ˜ˆ”’€
+(1)  317/       0 : =800H               OFFSET_BUFSYM	EQU OFFSET_FNTSAVE+0X800	;800 ‘Œ…™…ˆ… ‚ ‘’€ˆ–… ’…Š“™…ƒŽ ˜ˆ”’€
+(1)  318/       0 : =1000H              OFFSET_SCRSAVE	EQU OFFSET_BUFSYM+0X800		;1B00 ‘Œ…™…ˆ… ‚ ‘’€ˆ–… „‹Ÿ ‘Ž•€…ˆŸ Š€€
+(1)  319/       0 : =2B00H              OFFSET_USBDRV	EQU OFFSET_SCRSAVE+0X1B00	;??? ‘Œ…™…ˆ… „Ž €—€‹€ USB „€‰‚…€
+(1)  320/       0 :                     
+(1)  321/       0 : =BE00H              BUF_512		EQU CPU3-0X200			;200 “”… ‘…Š’Ž€
+(1)  322/       0 : =BD00H              BUF_TABLVOL	EQU BUF_512-0X100		;100 “”… ’€‹ˆ–› €‰„…›• €‡„…‹Ž‚
+(1)  323/       0 : =BC00H              BUF_TEKVOL	EQU BUF_TABLVOL-0X100		;100 “”… ‚›€ŽƒŽ €‡„…‹€
+(1)  324/       0 : =B400H              BUF_TDIRCLS	EQU BUF_TEKVOL-0X800		;800 “”… Š‹€‘’…Ž‚ ’…Š“™…‰ „ˆ…Š’Žˆˆ
+(1)  325/       0 : =B300H              BUF_256		EQU BUF_TDIRCLS-0X100		;100 “”… 256 €‰’ „‹Ÿ ……Ž‘Ž‚
+(1)  326/       0 : =B200H              BUF_PATH	EQU BUF_256-0X100		;100 “”… ’…Š“™…ƒŽ “’ˆ
+(1)  327/       0 : =B100H              MOUNT_DRIVES	EQU BUF_PATH-0X100		;100 “”… Žˆ‘€’…‹…‰ ˆŒŽ’ˆŽ‚€›• ”€‰‹Ž‚
+(1)  328/       0 : =B000H              BUF_LEVELDIR	EQU MOUNT_DRIVES-0X100		;200 “”… ‘Ž•€…ˆŸ Ž‡ˆ–ˆ‰ ŽŠŽ ˆ ……•Ž„€• Ž „ˆ…Š’ŽˆŸŒ
+(1)  329/       0 : =AC00H              BUF_WINPATH	EQU BUF_LEVELDIR-0X400		;400 “”… ‘Ž•€…ˆŸ Ž‡ˆ–ˆ‰ ‚ ŽŠ… ˆ •Ž†„…ˆˆ Ž „ˆ…Š’ŽˆŸŒ
+(1)  330/       0 :                     
+(1)  331/       0 :                     ;[……Œ…›… „‹Ÿ Œ……„†…€ “‘’Ž‰‘’‚]
+(1)  332/       0 : =BDE0H              DEVICES		EQU BUF_TABLVOL+0XE0		;10 ‘ˆ‘ŽŠ Ž€“†…›• „…‚€‰‘Ž‚
+(1)  333/       0 : =BDF0H              GO_DEV		EQU DEVICES+0X10		;2 €„…‘ ‚›‡Ž‚€ „€‰‚…€ “‘’Ž‰‘’‚€
+(1)  334/       0 : =BDF2H              KOLDVOL		EQU GO_DEV+2			;1 ŠŽ‹ˆ—…‘’‚Ž €‰„…›• €‡„…‹Ž‚
+(1)  335/       0 : =BDF3H              SETDVOL		EQU KOLDVOL+1			;1 ŽŒ… ‚›€ŽƒŽ €‡„…‹€
+(1)  336/       0 : =BDF4H              ADRTEKV		EQU SETDVOL+1			;2 €„…‘ Žˆ‘€’…‹Ÿ ’…Š“™…ƒŽ €‡„…‹€
+(1)  337/       0 : =BDF6H              SAVE_TEK_VOL	EQU ADRTEKV+2			;1 ‚…Œ…Ž… ‘Ž•€…ˆ… ’…Š“™…ƒŽ €‡„…‹€
+(1)  338/       0 : =BDF7H              TEK_TYPE	EQU SAVE_TEK_VOL+1		;1 ‚…Œ…Ž… •€…ˆ… ’ˆ€ ’…Š“™…ƒŽ “‘’Ž‰‘’‚€
+(1)  339/       0 : =BDF8H              FLAGS_DRV	EQU TEK_TYPE+1			;1 ”‹€ƒŽ‚›‰ €‰’ „€‰‚…Ž‚
+(1)  340/       0 :                     ;7 =0-„€‰‚… SD Š€’› NEOGS … “‘’€Ž‚‹…, =1-“‘’€Ž‚‹…
+(1)  341/       0 :                     ;6
+(1)  342/       0 :                     ;5
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 12 - 2/22/2020 21:3:58
 
 
-(1)  343/       0 :                     ;2
-(1)  344/       0 :                     ;1 =0-SD ZC Š€’€ … Ž€“†…€, 1-Ž€“†…€
-(1)  345/       0 :                     ;0 =0-SD NeoGS … Ž€“†…€, 1-Ž€“†…€
-(1)  346/       0 : =BDFEH              CRC_DRVS	EQU BUF_TABLVOL+0XFE		;2 ŠŽ’Ž‹œ€Ÿ ‘“ŒŒ€ ’€‹ˆ–› €‰„…›• €‡„…‹Ž‚
-(1)  347/       0 :                     
-(1)  348/       0 :                     ;[……Œ…›… „‹Ÿ 1 ŽŠ€ Ž…–ˆŽ‚€ˆŸ]
-(1)  349/       0 : =0H                 BUF_ALLVOL	EQU 0				;1000 “”… ……Œ…›• „‹Ÿ ‚‘…• €‡„…‹Ž‚ (16 MAX)
-(1)  350/       0 : =1000H              MOUNT_CLS	EQU BUF_ALLVOL+0X1000		;1000 “”… Š‹€‘’…Ž‚ ˆŒŽ’ˆŽ‚€›• ”€‰‹Ž‚
-(1)  351/       0 : =2000H              TEK_BUFPATH	EQU MOUNT_CLS+0X1000		;1000 “”… ’…Š“™ˆ• “’…‰ € €‡„…‹€•
-(1)  352/       0 : =3000H              BUF_PATHMOUNT	EQU TEK_BUFPATH+0X1000		;400 “”… “’…‰ „‹Ÿ Žˆ‘Š€ ˆŒŽ’ˆŽ‚€›• ”€‰‹Ž‚
-(1)  353/       0 : =3400H              BUF_DIRCEP	EQU BUF_PATHMOUNT+0X400		;100 “”… –…Ž—Šˆ ’…Š“™…‰ „ˆ…Š’Žˆˆ
-(1)  354/       0 : =3500H              BUF_TEMPSEC	EQU BUF_DIRCEP+0X100		;200 “”… ‘…Š’Ž€ „‹Ÿ ‡€ƒ“‡Šˆ Ž€‡Ž‚
-(1)  355/       0 :                     
+(1)  343/       0 :                     ;4
+(1)  344/       0 :                     ;3
+(1)  345/       0 :                     ;2
+(1)  346/       0 :                     ;1 =0-SD ZC Š€’€ … Ž€“†…€, 1-Ž€“†…€
+(1)  347/       0 :                     ;0 =0-SD NeoGS … Ž€“†…€, 1-Ž€“†…€
+(1)  348/       0 : =BDFEH              CRC_DRVS	EQU BUF_TABLVOL+0XFE		;2 ŠŽ’Ž‹œ€Ÿ ‘“ŒŒ€ ’€‹ˆ–› €‰„…›• €‡„…‹Ž‚
+(1)  349/       0 :                     
+(1)  350/       0 :                     ;[……Œ…›… „‹Ÿ 1 ŽŠ€ Ž…–ˆŽ‚€ˆŸ]
+(1)  351/       0 : =0H                 BUF_ALLVOL	EQU 0				;1000 “”… ……Œ…›• „‹Ÿ ‚‘…• €‡„…‹Ž‚ (16 MAX)
+(1)  352/       0 : =1000H              MOUNT_CLS	EQU BUF_ALLVOL+0X1000		;1000 “”… Š‹€‘’…Ž‚ ˆŒŽ’ˆŽ‚€›• ”€‰‹Ž‚
+(1)  353/       0 : =2000H              TEK_BUFPATH	EQU MOUNT_CLS+0X1000		;1000 “”… ’…Š“™ˆ• “’…‰ € €‡„…‹€•
+(1)  354/       0 : =3000H              BUF_PATHMOUNT	EQU TEK_BUFPATH+0X1000		;400 “”… “’…‰ „‹Ÿ Žˆ‘Š€ ˆŒŽ’ˆŽ‚€›• ”€‰‹Ž‚
+(1)  355/       0 : =3400H              BUF_DIRCEP	EQU BUF_PATHMOUNT+0X400		;100 “”… –…Ž—Šˆ ’…Š“™…‰ „ˆ…Š’Žˆˆ
+(1)  356/       0 : =3500H              BUF_TEMPSEC	EQU BUF_DIRCEP+0X100		;200 “”… ‘…Š’Ž€ „‹Ÿ ‡€ƒ“‡Šˆ Ž€‡Ž‚
+(1)  357/       0 :                     
        8/       0 :                     		include ../../svn/pentevo/rom/define.a80
 (1)    1/       0 :                     
 (1)    2/       0 :                     ;LAST UPDATE: 05.08.2019 savelij
@@ -752,11 +754,11 @@
 (1)    9/       0 :                     _AY_PRN_SCR_Size       EQU 
 (1)    9/       0 : =>TRUE                              ELSE
 (1)    9/       0 : =44H                INITVAR := INITVAR+BYTE
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 13 - 2/22/2020 21:3:58
+
+
 (1)    9/       0 : =1H                 _AY_PRN_SCR_Size       EQU BYTE
 (1)    9/       0 : [9]                                 ENDIF
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 13 - 2/16/2020 10:10:17
-
-
 (1)   10/       0 : (MACRO)              SETVAR _TAPE_INIT
 (1)   10/       0 : =44H                _TAPE_INIT            EQU INITVAR
 (1)   10/       0 : =>BLANK                             IFNB 
@@ -815,11 +817,11 @@
 (1)   16/       0 : =4AH                _SCROLL_DOWN            EQU INITVAR
 (1)   16/       0 : =>BLANK                             IFNB 
 (1)   16/       0 :                     INITVAR := INITVAR+
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 14 - 2/22/2020 21:3:58
+
+
 (1)   16/       0 :                     _SCROLL_DOWN_Size       EQU 
 (1)   16/       0 : =>TRUE                              ELSE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 14 - 2/16/2020 10:10:17
-
-
 (1)   16/       0 : =4BH                INITVAR := INITVAR+BYTE
 (1)   16/       0 : =1H                 _SCROLL_DOWN_Size       EQU BYTE
 (1)   16/       0 : [16]                                ENDIF
@@ -878,11 +880,11 @@
 (1)   24/       0 : (MACRO)              SETVAR _COM_FAT
 (1)   24/       0 : =51H                _COM_FAT            EQU INITVAR
 (1)   24/       0 : =>BLANK                             IFNB 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 15 - 2/22/2020 21:3:58
+
+
 (1)   24/       0 :                     INITVAR := INITVAR+
 (1)   24/       0 :                     _COM_FAT_Size       EQU 
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 15 - 2/16/2020 10:10:17
-
-
 (1)   24/       0 : =>TRUE                              ELSE
 (1)   24/       0 : =52H                INITVAR := INITVAR+BYTE
 (1)   24/       0 : =1H                 _COM_FAT_Size       EQU BYTE
@@ -941,11 +943,11 @@
 (1)   30/       0 : =58H                INITVAR := INITVAR+BYTE
 (1)   30/       0 : =1H                 _SETUP_FONT_Size       EQU BYTE
 (1)   30/       0 : [30]                                ENDIF
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 16 - 2/22/2020 21:3:58
+
+
 (1)   31/       0 :                     
 (1)   32/       0 :                     ;äã­ªæ¨¨ ¨§¬¥­¥­¨ï à¥¦¨¬®¢ à ¡®âë
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 16 - 2/16/2020 10:10:17
-
-
 (1)   33/       0 : =1H                 _ZXSCR_MODE	EQU %00000001			;ZX SCREEN
 (1)   34/       0 : =2H                 _TXTSCR_MODE	EQU %00000010			;TXT SCREEN
 (1)   35/       0 : =10H                _TURBO_LOW	EQU %00010000			;TURBO 3,5 MHZ
@@ -1004,11 +1006,11 @@
 (1)   48/       0 :                     INITVAR := INITVAR+
 (1)   48/       0 :                     _HEX4DECTXT_Size       EQU 
 (1)   48/       0 : =>TRUE                              ELSE
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 17 - 2/22/2020 21:3:58
+
+
 (1)   48/       0 : =5H                 INITVAR := INITVAR+BYTE
 (1)   48/       0 : =1H                 _HEX4DECTXT_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 17 - 2/16/2020 10:10:17
-
-
 (1)   48/       0 : [48]                                ENDIF
 (1)   49/       0 : (MACRO)              SETVAR _HEX2DECTXT
 (1)   49/       0 : =5H                 _HEX2DECTXT            EQU INITVAR
@@ -1067,11 +1069,11 @@
 (1)   57/       0 : =3H                 _CLEAR_CMOS            EQU INITVAR
 (1)   57/       0 : =>BLANK                             IFNB 
 (1)   57/       0 :                     INITVAR := INITVAR+
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 18 - 2/22/2020 21:3:58
+
+
 (1)   57/       0 :                     _CLEAR_CMOS_Size       EQU 
 (1)   57/       0 : =>TRUE                              ELSE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 18 - 2/16/2020 10:10:17
-
-
 (1)   57/       0 : =4H                 INITVAR := INITVAR+BYTE
 (1)   57/       0 : =1H                 _CLEAR_CMOS_Size       EQU BYTE
 (1)   57/       0 : [57]                                ENDIF
@@ -1130,11 +1132,11 @@
 (1)   65/       0 : [65]                                ENDIF
 (1)   66/       0 : (MACRO)              SETVAR _LOADIMAGE				; § £àã§ª  ®¡à §  ¢ à ¬¤¨áª
 (1)   66/       0 : =5H                 _LOADIMAGE            EQU INITVAR
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 19 - 2/22/2020 21:3:58
+
+
 (1)   66/       0 : =>BLANK                             IFNB 
 (1)   66/       0 :                     INITVAR := INITVAR+
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 19 - 2/16/2020 10:10:17
-
-
 (1)   66/       0 :                     _LOADIMAGE_Size       EQU 
 (1)   66/       0 : =>TRUE                              ELSE
 (1)   66/       0 : =6H                 INITVAR := INITVAR+BYTE
@@ -1193,11 +1195,11 @@
 (1)   74/       0 : =1H                 INITVAR := INITVAR+BYTE
 (1)   74/       0 : =1H                 _DEVFIND_Size       EQU BYTE
 (1)   74/       0 : [74]                                ENDIF
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 20 - 2/22/2020 21:3:58
+
+
 (1)   75/       0 : (MACRO)              SETVAR _SET_VOL				;01 ‚›Ž €‡„…‹€                          
 (1)   75/       0 : =1H                 _SET_VOL            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 20 - 2/16/2020 10:10:17
-
-
 (1)   75/       0 : =>BLANK                             IFNB 
 (1)   75/       0 :                     INITVAR := INITVAR+
 (1)   75/       0 :                     _SET_VOL_Size       EQU 
@@ -1256,11 +1258,11 @@
 (1)   81/       0 :                     INITVAR := INITVAR+
 (1)   81/       0 :                     _COMHDDN_Size       EQU 
 (1)   81/       0 : =>TRUE                              ELSE
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 21 - 2/22/2020 21:3:58
+
+
 (1)   81/       0 : =8H                 INITVAR := INITVAR+BYTE
 (1)   81/       0 : =1H                 _COMHDDN_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 21 - 2/16/2020 10:10:17
-
-
 (1)   81/       0 : [81]                                ENDIF
 (1)   82/       0 : (MACRO)              SETVAR _FREINIT_VOL				;08 Ž‹€Ÿ ……ˆˆ–ˆ€‹ˆ‡€–ˆŸ €‡„…‹€
 (1)   82/       0 : =8H                 _FREINIT_VOL            EQU INITVAR
@@ -1319,11 +1321,11 @@
 (1)   90/       0 : =4H                 _DEV_READID            EQU INITVAR
 (1)   90/       0 : =>BLANK                             IFNB 
 (1)   90/       0 :                     INITVAR := INITVAR+
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 22 - 2/22/2020 21:3:58
+
+
 (1)   90/       0 :                     _DEV_READID_Size       EQU 
 (1)   90/       0 : =>TRUE                              ELSE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 22 - 2/16/2020 10:10:17
-
-
 (1)   90/       0 : =5H                 INITVAR := INITVAR+BYTE
 (1)   90/       0 : =1H                 _DEV_READID_Size       EQU BYTE
 (1)   90/       0 : [90]                                ENDIF
@@ -1382,11 +1384,11 @@
 (1)   98/       0 : [98]                                ENDIF
 (1)   99/       0 : (MACRO)              SETVAR _FIND_NAME				;Žˆ‘Š Ž ˆŒ…ˆ
 (1)   99/       0 : =5H                 _FIND_NAME            EQU INITVAR
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 23 - 2/22/2020 21:3:58
+
+
 (1)   99/       0 : =>BLANK                             IFNB 
 (1)   99/       0 :                     INITVAR := INITVAR+
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 23 - 2/16/2020 10:10:17
-
-
 (1)   99/       0 :                     _FIND_NAME_Size       EQU 
 (1)   99/       0 : =>TRUE                              ELSE
 (1)   99/       0 : =6H                 INITVAR := INITVAR+BYTE
@@ -1445,11 +1447,11 @@
 (1)  105/       0 : =>TRUE                              ELSE
 (1)  105/       0 : =CH                 INITVAR := INITVAR+BYTE
 (1)  105/       0 : =1H                 _POS_FILES_Size       EQU BYTE
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 24 - 2/22/2020 21:3:58
+
+
 (1)  105/       0 : [105]                               ENDIF
 (1)  106/       0 :                     
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 24 - 2/16/2020 10:10:17
-
-
 (1)  107/       0 :                     ;¯®¤äã­ªæ¨¨ äã­ªæ¨¨ _POS_FILES
 (1)  108/       0 : (MACRO)              INIT_VAR
 (1)  108/       0 : =>BLANK                             IFNB 
@@ -1508,11 +1510,11 @@
 (1)  114/       0 :                     INITVAR := INITVAR+
 (1)  114/       0 :                     _POSTF05_Size       EQU 
 (1)  114/       0 : =>TRUE                              ELSE
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 25 - 2/22/2020 21:3:58
+
+
 (1)  114/       0 : =6H                 INITVAR := INITVAR+BYTE
 (1)  114/       0 : =1H                 _POSTF05_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 25 - 2/16/2020 10:10:17
-
-
 (1)  114/       0 : [114]                               ENDIF
 (1)  115/       0 : (MACRO)              SETVAR _POSTF06				;“‘’€Ž‚ˆ’œ ŽŒ… "‹…ƒ€‹œŽ‰" ‡€ˆ‘ˆ ˆ‡ "BC"
 (1)  115/       0 : =6H                 _POSTF06            EQU INITVAR
@@ -1571,11 +1573,11 @@
 (1)  124/       0 : [124]                               ENDIF
 (1)  125/       0 : (MACRO)              SETVAR _TAP		;TAP
 (1)  125/       0 : =4H                 _TAP            EQU INITVAR
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 26 - 2/22/2020 21:3:58
+
+
 (1)  125/       0 : =>BLANK                             IFNB 
 (1)  125/       0 :                     INITVAR := INITVAR+
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 26 - 2/16/2020 10:10:17
-
-
 (1)  125/       0 :                     _TAP_Size       EQU 
 (1)  125/       0 : =>TRUE                              ELSE
 (1)  125/       0 : =5H                 INITVAR := INITVAR+BYTE
@@ -1634,11 +1636,11 @@
 (1)  135/       0 : =>BLANK                             IFNB 
 (1)  135/       0 :                     INITVAR := 
 (1)  135/       0 : =>TRUE                              ELSE
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 27 - 2/22/2020 21:3:58
+
+
 (1)  135/       0 : =0H                 INITVAR := 0
 (1)  135/       0 : [135]                               ENDIF
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 27 - 2/16/2020 10:10:17
-
-
 (1)  136/       0 : (MACRO)              SETVAR _NO_INIT
 (1)  136/       0 : =0H                 _NO_INIT            EQU INITVAR
 (1)  136/       0 : =>BLANK                             IFNB 
@@ -1697,11 +1699,11 @@
 (1)  143/       0 :                     ;®¯¨á â¥«¨ ¤«ï à¨á®¢ ­¨ï ®ª­ 
 (1)  144/       0 : (MACRO)              INIT_VAR
 (1)  144/       0 : =>BLANK                             IFNB 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 28 - 2/22/2020 21:3:58
+
+
 (1)  144/       0 :                     INITVAR := 
 (1)  144/       0 : =>TRUE                              ELSE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 28 - 2/16/2020 10:10:17
-
-
 (1)  144/       0 : =0H                 INITVAR := 0
 (1)  144/       0 : [144]                               ENDIF
 (1)  145/       0 : (MACRO)              SETVAR _X_COORD
@@ -1760,11 +1762,11 @@
 (1)  150/       0 : [150]                               ENDIF
 (1)  151/       0 : (MACRO)              SETVAR _FLAGS
 (1)  151/       0 : =6H                 _FLAGS            EQU INITVAR
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 29 - 2/22/2020 21:3:58
+
+
 (1)  151/       0 : =>BLANK                             IFNB 
 (1)  151/       0 :                     INITVAR := INITVAR+
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 29 - 2/16/2020 10:10:17
-
-
 (1)  151/       0 :                     _FLAGS_Size       EQU 
 (1)  151/       0 : =>TRUE                              ELSE
 (1)  151/       0 : =7H                 INITVAR := INITVAR+BYTE
@@ -1823,11 +1825,11 @@
 (1)  157/       0 : =>TRUE                              ELSE
 (1)  157/       0 : =DH                 INITVAR := INITVAR+BYTE
 (1)  157/       0 : =1H                 _ADR_TXT_L_Size       EQU BYTE
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 30 - 2/22/2020 21:3:58
+
+
 (1)  157/       0 : [157]                               ENDIF
 (1)  158/       0 : (MACRO)              SETVAR _ADR_TXT_H
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 30 - 2/16/2020 10:10:17
-
-
 (1)  158/       0 : =DH                 _ADR_TXT_H            EQU INITVAR
 (1)  158/       0 : =>BLANK                             IFNB 
 (1)  158/       0 :                     INITVAR := INITVAR+
@@ -1886,11 +1888,11 @@
 (1)  164/       0 : =>BLANK                             IFNB 
 (1)  164/       0 :                     INITVAR := INITVAR+
 (1)  164/       0 :                     _ADR_HOTKEY_H_Size       EQU 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 31 - 2/22/2020 21:3:58
+
+
 (1)  164/       0 : =>TRUE                              ELSE
 (1)  164/       0 : =14H                INITVAR := INITVAR+BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 31 - 2/16/2020 10:10:17
-
-
 (1)  164/       0 : =1H                 _ADR_HOTKEY_H_Size       EQU BYTE
 (1)  164/       0 : [164]                               ENDIF
 (1)  165/       0 :                     
@@ -1949,11 +1951,11 @@
 (1)  174/       0 :                     _ZCSD_RD_SEC_Size       EQU BYTE
 (1)  174/       0 : [174]                               ENDIF
 (1)  175/       0 : (MACRO)              SETVAR _ZCSD_WR_SEC,JUMP_SIZE			;§ ¯¨áì á¥ªâ®à®¢ ­ ¡®àâ­®© SD ª àâë
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 32 - 2/22/2020 21:3:58
+
+
 (1)  175/       0 : =10FH               _ZCSD_WR_SEC            EQU INITVAR
 (1)  175/       0 : =>NOT BLANK                         IFNB JUMP_SIZE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 32 - 2/16/2020 10:10:17
-
-
 (1)  175/       0 : =112H               INITVAR := INITVAR+JUMP_SIZE
 (1)  175/       0 : =3H                 _ZCSD_WR_SEC_Size       EQU JUMP_SIZE
 (1)  175/       0 : =>FALSE                             ELSE
@@ -2012,11 +2014,11 @@
 (1)  183/       0 : =>NOT BLANK                         IFNB JUMP_SIZE
 (1)  183/       0 : =124H               INITVAR := INITVAR+JUMP_SIZE
 (1)  183/       0 : =3H                 _READ_STAT_PS2_Size       EQU JUMP_SIZE
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 33 - 2/22/2020 21:3:58
+
+
 (1)  183/       0 : =>FALSE                             ELSE
 (1)  183/       0 :                     INITVAR := INITVAR+BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 33 - 2/16/2020 10:10:17
-
-
 (1)  183/       0 :                     _READ_STAT_PS2_Size       EQU BYTE
 (1)  183/       0 : [183]                               ENDIF
 (1)  184/       0 :                     
@@ -2075,11 +2077,11 @@
 (1)    6/       0 : =1H                 IREG_E_Size       EQU BYTE
 (1)    6/       0 : =>FALSE                             ELSE
 (1)    6/       0 :                     INITVAR := INITVAR+BYTE
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 34 - 2/22/2020 21:3:58
+
+
 (1)    6/       0 :                     IREG_E_Size       EQU BYTE
 (1)    6/       0 : [6]                                 ENDIF
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 34 - 2/16/2020 10:10:17
-
-
 (1)    7/       0 : (MACRO)              SETVAR IREG_D,		BYTE		;1
 (1)    7/       0 : =3C99H              IREG_D            EQU INITVAR
 (1)    7/       0 : =>NOT BLANK                         IFNB BYTE
@@ -2138,11 +2140,11 @@
 (1)   14/       0 : (MACRO)              SETVAR PORT_3F,	BYTE		;1 ‡€—…ˆ… Ž’€ 3F
 (1)   14/       0 : =3CA0H              PORT_3F            EQU INITVAR
 (1)   14/       0 : =>NOT BLANK                         IFNB BYTE
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 35 - 2/22/2020 21:3:58
+
+
 (1)   14/       0 : =3CA1H              INITVAR := INITVAR+BYTE
 (1)   14/       0 : =1H                 PORT_3F_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 35 - 2/16/2020 10:10:17
-
-
 (1)   14/       0 : =>FALSE                             ELSE
 (1)   14/       0 :                     INITVAR := INITVAR+BYTE
 (1)   14/       0 :                     PORT_3F_Size       EQU BYTE
@@ -2201,11 +2203,11 @@
 (1)   20/       0 :                     INITVAR := INITVAR+BYTE
 (1)   20/       0 :                     ADDR_RET_Size       EQU BYTE
 (1)   20/       0 : [20]                                ENDIF
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 36 - 2/22/2020 21:3:58
+
+
 (1)   21/       0 : (MACRO)              SETVAR REG_IF,		BYTE		;1
 (1)   21/       0 : =3CA9H              REG_IF            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 36 - 2/16/2020 10:10:17
-
-
 (1)   21/       0 : =>NOT BLANK                         IFNB BYTE
 (1)   21/       0 : =3CAAH              INITVAR := INITVAR+BYTE
 (1)   21/       0 : =1H                 REG_IF_Size       EQU BYTE
@@ -2264,11 +2266,11 @@
 (1)   27/       0 : =3CB0H              INITVAR := INITVAR+BYTE
 (1)   27/       0 : =1H                 REG_L_Size       EQU BYTE
 (1)   27/       0 : =>FALSE                             ELSE
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 37 - 2/22/2020 21:3:58
+
+
 (1)   27/       0 :                     INITVAR := INITVAR+BYTE
 (1)   27/       0 :                     REG_L_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 37 - 2/16/2020 10:10:17
-
-
 (1)   27/       0 : [27]                                ENDIF
 (1)   28/       0 : (MACRO)              SETVAR REG_H,		BYTE		;1
 (1)   28/       0 : =3CB0H              REG_H            EQU INITVAR
@@ -2327,11 +2329,11 @@
 (1)   34/       0 : (MACRO)              SETVAR WR_RAMNROM,	BYTE		;1
 (1)   34/       0 : =3CB6H              WR_RAMNROM            EQU INITVAR
 (1)   34/       0 : =>NOT BLANK                         IFNB BYTE
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 38 - 2/22/2020 21:3:58
+
+
 (1)   34/       0 : =3CB7H              INITVAR := INITVAR+BYTE
 (1)   34/       0 : =1H                 WR_RAMNROM_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 38 - 2/16/2020 10:10:17
-
-
 (1)   34/       0 : =>FALSE                             ELSE
 (1)   34/       0 :                     INITVAR := INITVAR+BYTE
 (1)   34/       0 :                     WR_RAMNROM_Size       EQU BYTE
@@ -2390,11 +2392,11 @@
 (1)   40/       0 :                     INITVAR := INITVAR+BYTE
 (1)   40/       0 :                     WR_0WINA2_Size       EQU BYTE
 (1)   40/       0 : [40]                                ENDIF
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 39 - 2/22/2020 21:3:58
+
+
 (1)   41/       0 : (MACRO)              SETVAR WR_0WINA1,	BYTE		;1
 (1)   41/       0 : =3CBDH              WR_0WINA1            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 39 - 2/16/2020 10:10:17
-
-
 (1)   41/       0 : =>NOT BLANK                         IFNB BYTE
 (1)   41/       0 : =3CBEH              INITVAR := INITVAR+BYTE
 (1)   41/       0 : =1H                 WR_0WINA1_Size       EQU BYTE
@@ -2453,11 +2455,11 @@
 (1)   47/       0 : =3CC5H              INITVAR := INITVAR+WORD
 (1)   47/       0 : =2H                 MINT_STACK_Size       EQU WORD
 (1)   47/       0 : =>FALSE                             ELSE
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 40 - 2/22/2020 21:3:58
+
+
 (1)   47/       0 :                     INITVAR := INITVAR+BYTE
 (1)   47/       0 :                     MINT_STACK_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 40 - 2/16/2020 10:10:17
-
-
 (1)   47/       0 : [47]                                ENDIF
 (1)   48/       0 : (MACRO)              SETVAR TEK_ROMPAGE,	BYTE		;1
 (1)   48/       0 : =3CC5H              TEK_ROMPAGE            EQU INITVAR
@@ -2516,11 +2518,11 @@
 (1)   54/       0 :                     ; SETVAR VIRT_REAL_DRV,	BYTE		;1
 (1)   55/       0 : (MACRO)              SETVAR OLD_PORT_BF,	BYTE		;1
 (1)   55/       0 : =3CCBH              OLD_PORT_BF            EQU INITVAR
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 41 - 2/22/2020 21:3:58
+
+
 (1)   55/       0 : =>NOT BLANK                         IFNB BYTE
 (1)   55/       0 : =3CCCH              INITVAR := INITVAR+BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 41 - 2/16/2020 10:10:17
-
-
 (1)   55/       0 : =1H                 OLD_PORT_BF_Size       EQU BYTE
 (1)   55/       0 : =>FALSE                             ELSE
 (1)   55/       0 :                     INITVAR := INITVAR+BYTE
@@ -2579,11 +2581,11 @@
 (1)   61/       0 : =>FALSE                             ELSE
 (1)   61/       0 :                     INITVAR := INITVAR+BYTE
 (1)   61/       0 :                     SAVED_RAM_Size       EQU BYTE
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 42 - 2/22/2020 21:3:58
+
+
 (1)   61/       0 : [61]                                ENDIF
 (1)   62/       0 :                     END_VARS
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 42 - 2/16/2020 10:10:17
-
-
 (1)   63/       0 :                     
       10/       0 :                     		include define.a80
 (1)    1/       0 :                     
@@ -2642,9 +2644,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 43 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 43 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -2707,9 +2707,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 44 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 44 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -2768,11 +2770,11 @@
       36/     30C : (MACRO)             		DIHALT
       36/     30C : F3                                  DI
       36/     30D : 76                                  HALT
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 45 - 2/22/2020 21:3:58
+
+
       36/     30E : 00                                  NOP
       36/     30F : 00                                  NOP
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 45 - 2/16/2020 10:10:17
-
-
       36/     310 : 00                                  NOP
       36/     311 : 00                                  NOP
       37/     312 : D3 7F               		OUT (0X7F),A
@@ -2831,11 +2833,11 @@
       50/     347 : 00                                  NOP
       50/     348 : 00                                  NOP
       50/     349 : 00                                  NOP
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 46 - 2/22/2020 21:3:58
+
+
       51/     34A : DB 1F               		IN A,(0X1F)
       52/     34C : (MACRO)             		DIHALT
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 46 - 2/16/2020 10:10:17
-
-
       52/     34C : F3                                  DI
       52/     34D : 76                                  HALT
       52/     34E : 00                                  NOP
@@ -2894,11 +2896,11 @@
       68/     388 : 00                                  NOP
       68/     389 : 00                                  NOP
       68/     38A : 00                                  NOP
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 47 - 2/22/2020 21:3:58
+
+
       69/     38B : 0E 1F               		LD C,0X1F
       70/     38D : ED 79               		OUT (C),A
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 47 - 2/16/2020 10:10:17
-
-
       71/     38F : (MACRO)             		DIHALT
       71/     38F : F3                                  DI
       71/     390 : 76                                  HALT
@@ -2957,11 +2959,11 @@
       86/     3C8 : 00                                  NOP
       86/     3C9 : 00                                  NOP
       86/     3CA : 00                                  NOP
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 48 - 2/22/2020 21:3:58
+
+
       87/     3CB : ED A3               		OUTI
       88/     3CD : (MACRO)             		DIHALT
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 48 - 2/16/2020 10:10:17
-
-
       88/     3CD : F3                                  DI
       88/     3CE : 76                                  HALT
       88/     3CF : 00                                  NOP
@@ -3020,9 +3022,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 49 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 49 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -3085,7 +3085,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 50 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 50 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -3148,9 +3148,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 51 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 51 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -3209,9 +3211,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 52 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 52 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -3274,7 +3274,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 53 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 53 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -3337,9 +3337,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 54 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 54 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -3398,9 +3400,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 55 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 55 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -3463,7 +3463,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 56 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 56 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -3526,9 +3526,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 57 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 57 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -3587,9 +3589,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 58 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 58 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -3652,7 +3652,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 59 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 59 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -3715,9 +3715,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 60 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 60 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -3776,9 +3778,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 61 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 61 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -3841,7 +3841,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 62 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 62 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -3904,9 +3904,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 63 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 63 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -3965,9 +3967,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 64 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 64 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -4030,9 +4030,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 65 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 65 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -4091,9 +4093,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 
      103/    1BFE : 00 00 00 00 00 00                   DB 1024 DUP()
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 66 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 66 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -4156,7 +4156,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 67 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 67 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -4219,9 +4219,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 68 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 68 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -4280,9 +4282,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 69 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 69 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -4345,7 +4345,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 70 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 70 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -4408,9 +4408,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 71 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 71 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -4469,9 +4471,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 72 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 72 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -4534,7 +4534,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 73 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 73 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -4597,9 +4597,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 74 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 74 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -4658,9 +4660,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 75 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 75 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -4723,7 +4723,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 76 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 76 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -4786,9 +4786,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 77 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 77 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -4847,9 +4849,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 78 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 78 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -4912,7 +4912,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 79 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 79 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -4975,9 +4975,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 80 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 80 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -5036,9 +5038,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 81 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 81 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -5101,7 +5101,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 82 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 82 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -5164,9 +5164,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 83 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 83 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 
@@ -5225,9 +5227,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 84 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 84 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -5290,9 +5290,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 85 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 85 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -5351,9 +5353,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 86 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 86 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -5416,7 +5416,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 87 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 87 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -5479,9 +5479,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 88 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 88 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -5540,11 +5542,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 89 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 89 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -5603,9 +5605,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 90 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 90 - 2/22/2020 21:3:58
 
 
                     00 00 00 00 00 00 
@@ -5668,9 +5668,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 91 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 91 - 2/22/2020 21:3:58
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -5729,8 +5731,11 @@
      107/    4000 :                                     DB $$M DUP()
      107/    4000 : [107]                               ENDIF
      107/    4000 : [107]                               ENDIF
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 92 - 2/22/2020 21:3:58
+
+
      108/    4000 :                     
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 92 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 93 - 2/22/2020 21:3:58
 
 
   symbol table (* = unused):
@@ -5793,338 +5798,339 @@
 *CONSTPI :        3.141592653589793 - | *CONTINUE_MAGIC :                34 - |
 *CONT_RST8 :                     2C - | *COPY_VIRT_BITS :              3CCA - |
 *COPY_VIRT_BITS_Size :            1 - | *CPU0 :                           0 - |
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 93 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 94 - 2/22/2020 21:3:58
 
 
 *CPU1 :                        4000 - | *CPU2 :                        8000 - |
  CPU3 :                        C000 - | *CRCCMOSHIGH :                   EF - |
 *CRCCMOSLOW :                    EE - | *CRC_DRVS :                    BDFE - |
-*CYAN :                           5 - | *DATA_VERS :                   A850 - |
- DATE :                   2/16/2020 - |  DDATE :                         10 - |
+*CYAN :                           5 - | *DATA_VERS :                   A856 - |
+ DATE :                   2/22/2020 - |  DDATE :                         16 - |
 *DEBUG_ONOFF :                   13 - |  DEVICES :                     BDE0 - |
 *DOS_STEK :                    3C9C - | *DOS_STEK_Size :                  2 - |
 *DWORD :                          4 - | *EI_RET :                        3E - |
 *END_VARS :                       0 C | *EXIT_PORT :                     BE - |
-*FALSE :                          0 - | *FAT_DATE :                    5050 - |
-*FAT_TIME :                    5148 - | *FDI_BLOCK_SMESH :             41FF - |
-*FDI_BYTE_SMESH :              41FE - | *FDI_IMAGE1SECT :              4400 - |
-*FDI_PAGE_START :              40FF - | *FDI_TABLE_CYL :               4000 - |
-*FLAGS_DRV :                   BDF8 - | *FLAG_RW_BREAK :               3CCF - |
-*FLAG_RW_BREAK_Size :             1 - | *FULLPMMU :                       1 - |
- GO_DEV :                      BDF0 - | *GREEN :                          4 - |
-*G_H :                           10 - | *G_L :                           80 - |
-*HAS64 :                          1 - | *HASDSP :                         0 - |
-*HASFPU :                         0 - | *HASPMMU :                        0 - |
-*HDD_TIMEOUT :                   EA - |  HHOUR :                          A - |
-*ICALL2PAGE :                  8000 - | *INEXTMODE :                      0 - |
- INITVAR :                     3CE2 - | *INLWORDMODE :                    0 - |
-*INMAXMODE :                      0 - | *INSRCMODE :                      0 - |
-*INSUPMODE :                      0 - | *IREG_D :                      3C99 - |
-*IREG_D_Size :                    1 - | *IREG_E :                      3C98 - |
-*IREG_E_Size :                    1 - | *IREG_H :                      3C9B - |
-*IREG_H_Size :                    1 - | *IREG_L :                      3C9A - |
-*IREG_L_Size :                    1 - | *JUMP :                           3 - |
- JUMP_SIZE :                      3 - |  KOLDVOL :                     BDF2 - |
-*KOL_MODES :                      4 - | *LATTR :                       31C0 - |
-*LISTON :                         1 - | *LSYM :                         1C0 - |
- M899 :                         2EE - |  M901 :                         131 - |
- M902 :                         2CF - | *MACEXP :                         7 - |
-*MAGENTA :                        3 - | *MASK_MNT_DRV :                3CC7 - |
-*MASK_MNT_DRV_Size :              1 - | *MASK_WRK_DRV :                3CC6 - |
-*MASK_WRK_DRV_Size :              1 - | *MEMORY_128 :                    30 - |
-*MEMORY_48 :                     20 - | *MEMORY_ALL :                    10 - |
-*MINT_STACK :                  3CC3 - | *MINT_STACK_Size :                2 - |
-*MKOL_MODES :                     3 - |  MMINUTE :                        A - |
- MMOUNTH :                        2 - | *MOMCPU :                      80DC - |
-*MOMCPUNAME :              Z80UNDOC - |  MOUNT_CLS :                   1000 - |
- MOUNT_DRIVES :                B100 - | *MOUSE_KEYS :                  FADF - |
-*MOUSE_X :                     FBDF - | *MOUSE_Y :                     FFDF - |
-*M_ACCESSHDDM :                  20 - | *M_ACCESSHDDS :                  10 - |
-*M_ACCESSSDG :                   40 - | *M_ACCESSZCSD :                  80 - |
-*M_AUTOBOOT :                    80 - | *M_AUTOMOUNT :                   20 - |
-*M_AUTO_TAPE :                    4 - | *M_BREAK_BF :                    10 - |
-*M_CLOCK_VIEW :                  10 - | *M_DBG_ACTIV :                   80 - |
-*M_EMUL_TAPE :                   40 - | *M_EMUVG_BF :                    20 - |
-*M_FLASH_BF :                     2 - | *M_FONT_BF :                      4 - |
-*M_KILL_REZIDENT :               80 - | *M_MOUSE_L_KEY :                  1 - |
-*M_MOUSE_M_KEY :                  4 - | *M_MOUSE_R_KEY :                  2 - |
-*M_NMI_BF :                       8 - | *M_PENT_CMOS :                   80 - |
-*M_PENT_TURBO :                  10 - | *M_PRINTER_AY :                  20 - |
-*M_RELOAD_FONT :                 10 - | *M_REZIDENT :                     4 - |
-*M_RST8_BF :                     40 - | *M_SD_NGS_ONOFF :                40 - |
-*M_SHADOW_BF :                    1 - | *M_SOUNDKEYS :                    8 - |
-*M_STEP_DBG :                    20 - | *M_TRACE_DBG :                   40 - |
-*M_TURBO14 :                     80 - | *M_TURBO357 :                    80 - |
-*M_TYPE_FONT :                    8 - |  N899 :                           0 - |
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 94 - 2/16/2020 10:10:17
+*FALSE :                          0 - | *FAT_DATE :                    5056 - |
+*FAT_TIME :                    1CFC - | *FDD_EMU_PORT :                13BD - |
+*FDI_BLOCK_SMESH :             41FF - | *FDI_BYTE_SMESH :              41FE - |
+*FDI_IMAGE1SECT :              4400 - | *FDI_PAGE_START :              40FF - |
+*FDI_TABLE_CYL :               4000 - | *FLAGS_DRV :                   BDF8 - |
+*FLAG_RW_BREAK :               3CCF - | *FLAG_RW_BREAK_Size :             1 - |
+*FULLPMMU :                       1 - |  GO_DEV :                      BDF0 - |
+*GREEN :                          4 - | *G_H :                           10 - |
+*G_L :                           80 - | *HAS64 :                          1 - |
+*HASDSP :                         0 - | *HASFPU :                         0 - |
+*HASPMMU :                        0 - | *HDD_TIMEOUT :                   EA - |
+ HHOUR :                          2 - | *ICALL2PAGE :                  8000 - |
+*INEXTMODE :                      0 - |  INITVAR :                     3CE2 - |
+*INLWORDMODE :                    0 - | *INMAXMODE :                      0 - |
+*INSRCMODE :                      0 - | *INSUPMODE :                      0 - |
+*IREG_D :                      3C99 - | *IREG_D_Size :                    1 - |
+*IREG_E :                      3C98 - | *IREG_E_Size :                    1 - |
+*IREG_H :                      3C9B - | *IREG_H_Size :                    1 - |
+*IREG_L :                      3C9A - | *IREG_L_Size :                    1 - |
+*JUMP :                           3 - |  JUMP_SIZE :                      3 - |
+ KOLDVOL :                     BDF2 - | *KOL_MODES :                      4 - |
+*LATTR :                       31C0 - | *LISTON :                         1 - |
+*LSYM :                         1C0 - |  M900 :                         2EE - |
+ M902 :                         131 - |  M903 :                         2CF - |
+*MACEXP :                         7 - | *MAGENTA :                        3 - |
+*MASK_MNT_DRV :                3CC7 - | *MASK_MNT_DRV_Size :              1 - |
+*MASK_WRK_DRV :                3CC6 - | *MASK_WRK_DRV_Size :              1 - |
+*MEMORY_128 :                    30 - | *MEMORY_48 :                     20 - |
+*MEMORY_ALL :                    10 - | *MINT_STACK :                  3CC3 - |
+*MINT_STACK_Size :                2 - | *MKOL_MODES :                     3 - |
+ MMINUTE :                       67 - |  MMOUNTH :                        2 - |
+*MOMCPU :                      80DC - | *MOMCPUNAME :              Z80UNDOC - |
+ MOUNT_CLS :                   1000 - |  MOUNT_DRIVES :                B100 - |
+*MOUSE_KEYS :                  FADF - | *MOUSE_X :                     FBDF - |
+*MOUSE_Y :                     FFDF - | *M_ACCESSHDDM :                  20 - |
+*M_ACCESSHDDS :                  10 - | *M_ACCESSSDG :                   40 - |
+*M_ACCESSZCSD :                  80 - | *M_AUTOBOOT :                    80 - |
+*M_AUTOMOUNT :                   20 - | *M_AUTO_TAPE :                    4 - |
+*M_BREAK_BF :                    10 - | *M_CLOCK_VIEW :                  10 - |
+*M_DBG_ACTIV :                   80 - | *M_EMUL_TAPE :                   40 - |
+*M_EMUVG_BF :                    20 - | *M_FLASH_BF :                     2 - |
+*M_FONT_BF :                      4 - | *M_KILL_REZIDENT :               80 - |
+*M_MOUSE_L_KEY :                  1 - | *M_MOUSE_M_KEY :                  4 - |
+*M_MOUSE_R_KEY :                  2 - | *M_NMI_BF :                       8 - |
+*M_PENT_CMOS :                   80 - | *M_PENT_TURBO :                  10 - |
+*M_PRINTER_AY :                  20 - | *M_RELOAD_FONT :                 10 - |
+*M_REZIDENT :                     4 - | *M_RST8_BF :                     40 - |
+*M_SD_NGS_ONOFF :                40 - | *M_SHADOW_BF :                    1 - |
+*M_SOUNDKEYS :                    8 - | *M_STEP_DBG :                    20 - |
+*M_TRACE_DBG :                   40 - | *M_TURBO14 :                     80 - |
+*M_TURBO357 :                    80 - | *M_TYPE_FONT :                    8 - |
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 95 - 2/22/2020 21:3:58
 
 
- N901 :                           E - |  N902 :                           0 - |
-*NESTMAX :                      100 - |  NUM_APPMULTI :                   2 - |
- NUM_EGA :                        0 - | *NUM_LINE :                    13BE - |
- NUM_TXTATM :                     6 - |  NUM_TXTSCR :                     7 - |
- NUM_ZXSCR :                      3 - |  OFFSET_BUFSYM :                800 - |
- OFFSET_FNTSAVE :                 0 - |  OFFSET_SCRSAVE :              1000 - |
-*OFFSET_USBDRV :               2B00 - | *OLD_PORT_BF :                 3CCB - |
-*OLD_PORT_BF_Size :               1 - | *PACKING :                        0 - |
-*PADDING :                        1 - | *PENT_CONF :                   EFF7 - |
-*PEVO_CONF :                     BF - | *PORT_3F :                     3CA0 - |
-*PORT_3F_Size :                   1 - | *PORT_5F :                     3CA1 - |
-*PORT_5F_Size :                   1 - | *PORT_7F :                     3CA2 - |
-*PORT_7F_Size :                   1 - | *QWORD :                          8 - |
-*RAM_ADDSTS :                     7 - | *RAM_BASIC :                      3 - |
-*RAM_DATARAMD :                   B - | *RAM_EVODOS :                     1 - |
-*RAM_FATVARS :                    2 - | *RAM_FLASHER :                   40 - |
-*RAM_MOUNTER :                    5 - | *RAM_PROFROM :                    4 - |
-*RAM_RAMDISK :                    A - | *RAM_SCR_FONT :                   8 - |
-*RAM_STS :                        6 - | *RAM_TAPE :                      60 - |
-*RAM_TEMP :                       9 - | *RAM_TEMP2 :                     3F - |
-*RATTR :                       21C1 - | *RDWR_MODE :                   3CCD - |
-*RDWR_MODE_Size :                 1 - | *RDWR_PAGE :                   3CCE - |
-*RDWR_PAGE_Size :                 1 - | *RD_0WINA0 :                     BE - |
-*RD_0WINA1 :                    1BE - | *RD_0WINA2 :                    2BE - |
-*RD_0WINA3 :                    3BE - | *RD_1F :                       3C9F - |
-*RD_1F_Size :                     1 - | *RD_1WINA0 :                    4BE - |
-*RD_1WINA1 :                    5BE - | *RD_1WINA2 :                    6BE - |
-*RD_1WINA3 :                    7BE - | *RD_77 :                        CBE - |
-*RD_7FFD :                      ABE - | *RD_DOS7FFD :                   9BE - |
-*RD_EFF7 :                      BBE - | *RD_FF :                       3CA4 - |
-*RD_FF_Size :                     1 - | *RD_PALITRA :                   DBE - |
-*RD_RAMNROM :                   8BE - | *REAL_DRIVE :                  3CC9 - |
-*REAL_DRIVE_Size :                1 - | *RED :                            2 - |
-*REG_A :                       3CAE - | *REG_A_Size :                     1 - |
-*REG_B :                       3CAC - | *REG_B_Size :                     1 - |
-*REG_C :                       3CAB - | *REG_C_Size :                     1 - |
-*REG_F :                       3CAD - | *REG_F_Size :                     1 - |
-*REG_H :                       3CB0 - | *REG_H_Size :                     1 - |
-*REG_I :                       3CAA - | *REG_IF :                      3CA9 - |
-*REG_IF_Size :                    1 - | *REG_I_Size :                     1 - |
-*REG_L :                       3CAF - | *REG_L_Size :                     1 - |
-*RELAXED :                        1 - | *RESET2CUSTOM :                   3 - |
-*RESET2EVOSERV :                  0 - | *RESET2GLUK :                     1 - |
-*RESET2PROFROM :                  2 - |  RESTART :                        7 C |
-*REZIDENT :                       0 C | *ROM_ADD_BAS48 :                  B - |
-*ROM_ADD_DOS :                    A - | *ROM_ATMCPM :                    1B - |
-*ROM_BAS128 :                     1 - | *ROM_BAS128_STD :                19 - |
-*ROM_BAS48 :                      3 - | *ROM_BAS48_128 :                 1A - |
-*ROM_BAS48_STD :                 18 - | *ROM_DOS :                        2 - |
-*ROM_ERS :                        0 - | *ROM_MAINMENU :                   5 - |
-*ROM_RST80 :                      6 - | *ROM_RST81 :                      7 - |
-*ROM_RST82 :                      8 - | *ROM_RST83 :                      9 - |
-*RS232_DIV_H :                 F9EF - | *RS232_DIV_L :                 F8EF - |
-*RS232_IO :                    F8EF - | *RS232_IRQ_ENA :               F9EF - |
-*RS232_IRQ_ID :                FAEF - | *RS232_LINE_CTRL :             FBEF - |
-*RS232_LINE_STAT :             FDEF - | *RS232_MDM_CTRL :              FCEF - |
-*RS232_MDM_STAT :              FEEF - | *RS232_WORK_REG :              FFEF - |
-*RSYM :                        11C0 - | *R_H :                            2 - |
-*R_L :                           40 - | *SAVED_RAM :                   3CD2 - |
-*SAVED_RAM_Size :                10 - |  SAVE_TEK_VOL :                BDF6 - |
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 95 - 2/16/2020 10:10:17
+ N900 :                           0 - |  N902 :                           E - |
+ N903 :                           0 - | *NESTMAX :                      100 - |
+ NUM_APPMULTI :                   2 - |  NUM_EGA :                        0 - |
+*NUM_LINE :                    13BE - |  NUM_TXTATM :                     6 - |
+ NUM_TXTSCR :                     7 - |  NUM_ZXSCR :                      3 - |
+ OFFSET_BUFSYM :                800 - |  OFFSET_FNTSAVE :                 0 - |
+ OFFSET_SCRSAVE :              1000 - | *OFFSET_USBDRV :               2B00 - |
+*OLD_PORT_BF :                 3CCB - | *OLD_PORT_BF_Size :               1 - |
+*PACKING :                        0 - | *PADDING :                        1 - |
+*PENT_CONF :                   EFF7 - | *PEVO_CONF :                     BF - |
+*PORT_3F :                     3CA0 - | *PORT_3F_Size :                   1 - |
+*PORT_5F :                     3CA1 - | *PORT_5F_Size :                   1 - |
+*PORT_7F :                     3CA2 - | *PORT_7F_Size :                   1 - |
+*QWORD :                          8 - | *RAM_ADDSTS :                     7 - |
+*RAM_BASIC :                      3 - | *RAM_DATARAMD :                   B - |
+*RAM_EVODOS :                     1 - | *RAM_FATVARS :                    2 - |
+*RAM_FLASHER :                   40 - | *RAM_MOUNTER :                    5 - |
+*RAM_PROFROM :                    4 - | *RAM_RAMDISK :                    A - |
+*RAM_SCR_FONT :                   8 - | *RAM_STS :                        6 - |
+*RAM_TAPE :                      60 - | *RAM_TEMP :                       9 - |
+*RAM_TEMP2 :                     3F - | *RATTR :                       21C1 - |
+*RDWR_MODE :                   3CCD - | *RDWR_MODE_Size :                 1 - |
+*RDWR_PAGE :                   3CCE - | *RDWR_PAGE_Size :                 1 - |
+*RD_0WINA0 :                     BE - | *RD_0WINA1 :                    1BE - |
+*RD_0WINA2 :                    2BE - | *RD_0WINA3 :                    3BE - |
+*RD_1F :                       3C9F - | *RD_1F_Size :                     1 - |
+*RD_1WINA0 :                    4BE - | *RD_1WINA1 :                    5BE - |
+*RD_1WINA2 :                    6BE - | *RD_1WINA3 :                    7BE - |
+*RD_77 :                        CBE - | *RD_7FFD :                      ABE - |
+*RD_DOS7FFD :                   9BE - | *RD_EFF7 :                      BBE - |
+*RD_FF :                       3CA4 - | *RD_FF_Size :                     1 - |
+*RD_PALITRA :                   DBE - | *RD_RAMNROM :                   8BE - |
+*REAL_DRIVE :                  3CC9 - | *REAL_DRIVE_Size :                1 - |
+*RED :                            2 - | *REG_A :                       3CAE - |
+*REG_A_Size :                     1 - | *REG_B :                       3CAC - |
+*REG_B_Size :                     1 - | *REG_C :                       3CAB - |
+*REG_C_Size :                     1 - | *REG_F :                       3CAD - |
+*REG_F_Size :                     1 - | *REG_H :                       3CB0 - |
+*REG_H_Size :                     1 - | *REG_I :                       3CAA - |
+*REG_IF :                      3CA9 - | *REG_IF_Size :                    1 - |
+*REG_I_Size :                     1 - | *REG_L :                       3CAF - |
+*REG_L_Size :                     1 - | *RELAXED :                        1 - |
+*RESET2CUSTOM :                   3 - | *RESET2EVOSERV :                  0 - |
+*RESET2GLUK :                     1 - | *RESET2PROFROM :                  2 - |
+ RESTART :                        7 C | *REZIDENT :                       0 C |
+*ROM_ADD_BAS48 :                  B - | *ROM_ADD_DOS :                    A - |
+*ROM_ATMCPM :                    1B - | *ROM_BAS128 :                     1 - |
+*ROM_BAS128_STD :                19 - | *ROM_BAS48 :                      3 - |
+*ROM_BAS48_128 :                 1A - | *ROM_BAS48_STD :                 18 - |
+*ROM_DOS :                        2 - | *ROM_ERS :                        0 - |
+*ROM_MAINMENU :                   5 - | *ROM_RST80 :                      6 - |
+*ROM_RST81 :                      7 - | *ROM_RST82 :                      8 - |
+*ROM_RST83 :                      9 - | *RS232_DIV_H :                 F9EF - |
+*RS232_DIV_L :                 F8EF - | *RS232_IO :                    F8EF - |
+*RS232_IRQ_ENA :               F9EF - | *RS232_IRQ_ID :                FAEF - |
+*RS232_LINE_CTRL :             FBEF - | *RS232_LINE_STAT :             FDEF - |
+*RS232_MDM_CTRL :              FCEF - | *RS232_MDM_STAT :              FEEF - |
+*RS232_WORK_REG :              FFEF - | *RSYM :                        11C0 - |
+*R_H :                            2 - | *R_L :                           40 - |
+*SAVED_RAM :                   3CD2 - | *SAVED_RAM_Size :                10 - |
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 96 - 2/22/2020 21:3:58
 
 
-*SECTOR_SIZE :                 3CCC - | *SECTOR_SIZE_Size :               1 - |
- SETDVOL :                     BDF3 - | *SET_VIDEOMODE :                  8 - |
- SIZEDATE :                       9 - |  SIZETIME :                       8 - |
- SSECUND :                       11 - | *START_STS :                   C000 - |
- START_TEST :                   300 C |  TEK_BUFPATH :                 2000 - |
-*TEK_ROMPAGE :                 3CC5 - | *TEK_ROMPAGE_Size :               1 - |
- TEK_TYPE :                    BDF7 - | *TEMP_SP :                     3CD0 - |
-*TEMP_SP_Size :                   2 - |  TIME :                    10:10:17 - |
-*TRUE :                           1 - | *TURBO_14 :                      C0 - |
-*TURBO_3 :                       40 - | *TURBO_7 :                       80 - |
-*UNPACK :                        80 - | *UNP_DOS_FE :                    40 - |
-*VERSION :                     142F - | *VIRT_DRIVE :                  3CC8 - |
-*VIRT_DRIVE_Size :                1 - | *VIRT_REAL_DRIVE :               EB - |
-*VMODE6_0C :                     FE - | *VMODE6_0M :                     FA - |
-*VMODE6_1C :                     FC - | *VMODE6_1M :                     F8 - |
-*VMODE7_0 :                      F7 - | *VMODE7_1 :                      F5 - |
-*V_APPMULTI :                    A2 - | *V_EGA :                         A0 - |
-*V_TXT1PAGE :                    A7 - | *V_TXTATM :                      A6 - |
-*V_ZXSCR :                       A3 - | *WHITE :                          7 - |
-*WIN_A0 :                      3FF7 - | *WIN_A1 :                      7FF7 - |
-*WIN_A2 :                      BFF7 - | *WIN_A3 :                      FFF7 - |
-*WIN_P0 :                      37F7 - | *WIN_P1 :                      77F7 - |
-*WIN_P2 :                      B7F7 - | *WIN_P3 :                      F7F7 - |
-*WIN_R0 :                      3BF7 - | *WIN_R1 :                      7BF7 - |
-*WIN_R2 :                      BBF7 - | *WIN_R3 :                      FBF7 - |
- WORD :                           2 - | *WR_0WINA0 :                   3CBE - |
-*WR_0WINA0_Size :                 1 - | *WR_0WINA1 :                   3CBD - |
-*WR_0WINA1_Size :                 1 - | *WR_0WINA2 :                   3CBC - |
-*WR_0WINA2_Size :                 1 - | *WR_0WINA3 :                   3CBB - |
-*WR_0WINA3_Size :                 1 - | *WR_1F :                       3C9E - |
-*WR_1F_Size :                     1 - | *WR_1WINA0 :                   3CBA - |
-*WR_1WINA0_Size :                 1 - | *WR_1WINA1 :                   3CB9 - |
-*WR_1WINA1_Size :                 1 - | *WR_1WINA2 :                   3CB8 - |
-*WR_1WINA2_Size :                 1 - | *WR_1WINA3 :                   3CB7 - |
-*WR_1WINA3_Size :                 1 - | *WR_77 :                       3CB2 - |
-*WR_77_Size :                     1 - | *WR_7FFD :                     3CB4 - |
-*WR_7FFD_Size :                   1 - | *WR_BF :                       3CB1 - |
-*WR_BF_Size :                     1 - | *WR_DOS7FFD :                  3CB5 - |
-*WR_DOS7FFD_Size :                1 - | *WR_EFF7 :                     3CB3 - |
-*WR_EFF7_Size :                   1 - | *WR_FF :                       3CA3 - |
-*WR_FF_Size :                     1 - | *WR_RAMNROM :                  3CB6 - |
-*WR_RAMNROM_Size :                1 - | *YELLOW :                         6 - |
- YYEAR :                         14 - | *ZXSCR_0 :                       FA - |
-*ZXSCR_1 :                       F8 - | *ZXSTD_CPU1 :                    FA - |
-*ZXSTD_CPU2 :                    FD - | *ZX_ROM :                        10 - |
-*ZX_SCREEN :                      8 - | *_128K :                          2 - |
-*_1MB :                           0 - | *_48K :                           1 - |
-*_ADR_HOTKEY_H :                 13 - | *_ADR_HOTKEY_H_Size :             1 - |
-*_ADR_HOTKEY_L :                 12 - | *_ADR_HOTKEY_L_Size :             1 - |
-*_ADR_MOUSE_H :                  11 - | *_ADR_MOUSE_H_Size :              1 - |
-*_ADR_MOUSE_L :                  10 - | *_ADR_MOUSE_L_Size :              1 - |
-*_ADR_PRG_H :                     F - | *_ADR_PRG_H_Size :                1 - |
-*_ADR_PRG_L :                     E - | *_ADR_PRG_L_Size :                1 - |
-*_ADR_TXT_H :                     D - | *_ADR_TXT_H_Size :                1 - |
-*_ADR_TXT_L :                     C - | *_ADR_TXT_L_Size :                1 - |
-*_ALLOC_PAGE :                  12A - | *_ALLOC_PAGE_Size :               3 - |
-*_AY_PRN_A_ :                    41 - | *_AY_PRN_A__Size :                1 - |
-*_AY_PRN_INIT :                  40 - | *_AY_PRN_INIT_Size :              1 - |
-*_AY_PRN_SCR :                   43 - | *_AY_PRN_SCR_Size :               1 - |
-*_AY_PRN_TOKEN :                 42 - | *_AY_PRN_TOKEN_Size :             1 - |
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 96 - 2/16/2020 10:10:17
+ SAVE_TEK_VOL :                BDF6 - | *SECTOR_SIZE :                 3CCC - |
+*SECTOR_SIZE_Size :               1 - |  SETDVOL :                     BDF3 - |
+*SET_VIDEOMODE :                  8 - |  SIZEDATE :                       9 - |
+ SIZETIME :                       7 - |  SSECUND :                       39 - |
+*START_STS :                   C000 - |  START_TEST :                   300 C |
+ TEK_BUFPATH :                 2000 - | *TEK_ROMPAGE :                 3CC5 - |
+*TEK_ROMPAGE_Size :               1 - |  TEK_TYPE :                    BDF7 - |
+*TEMP_SP :                     3CD0 - | *TEMP_SP_Size :                   2 - |
+ TIME :                     21:3:57 - | *TRUE :                           1 - |
+*TURBO_14 :                      C0 - | *TURBO_3 :                       40 - |
+*TURBO_7 :                       80 - | *UNPACK :                        80 - |
+*UNP_DOS_FE :                    40 - | *VERSION :                     142F - |
+*VIRT_DRIVE :                  3CC8 - | *VIRT_DRIVE_Size :                1 - |
+*VIRT_REAL_DRIVE :               EB - | *VMODE6_0C :                     FE - |
+*VMODE6_0M :                     FA - | *VMODE6_1C :                     FC - |
+*VMODE6_1M :                     F8 - | *VMODE7_0 :                      F7 - |
+*VMODE7_1 :                      F5 - | *V_APPMULTI :                    A2 - |
+*V_EGA :                         A0 - | *V_TXT1PAGE :                    A7 - |
+*V_TXTATM :                      A6 - | *V_ZXSCR :                       A3 - |
+*WHITE :                          7 - | *WIN_A0 :                      3FF7 - |
+*WIN_A1 :                      7FF7 - | *WIN_A2 :                      BFF7 - |
+*WIN_A3 :                      FFF7 - | *WIN_P0 :                      37F7 - |
+*WIN_P1 :                      77F7 - | *WIN_P2 :                      B7F7 - |
+*WIN_P3 :                      F7F7 - | *WIN_R0 :                      3BF7 - |
+*WIN_R1 :                      7BF7 - | *WIN_R2 :                      BBF7 - |
+*WIN_R3 :                      FBF7 - |  WORD :                           2 - |
+*WR_0WINA0 :                   3CBE - | *WR_0WINA0_Size :                 1 - |
+*WR_0WINA1 :                   3CBD - | *WR_0WINA1_Size :                 1 - |
+*WR_0WINA2 :                   3CBC - | *WR_0WINA2_Size :                 1 - |
+*WR_0WINA3 :                   3CBB - | *WR_0WINA3_Size :                 1 - |
+*WR_1F :                       3C9E - | *WR_1F_Size :                     1 - |
+*WR_1WINA0 :                   3CBA - | *WR_1WINA0_Size :                 1 - |
+*WR_1WINA1 :                   3CB9 - | *WR_1WINA1_Size :                 1 - |
+*WR_1WINA2 :                   3CB8 - | *WR_1WINA2_Size :                 1 - |
+*WR_1WINA3 :                   3CB7 - | *WR_1WINA3_Size :                 1 - |
+*WR_77 :                       3CB2 - | *WR_77_Size :                     1 - |
+*WR_7FFD :                     3CB4 - | *WR_7FFD_Size :                   1 - |
+*WR_BF :                       3CB1 - | *WR_BF_Size :                     1 - |
+*WR_DOS7FFD :                  3CB5 - | *WR_DOS7FFD_Size :                1 - |
+*WR_EFF7 :                     3CB3 - | *WR_EFF7_Size :                   1 - |
+*WR_FF :                       3CA3 - | *WR_FF_Size :                     1 - |
+*WR_RAMNROM :                  3CB6 - | *WR_RAMNROM_Size :                1 - |
+*YELLOW :                         6 - |  YYEAR :                         14 - |
+*ZXSCR_0 :                       FA - | *ZXSCR_1 :                       F8 - |
+*ZXSTD_CPU1 :                    FA - | *ZXSTD_CPU2 :                    FD - |
+*ZX_ROM :                        10 - | *ZX_SCREEN :                      8 - |
+*_128K :                          2 - | *_1MB :                           0 - |
+*_48K :                           1 - | *_ADR_HOTKEY_H :                 13 - |
+*_ADR_HOTKEY_H_Size :             1 - | *_ADR_HOTKEY_L :                 12 - |
+*_ADR_HOTKEY_L_Size :             1 - | *_ADR_MOUSE_H :                  11 - |
+*_ADR_MOUSE_H_Size :              1 - | *_ADR_MOUSE_L :                  10 - |
+*_ADR_MOUSE_L_Size :              1 - | *_ADR_PRG_H :                     F - |
+*_ADR_PRG_H_Size :                1 - | *_ADR_PRG_L :                     E - |
+*_ADR_PRG_L_Size :                1 - | *_ADR_TXT_H :                     D - |
+*_ADR_TXT_H_Size :                1 - | *_ADR_TXT_L :                     C - |
+*_ADR_TXT_L_Size :                1 - | *_ALLOC_PAGE :                  12A - |
+*_ALLOC_PAGE_Size :               3 - | *_AY_PRN_A_ :                    41 - |
+*_AY_PRN_A__Size :                1 - | *_AY_PRN_INIT :                  40 - |
+*_AY_PRN_INIT_Size :              1 - | *_AY_PRN_SCR :                   43 - |
+*_AY_PRN_SCR_Size :               1 - | *_AY_PRN_TOKEN :                 42 - |
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 97 - 2/22/2020 21:3:58
 
 
-*_BIOS :                         4F - | *_BIOS_JUMPS :                  100 - |
-*_BIOS_Size :                     1 - | *_BMP :                           8 - |
-*_BMP_Size :                      1 - | *_CLEAR_CMOS :                    3 - |
-*_CLEAR_CMOS_Size :               1 - | *_CLOSEMOUNT :                    4 - |
-*_CLOSEMOUNT_Size :               1 - | *_CMOS_DAY :                      6 - |
-*_CMOS_DAY_MONTH :                7 - | *_CMOS_HOUR :                     4 - |
-*_CMOS_HOUR_AL :                  5 - | *_CMOS_MINUTE :                   2 - |
-*_CMOS_MINUTE_AL :                3 - | *_CMOS_MONTH :                    8 - |
-*_CMOS_RW :                      55 - | *_CMOS_RW_Size :                  1 - |
-*_CMOS_SECOND :                   0 - | *_CMOS_SECOND_AL :                1 - |
-*_CMOS_YEAR :                     9 - | *_CMP_DRIVE :                     7 - |
-*_CMP_DRIVE_Size :                1 - | *_COLOR_CUR :                     5 - |
-*_COLOR_CUR_Size :                1 - | *_COLOR_WIN :                     4 - |
-*_COLOR_WIN_Size :                1 - | *_COMHDDN :                       7 - |
-*_COMHDDN_Size :                  1 - | *_COM_DEV :                      50 - |
-*_COM_DEV_Size :                  1 - | *_COM_FAT :                      51 - |
-*_COM_FAT_Size :                  1 - | *_CONTROL_SD :                    6 - |
-*_CONTROL_SD_Size :               1 - | *_DEVFIND :                       0 - |
-*_DEVFIND_Size :                  1 - | *_DEV_INIT :                      0 - |
-*_DEV_INIT_Size :                 1 - | *_DEV_READ :                      2 - |
-*_DEV_READID :                    4 - | *_DEV_READID_Size :               1 - |
-*_DEV_READ_Size :                 1 - | *_DEV_STATUS :                    1 - |
-*_DEV_STATUS_Size :               1 - | *_DEV_WRITE :                     3 - |
-*_DEV_WRITE_Size :                1 - | *_DIVIDE16 :                      0 - |
-*_DIVIDE16_Size :                 1 - | *_DIVIDE32 :                      2 - |
-*_DIVIDE32_Size :                 1 - | *_ENTER_DIR :                     2 - |
-*_ENTER_DIR_Size :                1 - | *_FAT12 :                         1 - |
-*_FAT12_Size :                    1 - | *_FAT16 :                         2 - |
-*_FAT16_Size :                    1 - | *_FAT32 :                         3 - |
-*_FAT32_Size :                    1 - | *_FDD :                           0 - |
-*_FDI :                           3 - | *_FDI_Size :                      1 - |
-*_FIND_FILEITEM :                 6 - | *_FIND_FILEITEM_Size :            1 - |
-*_FIND_MOUNTED :                  2 - | *_FIND_MOUNTED_Size :             1 - |
-*_FIND_NAME :                     5 - | *_FIND_NAME_Size :                1 - |
-*_FLAGS :                         6 - | *_FLAGS_Size :                    1 - |
-*_FNT :                           7 - | *_FNT_Size :                      1 - |
-*_FREE_PAGE :                   12D - | *_FREE_PAGE_Size :                3 - |
-*_FREINIT_VOL :                   8 - | *_FREINIT_VOL_Size :              1 - |
-*_GET_FNDVOLUME :                 3 - | *_GET_FNDVOLUME_Size :            1 - |
-*_GET_LONGNAME :                  4 - | *_GET_LONGNAME_Size :             1 - |
-*_GET_MOUNTED :                   3 - | *_GET_MOUNTED_Size :              1 - |
-*_GET_PATH :                      3 - | *_GET_PATH_Size :                 1 - |
-*_GET_TABLE_MEM :               127 - | *_GET_TABLE_MEM_Size :            3 - |
-*_GET_VIRT_BITS :                 8 - | *_GET_VIRT_BITS_Size :            1 - |
-*_HDD :                           1 - | *_HEX1DECTXT :                    6 - |
-*_HEX1DECTXT_Size :               1 - | *_HEX2DECTXT :                    5 - |
-*_HEX2DECTXT_Size :               1 - | *_HEX4DECTXT :                    4 - |
-*_HEX4DECTXT_Size :               1 - | *_HOB :                           6 - |
-*_HOB_Size :                      1 - | *_H_SIZE :                        3 - |
-*_H_SIZE_Size :                   1 - | *_INIT_CMOS :                     0 - |
-*_INIT_CMOS_Size :                1 - | *_INIT_FATVARS :                  0 - |
-*_INIT_FATVARS_Size :             1 - | *_INIT_KEYB_PS2 :               11B - |
-*_INIT_KEYB_PS2_Size :            3 - | *_INIT_TABLE_MEM :              124 - |
-*_INIT_TABLE_MEM_Size :           3 - | *_INIT_TEKDIR :                   A - |
-*_INIT_TEKDIR_Size :              1 - | *_INST_FATBOOT :                 54 - |
-*_INST_FATBOOT_Size :             1 - | *_KOL_VOL :                       2 - |
-*_KOL_VOL_Size :                  1 - | *_LOADIMAGE :                     5 - |
-*_LOADIMAGE_Size :                1 - | *_MATH :                         4C - |
-*_MATH_Size :                     1 - | *_MEM_MODE_128 :                 80 - |
-*_MEM_MODE_48 :                  40 - | *_MEM_MODE_PENT :                C0 - |
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 97 - 2/16/2020 10:10:17
+*_AY_PRN_TOKEN_Size :             1 - | *_BIOS :                         4F - |
+*_BIOS_JUMPS :                  100 - | *_BIOS_Size :                     1 - |
+*_BMP :                           8 - | *_BMP_Size :                      1 - |
+*_CLEAR_CMOS :                    3 - | *_CLEAR_CMOS_Size :               1 - |
+*_CLOSEMOUNT :                    4 - | *_CLOSEMOUNT_Size :               1 - |
+*_CMOS_DAY :                      6 - | *_CMOS_DAY_MONTH :                7 - |
+*_CMOS_HOUR :                     4 - | *_CMOS_HOUR_AL :                  5 - |
+*_CMOS_MINUTE :                   2 - | *_CMOS_MINUTE_AL :                3 - |
+*_CMOS_MONTH :                    8 - | *_CMOS_RW :                      55 - |
+*_CMOS_RW_Size :                  1 - | *_CMOS_SECOND :                   0 - |
+*_CMOS_SECOND_AL :                1 - | *_CMOS_YEAR :                     9 - |
+*_CMP_DRIVE :                     7 - | *_CMP_DRIVE_Size :                1 - |
+*_COLOR_CUR :                     5 - | *_COLOR_CUR_Size :                1 - |
+*_COLOR_WIN :                     4 - | *_COLOR_WIN_Size :                1 - |
+*_COMHDDN :                       7 - | *_COMHDDN_Size :                  1 - |
+*_COM_DEV :                      50 - | *_COM_DEV_Size :                  1 - |
+*_COM_FAT :                      51 - | *_COM_FAT_Size :                  1 - |
+*_CONTROL_SD :                    6 - | *_CONTROL_SD_Size :               1 - |
+*_DEVFIND :                       0 - | *_DEVFIND_Size :                  1 - |
+*_DEV_INIT :                      0 - | *_DEV_INIT_Size :                 1 - |
+*_DEV_READ :                      2 - | *_DEV_READID :                    4 - |
+*_DEV_READID_Size :               1 - | *_DEV_READ_Size :                 1 - |
+*_DEV_STATUS :                    1 - | *_DEV_STATUS_Size :               1 - |
+*_DEV_WRITE :                     3 - | *_DEV_WRITE_Size :                1 - |
+*_DIVIDE16 :                      0 - | *_DIVIDE16_Size :                 1 - |
+*_DIVIDE32 :                      2 - | *_DIVIDE32_Size :                 1 - |
+*_ENTER_DIR :                     2 - | *_ENTER_DIR_Size :                1 - |
+*_FAT12 :                         1 - | *_FAT12_Size :                    1 - |
+*_FAT16 :                         2 - | *_FAT16_Size :                    1 - |
+*_FAT32 :                         3 - | *_FAT32_Size :                    1 - |
+*_FDD :                           0 - | *_FDI :                           3 - |
+*_FDI_Size :                      1 - | *_FIND_FILEITEM :                 6 - |
+*_FIND_FILEITEM_Size :            1 - | *_FIND_MOUNTED :                  2 - |
+*_FIND_MOUNTED_Size :             1 - | *_FIND_NAME :                     5 - |
+*_FIND_NAME_Size :                1 - | *_FLAGS :                         6 - |
+*_FLAGS_Size :                    1 - | *_FNT :                           7 - |
+*_FNT_Size :                      1 - | *_FREE_PAGE :                   12D - |
+*_FREE_PAGE_Size :                3 - | *_FREINIT_VOL :                   8 - |
+*_FREINIT_VOL_Size :              1 - | *_GET_FNDVOLUME :                 3 - |
+*_GET_FNDVOLUME_Size :            1 - | *_GET_LONGNAME :                  4 - |
+*_GET_LONGNAME_Size :             1 - | *_GET_MOUNTED :                   3 - |
+*_GET_MOUNTED_Size :              1 - | *_GET_PATH :                      3 - |
+*_GET_PATH_Size :                 1 - | *_GET_TABLE_MEM :               127 - |
+*_GET_TABLE_MEM_Size :            3 - | *_GET_VIRT_BITS :                 8 - |
+*_GET_VIRT_BITS_Size :            1 - | *_HDD :                           1 - |
+*_HEX1DECTXT :                    6 - | *_HEX1DECTXT_Size :               1 - |
+*_HEX2DECTXT :                    5 - | *_HEX2DECTXT_Size :               1 - |
+*_HEX4DECTXT :                    4 - | *_HEX4DECTXT_Size :               1 - |
+*_HOB :                           6 - | *_HOB_Size :                      1 - |
+*_H_SIZE :                        3 - | *_H_SIZE_Size :                   1 - |
+*_INIT_CMOS :                     0 - | *_INIT_CMOS_Size :                1 - |
+*_INIT_FATVARS :                  0 - | *_INIT_FATVARS_Size :             1 - |
+*_INIT_KEYB_PS2 :               11B - | *_INIT_KEYB_PS2_Size :            3 - |
+*_INIT_TABLE_MEM :              124 - | *_INIT_TABLE_MEM_Size :           3 - |
+*_INIT_TEKDIR :                   A - | *_INIT_TEKDIR_Size :              1 - |
+*_INST_FATBOOT :                 54 - | *_INST_FATBOOT_Size :             1 - |
+*_KOL_VOL :                       2 - | *_KOL_VOL_Size :                  1 - |
+*_LOADIMAGE :                     5 - | *_LOADIMAGE_Size :                1 - |
+*_MATH :                         4C - | *_MATH_Size :                     1 - |
+*_MEM_MODE_128 :                 80 - | *_MEM_MODE_48 :                  40 - |
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 98 - 2/22/2020 21:3:58
 
 
-*_MOUNTER :                      53 - | *_MOUNTER_Size :                  1 - |
-*_MOUNT_RAMDISK :                 9 - | *_MOUNT_RAMDISK_Size :            1 - |
-*_MOUSE_WHEEL :                  F0 - | *_MULTIPLY16 :                    1 - |
-*_MULTIPLY16_Size :               1 - | *_MULTIPLY32 :                    3 - |
-*_MULTIPLY32_Size :               1 - | *_NEMO_RD_ID :                  100 - |
-*_NEMO_RD_ID_Size :               3 - | *_NEMO_RD_SEC :                 103 - |
-*_NEMO_RD_SEC_Size :              3 - | *_NEMO_WR_SEC :                 106 - |
-*_NEMO_WR_SEC_Size :              3 - | *_NGSSD_RD_ID :                 112 - |
-*_NGSSD_RD_ID_Size :              3 - | *_NGSSD_RD_SEC :                115 - |
-*_NGSSD_RD_SEC_Size :             3 - | *_NGSSD_WR_SEC :                118 - |
-*_NGSSD_WR_SEC_Size :             3 - | *_NO_INIT :                       0 - |
-*_NO_INIT_Size :                  1 - | *_NUM_KOL_H :                     B - |
-*_NUM_KOL_H_Size :                1 - | *_NUM_KOL_L :                     A - |
-*_NUM_KOL_L_Size :                1 - | *_NUM_PKT :                       7 - |
-*_NUM_PKT_Size :                  1 - | *_OPEN_FILE :                     8 - |
-*_OPEN_FILE_Size :                1 - | *_OPEN_MOUNT :                    0 - |
-*_OPEN_MOUNT_Size :               1 - | *_POSTF00 :                       0 - |
-*_POSTF00_Size :                  1 - | *_POSTF01 :                       1 - |
-*_POSTF01_Size :                  1 - | *_POSTF02 :                       2 - |
-*_POSTF02_Size :                  1 - | *_POSTF03 :                       3 - |
-*_POSTF03_Size :                  1 - | *_POSTF04 :                       4 - |
-*_POSTF04_Size :                  1 - | *_POSTF05 :                       5 - |
-*_POSTF05_Size :                  1 - | *_POSTF06 :                       6 - |
-*_POSTF06_Size :                  1 - | *_POSTF07 :                       7 - |
-*_POSTF07_Size :                  1 - | *_POS_FILES :                     B - |
-*_POS_FILES_Size :                1 - | *_PRINT_A :                      48 - |
-*_PRINT_A_Size :                  1 - | *_PRINT_MESSAGE :                47 - |
-*_PRINT_MESSAGE_Size :            1 - | *_RDWR_MOUNT :                    1 - |
-*_RDWR_MOUNT_Size :               1 - | *_READ_CMOS :                     1 - |
-*_READ_CMOS_Size :                1 - | *_READ_DIR :                      1 - |
-*_READ_DIR_Size :                 1 - | *_READ_FILE :                     9 - |
-*_READ_FILE_Size :                1 - | *_READ_KEYB_PS2 :               11E - |
-*_READ_KEYB_PS2_Size :            3 - | *_READ_STAT_PS2 :               121 - |
-*_READ_STAT_PS2_Size :            3 - | *_REAL_DRIVE :                    C - |
-*_REST_NAMELOAD :                 6 - | *_REST_NAMELOAD_Size :            1 - |
-*_ROM :                           9 - | *_ROM_Size :                      1 - |
-*_SCL :                           2 - | *_SCL_Size :                      1 - |
-*_SCROLL_DOWN :                  4A - | *_SCROLL_DOWN_Size :              1 - |
-*_SCROLL_UP :                    49 - | *_SCROLL_UP_Size :                1 - |
-*_SD :                            2 - | *_SD_NONE :                      80 - |
-*_SETUP_FONT :                   57 - | *_SETUP_FONT_Size :               1 - |
-*_SETUP_PAL :                    56 - | *_SETUP_PAL_Size :                1 - |
-*_SET_DEVICE :                    5 - | *_SET_DEVICE_Size :               1 - |
-*_SET_MASK_EXT :                  7 - | *_SET_MASK_EXT_Size :             1 - |
-*_SET_MODE :                     4B - | *_SET_MODE_Size :                 1 - |
-*_SET_VOL :                       1 - | *_SET_VOL_Size :                  1 - |
-*_SORT_FINDFILES :               52 - | *_SORT_FINDFILES_Size :           1 - |
-*_SPG :                           5 - | *_SPG_Size :                      1 - |
-*_TAP :                           4 - | *_TAPE_EMUL :                    45 - |
-*_TAPE_EMUL_Size :                1 - | *_TAPE_INIT :                    44 - |
-*_TAPE_INIT_Size :                1 - | *_TAP_Size :                      1 - |
-*_TEK_PKT_H :                     9 - | *_TEK_PKT_H_Size :                1 - |
-*_TEK_PKT_L :                     8 - | *_TEK_PKT_L_Size :                1 - |
-*_TO_DRV :                        4 - | *_TO_DRV_Size :                   1 - |
-*_TRD :                           1 - | *_TRDOS :                         4 - |
-*_TRDOS_Size :                    1 - | *_TRD_Size :                      1 - |
-*_TURBO_HIGH :                   20 - | *_TURBO_LOW :                    10 - |
-*_TURBO_MAX :                    30 - | *_TXTSCR_MODE :                   2 - |
-*_UNKNOWN :                       5 - | *_UNKNOWN_Size :                  1 - |
-*_VERSION :                      4D - | *_VERSION_Size :                  1 - |
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 98 - 2/16/2020 10:10:17
+*_MEM_MODE_PENT :                C0 - | *_MOUNTER :                      53 - |
+*_MOUNTER_Size :                  1 - | *_MOUNT_RAMDISK :                 9 - |
+*_MOUNT_RAMDISK_Size :            1 - | *_MOUSE_WHEEL :                  F0 - |
+*_MULTIPLY16 :                    1 - | *_MULTIPLY16_Size :               1 - |
+*_MULTIPLY32 :                    3 - | *_MULTIPLY32_Size :               1 - |
+*_NEMO_RD_ID :                  100 - | *_NEMO_RD_ID_Size :               3 - |
+*_NEMO_RD_SEC :                 103 - | *_NEMO_RD_SEC_Size :              3 - |
+*_NEMO_WR_SEC :                 106 - | *_NEMO_WR_SEC_Size :              3 - |
+*_NGSSD_RD_ID :                 112 - | *_NGSSD_RD_ID_Size :              3 - |
+*_NGSSD_RD_SEC :                115 - | *_NGSSD_RD_SEC_Size :             3 - |
+*_NGSSD_WR_SEC :                118 - | *_NGSSD_WR_SEC_Size :             3 - |
+*_NO_INIT :                       0 - | *_NO_INIT_Size :                  1 - |
+*_NUM_KOL_H :                     B - | *_NUM_KOL_H_Size :                1 - |
+*_NUM_KOL_L :                     A - | *_NUM_KOL_L_Size :                1 - |
+*_NUM_PKT :                       7 - | *_NUM_PKT_Size :                  1 - |
+*_OPEN_FILE :                     8 - | *_OPEN_FILE_Size :                1 - |
+*_OPEN_MOUNT :                    0 - | *_OPEN_MOUNT_Size :               1 - |
+*_POSTF00 :                       0 - | *_POSTF00_Size :                  1 - |
+*_POSTF01 :                       1 - | *_POSTF01_Size :                  1 - |
+*_POSTF02 :                       2 - | *_POSTF02_Size :                  1 - |
+*_POSTF03 :                       3 - | *_POSTF03_Size :                  1 - |
+*_POSTF04 :                       4 - | *_POSTF04_Size :                  1 - |
+*_POSTF05 :                       5 - | *_POSTF05_Size :                  1 - |
+*_POSTF06 :                       6 - | *_POSTF06_Size :                  1 - |
+*_POSTF07 :                       7 - | *_POSTF07_Size :                  1 - |
+*_POS_FILES :                     B - | *_POS_FILES_Size :                1 - |
+*_PRINT_A :                      48 - | *_PRINT_A_Size :                  1 - |
+*_PRINT_MESSAGE :                47 - | *_PRINT_MESSAGE_Size :            1 - |
+*_RDWR_MOUNT :                    1 - | *_RDWR_MOUNT_Size :               1 - |
+*_READ_CMOS :                     1 - | *_READ_CMOS_Size :                1 - |
+*_READ_DIR :                      1 - | *_READ_DIR_Size :                 1 - |
+*_READ_FILE :                     9 - | *_READ_FILE_Size :                1 - |
+*_READ_KEYB_PS2 :               11E - | *_READ_KEYB_PS2_Size :            3 - |
+*_READ_STAT_PS2 :               121 - | *_READ_STAT_PS2_Size :            3 - |
+*_REAL_DRIVE :                    C - | *_REST_NAMELOAD :                 6 - |
+*_REST_NAMELOAD_Size :            1 - | *_ROM :                           9 - |
+*_ROM_Size :                      1 - | *_SCL :                           2 - |
+*_SCL_Size :                      1 - | *_SCROLL_DOWN :                  4A - |
+*_SCROLL_DOWN_Size :              1 - | *_SCROLL_UP :                    49 - |
+*_SCROLL_UP_Size :                1 - | *_SD :                            2 - |
+*_SD_NONE :                      80 - | *_SETUP_FONT :                   57 - |
+*_SETUP_FONT_Size :               1 - | *_SETUP_PAL :                    56 - |
+*_SETUP_PAL_Size :                1 - | *_SET_DEVICE :                    5 - |
+*_SET_DEVICE_Size :               1 - | *_SET_MASK_EXT :                  7 - |
+*_SET_MASK_EXT_Size :             1 - | *_SET_MODE :                     4B - |
+*_SET_MODE_Size :                 1 - | *_SET_VOL :                       1 - |
+*_SET_VOL_Size :                  1 - | *_SORT_FINDFILES :               52 - |
+*_SORT_FINDFILES_Size :           1 - | *_SPG :                           5 - |
+*_SPG_Size :                      1 - | *_TAP :                           4 - |
+*_TAPE_EMUL :                    45 - | *_TAPE_EMUL_Size :                1 - |
+*_TAPE_INIT :                    44 - | *_TAPE_INIT_Size :                1 - |
+*_TAP_Size :                      1 - | *_TEK_PKT_H :                     9 - |
+*_TEK_PKT_H_Size :                1 - | *_TEK_PKT_L :                     8 - |
+*_TEK_PKT_L_Size :                1 - | *_TO_DRV :                        4 - |
+*_TO_DRV_Size :                   1 - | *_TRD :                           1 - |
+*_TRDOS :                         4 - | *_TRDOS_Size :                    1 - |
+*_TRD_Size :                      1 - | *_TURBO_HIGH :                   20 - |
+*_TURBO_LOW :                    10 - | *_TURBO_MAX :                    30 - |
+*_TXTSCR_MODE :                   2 - | *_UNKNOWN :                       5 - |
+*_UNKNOWN_Size :                  1 - | *_VERSION :                      4D - |
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 99 - 2/22/2020 21:3:58
 
 
-*_VIRT_DRIVE :                    3 - | *_V_SIZE :                        2 - |
-*_V_SIZE_Size :                   1 - | *_WINW :                         46 - |
-*_WINW_Size :                     1 - | *_WRITE_CMOS :                    2 - |
-*_WRITE_CMOS_Size :               1 - | *_X_COORD :                       0 - |
-*_X_COORD_Size :                  1 - | *_Y_COORD :                       1 - |
-*_Y_COORD_Size :                  1 - | *_ZCSD_RD_ID :                  109 - |
-*_ZCSD_RD_ID_Size :               3 - | *_ZCSD_RD_SEC :                 10C - |
-*_ZCSD_RD_SEC_Size :              3 - | *_ZCSD_WR_SEC :                 10F - |
-*_ZCSD_WR_SEC_Size :              3 - | *_ZXSCR_MODE :                    1 - |
+*_VERSION_Size :                  1 - | *_VIRT_DRIVE :                    3 - |
+*_V_SIZE :                        2 - | *_V_SIZE_Size :                   1 - |
+*_WINW :                         46 - | *_WINW_Size :                     1 - |
+*_WRITE_CMOS :                    2 - | *_WRITE_CMOS_Size :               1 - |
+*_X_COORD :                       0 - | *_X_COORD_Size :                  1 - |
+*_Y_COORD :                       1 - | *_Y_COORD_Size :                  1 - |
+*_ZCSD_RD_ID :                  109 - | *_ZCSD_RD_ID_Size :               3 - |
+*_ZCSD_RD_SEC :                 10C - | *_ZCSD_RD_SEC_Size :              3 - |
+*_ZCSD_WR_SEC :                 10F - | *_ZCSD_WR_SEC_Size :              3 - |
+*_ZXSCR_MODE :                    1 - |
 
-    732 symbols
-    679 unused symbols
+    733 symbols
+    680 unused symbols
 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 99 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 100 - 2/22/2020 21:3:58
 
 
   defined macros:
@@ -6144,7 +6150,7 @@ TEXTDATE                              | WORD2TXT
 
      22 macros
 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 100 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 101 - 2/22/2020 21:3:58
 
 
   defined functions:
@@ -6152,7 +6158,7 @@ TEXTDATE                              | WORD2TXT
 
 LOW                                   | HIGH                                 
 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 101 - 2/16/2020 10:10:17
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 102 - 2/22/2020 21:3:58
 
 
   codepages:
@@ -6161,10 +6167,10 @@ LOW                                   | HIGH
 STANDARD (0 changed characters)
 
 
-0.12 seconds assembly time
+0.13 seconds assembly time
 
-    965 lines source file
-   2786 lines incl. macro expansions
+    967 lines source file
+   2788 lines incl. macro expansions
       2 passes
       0 errors
       0 warnings
