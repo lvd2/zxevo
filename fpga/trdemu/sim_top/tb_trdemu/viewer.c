@@ -9,7 +9,7 @@
 #if defined(_MSC_VER)
 #include "SDL.h"
 #else
-#include "SDL/SDL.h"
+#include <SDL/SDL.h>
 #endif
 
 SDL_Surface *plane;
