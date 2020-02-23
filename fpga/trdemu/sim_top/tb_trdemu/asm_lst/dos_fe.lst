@@ -1,4 +1,4 @@
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 1 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 1 - 2/23/2020 18:19:59
 
 
        1/       0 :                     
@@ -61,7 +61,7 @@
 (1)   52/       0 :                     
 (1)   53/       0 :                     DUPL		MACRO LEN,FILL
 (1)   54/       0 :                     DUPL:
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/macros.a80) - page 2 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/macros.a80) - page 2 - 2/23/2020 18:19:59
 
 
 (1)   55/       0 :                     $$N		EQU (LEN) / 1024
@@ -124,7 +124,7 @@
 (1)  112/       0 :                     		AND BYTE!0XFF
 (1)  113/       0 :                     		OUT (PEVO_CONF),A
 (1)  114/       0 :                     		ENDM
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/macros.a80) - page 3 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/macros.a80) - page 3 - 2/23/2020 18:19:59
 
 
 (1)  115/       0 :                     
@@ -134,7 +134,7 @@
 (1)  119/       0 :                     		ENDM
 (1)  120/       0 :                     
 (1)  121/       0 : =9H                 SIZEDATE	EQU STRLEN (DATE)
-(1)  122/       0 : =7H                 SIZETIME	EQU STRLEN (TIME)
+(1)  122/       0 : =8H                 SIZETIME	EQU STRLEN (TIME)
 (1)  123/       0 :                     
 (1)  124/       0 : =>FALSE             		IF SIZEDATE=10
 (1)  125/       0 :                     MMOUNTH		EQU (CHARFROMSTR (DATE,0)-'0')*10+(CHARFROMSTR (DATE,1)-'0')
@@ -146,7 +146,7 @@
 (1)  131/       0 :                     YYEAR		EQU (CHARFROMSTR (DATE,6)-'0')*10+(CHARFROMSTR (DATE,7)-'0')
 (1)  132/       0 : =>TRUE              		ELSEIF (CHARFROMSTR (DATE,1))=0X2F
 (1)  133/       0 : =2H                 MMOUNTH		EQU (CHARFROMSTR (DATE,0)-'0')
-(1)  134/       0 : =16H                DDATE		EQU (CHARFROMSTR (DATE,2)-'0')*10+(CHARFROMSTR (DATE,3)-'0')
+(1)  134/       0 : =17H                DDATE		EQU (CHARFROMSTR (DATE,2)-'0')*10+(CHARFROMSTR (DATE,3)-'0')
 (1)  135/       0 : =14H                YYEAR		EQU (CHARFROMSTR (DATE,7)-'0')*10+(CHARFROMSTR (DATE,8)-'0')
 (1)  136/       0 : =>FALSE             		ELSE
 (1)  137/       0 :                     MMOUNTH		EQU (CHARFROMSTR (DATE,0)-'0')*10+(CHARFROMSTR (DATE,1)-'0')
@@ -154,20 +154,20 @@
 (1)  139/       0 :                     YYEAR		EQU (CHARFROMSTR (DATE,7)-'0')*10+(CHARFROMSTR (DATE,8)-'0')
 (1)  140/       0 : [124]               		ENDIF
 (1)  141/       0 :                     
-(1)  142/       0 : =>TRUE              		IF SIZETIME=7
-(1)  143/       0 : =2H                 HHOUR		EQU (CHARFROMSTR (TIME,0)-'0')
-(1)  144/       0 : =67H                MMINUTE		EQU (CHARFROMSTR (TIME,2)-'0')*10+(CHARFROMSTR (TIME,3)-'0')
-(1)  145/       0 : =39H                SSECUND		EQU (CHARFROMSTR (TIME,5)-'0')*10+(CHARFROMSTR (TIME,6)-'0')
-(1)  146/       0 : =>FALSE             		ELSE
-(1)  147/       0 :                     HHOUR		EQU (CHARFROMSTR (TIME,0)-'0')*10+(CHARFROMSTR (TIME,1)-'0')
-(1)  148/       0 :                     MMINUTE		EQU (CHARFROMSTR (TIME,3)-'0')*10+(CHARFROMSTR (TIME,4)-'0')
-(1)  149/       0 :                     SSECUND		EQU (CHARFROMSTR (TIME,6)-'0')*10+(CHARFROMSTR (TIME,7)-'0')
+(1)  142/       0 : =>FALSE             		IF SIZETIME=7
+(1)  143/       0 :                     HHOUR		EQU (CHARFROMSTR (TIME,0)-'0')
+(1)  144/       0 :                     MMINUTE		EQU (CHARFROMSTR (TIME,2)-'0')*10+(CHARFROMSTR (TIME,3)-'0')
+(1)  145/       0 :                     SSECUND		EQU (CHARFROMSTR (TIME,5)-'0')*10+(CHARFROMSTR (TIME,6)-'0')
+(1)  146/       0 : =>TRUE              		ELSE
+(1)  147/       0 : =12H                HHOUR		EQU (CHARFROMSTR (TIME,0)-'0')*10+(CHARFROMSTR (TIME,1)-'0')
+(1)  148/       0 : =13H                MMINUTE		EQU (CHARFROMSTR (TIME,3)-'0')*10+(CHARFROMSTR (TIME,4)-'0')
+(1)  149/       0 : =3BH                SSECUND		EQU (CHARFROMSTR (TIME,6)-'0')*10+(CHARFROMSTR (TIME,7)-'0')
 (1)  150/       0 : [142]               		ENDIF
 (1)  151/       0 :                     
-(1)  152/       0 : =A856H              DATA_VERS	EQU DDATE+(MMOUNTH<<5)+(YYEAR<<9)+0X8000			;ã¦¥ ã¯ ª®¢ ­®
+(1)  152/       0 : =A857H              DATA_VERS	EQU DDATE+(MMOUNTH<<5)+(YYEAR<<9)+0X8000			;ã¦¥ ã¯ ª®¢ ­®
 (1)  153/       0 :                     
-(1)  154/       0 : =5056H              FAT_DATE	EQU DDATE+(MMOUNTH<<5)+((2000+YYEAR-1980)&0x7F)<<9
-(1)  155/       0 : =1CFCH              FAT_TIME	EQU SSECUND/2+(MMINUTE<<5)+(HHOUR<<11)
+(1)  154/       0 : =5057H              FAT_DATE	EQU DDATE+(MMOUNTH<<5)+((2000+YYEAR-1980)&0x7F)<<9
+(1)  155/       0 : =927DH              FAT_TIME	EQU SSECUND/2+(MMINUTE<<5)+(HHOUR<<11)
 (1)  156/       0 :                     
 (1)  157/       0 :                     TEXTDATE	MACRO
 (1)  158/       0 :                     TDATE		DB ((DDATE/10)+'0'),(DDATE#10)+'0'
@@ -187,7 +187,7 @@
 (1)  172/       0 :                     		DB N3
 (1)  173/       0 :                     		ENDIF
 (1)  174/       0 :                     		ENDM
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/macros.a80) - page 4 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/macros.a80) - page 4 - 2/23/2020 18:19:59
 
 
 (1)  175/       0 :                     
@@ -250,7 +250,7 @@
 (1)  232/       0 :                     ; ¯à¥®¡à §®¢ ­¨¥ 16 ¡¨â­®£® ç¨á«  ¢ â¥ªáâ
 (1)  233/       0 :                     WORD2TXT	MACRO WORD
 (1)  234/       0 :                     $$DEC1 := (WORD)/10000
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/macros.a80) - page 5 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/macros.a80) - page 5 - 2/23/2020 18:19:59
 
 
 (1)  235/       0 :                     $$TMP := WORD-$$DEC1*10000
@@ -313,7 +313,7 @@
 (1)   46/       0 : =BH                 ROM_ADD_BAS48	EQU 0X0B			;ŽŒ… ‘’€ˆ–› ROM BASIC 48
 (1)   47/       0 : =18H                ROM_BAS48_STD	EQU 0X18			;ŽŒ… ‘’€ˆ–› ROM BASIC 48 (‘’€„€’€Ÿ ‚…‘ˆŸ)
 (1)   48/       0 : =19H                ROM_BAS128_STD	EQU 0X19			;ŽŒ… ‘’€ˆ–› ROM BASIC 128 (‘’€„€’€Ÿ ‚…‘ˆŸ)
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/global_vars.a80) - page 6 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/global_vars.a80) - page 6 - 2/23/2020 18:19:59
 
 
 (1)   49/       0 : =1AH                ROM_BAS48_128	EQU 0X1A			;ŽŒ… ‘’€ˆ–› ROM BASIC 48 (‘’€„€’€Ÿ ‚…‘ˆŸ „‹Ÿ BASIC128)
@@ -376,7 +376,7 @@
 (1)  100/       0 : =FEEFH              RS232_MDM_STAT	EQU 0XFEEF
 (1)  101/       0 : =FFEFH              RS232_WORK_REG	EQU 0XFFEF
 (1)  102/       0 :                     
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/global_vars.a80) - page 7 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/global_vars.a80) - page 7 - 2/23/2020 18:19:59
 
 
 (1)  103/       0 :                     ;[‘ŠŽŽ‘’ˆ RS232]
@@ -439,7 +439,7 @@
 (1)  160/       0 : =5H                 CYAN		EQU 5
 (1)  161/       0 : =6H                 YELLOW		EQU 6
 (1)  162/       0 : =7H                 WHITE		EQU 7
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/global_vars.a80) - page 8 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/global_vars.a80) - page 8 - 2/23/2020 18:19:59
 
 
 (1)  163/       0 : =40H                BR_INK		EQU 0X40
@@ -502,7 +502,7 @@
 (1)  202/       0 : =7H                 NUM_TXTSCR	EQU %00000111			;ŽŒ… ‚ˆ„…Ž…†ˆŒ€ „‹Ÿ ATM Ž’€ (Ž„Ž‘’€ˆ—›‰ ’…Š‘’ŒŽ„ 80*25)
 (1)  203/       0 :                     
 (1)  204/       0 : =8H                 SET_VIDEOMODE	EQU %00001000
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/global_vars.a80) - page 9 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/global_vars.a80) - page 9 - 2/23/2020 18:19:59
 
 
 (1)  205/       0 :                     
@@ -565,7 +565,7 @@
 (1)  252/       0 : (MACRO)              BITMASK PRINTER_AY,	5			;€‡…˜…ˆ… Ž„Œ…› „€‰‚…€ …—€’ˆ ‚ BASIC48
 (1)  252/       0 : =5H                 B_PRINTER_AY          EQU 5
 (1)  252/       0 : =20H                M_PRINTER_AY          EQU 1<<5
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/global_vars.a80) - page 10 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/global_vars.a80) - page 10 - 2/23/2020 18:19:59
 
 
 (1)  253/       0 : (MACRO)              BITMASK RELOAD_FONT,	4			;€‡…˜…ˆ… ……‡€ƒ“‡Šˆ ˜ˆ”’€ ˆ ‘Ž‘…
@@ -628,7 +628,7 @@
 (1)  284/       0 : =CH                 _REAL_DRIVE	EQU %00001100			;Œ€‘Š€ ŽŒ…€ …€‹œŽƒŽ „ˆ‘ŠŽ‚Ž„€
 (1)  285/       0 : =3H                 _VIRT_DRIVE	EQU %00000011			;Œ€‘Š€ ŽŒ…€ ‚ˆ’“€‹œŽƒŽ „ˆ‘ŠŽ‚Ž„€
 (1)  286/       0 :                     
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/global_vars.a80) - page 11 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/global_vars.a80) - page 11 - 2/23/2020 18:19:59
 
 
 (1)  287/       0 :                     ;[Ÿ—…‰Š€ CMOS 0XE9]
@@ -691,7 +691,7 @@
 (1)  340/       0 :                     ;7 =0-„€‰‚… SD Š€’› NEOGS … “‘’€Ž‚‹…, =1-“‘’€Ž‚‹…
 (1)  341/       0 :                     ;6
 (1)  342/       0 :                     ;5
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/global_vars.a80) - page 12 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/global_vars.a80) - page 12 - 2/23/2020 18:19:59
 
 
 (1)  343/       0 :                     ;4
@@ -754,7 +754,7 @@
 (1)    9/       0 :                     _AY_PRN_SCR_Size       EQU 
 (1)    9/       0 : =>TRUE                              ELSE
 (1)    9/       0 : =44H                INITVAR := INITVAR+BYTE
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 13 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 13 - 2/23/2020 18:19:59
 
 
 (1)    9/       0 : =1H                 _AY_PRN_SCR_Size       EQU BYTE
@@ -817,7 +817,7 @@
 (1)   16/       0 : =4AH                _SCROLL_DOWN            EQU INITVAR
 (1)   16/       0 : =>BLANK                             IFNB 
 (1)   16/       0 :                     INITVAR := INITVAR+
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 14 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 14 - 2/23/2020 18:19:59
 
 
 (1)   16/       0 :                     _SCROLL_DOWN_Size       EQU 
@@ -880,7 +880,7 @@
 (1)   24/       0 : (MACRO)              SETVAR _COM_FAT
 (1)   24/       0 : =51H                _COM_FAT            EQU INITVAR
 (1)   24/       0 : =>BLANK                             IFNB 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 15 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 15 - 2/23/2020 18:19:59
 
 
 (1)   24/       0 :                     INITVAR := INITVAR+
@@ -943,7 +943,7 @@
 (1)   30/       0 : =58H                INITVAR := INITVAR+BYTE
 (1)   30/       0 : =1H                 _SETUP_FONT_Size       EQU BYTE
 (1)   30/       0 : [30]                                ENDIF
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 16 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 16 - 2/23/2020 18:19:59
 
 
 (1)   31/       0 :                     
@@ -1006,7 +1006,7 @@
 (1)   48/       0 :                     INITVAR := INITVAR+
 (1)   48/       0 :                     _HEX4DECTXT_Size       EQU 
 (1)   48/       0 : =>TRUE                              ELSE
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 17 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 17 - 2/23/2020 18:19:59
 
 
 (1)   48/       0 : =5H                 INITVAR := INITVAR+BYTE
@@ -1069,7 +1069,7 @@
 (1)   57/       0 : =3H                 _CLEAR_CMOS            EQU INITVAR
 (1)   57/       0 : =>BLANK                             IFNB 
 (1)   57/       0 :                     INITVAR := INITVAR+
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 18 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 18 - 2/23/2020 18:19:59
 
 
 (1)   57/       0 :                     _CLEAR_CMOS_Size       EQU 
@@ -1132,7 +1132,7 @@
 (1)   65/       0 : [65]                                ENDIF
 (1)   66/       0 : (MACRO)              SETVAR _LOADIMAGE				; § £àã§ª  ®¡à §  ¢ à ¬¤¨áª
 (1)   66/       0 : =5H                 _LOADIMAGE            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 19 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 19 - 2/23/2020 18:19:59
 
 
 (1)   66/       0 : =>BLANK                             IFNB 
@@ -1195,7 +1195,7 @@
 (1)   74/       0 : =1H                 INITVAR := INITVAR+BYTE
 (1)   74/       0 : =1H                 _DEVFIND_Size       EQU BYTE
 (1)   74/       0 : [74]                                ENDIF
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 20 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 20 - 2/23/2020 18:19:59
 
 
 (1)   75/       0 : (MACRO)              SETVAR _SET_VOL				;01 ‚›Ž €‡„…‹€                          
@@ -1258,7 +1258,7 @@
 (1)   81/       0 :                     INITVAR := INITVAR+
 (1)   81/       0 :                     _COMHDDN_Size       EQU 
 (1)   81/       0 : =>TRUE                              ELSE
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 21 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 21 - 2/23/2020 18:19:59
 
 
 (1)   81/       0 : =8H                 INITVAR := INITVAR+BYTE
@@ -1321,7 +1321,7 @@
 (1)   90/       0 : =4H                 _DEV_READID            EQU INITVAR
 (1)   90/       0 : =>BLANK                             IFNB 
 (1)   90/       0 :                     INITVAR := INITVAR+
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 22 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 22 - 2/23/2020 18:19:59
 
 
 (1)   90/       0 :                     _DEV_READID_Size       EQU 
@@ -1384,7 +1384,7 @@
 (1)   98/       0 : [98]                                ENDIF
 (1)   99/       0 : (MACRO)              SETVAR _FIND_NAME				;Žˆ‘Š Ž ˆŒ…ˆ
 (1)   99/       0 : =5H                 _FIND_NAME            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 23 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 23 - 2/23/2020 18:19:59
 
 
 (1)   99/       0 : =>BLANK                             IFNB 
@@ -1447,7 +1447,7 @@
 (1)  105/       0 : =>TRUE                              ELSE
 (1)  105/       0 : =CH                 INITVAR := INITVAR+BYTE
 (1)  105/       0 : =1H                 _POS_FILES_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 24 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 24 - 2/23/2020 18:19:59
 
 
 (1)  105/       0 : [105]                               ENDIF
@@ -1510,7 +1510,7 @@
 (1)  114/       0 :                     INITVAR := INITVAR+
 (1)  114/       0 :                     _POSTF05_Size       EQU 
 (1)  114/       0 : =>TRUE                              ELSE
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 25 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 25 - 2/23/2020 18:19:59
 
 
 (1)  114/       0 : =6H                 INITVAR := INITVAR+BYTE
@@ -1573,7 +1573,7 @@
 (1)  124/       0 : [124]                               ENDIF
 (1)  125/       0 : (MACRO)              SETVAR _TAP		;TAP
 (1)  125/       0 : =4H                 _TAP            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 26 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 26 - 2/23/2020 18:19:59
 
 
 (1)  125/       0 : =>BLANK                             IFNB 
@@ -1636,7 +1636,7 @@
 (1)  135/       0 : =>BLANK                             IFNB 
 (1)  135/       0 :                     INITVAR := 
 (1)  135/       0 : =>TRUE                              ELSE
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 27 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 27 - 2/23/2020 18:19:59
 
 
 (1)  135/       0 : =0H                 INITVAR := 0
@@ -1699,7 +1699,7 @@
 (1)  143/       0 :                     ;®¯¨á â¥«¨ ¤«ï à¨á®¢ ­¨ï ®ª­ 
 (1)  144/       0 : (MACRO)              INIT_VAR
 (1)  144/       0 : =>BLANK                             IFNB 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 28 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 28 - 2/23/2020 18:19:59
 
 
 (1)  144/       0 :                     INITVAR := 
@@ -1762,7 +1762,7 @@
 (1)  150/       0 : [150]                               ENDIF
 (1)  151/       0 : (MACRO)              SETVAR _FLAGS
 (1)  151/       0 : =6H                 _FLAGS            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 29 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 29 - 2/23/2020 18:19:59
 
 
 (1)  151/       0 : =>BLANK                             IFNB 
@@ -1825,7 +1825,7 @@
 (1)  157/       0 : =>TRUE                              ELSE
 (1)  157/       0 : =DH                 INITVAR := INITVAR+BYTE
 (1)  157/       0 : =1H                 _ADR_TXT_L_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 30 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 30 - 2/23/2020 18:19:59
 
 
 (1)  157/       0 : [157]                               ENDIF
@@ -1888,7 +1888,7 @@
 (1)  164/       0 : =>BLANK                             IFNB 
 (1)  164/       0 :                     INITVAR := INITVAR+
 (1)  164/       0 :                     _ADR_HOTKEY_H_Size       EQU 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 31 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 31 - 2/23/2020 18:19:59
 
 
 (1)  164/       0 : =>TRUE                              ELSE
@@ -1951,7 +1951,7 @@
 (1)  174/       0 :                     _ZCSD_RD_SEC_Size       EQU BYTE
 (1)  174/       0 : [174]                               ENDIF
 (1)  175/       0 : (MACRO)              SETVAR _ZCSD_WR_SEC,JUMP_SIZE			;§ ¯¨áì á¥ªâ®à®¢ ­ ¡®àâ­®© SD ª àâë
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 32 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 32 - 2/23/2020 18:19:59
 
 
 (1)  175/       0 : =10FH               _ZCSD_WR_SEC            EQU INITVAR
@@ -2014,7 +2014,7 @@
 (1)  183/       0 : =>NOT BLANK                         IFNB JUMP_SIZE
 (1)  183/       0 : =124H               INITVAR := INITVAR+JUMP_SIZE
 (1)  183/       0 : =3H                 _READ_STAT_PS2_Size       EQU JUMP_SIZE
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 33 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/define.a80) - page 33 - 2/23/2020 18:19:59
 
 
 (1)  183/       0 : =>FALSE                             ELSE
@@ -2077,7 +2077,7 @@
 (1)    6/       0 : =1H                 IREG_E_Size       EQU BYTE
 (1)    6/       0 : =>FALSE                             ELSE
 (1)    6/       0 :                     INITVAR := INITVAR+BYTE
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 34 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 34 - 2/23/2020 18:19:59
 
 
 (1)    6/       0 :                     IREG_E_Size       EQU BYTE
@@ -2140,7 +2140,7 @@
 (1)   14/       0 : (MACRO)              SETVAR PORT_3F,	BYTE		;1 ‡€—…ˆ… Ž’€ 3F
 (1)   14/       0 : =3CA0H              PORT_3F            EQU INITVAR
 (1)   14/       0 : =>NOT BLANK                         IFNB BYTE
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 35 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 35 - 2/23/2020 18:19:59
 
 
 (1)   14/       0 : =3CA1H              INITVAR := INITVAR+BYTE
@@ -2203,7 +2203,7 @@
 (1)   20/       0 :                     INITVAR := INITVAR+BYTE
 (1)   20/       0 :                     ADDR_RET_Size       EQU BYTE
 (1)   20/       0 : [20]                                ENDIF
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 36 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 36 - 2/23/2020 18:19:59
 
 
 (1)   21/       0 : (MACRO)              SETVAR REG_IF,		BYTE		;1
@@ -2266,7 +2266,7 @@
 (1)   27/       0 : =3CB0H              INITVAR := INITVAR+BYTE
 (1)   27/       0 : =1H                 REG_L_Size       EQU BYTE
 (1)   27/       0 : =>FALSE                             ELSE
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 37 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 37 - 2/23/2020 18:19:59
 
 
 (1)   27/       0 :                     INITVAR := INITVAR+BYTE
@@ -2329,7 +2329,7 @@
 (1)   34/       0 : (MACRO)              SETVAR WR_RAMNROM,	BYTE		;1
 (1)   34/       0 : =3CB6H              WR_RAMNROM            EQU INITVAR
 (1)   34/       0 : =>NOT BLANK                         IFNB BYTE
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 38 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 38 - 2/23/2020 18:19:59
 
 
 (1)   34/       0 : =3CB7H              INITVAR := INITVAR+BYTE
@@ -2392,7 +2392,7 @@
 (1)   40/       0 :                     INITVAR := INITVAR+BYTE
 (1)   40/       0 :                     WR_0WINA2_Size       EQU BYTE
 (1)   40/       0 : [40]                                ENDIF
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 39 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 39 - 2/23/2020 18:19:59
 
 
 (1)   41/       0 : (MACRO)              SETVAR WR_0WINA1,	BYTE		;1
@@ -2455,7 +2455,7 @@
 (1)   47/       0 : =3CC5H              INITVAR := INITVAR+WORD
 (1)   47/       0 : =2H                 MINT_STACK_Size       EQU WORD
 (1)   47/       0 : =>FALSE                             ELSE
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 40 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 40 - 2/23/2020 18:19:59
 
 
 (1)   47/       0 :                     INITVAR := INITVAR+BYTE
@@ -2518,7 +2518,7 @@
 (1)   54/       0 :                     ; SETVAR VIRT_REAL_DRV,	BYTE		;1
 (1)   55/       0 : (MACRO)              SETVAR OLD_PORT_BF,	BYTE		;1
 (1)   55/       0 : =3CCBH              OLD_PORT_BF            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 41 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 41 - 2/23/2020 18:19:59
 
 
 (1)   55/       0 : =>NOT BLANK                         IFNB BYTE
@@ -2581,7 +2581,7 @@
 (1)   61/       0 : =>FALSE                             ELSE
 (1)   61/       0 :                     INITVAR := INITVAR+BYTE
 (1)   61/       0 :                     SAVED_RAM_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 42 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 42 - 2/23/2020 18:19:59
 
 
 (1)   61/       0 : [61]                                ENDIF
@@ -2644,7 +2644,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 43 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 43 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -2707,7 +2707,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 44 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 44 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -2770,7 +2770,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 45 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 45 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -2833,7 +2833,7 @@
       56/     306 :  (MACRO-2)                          DUPL 0X030A-$,0;XFF
       56/     306 :                     DUPL:
       56/     306 : =0H                 $$N             EQU (0X030A-$) / 1024
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 46 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 46 - 2/23/2020 18:19:59
 
 
       56/     306 : =4H                 $$M             EQU (0X030A-$) # 1024
@@ -2896,7 +2896,7 @@
       59/     31E : =4H                 $$M             EQU (0X0322-$) # 1024
       59/     31E :                                     REPT $$N
       59/     31E :                                     DB 1024 DUP(0)
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 47 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 47 - 2/23/2020 18:19:59
 
 
       59/     31E :                                     ENDM
@@ -2959,7 +2959,7 @@
       62/     336 :                                     ENDM
       62/     336 : =>TRUE                              IF $$M <> 0
       62/     336 : =>NOT BLANK                         IFB 0
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 48 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 48 - 2/23/2020 18:19:59
 
 
       62/     336 :                                     DB $$M DUP(0)
@@ -3022,7 +3022,7 @@
       65/     34E :                                     DB $$M DUP(0)
       65/     34E : =>TRUE                              ELSE
       65/     34E : 00 00 00 00 00 00                   DB $$M DUP(0)
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 49 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 49 - 2/23/2020 18:19:59
 
 
                     00 
@@ -3085,7 +3085,7 @@
       68/     36B : 00 00 00 00 00 00                   DB $$M DUP(0)
       68/     371 : [68]                                ENDIF
       68/     371 : [68]                                ENDIF
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 50 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 50 - 2/23/2020 18:19:59
 
 
       68/     371 : 00                                  NOP
@@ -3148,7 +3148,7 @@
       71/     38D : 00                                  NOP
       71/     38E : 00                                  NOP
       71/     38F : D3 BE                               OUT (EXIT_PORT),A
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 51 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 51 - 2/23/2020 18:19:59
 
 
       71/     391 :                     ;               JP ADR_0X038D
@@ -3211,7 +3211,7 @@
       74/     3AB :                     ;               JP ADR_0X03A7
       75/     3AB : (MACRO)             		JP_EMU 0X03B1
       75/     3AB :  (MACRO-2)                          DUPL 0X03B1-$,0;XFF
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 52 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 52 - 2/23/2020 18:19:59
 
 
       75/     3AB :                     DUPL:
@@ -3274,7 +3274,7 @@
       78/     3C7 :                     DUPL:
       78/     3C7 : =0H                 $$N             EQU (0X03CB-$) / 1024
       78/     3C7 : =4H                 $$M             EQU (0X03CB-$) # 1024
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 53 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 53 - 2/23/2020 18:19:59
 
 
       78/     3C7 :                                     REPT $$N
@@ -3337,7 +3337,7 @@
       81/     3E1 :                                     REPT $$N
       81/     3E1 :                                     DB 1024 DUP(0)
       81/     3E1 :                                     ENDM
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 54 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 54 - 2/23/2020 18:19:59
 
 
       81/     3E1 : =>TRUE                              IF $$M <> 0
@@ -3400,7 +3400,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 55 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 55 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -3463,7 +3463,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 56 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 56 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -3526,7 +3526,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 57 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 57 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -3589,7 +3589,7 @@
       92/     815 : 2A 03 A1 08                         DW 0X032A,ADR_0X032A.WORK
       93/     819 : (MACRO)             		LABEL_GEN 0X0332
       93/     819 : =6H                 _0X0332        EQU ($-TABLE_VIRT)/4
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 58 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 58 - 2/23/2020 18:19:59
 
 
       93/     819 : 32 03 A9 08                         DW 0X0332,ADR_0X0332.WORK
@@ -3652,7 +3652,7 @@
      112/     865 : DD 03 41 09                         DW 0X03DD,ADR_0X03DD.WORK
      113/     869 : (MACRO)             		LABEL_GEN 0X03E7
      113/     869 : =1AH                _0X03E7        EQU ($-TABLE_VIRT)/4
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 59 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 59 - 2/23/2020 18:19:59
 
 
      113/     869 : E7 03 49 09                         DW 0X03E7,ADR_0X03E7.WORK
@@ -3715,7 +3715,7 @@
      124/     8A9 : 32 FE 0D                            LD (OLD_AF+1),A
      124/     8AC : 3E 07                               LD A,_0X033A
      124/     8AE : C3 00 0F                            JP WORKER
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 60 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 60 - 2/23/2020 18:19:59
 
 
      124/     8B1 :                     
@@ -3778,7 +3778,7 @@
      132/     8F1 : =8F1H               .WORK           EQU $
      133/     8F1 : (MACRO)             		EMU_JUMP 0X038D
      133/     8F1 : =8F1H               ADR_0X038D     EQU $
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 61 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 61 - 2/23/2020 18:19:59
 
 
      133/     8F1 : 32 FE 0D                            LD (OLD_AF+1),A
@@ -3841,7 +3841,7 @@
      141/     934 : 3E 18                               LD A,_0X03D5
      141/     936 : C3 00 0F                            JP WORKER
      141/     939 :                     
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 62 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 62 - 2/23/2020 18:19:59
 
 
      141/     939 : =939H               .WORK           EQU $
@@ -3904,7 +3904,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 63 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 63 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -3967,7 +3967,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 64 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 64 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4030,7 +4030,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 65 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 65 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4093,7 +4093,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 66 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 66 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4156,7 +4156,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 67 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 67 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4219,7 +4219,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 68 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 68 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4282,7 +4282,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 69 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 69 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4345,7 +4345,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 70 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 70 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4408,7 +4408,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 71 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 71 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4471,7 +4471,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 72 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 72 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4534,7 +4534,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 73 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 73 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4597,7 +4597,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 74 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 74 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4660,7 +4660,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 75 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 75 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4723,7 +4723,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 76 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 76 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4786,7 +4786,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 77 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 77 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4849,7 +4849,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 78 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 78 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4912,7 +4912,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 79 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 79 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -4975,7 +4975,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 80 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 80 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5038,7 +5038,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 81 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 81 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5101,7 +5101,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 82 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 82 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5164,7 +5164,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 83 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 83 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5227,7 +5227,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 84 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 84 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5290,7 +5290,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 85 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 85 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5353,7 +5353,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 86 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 86 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5416,7 +5416,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 87 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 87 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5479,7 +5479,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 88 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 88 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5542,7 +5542,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 89 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 89 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5605,7 +5605,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 90 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 90 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5668,7 +5668,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 91 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 91 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5731,7 +5731,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 92 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 92 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5794,7 +5794,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 93 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 93 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5857,7 +5857,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 94 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 94 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5920,7 +5920,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 95 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 95 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -5983,7 +5983,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 96 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 96 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -6046,7 +6046,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 97 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 97 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -6109,7 +6109,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 98 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 98 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -6172,7 +6172,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 99 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 99 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -6235,7 +6235,7 @@
      154/    3D31 :                                     DB 1024 DUP(0)
      154/    3D31 :                                     ENDM
      154/    3D31 : =>TRUE                              IF $$M <> 0
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 100 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 100 - 2/23/2020 18:19:59
 
 
      154/    3D31 : =>NOT BLANK                         IFB 0
@@ -6298,7 +6298,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 101 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 101 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -6361,7 +6361,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 102 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 102 - 2/23/2020 18:19:59
 
 
                     00 00 00 00 00 00 
@@ -6369,9 +6369,9 @@
      154/    3FF8 : [154]                               ENDIF
      154/    3FF8 : [154]                               ENDIF
      155/    3FF8 : 45 56 4F 53 46 45   		DB "EVOSFE"
-     156/    3FFE : 56 A8               		DW DATA_VERS
+     156/    3FFE : 57 A8               		DW DATA_VERS
      157/    4000 :                     
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 103 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 103 - 2/23/2020 18:19:59
 
 
   symbol table (* = unused):
@@ -6434,7 +6434,7 @@
  BUF_PATHMOUNT :               3000 - |  BUF_TABLVOL :                 BD00 - |
  BUF_TDIRCLS :                 B400 - |  BUF_TEKVOL :                  BC00 - |
 *BUF_TEMPSEC :                 3500 - | *BUF_WINPATH :                 AC00 - |
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 104 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 104 - 2/23/2020 18:19:59
 
 
 *BUILD_DEBUG :                    0 - |  BYTE :                           1 - |
@@ -6468,14 +6468,14 @@
 *CPU1 :                        4000 - | *CPU2 :                        8000 - |
  CPU3 :                        C000 - | *CRCCMOSHIGH :                   EF - |
 *CRCCMOSLOW :                    EE - | *CRC_DRVS :                    BDFE - |
-*CYAN :                           5 - |  DATA_VERS :                   A856 - |
- DATE :                   2/22/2020 - |  DDATE :                         16 - |
+*CYAN :                           5 - |  DATA_VERS :                   A857 - |
+ DATE :                   2/23/2020 - |  DDATE :                         17 - |
 *DEBUG_ONOFF :                   13 - |  DEVICES :                     BDE0 - |
 *DOS_STEK :                    3C9C - | *DOS_STEK_Size :                  2 - |
 *DWORD :                          4 - | *EI_RET :                        3E - |
 *END_VARS :                       0 C |  EXIT_PORT :                     BE - |
-*FALSE :                          0 - | *FAT_DATE :                    5056 - |
-*FAT_TIME :                    1CFC - | *FDD_EMU_PORT :                13BD - |
+*FALSE :                          0 - | *FAT_DATE :                    5057 - |
+*FAT_TIME :                    927D - | *FDD_EMU_PORT :                13BD - |
 *FDI_BLOCK_SMESH :             41FF - | *FDI_BYTE_SMESH :              41FE - |
 *FDI_IMAGE1SECT :              4400 - | *FDI_PAGE_START :              40FF - |
 *FDI_TABLE_CYL :               4000 - | *FLAGS_DRV :                   BDF8 - |
@@ -6485,7 +6485,7 @@
 *G_L :                           80 - | *HAS64 :                          1 - |
 *HASDSP :                         0 - | *HASFPU :                         0 - |
 *HASPMMU :                        0 - | *HDD_TIMEOUT :                   EA - |
- HHOUR :                          2 - | *ICALL2PAGE :                  8000 - |
+ HHOUR :                         12 - | *ICALL2PAGE :                  8000 - |
 *INEXTMODE :                      0 - |  INITVAR :                     3CE2 - |
 *INLWORDMODE :                    0 - | *INMAXMODE :                      0 - |
 *INSRCMODE :                      0 - | *INSUPMODE :                      0 - |
@@ -6497,7 +6497,7 @@
  KOLDVOL :                     BDF2 - | *KOL_MODES :                      4 - |
 *LATTR :                       31C0 - | *LISTON :                         1 - |
 *LSYM :                         1C0 - |  M1020 :                        1AF - |
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 105 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 105 - 2/23/2020 18:19:59
 
 
  M1022 :                        22E - |  M1023 :                        2C7 - |
@@ -6523,7 +6523,7 @@
 *MEMORY_128 :                    30 - | *MEMORY_48 :                     20 - |
 *MEMORY_ALL :                    10 - | *MINT_STACK :                  3CC3 - |
 *MINT_STACK_Size :                2 - | *MKOL_MODES :                     3 - |
- MMINUTE :                       67 - |  MMOUNTH :                        2 - |
+ MMINUTE :                       13 - |  MMOUNTH :                        2 - |
 *MOMCPU :                      80DC - | *MOMCPUNAME :              Z80UNDOC - |
  MOUNT_CLS :                   1000 - |  MOUNT_DRIVES :                B100 - |
 *MOUSE_KEYS :                  FADF - | *MOUSE_X :                     FBDF - |
@@ -6560,7 +6560,7 @@
  N926 :                           0 - |  N927 :                           0 - |
  N928 :                           0 - |  N929 :                           0 - |
  N930 :                           0 - |  N931 :                           0 - |
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 106 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 106 - 2/23/2020 18:19:59
 
 
  N932 :                           0 - |  N933 :                           0 - |
@@ -6623,19 +6623,19 @@
 *RS232_MDM_STAT :              FEEF - | *RS232_WORK_REG :              FFEF - |
 *RSYM :                        11C0 - | *R_H :                            2 - |
 *R_L :                           40 - | *SAVED_RAM :                   3CD2 - |
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 107 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 107 - 2/23/2020 18:19:59
 
 
 *SAVED_RAM_Size :                10 - |  SAVE_TEK_VOL :                BDF6 - |
 *SECTOR_SIZE :                 3CCC - | *SECTOR_SIZE_Size :               1 - |
  SETDVOL :                     BDF3 - | *SET_VIDEOMODE :                  8 - |
- SIZEDATE :                       9 - |  SIZETIME :                       7 - |
- SSECUND :                       39 - |  STACK :                        DFF - |
+ SIZEDATE :                       9 - |  SIZETIME :                       8 - |
+ SSECUND :                       3B - |  STACK :                        DFF - |
 *START_STS :                   C000 - |  START_TEST :                   302 C |
  TABLE_VIRT :                   801 C |  TEK_BUFPATH :                 2000 - |
 *TEK_ROMPAGE :                 3CC5 - | *TEK_ROMPAGE_Size :               1 - |
  TEK_TYPE :                    BDF7 - | *TEMP_SP :                     3CD0 - |
-*TEMP_SP_Size :                   2 - |  TIME :                     21:3:57 - |
+*TEMP_SP_Size :                   2 - |  TIME :                    18:19:59 - |
 *TRUE :                           1 - | *TURBO_14 :                      C0 - |
 *TURBO_3 :                       40 - | *TURBO_7 :                       80 - |
 *UNPACK :                        80 - | *UNP_DOS_FE :                    40 - |
@@ -6686,7 +6686,7 @@
  _0X039F :                       12 - |  _0X03A7 :                       13 - |
  _0X03B1 :                       14 - |  _0X03B9 :                       15 - |
  _0X03C3 :                       16 - |  _0X03CB :                       17 - |
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 108 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 108 - 2/23/2020 18:19:59
 
 
  _0X03D5 :                       18 - |  _0X03DD :                       19 - |
@@ -6749,7 +6749,7 @@
 *_GET_MOUNTED_Size :              1 - | *_GET_PATH :                      3 - |
 *_GET_PATH_Size :                 1 - | *_GET_TABLE_MEM :               127 - |
 *_GET_TABLE_MEM_Size :            3 - | *_GET_VIRT_BITS :                 8 - |
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 109 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 109 - 2/23/2020 18:19:59
 
 
 *_GET_VIRT_BITS_Size :            1 - | *_HDD :                           1 - |
@@ -6812,7 +6812,7 @@
 *_SETUP_FONT_Size :               1 - | *_SETUP_PAL :                    56 - |
 *_SETUP_PAL_Size :                1 - | *_SET_DEVICE :                    5 - |
 *_SET_DEVICE_Size :               1 - | *_SET_MASK_EXT :                  7 - |
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 110 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 110 - 2/23/2020 18:19:59
 
 
 *_SET_MASK_EXT_Size :             1 - | *_SET_MODE :                     4B - |
@@ -6845,7 +6845,7 @@
     885 symbols
     708 unused symbols
 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 111 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 111 - 2/23/2020 18:19:59
 
 
   defined macros:
@@ -6866,7 +6866,7 @@ TEXTDATE                              | WORD2TXT
 
      24 macros
 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 112 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 112 - 2/23/2020 18:19:59
 
 
   defined functions:
@@ -6874,7 +6874,7 @@ TEXTDATE                              | WORD2TXT
 
 LOW                                   | HIGH                                 
 
- AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 113 - 2/22/2020 21:3:57
+ AS V1.42 Beta [Bld 146] - source file dos_fe.a80 - page 113 - 2/23/2020 18:19:59
 
 
   codepages:
@@ -6883,7 +6883,7 @@ LOW                                   | HIGH
 STANDARD (0 changed characters)
 
 
-0.14 seconds assembly time
+0.36 seconds assembly time
 
    1016 lines source file
    3448 lines incl. macro expansions
