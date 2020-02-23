@@ -1,4 +1,4 @@
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 1 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 1 - 2/23/2020 18:34:49
 
 
        1/       0 :                     
@@ -61,7 +61,7 @@
 (1)   54/       0 :                     DUPL:
 (1)   55/       0 :                     $$N		EQU (LEN) / 1024
 (1)   56/       0 :                     $$M		EQU (LEN) # 1024
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/macros.a80) - page 2 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/macros.a80) - page 2 - 2/23/2020 18:34:49
 
 
 (1)   57/       0 :                     		REPT $$N
@@ -124,7 +124,7 @@
 (1)  114/       0 :                     		ENDM
 (1)  115/       0 :                     
 (1)  116/       0 :                     READ_7FFD	MACRO
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/macros.a80) - page 3 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/macros.a80) - page 3 - 2/23/2020 18:34:49
 
 
 (1)  117/       0 :                     		LD A,HIGH (RD_7FFD)
@@ -158,14 +158,14 @@
 (1)  145/       0 :                     SSECUND		EQU (CHARFROMSTR (TIME,5)-'0')*10+(CHARFROMSTR (TIME,6)-'0')
 (1)  146/       0 : =>TRUE              		ELSE
 (1)  147/       0 : =12H                HHOUR		EQU (CHARFROMSTR (TIME,0)-'0')*10+(CHARFROMSTR (TIME,1)-'0')
-(1)  148/       0 : =13H                MMINUTE		EQU (CHARFROMSTR (TIME,3)-'0')*10+(CHARFROMSTR (TIME,4)-'0')
-(1)  149/       0 : =3AH                SSECUND		EQU (CHARFROMSTR (TIME,6)-'0')*10+(CHARFROMSTR (TIME,7)-'0')
+(1)  148/       0 : =22H                MMINUTE		EQU (CHARFROMSTR (TIME,3)-'0')*10+(CHARFROMSTR (TIME,4)-'0')
+(1)  149/       0 : =30H                SSECUND		EQU (CHARFROMSTR (TIME,6)-'0')*10+(CHARFROMSTR (TIME,7)-'0')
 (1)  150/       0 : [142]               		ENDIF
 (1)  151/       0 :                     
 (1)  152/       0 : =A857H              DATA_VERS	EQU DDATE+(MMOUNTH<<5)+(YYEAR<<9)+0X8000			;„¶• „Ø†™Æ¢†≠Æ
 (1)  153/       0 :                     
 (1)  154/       0 : =5057H              FAT_DATE	EQU DDATE+(MMOUNTH<<5)+((2000+YYEAR-1980)&0x7F)<<9
-(1)  155/       0 : =927DH              FAT_TIME	EQU SSECUND/2+(MMINUTE<<5)+(HHOUR<<11)
+(1)  155/       0 : =9458H              FAT_TIME	EQU SSECUND/2+(MMINUTE<<5)+(HHOUR<<11)
 (1)  156/       0 :                     
 (1)  157/       0 :                     TEXTDATE	MACRO
 (1)  158/       0 :                     TDATE		DB ((DDATE/10)+'0'),(DDATE#10)+'0'
@@ -187,7 +187,7 @@
 (1)  174/       0 :                     		ENDM
 (1)  175/       0 :                     
 (1)  176/       0 : =1H                 BYTE		EQU 1
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/macros.a80) - page 4 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/macros.a80) - page 4 - 2/23/2020 18:34:49
 
 
 (1)  177/       0 : =2H                 WORD		EQU 2
@@ -250,7 +250,7 @@
 (1)  234/       0 :                     $$DEC1 := (WORD)/10000
 (1)  235/       0 :                     $$TMP := WORD-$$DEC1*10000
 (1)  236/       0 :                     $$DEC2 := $$TMP/1000
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/macros.a80) - page 5 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/macros.a80) - page 5 - 2/23/2020 18:34:49
 
 
 (1)  237/       0 :                     $$TMP := $$TMP-$$DEC2*1000
@@ -313,7 +313,7 @@
 (1)   10/       0 : =44H                _TAPE_INIT            EQU INITVAR
 (1)   10/       0 : =>BLANK                             IFNB 
 (1)   10/       0 :                     INITVAR := INITVAR+
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 6 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 6 - 2/23/2020 18:34:49
 
 
 (1)   10/       0 :                     _TAPE_INIT_Size       EQU 
@@ -376,7 +376,7 @@
 (1)   16/       0 : =1H                 _SCROLL_DOWN_Size       EQU BYTE
 (1)   16/       0 : [16]                                ENDIF
 (1)   17/       0 : (MACRO)              SETVAR _SET_MODE
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 7 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 7 - 2/23/2020 18:34:49
 
 
 (1)   17/       0 : =4BH                _SET_MODE            EQU INITVAR
@@ -439,7 +439,7 @@
 (1)   24/       0 : =52H                INITVAR := INITVAR+BYTE
 (1)   24/       0 : =1H                 _COM_FAT_Size       EQU BYTE
 (1)   24/       0 : [24]                                ENDIF
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 8 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 8 - 2/23/2020 18:34:49
 
 
 (1)   25/       0 : (MACRO)              SETVAR _SORT_FINDFILES
@@ -502,7 +502,7 @@
 (1)   34/       0 : =2H                 _TXTSCR_MODE	EQU %00000010			;TXT SCREEN
 (1)   35/       0 : =10H                _TURBO_LOW	EQU %00010000			;TURBO 3,5 MHZ
 (1)   36/       0 : =20H                _TURBO_HIGH	EQU %00100000			;TURBO 7,0 MHZ
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 9 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 9 - 2/23/2020 18:34:49
 
 
 (1)   37/       0 : =30H                _TURBO_MAX	EQU %00110000			;TURBO 14,0 MHZ
@@ -565,7 +565,7 @@
 (1)   49/       0 : (MACRO)              SETVAR _HEX2DECTXT
 (1)   49/       0 : =5H                 _HEX2DECTXT            EQU INITVAR
 (1)   49/       0 : =>BLANK                             IFNB 
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 10 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 10 - 2/23/2020 18:34:49
 
 
 (1)   49/       0 :                     INITVAR := INITVAR+
@@ -628,7 +628,7 @@
 (1)   57/       0 : =1H                 _CLEAR_CMOS_Size       EQU BYTE
 (1)   57/       0 : [57]                                ENDIF
 (1)   58/       0 :                     
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 11 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 11 - 2/23/2020 18:34:49
 
 
 (1)   59/       0 :                     ;‰„≠™Ê®® ¨Æ≠‚®‡Æ¢È®™† Æ°‡†ßÆ¢
@@ -691,7 +691,7 @@
 (1)   66/       0 : =>TRUE                              ELSE
 (1)   66/       0 : =6H                 INITVAR := INITVAR+BYTE
 (1)   66/       0 : =1H                 _LOADIMAGE_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 12 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 12 - 2/23/2020 18:34:49
 
 
 (1)   66/       0 : [66]                                ENDIF
@@ -754,7 +754,7 @@
 (1)   75/       0 :                     INITVAR := INITVAR+
 (1)   75/       0 :                     _SET_VOL_Size       EQU 
 (1)   75/       0 : =>TRUE                              ELSE
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 13 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 13 - 2/23/2020 18:34:49
 
 
 (1)   75/       0 : =2H                 INITVAR := INITVAR+BYTE
@@ -817,7 +817,7 @@
 (1)   82/       0 : (MACRO)              SETVAR _FREINIT_VOL				;08 èéãçÄü èÖêÖàçàñàÄãàáÄñàü êÄáÑÖãÄ
 (1)   82/       0 : =8H                 _FREINIT_VOL            EQU INITVAR
 (1)   82/       0 : =>BLANK                             IFNB 
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 14 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 14 - 2/23/2020 18:34:49
 
 
 (1)   82/       0 :                     INITVAR := INITVAR+
@@ -880,7 +880,7 @@
 (1)   90/       0 : =1H                 _DEV_READID_Size       EQU BYTE
 (1)   90/       0 : [90]                                ENDIF
 (1)   91/       0 :                     
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 15 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 15 - 2/23/2020 18:34:49
 
 
 (1)   92/       0 :                     ;≠Æ¨•‡† ¢ÎßÎ¢†•¨ÎÂ ‰„≠™Ê®© FAT §‡†©¢•‡†
@@ -943,7 +943,7 @@
 (1)   99/       0 : =>TRUE                              ELSE
 (1)   99/       0 : =6H                 INITVAR := INITVAR+BYTE
 (1)   99/       0 : =1H                 _FIND_NAME_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 16 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 16 - 2/23/2020 18:34:49
 
 
 (1)   99/       0 : [99]                                ENDIF
@@ -1006,7 +1006,7 @@
 (1)  108/       0 : (MACRO)              INIT_VAR
 (1)  108/       0 : =>BLANK                             IFNB 
 (1)  108/       0 :                     INITVAR := 
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 17 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 17 - 2/23/2020 18:34:49
 
 
 (1)  108/       0 : =>TRUE                              ELSE
@@ -1069,7 +1069,7 @@
 (1)  115/       0 : (MACRO)              SETVAR _POSTF06				;ìëíÄçéÇàíú çéåÖê "ãÖÉÄãúçéâ" áÄèàëà àá "BC"
 (1)  115/       0 : =6H                 _POSTF06            EQU INITVAR
 (1)  115/       0 : =>BLANK                             IFNB 
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 18 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 18 - 2/23/2020 18:34:49
 
 
 (1)  115/       0 :                     INITVAR := INITVAR+
@@ -1132,7 +1132,7 @@
 (1)  125/       0 : =>TRUE                              ELSE
 (1)  125/       0 : =5H                 INITVAR := INITVAR+BYTE
 (1)  125/       0 : =1H                 _TAP_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 19 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 19 - 2/23/2020 18:34:49
 
 
 (1)  125/       0 : [125]                               ENDIF
@@ -1195,7 +1195,7 @@
 (1)  136/       0 : =0H                 _NO_INIT            EQU INITVAR
 (1)  136/       0 : =>BLANK                             IFNB 
 (1)  136/       0 :                     INITVAR := INITVAR+
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 20 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 20 - 2/23/2020 18:34:49
 
 
 (1)  136/       0 :                     _NO_INIT_Size       EQU 
@@ -1258,7 +1258,7 @@
 (1)  144/       0 : [144]                               ENDIF
 (1)  145/       0 : (MACRO)              SETVAR _X_COORD
 (1)  145/       0 : =0H                 _X_COORD            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 21 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 21 - 2/23/2020 18:34:49
 
 
 (1)  145/       0 : =>BLANK                             IFNB 
@@ -1321,7 +1321,7 @@
 (1)  151/       0 : =>TRUE                              ELSE
 (1)  151/       0 : =7H                 INITVAR := INITVAR+BYTE
 (1)  151/       0 : =1H                 _FLAGS_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 22 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 22 - 2/23/2020 18:34:49
 
 
 (1)  151/       0 : [151]                               ENDIF
@@ -1384,7 +1384,7 @@
 (1)  158/       0 : =>BLANK                             IFNB 
 (1)  158/       0 :                     INITVAR := INITVAR+
 (1)  158/       0 :                     _ADR_TXT_H_Size       EQU 
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 23 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 23 - 2/23/2020 18:34:49
 
 
 (1)  158/       0 : =>TRUE                              ELSE
@@ -1447,7 +1447,7 @@
 (1)  164/       0 : [164]                               ENDIF
 (1)  165/       0 :                     
 (1)  166/       0 : =3H                 JUMP_SIZE	EQU 3
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 24 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 24 - 2/23/2020 18:34:49
 
 
 (1)  167/       0 :                     
@@ -1510,7 +1510,7 @@
 (1)  175/       0 : =3H                 _ZCSD_WR_SEC_Size       EQU JUMP_SIZE
 (1)  175/       0 : =>FALSE                             ELSE
 (1)  175/       0 :                     INITVAR := INITVAR+BYTE
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 25 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 25 - 2/23/2020 18:34:49
 
 
 (1)  175/       0 :                     _ZCSD_WR_SEC_Size       EQU BYTE
@@ -1573,7 +1573,7 @@
 (1)  183/       0 : [183]                               ENDIF
 (1)  184/       0 :                     
 (1)  185/       0 : (MACRO)              SETVAR _INIT_TABLE_MEM,JUMP_SIZE		;ØÆ´„Á•≠®• ‚†°´®ÊÎ ß†≠Ô‚ÎÂ/·¢Æ°Æ§≠ÎÂ ·‚‡†≠®Ê Ø†¨Ô‚®
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 26 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/define.a80) - page 26 - 2/23/2020 18:34:49
 
 
 (1)  185/       0 : =124H               _INIT_TABLE_MEM            EQU INITVAR
@@ -1636,7 +1636,7 @@
 (1)   21/       0 : =3H                 RAM_BASIC	EQU 3				;ëíêÄçàñÄ BASIC ëíÄçÑÄêíçÄü ÇÖêëàü
 (1)   22/       0 : =4H                 RAM_PROFROM	EQU 4				;ëíêÄçàñÄ èÖêÖåÖççõï PROFROM
 (1)   23/       0 : =5H                 RAM_MOUNTER	EQU 5				;ëíêÄçàñÄ Ñãü åéçíàêéÇÄçàü éÅêÄáéÇ
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/global_vars.a80) - page 27 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/global_vars.a80) - page 27 - 2/23/2020 18:34:49
 
 
 (1)   24/       0 : =6H                 RAM_STS		EQU 6				;ëíêÄçàñÄ Ñãü éíãÄÑóàäÄ STS
@@ -1699,7 +1699,7 @@
 (1)   81/       0 : =FBDFH              MOUSE_X		EQU 0XFBDF			;ÄÑêÖë èéêíÄ X äééêÑàçÄíõ åõòà
 (1)   82/       0 : =FFDFH              MOUSE_Y		EQU 0XFFDF			;ÄÑêÖë èéêíÄ Y äééêÑàçÄíõ åõòà
 (1)   83/       0 : =FADFH              MOUSE_KEYS	EQU 0XFADF			;ÄÑêÖë èéêíÄ äçéèéä åõòà
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/global_vars.a80) - page 28 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/global_vars.a80) - page 28 - 2/23/2020 18:34:49
 
 
 (1)   84/       0 :                     
@@ -1762,7 +1762,7 @@
 (1)  135/       0 : =13BEH              NUM_LINE	EQU 0X13BE			;çéåÖê ëíêéäà êÄëíêÄ (0-159)
 (1)  136/       0 :                     
 (1)  137/       0 : =13BDH              FDD_EMU_PORT	EQU 0X13BD
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/global_vars.a80) - page 29 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/global_vars.a80) - page 29 - 2/23/2020 18:34:49
 
 
 (1)  138/       0 :                     
@@ -1825,7 +1825,7 @@
 (1)  184/       0 : =1H                 B_FLASH_BF          EQU 1
 (1)  184/       0 : =2H                 M_FLASH_BF          EQU 1<<1
 (1)  185/       0 : (MACRO)              BITMASK SHADOW_BF,	0			;Åàí êÄáêÖòÖçàü ÑéëíìèÄ ä íÖçÖÇõå èéêíÄå
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/global_vars.a80) - page 30 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/global_vars.a80) - page 30 - 2/23/2020 18:34:49
 
 
 (1)  185/       0 : =0H                 B_SHADOW_BF          EQU 0
@@ -1888,7 +1888,7 @@
 (1)  231/       0 : =3H                 _CMOS_MINUTE_AL	EQU 3				;åàçìíõ ÅìÑàãúçàäÄ
 (1)  232/       0 : =4H                 _CMOS_HOUR	EQU 4				;óÄëõ
 (1)  233/       0 : =5H                 _CMOS_HOUR_AL	EQU 5				;óÄëõ ÅìÑàãúçàäÄ
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/global_vars.a80) - page 31 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/global_vars.a80) - page 31 - 2/23/2020 18:34:49
 
 
 (1)  234/       0 : =6H                 _CMOS_DAY	EQU 6				;ÑÖçú çÖÑÖãà
@@ -1951,7 +1951,7 @@
 (1)  269/       0 : (MACRO)              BITMASK REZIDENT,	2			;êÄáêÖòÖçàÖ èêéÇÖêäà çÄãàóàü êÖáàÑÖçíÄ
 (1)  269/       0 : =2H                 B_REZIDENT          EQU 2
 (1)  269/       0 : =4H                 M_REZIDENT          EQU 1<<2
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/global_vars.a80) - page 32 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/global_vars.a80) - page 32 - 2/23/2020 18:34:49
 
 
 (1)  270/       0 :                     
@@ -2014,7 +2014,7 @@
 (1)  315/       0 :                     
 (1)  316/       0 : =0H                 OFFSET_FNTSAVE	EQU 0				;800 ëåÖôÖçàÖ Ç ëíêÄçàñÖ Ñãü ëéïêÄçÖçàü ëóàíÄççéÉé òêàîíÄ
 (1)  317/       0 : =800H               OFFSET_BUFSYM	EQU OFFSET_FNTSAVE+0X800	;800 ëåÖôÖçàÖ Ç ëíêÄçàñÖ íÖäìôÖÉé òêàîíÄ
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/global_vars.a80) - page 33 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/global_vars.a80) - page 33 - 2/23/2020 18:34:49
 
 
 (1)  318/       0 : =1000H              OFFSET_SCRSAVE	EQU OFFSET_BUFSYM+0X800		;1B00 ëåÖôÖçàÖ Ç ëíêÄçàñÖ Ñãü ëéïêÄçÖçàü ùäêÄçÄ
@@ -2077,7 +2077,7 @@
 (1)    6/       0 :                     INITVAR := INITVAR+BYTE
 (1)    6/       0 :                     IREG_E_Size       EQU BYTE
 (1)    6/       0 : [6]                                 ENDIF
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 34 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 34 - 2/23/2020 18:34:49
 
 
 (1)    7/       0 : (MACRO)              SETVAR IREG_D,		BYTE		;1
@@ -2140,7 +2140,7 @@
 (1)   14/       0 : =>NOT BLANK                         IFNB BYTE
 (1)   14/       0 : =3CA1H              INITVAR := INITVAR+BYTE
 (1)   14/       0 : =1H                 PORT_3F_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 35 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 35 - 2/23/2020 18:34:49
 
 
 (1)   14/       0 : =>FALSE                             ELSE
@@ -2203,7 +2203,7 @@
 (1)   20/       0 : [20]                                ENDIF
 (1)   21/       0 : (MACRO)              SETVAR REG_IF,		BYTE		;1
 (1)   21/       0 : =3CA9H              REG_IF            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 36 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 36 - 2/23/2020 18:34:49
 
 
 (1)   21/       0 : =>NOT BLANK                         IFNB BYTE
@@ -2266,7 +2266,7 @@
 (1)   27/       0 : =>FALSE                             ELSE
 (1)   27/       0 :                     INITVAR := INITVAR+BYTE
 (1)   27/       0 :                     REG_L_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 37 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 37 - 2/23/2020 18:34:49
 
 
 (1)   27/       0 : [27]                                ENDIF
@@ -2329,7 +2329,7 @@
 (1)   34/       0 : =>NOT BLANK                         IFNB BYTE
 (1)   34/       0 : =3CB7H              INITVAR := INITVAR+BYTE
 (1)   34/       0 : =1H                 WR_RAMNROM_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 38 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 38 - 2/23/2020 18:34:49
 
 
 (1)   34/       0 : =>FALSE                             ELSE
@@ -2392,7 +2392,7 @@
 (1)   40/       0 : [40]                                ENDIF
 (1)   41/       0 : (MACRO)              SETVAR WR_0WINA1,	BYTE		;1
 (1)   41/       0 : =3CBDH              WR_0WINA1            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 39 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 39 - 2/23/2020 18:34:49
 
 
 (1)   41/       0 : =>NOT BLANK                         IFNB BYTE
@@ -2455,7 +2455,7 @@
 (1)   47/       0 : =>FALSE                             ELSE
 (1)   47/       0 :                     INITVAR := INITVAR+BYTE
 (1)   47/       0 :                     MINT_STACK_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 40 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 40 - 2/23/2020 18:34:49
 
 
 (1)   47/       0 : [47]                                ENDIF
@@ -2518,7 +2518,7 @@
 (1)   55/       0 : =3CCBH              OLD_PORT_BF            EQU INITVAR
 (1)   55/       0 : =>NOT BLANK                         IFNB BYTE
 (1)   55/       0 : =3CCCH              INITVAR := INITVAR+BYTE
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 41 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 41 - 2/23/2020 18:34:49
 
 
 (1)   55/       0 : =1H                 OLD_PORT_BF_Size       EQU BYTE
@@ -2581,7 +2581,7 @@
 (1)   61/       0 :                     SAVED_RAM_Size       EQU BYTE
 (1)   61/       0 : [61]                                ENDIF
 (1)   62/       0 :                     END_VARS
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 42 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 42 - 2/23/2020 18:34:49
 
 
 (1)   63/       0 :                     
@@ -2644,7 +2644,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 43 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 43 - 2/23/2020 18:34:49
 
 
                     FF FF 
@@ -2707,7 +2707,7 @@
                     FF FF FF FF FF FF 
                     FF 
       34/      80 : [34]                                ENDIF
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 44 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 44 - 2/23/2020 18:34:49
 
 
       34/      80 : [34]                                ENDIF
@@ -2770,7 +2770,7 @@
 (1)   56/      9A : 38 18                       JR      C,N1
 (1)   57/      9C : 3C                          INC     A
 (1)   58/      9D : 0C                          INC     C
- AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/dec40.a80) - page 45 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80(../../svn/pentevo/rom/dec40.a80) - page 45 - 2/23/2020 18:34:49
 
 
 (1)   59/      9E : 28 0F                       JR      Z,N2
@@ -2833,7 +2833,7 @@
 (1)  116/      EE :                     
       36/      EE :                     
       37/      EE : (MACRO)             		DUPL 0X00FF-$,0XFF
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 46 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 46 - 2/23/2020 18:34:49
 
 
       37/      EE :                     DUPL:
@@ -2896,7 +2896,7 @@
       80/     15B : ED 79               		OUT (C),A
       81/     15D : 01 F7 BF            		LD BC,WIN_A2
       82/     160 : 3E 7D               		LD A,2 ! 0X7F
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 47 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 47 - 2/23/2020 18:34:49
 
 
       83/     162 : ED 79               		OUT (C),A
@@ -2959,7 +2959,7 @@
      129/     1A2 : 0F                  		RRCA
      130/     1A3 : 0F                  		RRCA				;èêéÇÖêäÄ çÄÜÄíàü äçéèäà "6" èêà ëÅêéëÖ
      131/     1A4 : 38 18               		JR C,INITPAGE4
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 48 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 48 - 2/23/2020 18:34:49
 
 
      132/     1A6 :                     ;ÇïéÑ Ç éíãÄÑóàä
@@ -3022,7 +3022,7 @@
      189/     215 : FB                  		EI				;Ø†´®‚‡†
      190/     216 : 76                  		HALT
      191/     217 : F3                  		DI
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 49 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 49 - 2/23/2020 18:34:49
 
 
      192/     218 : 21 83 3D            		LD HL,TRSTPAL			;+15
@@ -3085,7 +3085,7 @@
      235/     275 : =>NOT BLANK                         IFNB _WRITE_CMOS
      235/     275 : 02                                  DB _WRITE_CMOS
      235/     276 : [235]                               ENDIF
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 50 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 50 - 2/23/2020 18:34:49
 
 
      235/     276 : =>BLANK                             IFNB 
@@ -3148,7 +3148,7 @@
      277/     2B7 : 38 01               		JR C,$+3
      278/     2B9 : 0C                  		INC C
      276/     2BA : 1F                  		RRA
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 51 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 51 - 2/23/2020 18:34:49
 
 
      277/     2BB : 38 01               		JR C,$+3
@@ -3211,7 +3211,7 @@
      335/     325 : 3E 10               		LD A,0X10
      336/     327 : 21 03 04            CMOSHELP	LD HL,BONUADR			;CMOS setup & HELP
      337/     32A : 11 00 60            		LD DE,0X6000			;êÄëèÄäéÇäÄ à áÄèìëä CMOS SETUP
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 52 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 52 - 2/23/2020 18:34:49
 
 
      338/     32D : D5                  		PUSH DE
@@ -3274,7 +3274,7 @@
      395/     370 :                     		REPT 3
      396/     370 :                     		RRCA
      397/     370 :                     		ENDM
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 53 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 53 - 2/23/2020 18:34:49
 
 
      396/     370 : 0F                  		RRCA
@@ -3337,7 +3337,7 @@
      438/     3BB : F1                  		POP AF
      439/     3BC : C9                  		RET
      440/     3BD :                     
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 54 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 54 - 2/23/2020 18:34:49
 
 
      441/     3BD :                     ;Ñãü êÖáàÑÖçíÄ HONEY COMANDER
@@ -3400,7 +3400,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 55 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 55 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -3463,7 +3463,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 56 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 56 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -3526,7 +3526,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 57 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 57 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -3589,7 +3589,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 58 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 58 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -3652,7 +3652,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 59 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 59 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -3715,7 +3715,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 60 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 60 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -3778,7 +3778,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 61 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 61 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -3841,7 +3841,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 62 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 62 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -3904,7 +3904,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 63 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 63 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -3967,7 +3967,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 64 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 64 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4030,7 +4030,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 65 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 65 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4093,7 +4093,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 66 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 66 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4156,7 +4156,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 67 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 67 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4219,7 +4219,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 68 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 68 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4282,7 +4282,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 69 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 69 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4345,7 +4345,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 70 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 70 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4408,7 +4408,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 71 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 71 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4471,7 +4471,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF 
      484/    1C03 : FF FF FF FF FF FF                   DB 1024 DUP(0XFF)
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 72 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 72 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4534,7 +4534,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 73 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 73 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4597,7 +4597,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 74 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 74 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4660,7 +4660,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 75 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 75 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4723,7 +4723,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 76 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 76 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4786,7 +4786,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 77 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 77 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4849,7 +4849,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 78 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 78 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4912,7 +4912,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 79 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 79 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -4975,7 +4975,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 80 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 80 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5038,7 +5038,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 81 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 81 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5101,7 +5101,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 82 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 82 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5164,7 +5164,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 83 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 83 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5227,7 +5227,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 84 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 84 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5290,7 +5290,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 85 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 85 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5353,7 +5353,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 86 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 86 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5416,7 +5416,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 87 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 87 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5479,7 +5479,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 88 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 88 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5542,7 +5542,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 89 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 89 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5605,7 +5605,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 90 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 90 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5668,7 +5668,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 91 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 91 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5731,7 +5731,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 92 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 92 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5794,7 +5794,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 93 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 93 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5857,7 +5857,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 94 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 94 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5920,7 +5920,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 95 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 95 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -5983,7 +5983,7 @@
      510/    3D09 : D3 BF               		OUT (PEVO_CONF),A
      511/    3D0B : 01 BE 00            		LD BC,RD_0WINA0
      512/    3D0E : ED 60               		IN H,(C)
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 96 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 96 - 2/23/2020 18:34:49
 
 
      513/    3D10 : 06 09               		LD B,HIGH (RD_DOS7FFD)
@@ -6046,7 +6046,7 @@
      555/    3D5E : C9                  		RET
      556/    3D5F :                     
      557/    3D5F :                     ;1000 0001 81 0 BASIC 128	|EVO
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 97 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 97 - 2/23/2020 18:34:49
 
 
      558/    3D5F :                     ;1000 0011 83 0 BASIC 48	|SERVICE
@@ -6109,7 +6109,7 @@
      615/    3D93 :                     
      616/    3D93 : (MACRO)             		DUPL 0X3FF8-$,0XFF
      616/    3D93 :                     DUPL:
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 98 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 98 - 2/23/2020 18:34:49
 
 
      616/    3D93 : =0H                 $$N             EQU (0X3FF8-$) / 1024
@@ -6172,7 +6172,7 @@
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
                     FF FF FF FF FF FF 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 99 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 99 - 2/23/2020 18:34:49
 
 
                     FF FF FF FF FF FF 
@@ -6232,7 +6232,7 @@
      617/    3FF8 : 48 45 47 4C 55 4B   		DB "HEGLUK"
      618/    3FFE : 57 A8               		DW DATA_VERS
      619/    4000 :                     
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 100 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 100 - 2/23/2020 18:34:49
 
 
   symbol table (* = unused):
@@ -6295,7 +6295,7 @@
  CMP_REZIDENT :                 3BD C |  CMP_REZIDENT.NEXTBYTE :        3D5 C |
  CMP_REZIDENT.NOTFOUND :        3FB C |  CONF4CUSTOM :                   9C - |
  CONF4GLUK :                     94 - |  CONF4PROF :                     90 - |
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 101 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 101 - 2/23/2020 18:34:49
 
 
  CONF_128 :                    7FFD - | *CONSTPI :        3.141592653589793 - |
@@ -6317,7 +6317,7 @@
 *END_INIT :                     233 C | *END_VARS :                       0 C |
  ERAM_CODE :                    3A1 C | *EXIT_PORT :                     BE - |
 *FALSE :                          0 - | *FAT_DATE :                    5057 - |
-*FAT_TIME :                    927D - | *FDD_EMU_PORT :                13BD - |
+*FAT_TIME :                    9458 - | *FDD_EMU_PORT :                13BD - |
 *FDI_BLOCK_SMESH :             41FF - | *FDI_BYTE_SMESH :              41FE - |
 *FDI_IMAGE1SECT :              4400 - | *FDI_PAGE_START :              40FF - |
 *FDI_TABLE_CYL :               4000 - | *FLAGS_DRV :                   BDF8 - |
@@ -6358,10 +6358,10 @@
 *MEMORY_128 :                    30 - | *MEMORY_48 :                     20 - |
 *MEMORY_ALL :                    10 - | *MINT_STACK :                  3CC3 - |
 *MINT_STACK_Size :                2 - |  MKOL_MODES :                     3 - |
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 102 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 102 - 2/23/2020 18:34:49
 
 
- MMINUTE :                       13 - |  MMOUNTH :                        2 - |
+ MMINUTE :                       22 - |  MMOUNTH :                        2 - |
 *MOMCPU :                      80DC - | *MOMCPUNAME :              Z80UNDOC - |
  MOUNT_CLS :                   1000 - |  MOUNT_DRIVES :                B100 - |
 *MOUSE_KEYS :                  FADF - | *MOUSE_X :                     FBDF - |
@@ -6421,7 +6421,7 @@
 *RD_1WINA3 :                    7BE - | *RD_77 :                        CBE - |
 *RD_7FFD :                      ABE - |  RD_DOS7FFD :                   9BE - |
 *RD_EFF7 :                      BBE - | *RD_FF :                       3CA4 - |
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 103 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 103 - 2/23/2020 18:34:49
 
 
 *RD_FF_Size :                     1 - | *RD_PALITRA :                   DBE - |
@@ -6462,11 +6462,11 @@
  SET_MAPPER :                  3D5E C |  SET_MODE1 :                    36D C |
  SET_MODE2 :                    37A C | *SET_VIDEOMODE :                  8 - |
  SIZEDATE :                       9 - |  SIZETIME :                       8 - |
- SSECUND :                       3A - |  START_SELECT :                 342 C |
+ SSECUND :                       30 - |  START_SELECT :                 342 C |
 *START_STS :                   C000 - |  TEK_BUFPATH :                 2000 - |
 *TEK_ROMPAGE :                 3CC5 - | *TEK_ROMPAGE_Size :               1 - |
  TEK_TYPE :                    BDF7 - | *TEMP_SP :                     3CD0 - |
-*TEMP_SP_Size :                   2 - |  TIME :                    18:19:58 - |
+*TEMP_SP_Size :                   2 - |  TIME :                    18:34:48 - |
  TRSTPAL :                     3D83 C | *TRUE :                           1 - |
 *TURBO_14 :                      C0 - | *TURBO_3 :                       40 - |
 *TURBO_7 :                       80 - | *UNPACK :                        80 - |
@@ -6484,7 +6484,7 @@
  WIN_P1 :                      77F7 - |  WIN_P2 :                      B7F7 - |
 *WIN_P3 :                      F7F7 - | *WIN_R0 :                      3BF7 - |
 *WIN_R1 :                      7BF7 - | *WIN_R2 :                      BBF7 - |
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 104 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 104 - 2/23/2020 18:34:49
 
 
 *WIN_R3 :                      FBF7 - |  WORD :                           2 - |
@@ -6547,7 +6547,7 @@
 *_DEV_INIT_Size :                 1 - | *_DEV_READ :                      2 - |
 *_DEV_READID :                    4 - | *_DEV_READID_Size :               1 - |
 *_DEV_READ_Size :                 1 - | *_DEV_STATUS :                    1 - |
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 105 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 105 - 2/23/2020 18:34:49
 
 
 *_DEV_STATUS_Size :               1 - | *_DEV_WRITE :                     3 - |
@@ -6610,7 +6610,7 @@
 *_POSTF02_Size :                  1 - | *_POSTF03 :                       3 - |
 *_POSTF03_Size :                  1 - | *_POSTF04 :                       4 - |
 *_POSTF04_Size :                  1 - | *_POSTF05 :                       5 - |
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 106 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 106 - 2/23/2020 18:34:49
 
 
 *_POSTF05_Size :                  1 - | *_POSTF06 :                       6 - |
@@ -6665,7 +6665,7 @@
     809 symbols
     637 unused symbols
 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 107 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 107 - 2/23/2020 18:34:49
 
 
   defined macros:
@@ -6685,7 +6685,7 @@ WORD2TXT                              |
 
      21 macros
 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 108 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 108 - 2/23/2020 18:34:49
 
 
   defined functions:
@@ -6693,7 +6693,7 @@ WORD2TXT                              |
 
 LOW                                   | HIGH                                 
 
- AS V1.42 Beta [Bld 146] - source file services.a80 - page 109 - 2/23/2020 18:19:58
+ AS V1.42 Beta [Bld 146] - source file services.a80 - page 109 - 2/23/2020 18:34:49
 
 
   codepages:
@@ -6702,7 +6702,7 @@ LOW                                   | HIGH
 STANDARD (0 changed characters)
 
 
-0.38 seconds assembly time
+0.33 seconds assembly time
 
    1589 lines source file
    3398 lines incl. macro expansions

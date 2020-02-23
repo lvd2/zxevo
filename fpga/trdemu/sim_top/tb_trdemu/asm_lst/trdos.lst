@@ -1,4 +1,4 @@
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 1 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 1 - 2/23/2020 18:34:49
 
 
        1/       0 :                     
@@ -61,7 +61,7 @@
 (1)   52/       0 :                     
 (1)   53/       0 :                     DUPL		MACRO LEN,FILL
 (1)   54/       0 :                     DUPL:
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 2 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 2 - 2/23/2020 18:34:49
 
 
 (1)   55/       0 :                     $$N		EQU (LEN) / 1024
@@ -124,7 +124,7 @@
 (1)  112/       0 :                     		AND BYTE!0XFF
 (1)  113/       0 :                     		OUT (PEVO_CONF),A
 (1)  114/       0 :                     		ENDM
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 3 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 3 - 2/23/2020 18:34:49
 
 
 (1)  115/       0 :                     
@@ -160,14 +160,14 @@
 (1)  145/       0 :                     SSECUND		EQU (CHARFROMSTR (TIME,5)-'0')*10+(CHARFROMSTR (TIME,6)-'0')
 (1)  146/       0 : =>TRUE              		ELSE
 (1)  147/       0 : =12H                HHOUR		EQU (CHARFROMSTR (TIME,0)-'0')*10+(CHARFROMSTR (TIME,1)-'0')
-(1)  148/       0 : =13H                MMINUTE		EQU (CHARFROMSTR (TIME,3)-'0')*10+(CHARFROMSTR (TIME,4)-'0')
-(1)  149/       0 : =3BH                SSECUND		EQU (CHARFROMSTR (TIME,6)-'0')*10+(CHARFROMSTR (TIME,7)-'0')
+(1)  148/       0 : =22H                MMINUTE		EQU (CHARFROMSTR (TIME,3)-'0')*10+(CHARFROMSTR (TIME,4)-'0')
+(1)  149/       0 : =31H                SSECUND		EQU (CHARFROMSTR (TIME,6)-'0')*10+(CHARFROMSTR (TIME,7)-'0')
 (1)  150/       0 : [142]               		ENDIF
 (1)  151/       0 :                     
 (1)  152/       0 : =A857H              DATA_VERS	EQU DDATE+(MMOUNTH<<5)+(YYEAR<<9)+0X8000			;ã¦¥ ã¯ ª®¢ ­®
 (1)  153/       0 :                     
 (1)  154/       0 : =5057H              FAT_DATE	EQU DDATE+(MMOUNTH<<5)+((2000+YYEAR-1980)&0x7F)<<9
-(1)  155/       0 : =927DH              FAT_TIME	EQU SSECUND/2+(MMINUTE<<5)+(HHOUR<<11)
+(1)  155/       0 : =9458H              FAT_TIME	EQU SSECUND/2+(MMINUTE<<5)+(HHOUR<<11)
 (1)  156/       0 :                     
 (1)  157/       0 :                     TEXTDATE	MACRO
 (1)  158/       0 :                     TDATE		DB ((DDATE/10)+'0'),(DDATE#10)+'0'
@@ -187,7 +187,7 @@
 (1)  172/       0 :                     		DB N3
 (1)  173/       0 :                     		ENDIF
 (1)  174/       0 :                     		ENDM
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 4 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 4 - 2/23/2020 18:34:49
 
 
 (1)  175/       0 :                     
@@ -250,7 +250,7 @@
 (1)  232/       0 :                     ; ¯à¥®¡à §®¢ ­¨¥ 16 ¡¨â­®£® ç¨á«  ¢ â¥ªáâ
 (1)  233/       0 :                     WORD2TXT	MACRO WORD
 (1)  234/       0 :                     $$DEC1 := (WORD)/10000
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 5 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/macros.a80) - page 5 - 2/23/2020 18:34:49
 
 
 (1)  235/       0 :                     $$TMP := WORD-$$DEC1*10000
@@ -313,7 +313,7 @@
 (1)   46/       0 : =BH                 ROM_ADD_BAS48	EQU 0X0B			;ŽŒ… ‘’€ˆ–› ROM BASIC 48
 (1)   47/       0 : =18H                ROM_BAS48_STD	EQU 0X18			;ŽŒ… ‘’€ˆ–› ROM BASIC 48 (‘’€„€’€Ÿ ‚…‘ˆŸ)
 (1)   48/       0 : =19H                ROM_BAS128_STD	EQU 0X19			;ŽŒ… ‘’€ˆ–› ROM BASIC 128 (‘’€„€’€Ÿ ‚…‘ˆŸ)
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 6 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 6 - 2/23/2020 18:34:49
 
 
 (1)   49/       0 : =1AH                ROM_BAS48_128	EQU 0X1A			;ŽŒ… ‘’€ˆ–› ROM BASIC 48 (‘’€„€’€Ÿ ‚…‘ˆŸ „‹Ÿ BASIC128)
@@ -376,7 +376,7 @@
 (1)  100/       0 : =FEEFH              RS232_MDM_STAT	EQU 0XFEEF
 (1)  101/       0 : =FFEFH              RS232_WORK_REG	EQU 0XFFEF
 (1)  102/       0 :                     
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 7 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 7 - 2/23/2020 18:34:49
 
 
 (1)  103/       0 :                     ;[‘ŠŽŽ‘’ˆ RS232]
@@ -439,7 +439,7 @@
 (1)  160/       0 : =5H                 CYAN		EQU 5
 (1)  161/       0 : =6H                 YELLOW		EQU 6
 (1)  162/       0 : =7H                 WHITE		EQU 7
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 8 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 8 - 2/23/2020 18:34:49
 
 
 (1)  163/       0 : =40H                BR_INK		EQU 0X40
@@ -502,7 +502,7 @@
 (1)  202/       0 : =7H                 NUM_TXTSCR	EQU %00000111			;ŽŒ… ‚ˆ„…Ž…†ˆŒ€ „‹Ÿ ATM Ž’€ (Ž„Ž‘’€ˆ—›‰ ’…Š‘’ŒŽ„ 80*25)
 (1)  203/       0 :                     
 (1)  204/       0 : =8H                 SET_VIDEOMODE	EQU %00001000
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 9 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 9 - 2/23/2020 18:34:49
 
 
 (1)  205/       0 :                     
@@ -565,7 +565,7 @@
 (1)  252/       0 : (MACRO)              BITMASK PRINTER_AY,	5			;€‡…˜…ˆ… Ž„Œ…› „€‰‚…€ …—€’ˆ ‚ BASIC48
 (1)  252/       0 : =5H                 B_PRINTER_AY          EQU 5
 (1)  252/       0 : =20H                M_PRINTER_AY          EQU 1<<5
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 10 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 10 - 2/23/2020 18:34:49
 
 
 (1)  253/       0 : (MACRO)              BITMASK RELOAD_FONT,	4			;€‡…˜…ˆ… ……‡€ƒ“‡Šˆ ˜ˆ”’€ ˆ ‘Ž‘…
@@ -628,7 +628,7 @@
 (1)  284/       0 : =CH                 _REAL_DRIVE	EQU %00001100			;Œ€‘Š€ ŽŒ…€ …€‹œŽƒŽ „ˆ‘ŠŽ‚Ž„€
 (1)  285/       0 : =3H                 _VIRT_DRIVE	EQU %00000011			;Œ€‘Š€ ŽŒ…€ ‚ˆ’“€‹œŽƒŽ „ˆ‘ŠŽ‚Ž„€
 (1)  286/       0 :                     
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 11 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 11 - 2/23/2020 18:34:49
 
 
 (1)  287/       0 :                     ;[Ÿ—…‰Š€ CMOS 0XE9]
@@ -691,7 +691,7 @@
 (1)  340/       0 :                     ;7 =0-„€‰‚… SD Š€’› NEOGS … “‘’€Ž‚‹…, =1-“‘’€Ž‚‹…
 (1)  341/       0 :                     ;6
 (1)  342/       0 :                     ;5
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 12 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/global_vars.a80) - page 12 - 2/23/2020 18:34:49
 
 
 (1)  343/       0 :                     ;4
@@ -754,7 +754,7 @@
 (1)    9/       0 :                     _AY_PRN_SCR_Size       EQU 
 (1)    9/       0 : =>TRUE                              ELSE
 (1)    9/       0 : =44H                INITVAR := INITVAR+BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 13 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 13 - 2/23/2020 18:34:50
 
 
 (1)    9/       0 : =1H                 _AY_PRN_SCR_Size       EQU BYTE
@@ -817,7 +817,7 @@
 (1)   16/       0 : =4AH                _SCROLL_DOWN            EQU INITVAR
 (1)   16/       0 : =>BLANK                             IFNB 
 (1)   16/       0 :                     INITVAR := INITVAR+
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 14 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 14 - 2/23/2020 18:34:50
 
 
 (1)   16/       0 :                     _SCROLL_DOWN_Size       EQU 
@@ -880,7 +880,7 @@
 (1)   24/       0 : (MACRO)              SETVAR _COM_FAT
 (1)   24/       0 : =51H                _COM_FAT            EQU INITVAR
 (1)   24/       0 : =>BLANK                             IFNB 
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 15 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 15 - 2/23/2020 18:34:50
 
 
 (1)   24/       0 :                     INITVAR := INITVAR+
@@ -943,7 +943,7 @@
 (1)   30/       0 : =58H                INITVAR := INITVAR+BYTE
 (1)   30/       0 : =1H                 _SETUP_FONT_Size       EQU BYTE
 (1)   30/       0 : [30]                                ENDIF
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 16 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 16 - 2/23/2020 18:34:50
 
 
 (1)   31/       0 :                     
@@ -1006,7 +1006,7 @@
 (1)   48/       0 :                     INITVAR := INITVAR+
 (1)   48/       0 :                     _HEX4DECTXT_Size       EQU 
 (1)   48/       0 : =>TRUE                              ELSE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 17 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 17 - 2/23/2020 18:34:50
 
 
 (1)   48/       0 : =5H                 INITVAR := INITVAR+BYTE
@@ -1069,7 +1069,7 @@
 (1)   57/       0 : =3H                 _CLEAR_CMOS            EQU INITVAR
 (1)   57/       0 : =>BLANK                             IFNB 
 (1)   57/       0 :                     INITVAR := INITVAR+
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 18 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 18 - 2/23/2020 18:34:50
 
 
 (1)   57/       0 :                     _CLEAR_CMOS_Size       EQU 
@@ -1132,7 +1132,7 @@
 (1)   65/       0 : [65]                                ENDIF
 (1)   66/       0 : (MACRO)              SETVAR _LOADIMAGE				; § £àã§ª  ®¡à §  ¢ à ¬¤¨áª
 (1)   66/       0 : =5H                 _LOADIMAGE            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 19 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 19 - 2/23/2020 18:34:50
 
 
 (1)   66/       0 : =>BLANK                             IFNB 
@@ -1195,7 +1195,7 @@
 (1)   74/       0 : =1H                 INITVAR := INITVAR+BYTE
 (1)   74/       0 : =1H                 _DEVFIND_Size       EQU BYTE
 (1)   74/       0 : [74]                                ENDIF
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 20 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 20 - 2/23/2020 18:34:50
 
 
 (1)   75/       0 : (MACRO)              SETVAR _SET_VOL				;01 ‚›Ž €‡„…‹€                          
@@ -1258,7 +1258,7 @@
 (1)   81/       0 :                     INITVAR := INITVAR+
 (1)   81/       0 :                     _COMHDDN_Size       EQU 
 (1)   81/       0 : =>TRUE                              ELSE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 21 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 21 - 2/23/2020 18:34:50
 
 
 (1)   81/       0 : =8H                 INITVAR := INITVAR+BYTE
@@ -1321,7 +1321,7 @@
 (1)   90/       0 : =4H                 _DEV_READID            EQU INITVAR
 (1)   90/       0 : =>BLANK                             IFNB 
 (1)   90/       0 :                     INITVAR := INITVAR+
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 22 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 22 - 2/23/2020 18:34:50
 
 
 (1)   90/       0 :                     _DEV_READID_Size       EQU 
@@ -1384,7 +1384,7 @@
 (1)   98/       0 : [98]                                ENDIF
 (1)   99/       0 : (MACRO)              SETVAR _FIND_NAME				;Žˆ‘Š Ž ˆŒ…ˆ
 (1)   99/       0 : =5H                 _FIND_NAME            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 23 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 23 - 2/23/2020 18:34:50
 
 
 (1)   99/       0 : =>BLANK                             IFNB 
@@ -1447,7 +1447,7 @@
 (1)  105/       0 : =>TRUE                              ELSE
 (1)  105/       0 : =CH                 INITVAR := INITVAR+BYTE
 (1)  105/       0 : =1H                 _POS_FILES_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 24 - 2/23/2020 18:19:59
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 24 - 2/23/2020 18:34:50
 
 
 (1)  105/       0 : [105]                               ENDIF
@@ -1510,7 +1510,7 @@
 (1)  114/       0 :                     INITVAR := INITVAR+
 (1)  114/       0 :                     _POSTF05_Size       EQU 
 (1)  114/       0 : =>TRUE                              ELSE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 25 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 25 - 2/23/2020 18:34:50
 
 
 (1)  114/       0 : =6H                 INITVAR := INITVAR+BYTE
@@ -1573,7 +1573,7 @@
 (1)  124/       0 : [124]                               ENDIF
 (1)  125/       0 : (MACRO)              SETVAR _TAP		;TAP
 (1)  125/       0 : =4H                 _TAP            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 26 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 26 - 2/23/2020 18:34:50
 
 
 (1)  125/       0 : =>BLANK                             IFNB 
@@ -1636,7 +1636,7 @@
 (1)  135/       0 : =>BLANK                             IFNB 
 (1)  135/       0 :                     INITVAR := 
 (1)  135/       0 : =>TRUE                              ELSE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 27 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 27 - 2/23/2020 18:34:50
 
 
 (1)  135/       0 : =0H                 INITVAR := 0
@@ -1699,7 +1699,7 @@
 (1)  143/       0 :                     ;®¯¨á â¥«¨ ¤«ï à¨á®¢ ­¨ï ®ª­ 
 (1)  144/       0 : (MACRO)              INIT_VAR
 (1)  144/       0 : =>BLANK                             IFNB 
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 28 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 28 - 2/23/2020 18:34:50
 
 
 (1)  144/       0 :                     INITVAR := 
@@ -1762,7 +1762,7 @@
 (1)  150/       0 : [150]                               ENDIF
 (1)  151/       0 : (MACRO)              SETVAR _FLAGS
 (1)  151/       0 : =6H                 _FLAGS            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 29 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 29 - 2/23/2020 18:34:50
 
 
 (1)  151/       0 : =>BLANK                             IFNB 
@@ -1825,7 +1825,7 @@
 (1)  157/       0 : =>TRUE                              ELSE
 (1)  157/       0 : =DH                 INITVAR := INITVAR+BYTE
 (1)  157/       0 : =1H                 _ADR_TXT_L_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 30 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 30 - 2/23/2020 18:34:50
 
 
 (1)  157/       0 : [157]                               ENDIF
@@ -1888,7 +1888,7 @@
 (1)  164/       0 : =>BLANK                             IFNB 
 (1)  164/       0 :                     INITVAR := INITVAR+
 (1)  164/       0 :                     _ADR_HOTKEY_H_Size       EQU 
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 31 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 31 - 2/23/2020 18:34:50
 
 
 (1)  164/       0 : =>TRUE                              ELSE
@@ -1951,7 +1951,7 @@
 (1)  174/       0 :                     _ZCSD_RD_SEC_Size       EQU BYTE
 (1)  174/       0 : [174]                               ENDIF
 (1)  175/       0 : (MACRO)              SETVAR _ZCSD_WR_SEC,JUMP_SIZE			;§ ¯¨áì á¥ªâ®à®¢ ­ ¡®àâ­®© SD ª àâë
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 32 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 32 - 2/23/2020 18:34:50
 
 
 (1)  175/       0 : =10FH               _ZCSD_WR_SEC            EQU INITVAR
@@ -2014,7 +2014,7 @@
 (1)  183/       0 : =>NOT BLANK                         IFNB JUMP_SIZE
 (1)  183/       0 : =124H               INITVAR := INITVAR+JUMP_SIZE
 (1)  183/       0 : =3H                 _READ_STAT_PS2_Size       EQU JUMP_SIZE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 33 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/define.a80) - page 33 - 2/23/2020 18:34:50
 
 
 (1)  183/       0 : =>FALSE                             ELSE
@@ -2077,7 +2077,7 @@
 (1)    6/       0 : =1H                 IREG_E_Size       EQU BYTE
 (1)    6/       0 : =>FALSE                             ELSE
 (1)    6/       0 :                     INITVAR := INITVAR+BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 34 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 34 - 2/23/2020 18:34:50
 
 
 (1)    6/       0 :                     IREG_E_Size       EQU BYTE
@@ -2140,7 +2140,7 @@
 (1)   14/       0 : (MACRO)              SETVAR PORT_3F,	BYTE		;1 ‡€—…ˆ… Ž’€ 3F
 (1)   14/       0 : =3CA0H              PORT_3F            EQU INITVAR
 (1)   14/       0 : =>NOT BLANK                         IFNB BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 35 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 35 - 2/23/2020 18:34:50
 
 
 (1)   14/       0 : =3CA1H              INITVAR := INITVAR+BYTE
@@ -2203,7 +2203,7 @@
 (1)   20/       0 :                     INITVAR := INITVAR+BYTE
 (1)   20/       0 :                     ADDR_RET_Size       EQU BYTE
 (1)   20/       0 : [20]                                ENDIF
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 36 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 36 - 2/23/2020 18:34:50
 
 
 (1)   21/       0 : (MACRO)              SETVAR REG_IF,		BYTE		;1
@@ -2266,7 +2266,7 @@
 (1)   27/       0 : =3CB0H              INITVAR := INITVAR+BYTE
 (1)   27/       0 : =1H                 REG_L_Size       EQU BYTE
 (1)   27/       0 : =>FALSE                             ELSE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 37 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 37 - 2/23/2020 18:34:50
 
 
 (1)   27/       0 :                     INITVAR := INITVAR+BYTE
@@ -2329,7 +2329,7 @@
 (1)   34/       0 : (MACRO)              SETVAR WR_RAMNROM,	BYTE		;1
 (1)   34/       0 : =3CB6H              WR_RAMNROM            EQU INITVAR
 (1)   34/       0 : =>NOT BLANK                         IFNB BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 38 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 38 - 2/23/2020 18:34:50
 
 
 (1)   34/       0 : =3CB7H              INITVAR := INITVAR+BYTE
@@ -2392,7 +2392,7 @@
 (1)   40/       0 :                     INITVAR := INITVAR+BYTE
 (1)   40/       0 :                     WR_0WINA2_Size       EQU BYTE
 (1)   40/       0 : [40]                                ENDIF
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 39 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 39 - 2/23/2020 18:34:50
 
 
 (1)   41/       0 : (MACRO)              SETVAR WR_0WINA1,	BYTE		;1
@@ -2455,7 +2455,7 @@
 (1)   47/       0 : =3CC5H              INITVAR := INITVAR+WORD
 (1)   47/       0 : =2H                 MINT_STACK_Size       EQU WORD
 (1)   47/       0 : =>FALSE                             ELSE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 40 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 40 - 2/23/2020 18:34:50
 
 
 (1)   47/       0 :                     INITVAR := INITVAR+BYTE
@@ -2518,7 +2518,7 @@
 (1)   54/       0 :                     ; SETVAR VIRT_REAL_DRV,	BYTE		;1
 (1)   55/       0 : (MACRO)              SETVAR OLD_PORT_BF,	BYTE		;1
 (1)   55/       0 : =3CCBH              OLD_PORT_BF            EQU INITVAR
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 41 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 41 - 2/23/2020 18:34:50
 
 
 (1)   55/       0 : =>NOT BLANK                         IFNB BYTE
@@ -2581,7 +2581,7 @@
 (1)   61/       0 : =>FALSE                             ELSE
 (1)   61/       0 :                     INITVAR := INITVAR+BYTE
 (1)   61/       0 :                     SAVED_RAM_Size       EQU BYTE
- AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 42 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80(../../svn/pentevo/rom/evodos_vars.a80) - page 42 - 2/23/2020 18:34:50
 
 
 (1)   61/       0 : [61]                                ENDIF
@@ -2610,7 +2610,7 @@
       25/       5 : 3E 01               		LD A,1
       26/       7 : 01 BD 13            RESTART		LD BC,BD_FDD_MASK
       27/       A : ED 79               		OUT (C),A
-      28/       C : 21 00 00            		LD HL,0
+      28/       C : 21 FE 03            		LD HL,EMPTY
       29/       F : C3 00 03            		JP START_TEST
       30/      12 :                     
       31/      12 : (MACRO)             		DUPL 0X300-$
@@ -2644,7 +2644,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 43 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 43 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -2707,7 +2707,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 44 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 44 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -2770,7 +2770,7 @@
       36/     30C : (MACRO)             		DIHALT
       36/     30C : F3                                  DI
       36/     30D : 76                                  HALT
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 45 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 45 - 2/23/2020 18:34:50
 
 
       36/     30E : 00                                  NOP
@@ -2833,7 +2833,7 @@
       50/     347 : 00                                  NOP
       50/     348 : 00                                  NOP
       50/     349 : 00                                  NOP
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 46 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 46 - 2/23/2020 18:34:50
 
 
       51/     34A : DB 1F               		IN A,(0X1F)
@@ -2896,7 +2896,7 @@
       68/     388 : 00                                  NOP
       68/     389 : 00                                  NOP
       68/     38A : 00                                  NOP
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 47 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 47 - 2/23/2020 18:34:50
 
 
       69/     38B : 0E 1F               		LD C,0X1F
@@ -2959,7 +2959,7 @@
       86/     3C8 : 00                                  NOP
       86/     3C9 : 00                                  NOP
       86/     3CA : 00                                  NOP
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 48 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 48 - 2/23/2020 18:34:50
 
 
       87/     3CB : ED A3               		OUTI
@@ -3004,25 +3004,25 @@
       98/     3F4 : 00                                  NOP
       98/     3F5 : 00                                  NOP
       98/     3F6 : 00                                  NOP
-      99/     3F7 : 21 00 00            		LD HL,0
+      99/     3F7 : 21 FE 03            		LD HL,EMPTY
      100/     3FA : AF                  		XOR A
      101/     3FB : C3 07 00            		JP RESTART
      102/     3FE :                     
-     103/     3FE : (MACRO)             		DUPL 0X3D2F-$
-     103/     3FE :                     DUPL:
-     103/     3FE : =EH                 $$N             EQU (0X3D2F-$) / 1024
-     103/     3FE : =131H               $$M             EQU (0X3D2F-$) # 1024
-     103/     3FE :                                     REPT $$N
-     103/     3FE :                                     DB 1024 DUP()
-     103/     3FE :                                     ENDM
-     103/     3FE : 00 00 00 00 00 00                   DB 1024 DUP()
+     103/     3FE :                     EMPTY
+     104/     3FE :                     
+     105/     3FE : (MACRO)             		DUPL 0X3D2F-$
+     105/     3FE :                     DUPL:
+     105/     3FE : =EH                 $$N             EQU (0X3D2F-$) / 1024
+     105/     3FE : =131H               $$M             EQU (0X3D2F-$) # 1024
+     105/     3FE :                                     REPT $$N
+     105/     3FE :                                     DB 1024 DUP()
+     105/     3FE :                                     ENDM
+     105/     3FE : 00 00 00 00 00 00                   DB 1024 DUP()
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 49 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 49 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -3085,7 +3085,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 50 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 50 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -3148,904 +3148,9 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 51 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 51 - 2/23/2020 18:34:50
 
 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 
-     103/     7FE : 00 00 00 00 00 00                   DB 1024 DUP()
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 52 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 53 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 54 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 
-     103/     BFE : 00 00 00 00 00 00                   DB 1024 DUP()
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 55 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 56 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 57 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 
-     103/     FFE : 00 00 00 00 00 00                   DB 1024 DUP()
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 58 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 59 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 60 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 
-     103/    13FE : 00 00 00 00 00 00                   DB 1024 DUP()
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 61 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 62 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 63 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 
-     103/    17FE : 00 00 00 00 00 00                   DB 1024 DUP()
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 64 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 65 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -4092,8 +3197,21 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 
-     103/    1BFE : 00 00 00 00 00 00                   DB 1024 DUP()
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 66 - 2/23/2020 18:20:0
+     105/     7FE : 00 00 00 00 00 00                   DB 1024 DUP()
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 52 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -4156,7 +3274,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 67 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 53 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -4219,22 +3337,9 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 68 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 54 - 2/23/2020 18:34:50
 
 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -4272,7 +3377,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 
-     103/    1FFE : 00 00 00 00 00 00                   DB 1024 DUP()
+     105/     BFE : 00 00 00 00 00 00                   DB 1024 DUP()
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -4282,7 +3387,20 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 69 - 2/23/2020 18:20:0
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 55 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -4345,7 +3463,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 70 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 56 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -4408,22 +3526,9 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 71 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 57 - 2/23/2020 18:34:50
 
 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -4452,7 +3557,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 
-     103/    23FE : 00 00 00 00 00 00                   DB 1024 DUP()
+     105/     FFE : 00 00 00 00 00 00                   DB 1024 DUP()
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -4471,7 +3576,20 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 72 - 2/23/2020 18:20:0
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 58 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -4534,7 +3652,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 73 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 59 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -4597,22 +3715,9 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 74 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 60 - 2/23/2020 18:34:50
 
 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -4632,7 +3737,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 
-     103/    27FE : 00 00 00 00 00 00                   DB 1024 DUP()
+     105/    13FE : 00 00 00 00 00 00                   DB 1024 DUP()
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -4660,7 +3765,20 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 75 - 2/23/2020 18:20:0
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 61 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -4723,7 +3841,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 76 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 62 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -4786,22 +3904,9 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 77 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 63 - 2/23/2020 18:34:50
 
 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -4812,7 +3917,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 
-     103/    2BFE : 00 00 00 00 00 00                   DB 1024 DUP()
+     105/    17FE : 00 00 00 00 00 00                   DB 1024 DUP()
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -4849,7 +3954,20 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 78 - 2/23/2020 18:20:0
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 64 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -4912,7 +4030,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 79 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 65 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -4975,24 +4093,11 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 80 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 66 - 2/23/2020 18:34:50
 
 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
                     00 00 00 00 
-     103/    2FFE : 00 00 00 00 00 00                   DB 1024 DUP()
+     105/    1BFE : 00 00 00 00 00 00                   DB 1024 DUP()
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -5038,7 +4143,20 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 81 - 2/23/2020 18:20:0
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 67 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -5101,202 +4219,9 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 82 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 68 - 2/23/2020 18:34:50
 
 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 83 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 
-     103/    33FE : 00 00 00 00 00 00                   DB 1024 DUP()
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 84 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 85 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -5349,11 +4274,15 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 
-     103/    37FE : 00 00 00 00 00 00                   DB 1024 DUP()
+     105/    1FFE : 00 00 00 00 00 00                   DB 1024 DUP()
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 86 - 2/23/2020 18:20:0
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 69 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -5416,7 +4345,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 87 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 70 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -5479,9 +4408,902 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 88 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 71 - 2/23/2020 18:34:50
 
 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 
+     105/    23FE : 00 00 00 00 00 00                   DB 1024 DUP()
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 72 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 73 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 74 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 
+     105/    27FE : 00 00 00 00 00 00                   DB 1024 DUP()
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 75 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 76 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 77 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 
+     105/    2BFE : 00 00 00 00 00 00                   DB 1024 DUP()
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 78 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 79 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 80 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 
+     105/    2FFE : 00 00 00 00 00 00                   DB 1024 DUP()
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 81 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 82 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 83 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 
+     105/    33FE : 00 00 00 00 00 00                   DB 1024 DUP()
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 84 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 85 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -5529,83 +5351,9 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 
-     103/    3BFE : =>TRUE                              IF $$M <> 0
-     103/    3BFE : =>BLANK                             IFB 
-     103/    3BFE : 00 00 00 00 00 00                   DB $$M DUP(0)
+     105/    37FE : 00 00 00 00 00 00                   DB 1024 DUP()
                     00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 89 - 2/23/2020 18:20:0
-
-
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 
-     103/    3D2F : =>FALSE                             ELSE
-     103/    3D2F :                                     DB $$M DUP()
-     103/    3D2F : [103]                               ENDIF
-     103/    3D2F : [103]                               ENDIF
-     104/    3D2F : 00                  		NOP
-     105/    3D30 : C9                  		RET
-     106/    3D31 :                     
-     107/    3D31 : (MACRO)             		DUPL 0X4000-$
-     107/    3D31 :                     DUPL:
-     107/    3D31 : =0H                 $$N             EQU (0X4000-$) / 1024
-     107/    3D31 : =2CFH               $$M             EQU (0X4000-$) # 1024
-     107/    3D31 :                                     REPT $$N
-     107/    3D31 :                                     DB 1024 DUP()
-     107/    3D31 :                                     ENDM
-     107/    3D31 : =>TRUE                              IF $$M <> 0
-     107/    3D31 : =>BLANK                             IFB 
-     107/    3D31 : 00 00 00 00 00 00                   DB $$M DUP(0)
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
-                    00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 90 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 86 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -5668,7 +5416,7 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 91 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 87 - 2/23/2020 18:34:50
 
 
                     00 00 00 00 00 00 
@@ -5685,6 +5433,118 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 88 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 
+     105/    3BFE : =>TRUE                              IF $$M <> 0
+     105/    3BFE : =>BLANK                             IFB 
+     105/    3BFE : 00 00 00 00 00 00                   DB $$M DUP(0)
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 89 - 2/23/2020 18:34:50
+
+
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
@@ -5727,15 +5587,157 @@
                     00 00 00 00 00 00 
                     00 00 00 00 00 00 
                     00 00 00 00 00 
-     107/    4000 : =>FALSE                             ELSE
-     107/    4000 :                                     DB $$M DUP()
-     107/    4000 : [107]                               ENDIF
-     107/    4000 : [107]                               ENDIF
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 92 - 2/23/2020 18:20:0
+     105/    3D2F : =>FALSE                             ELSE
+     105/    3D2F :                                     DB $$M DUP()
+     105/    3D2F : [105]                               ENDIF
+     105/    3D2F : [105]                               ENDIF
+     106/    3D2F : 00                  		NOP
+     107/    3D30 : C9                  		RET
+     108/    3D31 :                     
+     109/    3D31 : (MACRO)             		DUPL 0X4000-$
+     109/    3D31 :                     DUPL:
+     109/    3D31 : =0H                 $$N             EQU (0X4000-$) / 1024
+     109/    3D31 : =2CFH               $$M             EQU (0X4000-$) # 1024
+     109/    3D31 :                                     REPT $$N
+     109/    3D31 :                                     DB 1024 DUP()
+     109/    3D31 :                                     ENDM
+     109/    3D31 : =>TRUE                              IF $$M <> 0
+     109/    3D31 : =>BLANK                             IFB 
+     109/    3D31 : 00 00 00 00 00 00                   DB $$M DUP(0)
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 90 - 2/23/2020 18:34:50
 
 
-     108/    4000 :                     
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 93 - 2/23/2020 18:20:0
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 91 - 2/23/2020 18:34:50
+
+
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 00 
+                    00 00 00 00 00 
+     109/    4000 : =>FALSE                             ELSE
+     109/    4000 :                                     DB $$M DUP()
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 92 - 2/23/2020 18:34:50
+
+
+     109/    4000 : [109]                               ENDIF
+     109/    4000 : [109]                               ENDIF
+     110/    4000 :                     
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 93 - 2/23/2020 18:34:50
 
 
   symbol table (* = unused):
@@ -5798,7 +5800,7 @@
 *CONSTPI :        3.141592653589793 - | *CONTINUE_MAGIC :                34 - |
 *CONT_RST8 :                     2C - | *COPY_VIRT_BITS :              3CCA - |
 *COPY_VIRT_BITS_Size :            1 - | *CPU0 :                           0 - |
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 94 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 94 - 2/23/2020 18:34:50
 
 
 *CPU1 :                        4000 - | *CPU2 :                        8000 - |
@@ -5809,328 +5811,328 @@
 *DEBUG_ONOFF :                   13 - |  DEVICES :                     BDE0 - |
 *DOS_STEK :                    3C9C - | *DOS_STEK_Size :                  2 - |
 *DWORD :                          4 - | *EI_RET :                        3E - |
-*END_VARS :                       0 C | *EXIT_PORT :                     BE - |
-*FALSE :                          0 - | *FAT_DATE :                    5057 - |
-*FAT_TIME :                    927D - | *FDD_EMU_PORT :                13BD - |
-*FDI_BLOCK_SMESH :             41FF - | *FDI_BYTE_SMESH :              41FE - |
-*FDI_IMAGE1SECT :              4400 - | *FDI_PAGE_START :              40FF - |
-*FDI_TABLE_CYL :               4000 - | *FLAGS_DRV :                   BDF8 - |
-*FLAG_RW_BREAK :               3CCF - | *FLAG_RW_BREAK_Size :             1 - |
-*FULLPMMU :                       1 - |  GO_DEV :                      BDF0 - |
-*GREEN :                          4 - | *G_H :                           10 - |
-*G_L :                           80 - | *HAS64 :                          1 - |
-*HASDSP :                         0 - | *HASFPU :                         0 - |
-*HASPMMU :                        0 - | *HDD_TIMEOUT :                   EA - |
- HHOUR :                         12 - | *ICALL2PAGE :                  8000 - |
-*INEXTMODE :                      0 - |  INITVAR :                     3CE2 - |
-*INLWORDMODE :                    0 - | *INMAXMODE :                      0 - |
-*INSRCMODE :                      0 - | *INSUPMODE :                      0 - |
-*IREG_D :                      3C99 - | *IREG_D_Size :                    1 - |
-*IREG_E :                      3C98 - | *IREG_E_Size :                    1 - |
-*IREG_H :                      3C9B - | *IREG_H_Size :                    1 - |
-*IREG_L :                      3C9A - | *IREG_L_Size :                    1 - |
-*JUMP :                           3 - |  JUMP_SIZE :                      3 - |
- KOLDVOL :                     BDF2 - | *KOL_MODES :                      4 - |
-*LATTR :                       31C0 - | *LISTON :                         1 - |
-*LSYM :                         1C0 - |  M900 :                         2EE - |
- M902 :                         131 - |  M903 :                         2CF - |
-*MACEXP :                         7 - | *MAGENTA :                        3 - |
-*MASK_MNT_DRV :                3CC7 - | *MASK_MNT_DRV_Size :              1 - |
-*MASK_WRK_DRV :                3CC6 - | *MASK_WRK_DRV_Size :              1 - |
-*MEMORY_128 :                    30 - | *MEMORY_48 :                     20 - |
-*MEMORY_ALL :                    10 - | *MINT_STACK :                  3CC3 - |
-*MINT_STACK_Size :                2 - | *MKOL_MODES :                     3 - |
- MMINUTE :                       13 - |  MMOUNTH :                        2 - |
-*MOMCPU :                      80DC - | *MOMCPUNAME :              Z80UNDOC - |
- MOUNT_CLS :                   1000 - |  MOUNT_DRIVES :                B100 - |
-*MOUSE_KEYS :                  FADF - | *MOUSE_X :                     FBDF - |
-*MOUSE_Y :                     FFDF - | *M_ACCESSHDDM :                  20 - |
-*M_ACCESSHDDS :                  10 - | *M_ACCESSSDG :                   40 - |
-*M_ACCESSZCSD :                  80 - | *M_AUTOBOOT :                    80 - |
-*M_AUTOMOUNT :                   20 - | *M_AUTO_TAPE :                    4 - |
-*M_BREAK_BF :                    10 - | *M_CLOCK_VIEW :                  10 - |
-*M_DBG_ACTIV :                   80 - | *M_EMUL_TAPE :                   40 - |
-*M_EMUVG_BF :                    20 - | *M_FLASH_BF :                     2 - |
-*M_FONT_BF :                      4 - | *M_KILL_REZIDENT :               80 - |
-*M_MOUSE_L_KEY :                  1 - | *M_MOUSE_M_KEY :                  4 - |
-*M_MOUSE_R_KEY :                  2 - | *M_NMI_BF :                       8 - |
-*M_PENT_CMOS :                   80 - | *M_PENT_TURBO :                  10 - |
-*M_PRINTER_AY :                  20 - | *M_RELOAD_FONT :                 10 - |
-*M_REZIDENT :                     4 - | *M_RST8_BF :                     40 - |
-*M_SD_NGS_ONOFF :                40 - | *M_SHADOW_BF :                    1 - |
-*M_SOUNDKEYS :                    8 - | *M_STEP_DBG :                    20 - |
-*M_TRACE_DBG :                   40 - | *M_TURBO14 :                     80 - |
-*M_TURBO357 :                    80 - | *M_TYPE_FONT :                    8 - |
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 95 - 2/23/2020 18:20:0
+ EMPTY :                        3FE C | *END_VARS :                       0 C |
+*EXIT_PORT :                     BE - | *FALSE :                          0 - |
+*FAT_DATE :                    5057 - | *FAT_TIME :                    9458 - |
+*FDD_EMU_PORT :                13BD - | *FDI_BLOCK_SMESH :             41FF - |
+*FDI_BYTE_SMESH :              41FE - | *FDI_IMAGE1SECT :              4400 - |
+*FDI_PAGE_START :              40FF - | *FDI_TABLE_CYL :               4000 - |
+*FLAGS_DRV :                   BDF8 - | *FLAG_RW_BREAK :               3CCF - |
+*FLAG_RW_BREAK_Size :             1 - | *FULLPMMU :                       1 - |
+ GO_DEV :                      BDF0 - | *GREEN :                          4 - |
+*G_H :                           10 - | *G_L :                           80 - |
+*HAS64 :                          1 - | *HASDSP :                         0 - |
+*HASFPU :                         0 - | *HASPMMU :                        0 - |
+*HDD_TIMEOUT :                   EA - |  HHOUR :                         12 - |
+*ICALL2PAGE :                  8000 - | *INEXTMODE :                      0 - |
+ INITVAR :                     3CE2 - | *INLWORDMODE :                    0 - |
+*INMAXMODE :                      0 - | *INSRCMODE :                      0 - |
+*INSUPMODE :                      0 - | *IREG_D :                      3C99 - |
+*IREG_D_Size :                    1 - | *IREG_E :                      3C98 - |
+*IREG_E_Size :                    1 - | *IREG_H :                      3C9B - |
+*IREG_H_Size :                    1 - | *IREG_L :                      3C9A - |
+*IREG_L_Size :                    1 - | *JUMP :                           3 - |
+ JUMP_SIZE :                      3 - |  KOLDVOL :                     BDF2 - |
+*KOL_MODES :                      4 - | *LATTR :                       31C0 - |
+*LISTON :                         1 - | *LSYM :                         1C0 - |
+ M900 :                         2EE - |  M903 :                         131 - |
+ M904 :                         2CF - | *MACEXP :                         7 - |
+*MAGENTA :                        3 - | *MASK_MNT_DRV :                3CC7 - |
+*MASK_MNT_DRV_Size :              1 - | *MASK_WRK_DRV :                3CC6 - |
+*MASK_WRK_DRV_Size :              1 - | *MEMORY_128 :                    30 - |
+*MEMORY_48 :                     20 - | *MEMORY_ALL :                    10 - |
+*MINT_STACK :                  3CC3 - | *MINT_STACK_Size :                2 - |
+*MKOL_MODES :                     3 - |  MMINUTE :                       22 - |
+ MMOUNTH :                        2 - | *MOMCPU :                      80DC - |
+*MOMCPUNAME :              Z80UNDOC - |  MOUNT_CLS :                   1000 - |
+ MOUNT_DRIVES :                B100 - | *MOUSE_KEYS :                  FADF - |
+*MOUSE_X :                     FBDF - | *MOUSE_Y :                     FFDF - |
+*M_ACCESSHDDM :                  20 - | *M_ACCESSHDDS :                  10 - |
+*M_ACCESSSDG :                   40 - | *M_ACCESSZCSD :                  80 - |
+*M_AUTOBOOT :                    80 - | *M_AUTOMOUNT :                   20 - |
+*M_AUTO_TAPE :                    4 - | *M_BREAK_BF :                    10 - |
+*M_CLOCK_VIEW :                  10 - | *M_DBG_ACTIV :                   80 - |
+*M_EMUL_TAPE :                   40 - | *M_EMUVG_BF :                    20 - |
+*M_FLASH_BF :                     2 - | *M_FONT_BF :                      4 - |
+*M_KILL_REZIDENT :               80 - | *M_MOUSE_L_KEY :                  1 - |
+*M_MOUSE_M_KEY :                  4 - | *M_MOUSE_R_KEY :                  2 - |
+*M_NMI_BF :                       8 - | *M_PENT_CMOS :                   80 - |
+*M_PENT_TURBO :                  10 - | *M_PRINTER_AY :                  20 - |
+*M_RELOAD_FONT :                 10 - | *M_REZIDENT :                     4 - |
+*M_RST8_BF :                     40 - | *M_SD_NGS_ONOFF :                40 - |
+*M_SHADOW_BF :                    1 - | *M_SOUNDKEYS :                    8 - |
+*M_STEP_DBG :                    20 - | *M_TRACE_DBG :                   40 - |
+*M_TURBO14 :                     80 - | *M_TURBO357 :                    80 - |
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 95 - 2/23/2020 18:34:50
 
 
- N900 :                           0 - |  N902 :                           E - |
- N903 :                           0 - | *NESTMAX :                      100 - |
- NUM_APPMULTI :                   2 - |  NUM_EGA :                        0 - |
-*NUM_LINE :                    13BE - |  NUM_TXTATM :                     6 - |
- NUM_TXTSCR :                     7 - |  NUM_ZXSCR :                      3 - |
- OFFSET_BUFSYM :                800 - |  OFFSET_FNTSAVE :                 0 - |
- OFFSET_SCRSAVE :              1000 - | *OFFSET_USBDRV :               2B00 - |
-*OLD_PORT_BF :                 3CCB - | *OLD_PORT_BF_Size :               1 - |
-*PACKING :                        0 - | *PADDING :                        1 - |
-*PENT_CONF :                   EFF7 - | *PEVO_CONF :                     BF - |
-*PORT_3F :                     3CA0 - | *PORT_3F_Size :                   1 - |
-*PORT_5F :                     3CA1 - | *PORT_5F_Size :                   1 - |
-*PORT_7F :                     3CA2 - | *PORT_7F_Size :                   1 - |
-*QWORD :                          8 - | *RAM_ADDSTS :                     7 - |
-*RAM_BASIC :                      3 - | *RAM_DATARAMD :                   B - |
-*RAM_EVODOS :                     1 - | *RAM_FATVARS :                    2 - |
-*RAM_FLASHER :                   40 - | *RAM_MOUNTER :                    5 - |
-*RAM_PROFROM :                    4 - | *RAM_RAMDISK :                    A - |
-*RAM_SCR_FONT :                   8 - | *RAM_STS :                        6 - |
-*RAM_TAPE :                      60 - | *RAM_TEMP :                       9 - |
-*RAM_TEMP2 :                     3F - | *RATTR :                       21C1 - |
-*RDWR_MODE :                   3CCD - | *RDWR_MODE_Size :                 1 - |
-*RDWR_PAGE :                   3CCE - | *RDWR_PAGE_Size :                 1 - |
-*RD_0WINA0 :                     BE - | *RD_0WINA1 :                    1BE - |
-*RD_0WINA2 :                    2BE - | *RD_0WINA3 :                    3BE - |
-*RD_1F :                       3C9F - | *RD_1F_Size :                     1 - |
-*RD_1WINA0 :                    4BE - | *RD_1WINA1 :                    5BE - |
-*RD_1WINA2 :                    6BE - | *RD_1WINA3 :                    7BE - |
-*RD_77 :                        CBE - | *RD_7FFD :                      ABE - |
-*RD_DOS7FFD :                   9BE - | *RD_EFF7 :                      BBE - |
-*RD_FF :                       3CA4 - | *RD_FF_Size :                     1 - |
-*RD_PALITRA :                   DBE - | *RD_RAMNROM :                   8BE - |
-*REAL_DRIVE :                  3CC9 - | *REAL_DRIVE_Size :                1 - |
-*RED :                            2 - | *REG_A :                       3CAE - |
-*REG_A_Size :                     1 - | *REG_B :                       3CAC - |
-*REG_B_Size :                     1 - | *REG_C :                       3CAB - |
-*REG_C_Size :                     1 - | *REG_F :                       3CAD - |
-*REG_F_Size :                     1 - | *REG_H :                       3CB0 - |
-*REG_H_Size :                     1 - | *REG_I :                       3CAA - |
-*REG_IF :                      3CA9 - | *REG_IF_Size :                    1 - |
-*REG_I_Size :                     1 - | *REG_L :                       3CAF - |
-*REG_L_Size :                     1 - | *RELAXED :                        1 - |
-*RESET2CUSTOM :                   3 - | *RESET2EVOSERV :                  0 - |
-*RESET2GLUK :                     1 - | *RESET2PROFROM :                  2 - |
- RESTART :                        7 C | *REZIDENT :                       0 C |
-*ROM_ADD_BAS48 :                  B - | *ROM_ADD_DOS :                    A - |
-*ROM_ATMCPM :                    1B - | *ROM_BAS128 :                     1 - |
-*ROM_BAS128_STD :                19 - | *ROM_BAS48 :                      3 - |
-*ROM_BAS48_128 :                 1A - | *ROM_BAS48_STD :                 18 - |
-*ROM_DOS :                        2 - | *ROM_ERS :                        0 - |
-*ROM_MAINMENU :                   5 - | *ROM_RST80 :                      6 - |
-*ROM_RST81 :                      7 - | *ROM_RST82 :                      8 - |
-*ROM_RST83 :                      9 - | *RS232_DIV_H :                 F9EF - |
-*RS232_DIV_L :                 F8EF - | *RS232_IO :                    F8EF - |
-*RS232_IRQ_ENA :               F9EF - | *RS232_IRQ_ID :                FAEF - |
-*RS232_LINE_CTRL :             FBEF - | *RS232_LINE_STAT :             FDEF - |
-*RS232_MDM_CTRL :              FCEF - | *RS232_MDM_STAT :              FEEF - |
-*RS232_WORK_REG :              FFEF - | *RSYM :                        11C0 - |
-*R_H :                            2 - | *R_L :                           40 - |
-*SAVED_RAM :                   3CD2 - | *SAVED_RAM_Size :                10 - |
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 96 - 2/23/2020 18:20:0
+*M_TYPE_FONT :                    8 - |  N900 :                           0 - |
+ N903 :                           E - |  N904 :                           0 - |
+*NESTMAX :                      100 - |  NUM_APPMULTI :                   2 - |
+ NUM_EGA :                        0 - | *NUM_LINE :                    13BE - |
+ NUM_TXTATM :                     6 - |  NUM_TXTSCR :                     7 - |
+ NUM_ZXSCR :                      3 - |  OFFSET_BUFSYM :                800 - |
+ OFFSET_FNTSAVE :                 0 - |  OFFSET_SCRSAVE :              1000 - |
+*OFFSET_USBDRV :               2B00 - | *OLD_PORT_BF :                 3CCB - |
+*OLD_PORT_BF_Size :               1 - | *PACKING :                        0 - |
+*PADDING :                        1 - | *PENT_CONF :                   EFF7 - |
+*PEVO_CONF :                     BF - | *PORT_3F :                     3CA0 - |
+*PORT_3F_Size :                   1 - | *PORT_5F :                     3CA1 - |
+*PORT_5F_Size :                   1 - | *PORT_7F :                     3CA2 - |
+*PORT_7F_Size :                   1 - | *QWORD :                          8 - |
+*RAM_ADDSTS :                     7 - | *RAM_BASIC :                      3 - |
+*RAM_DATARAMD :                   B - | *RAM_EVODOS :                     1 - |
+*RAM_FATVARS :                    2 - | *RAM_FLASHER :                   40 - |
+*RAM_MOUNTER :                    5 - | *RAM_PROFROM :                    4 - |
+*RAM_RAMDISK :                    A - | *RAM_SCR_FONT :                   8 - |
+*RAM_STS :                        6 - | *RAM_TAPE :                      60 - |
+*RAM_TEMP :                       9 - | *RAM_TEMP2 :                     3F - |
+*RATTR :                       21C1 - | *RDWR_MODE :                   3CCD - |
+*RDWR_MODE_Size :                 1 - | *RDWR_PAGE :                   3CCE - |
+*RDWR_PAGE_Size :                 1 - | *RD_0WINA0 :                     BE - |
+*RD_0WINA1 :                    1BE - | *RD_0WINA2 :                    2BE - |
+*RD_0WINA3 :                    3BE - | *RD_1F :                       3C9F - |
+*RD_1F_Size :                     1 - | *RD_1WINA0 :                    4BE - |
+*RD_1WINA1 :                    5BE - | *RD_1WINA2 :                    6BE - |
+*RD_1WINA3 :                    7BE - | *RD_77 :                        CBE - |
+*RD_7FFD :                      ABE - | *RD_DOS7FFD :                   9BE - |
+*RD_EFF7 :                      BBE - | *RD_FF :                       3CA4 - |
+*RD_FF_Size :                     1 - | *RD_PALITRA :                   DBE - |
+*RD_RAMNROM :                   8BE - | *REAL_DRIVE :                  3CC9 - |
+*REAL_DRIVE_Size :                1 - | *RED :                            2 - |
+*REG_A :                       3CAE - | *REG_A_Size :                     1 - |
+*REG_B :                       3CAC - | *REG_B_Size :                     1 - |
+*REG_C :                       3CAB - | *REG_C_Size :                     1 - |
+*REG_F :                       3CAD - | *REG_F_Size :                     1 - |
+*REG_H :                       3CB0 - | *REG_H_Size :                     1 - |
+*REG_I :                       3CAA - | *REG_IF :                      3CA9 - |
+*REG_IF_Size :                    1 - | *REG_I_Size :                     1 - |
+*REG_L :                       3CAF - | *REG_L_Size :                     1 - |
+*RELAXED :                        1 - | *RESET2CUSTOM :                   3 - |
+*RESET2EVOSERV :                  0 - | *RESET2GLUK :                     1 - |
+*RESET2PROFROM :                  2 - |  RESTART :                        7 C |
+*REZIDENT :                       0 C | *ROM_ADD_BAS48 :                  B - |
+*ROM_ADD_DOS :                    A - | *ROM_ATMCPM :                    1B - |
+*ROM_BAS128 :                     1 - | *ROM_BAS128_STD :                19 - |
+*ROM_BAS48 :                      3 - | *ROM_BAS48_128 :                 1A - |
+*ROM_BAS48_STD :                 18 - | *ROM_DOS :                        2 - |
+*ROM_ERS :                        0 - | *ROM_MAINMENU :                   5 - |
+*ROM_RST80 :                      6 - | *ROM_RST81 :                      7 - |
+*ROM_RST82 :                      8 - | *ROM_RST83 :                      9 - |
+*RS232_DIV_H :                 F9EF - | *RS232_DIV_L :                 F8EF - |
+*RS232_IO :                    F8EF - | *RS232_IRQ_ENA :               F9EF - |
+*RS232_IRQ_ID :                FAEF - | *RS232_LINE_CTRL :             FBEF - |
+*RS232_LINE_STAT :             FDEF - | *RS232_MDM_CTRL :              FCEF - |
+*RS232_MDM_STAT :              FEEF - | *RS232_WORK_REG :              FFEF - |
+*RSYM :                        11C0 - | *R_H :                            2 - |
+*R_L :                           40 - | *SAVED_RAM :                   3CD2 - |
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 96 - 2/23/2020 18:34:50
 
 
- SAVE_TEK_VOL :                BDF6 - | *SECTOR_SIZE :                 3CCC - |
-*SECTOR_SIZE_Size :               1 - |  SETDVOL :                     BDF3 - |
-*SET_VIDEOMODE :                  8 - |  SIZEDATE :                       9 - |
- SIZETIME :                       8 - |  SSECUND :                       3B - |
-*START_STS :                   C000 - |  START_TEST :                   300 C |
- TEK_BUFPATH :                 2000 - | *TEK_ROMPAGE :                 3CC5 - |
-*TEK_ROMPAGE_Size :               1 - |  TEK_TYPE :                    BDF7 - |
-*TEMP_SP :                     3CD0 - | *TEMP_SP_Size :                   2 - |
- TIME :                    18:19:59 - | *TRUE :                           1 - |
-*TURBO_14 :                      C0 - | *TURBO_3 :                       40 - |
-*TURBO_7 :                       80 - | *UNPACK :                        80 - |
-*UNP_DOS_FE :                    40 - | *VERSION :                     142F - |
-*VIRT_DRIVE :                  3CC8 - | *VIRT_DRIVE_Size :                1 - |
-*VIRT_REAL_DRIVE :               EB - | *VMODE6_0C :                     FE - |
-*VMODE6_0M :                     FA - | *VMODE6_1C :                     FC - |
-*VMODE6_1M :                     F8 - | *VMODE7_0 :                      F7 - |
-*VMODE7_1 :                      F5 - | *V_APPMULTI :                    A2 - |
-*V_EGA :                         A0 - | *V_TXT1PAGE :                    A7 - |
-*V_TXTATM :                      A6 - | *V_ZXSCR :                       A3 - |
-*WHITE :                          7 - | *WIN_A0 :                      3FF7 - |
-*WIN_A1 :                      7FF7 - | *WIN_A2 :                      BFF7 - |
-*WIN_A3 :                      FFF7 - | *WIN_P0 :                      37F7 - |
-*WIN_P1 :                      77F7 - | *WIN_P2 :                      B7F7 - |
-*WIN_P3 :                      F7F7 - | *WIN_R0 :                      3BF7 - |
-*WIN_R1 :                      7BF7 - | *WIN_R2 :                      BBF7 - |
-*WIN_R3 :                      FBF7 - |  WORD :                           2 - |
-*WR_0WINA0 :                   3CBE - | *WR_0WINA0_Size :                 1 - |
-*WR_0WINA1 :                   3CBD - | *WR_0WINA1_Size :                 1 - |
-*WR_0WINA2 :                   3CBC - | *WR_0WINA2_Size :                 1 - |
-*WR_0WINA3 :                   3CBB - | *WR_0WINA3_Size :                 1 - |
-*WR_1F :                       3C9E - | *WR_1F_Size :                     1 - |
-*WR_1WINA0 :                   3CBA - | *WR_1WINA0_Size :                 1 - |
-*WR_1WINA1 :                   3CB9 - | *WR_1WINA1_Size :                 1 - |
-*WR_1WINA2 :                   3CB8 - | *WR_1WINA2_Size :                 1 - |
-*WR_1WINA3 :                   3CB7 - | *WR_1WINA3_Size :                 1 - |
-*WR_77 :                       3CB2 - | *WR_77_Size :                     1 - |
-*WR_7FFD :                     3CB4 - | *WR_7FFD_Size :                   1 - |
-*WR_BF :                       3CB1 - | *WR_BF_Size :                     1 - |
-*WR_DOS7FFD :                  3CB5 - | *WR_DOS7FFD_Size :                1 - |
-*WR_EFF7 :                     3CB3 - | *WR_EFF7_Size :                   1 - |
-*WR_FF :                       3CA3 - | *WR_FF_Size :                     1 - |
-*WR_RAMNROM :                  3CB6 - | *WR_RAMNROM_Size :                1 - |
-*YELLOW :                         6 - |  YYEAR :                         14 - |
-*ZXSCR_0 :                       FA - | *ZXSCR_1 :                       F8 - |
-*ZXSTD_CPU1 :                    FA - | *ZXSTD_CPU2 :                    FD - |
-*ZX_ROM :                        10 - | *ZX_SCREEN :                      8 - |
-*_128K :                          2 - | *_1MB :                           0 - |
-*_48K :                           1 - | *_ADR_HOTKEY_H :                 13 - |
-*_ADR_HOTKEY_H_Size :             1 - | *_ADR_HOTKEY_L :                 12 - |
-*_ADR_HOTKEY_L_Size :             1 - | *_ADR_MOUSE_H :                  11 - |
-*_ADR_MOUSE_H_Size :              1 - | *_ADR_MOUSE_L :                  10 - |
-*_ADR_MOUSE_L_Size :              1 - | *_ADR_PRG_H :                     F - |
-*_ADR_PRG_H_Size :                1 - | *_ADR_PRG_L :                     E - |
-*_ADR_PRG_L_Size :                1 - | *_ADR_TXT_H :                     D - |
-*_ADR_TXT_H_Size :                1 - | *_ADR_TXT_L :                     C - |
-*_ADR_TXT_L_Size :                1 - | *_ALLOC_PAGE :                  12A - |
-*_ALLOC_PAGE_Size :               3 - | *_AY_PRN_A_ :                    41 - |
-*_AY_PRN_A__Size :                1 - | *_AY_PRN_INIT :                  40 - |
-*_AY_PRN_INIT_Size :              1 - | *_AY_PRN_SCR :                   43 - |
-*_AY_PRN_SCR_Size :               1 - | *_AY_PRN_TOKEN :                 42 - |
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 97 - 2/23/2020 18:20:0
+*SAVED_RAM_Size :                10 - |  SAVE_TEK_VOL :                BDF6 - |
+*SECTOR_SIZE :                 3CCC - | *SECTOR_SIZE_Size :               1 - |
+ SETDVOL :                     BDF3 - | *SET_VIDEOMODE :                  8 - |
+ SIZEDATE :                       9 - |  SIZETIME :                       8 - |
+ SSECUND :                       31 - | *START_STS :                   C000 - |
+ START_TEST :                   300 C |  TEK_BUFPATH :                 2000 - |
+*TEK_ROMPAGE :                 3CC5 - | *TEK_ROMPAGE_Size :               1 - |
+ TEK_TYPE :                    BDF7 - | *TEMP_SP :                     3CD0 - |
+*TEMP_SP_Size :                   2 - |  TIME :                    18:34:49 - |
+*TRUE :                           1 - | *TURBO_14 :                      C0 - |
+*TURBO_3 :                       40 - | *TURBO_7 :                       80 - |
+*UNPACK :                        80 - | *UNP_DOS_FE :                    40 - |
+*VERSION :                     142F - | *VIRT_DRIVE :                  3CC8 - |
+*VIRT_DRIVE_Size :                1 - | *VIRT_REAL_DRIVE :               EB - |
+*VMODE6_0C :                     FE - | *VMODE6_0M :                     FA - |
+*VMODE6_1C :                     FC - | *VMODE6_1M :                     F8 - |
+*VMODE7_0 :                      F7 - | *VMODE7_1 :                      F5 - |
+*V_APPMULTI :                    A2 - | *V_EGA :                         A0 - |
+*V_TXT1PAGE :                    A7 - | *V_TXTATM :                      A6 - |
+*V_ZXSCR :                       A3 - | *WHITE :                          7 - |
+*WIN_A0 :                      3FF7 - | *WIN_A1 :                      7FF7 - |
+*WIN_A2 :                      BFF7 - | *WIN_A3 :                      FFF7 - |
+*WIN_P0 :                      37F7 - | *WIN_P1 :                      77F7 - |
+*WIN_P2 :                      B7F7 - | *WIN_P3 :                      F7F7 - |
+*WIN_R0 :                      3BF7 - | *WIN_R1 :                      7BF7 - |
+*WIN_R2 :                      BBF7 - | *WIN_R3 :                      FBF7 - |
+ WORD :                           2 - | *WR_0WINA0 :                   3CBE - |
+*WR_0WINA0_Size :                 1 - | *WR_0WINA1 :                   3CBD - |
+*WR_0WINA1_Size :                 1 - | *WR_0WINA2 :                   3CBC - |
+*WR_0WINA2_Size :                 1 - | *WR_0WINA3 :                   3CBB - |
+*WR_0WINA3_Size :                 1 - | *WR_1F :                       3C9E - |
+*WR_1F_Size :                     1 - | *WR_1WINA0 :                   3CBA - |
+*WR_1WINA0_Size :                 1 - | *WR_1WINA1 :                   3CB9 - |
+*WR_1WINA1_Size :                 1 - | *WR_1WINA2 :                   3CB8 - |
+*WR_1WINA2_Size :                 1 - | *WR_1WINA3 :                   3CB7 - |
+*WR_1WINA3_Size :                 1 - | *WR_77 :                       3CB2 - |
+*WR_77_Size :                     1 - | *WR_7FFD :                     3CB4 - |
+*WR_7FFD_Size :                   1 - | *WR_BF :                       3CB1 - |
+*WR_BF_Size :                     1 - | *WR_DOS7FFD :                  3CB5 - |
+*WR_DOS7FFD_Size :                1 - | *WR_EFF7 :                     3CB3 - |
+*WR_EFF7_Size :                   1 - | *WR_FF :                       3CA3 - |
+*WR_FF_Size :                     1 - | *WR_RAMNROM :                  3CB6 - |
+*WR_RAMNROM_Size :                1 - | *YELLOW :                         6 - |
+ YYEAR :                         14 - | *ZXSCR_0 :                       FA - |
+*ZXSCR_1 :                       F8 - | *ZXSTD_CPU1 :                    FA - |
+*ZXSTD_CPU2 :                    FD - | *ZX_ROM :                        10 - |
+*ZX_SCREEN :                      8 - | *_128K :                          2 - |
+*_1MB :                           0 - | *_48K :                           1 - |
+*_ADR_HOTKEY_H :                 13 - | *_ADR_HOTKEY_H_Size :             1 - |
+*_ADR_HOTKEY_L :                 12 - | *_ADR_HOTKEY_L_Size :             1 - |
+*_ADR_MOUSE_H :                  11 - | *_ADR_MOUSE_H_Size :              1 - |
+*_ADR_MOUSE_L :                  10 - | *_ADR_MOUSE_L_Size :              1 - |
+*_ADR_PRG_H :                     F - | *_ADR_PRG_H_Size :                1 - |
+*_ADR_PRG_L :                     E - | *_ADR_PRG_L_Size :                1 - |
+*_ADR_TXT_H :                     D - | *_ADR_TXT_H_Size :                1 - |
+*_ADR_TXT_L :                     C - | *_ADR_TXT_L_Size :                1 - |
+*_ALLOC_PAGE :                  12A - | *_ALLOC_PAGE_Size :               3 - |
+*_AY_PRN_A_ :                    41 - | *_AY_PRN_A__Size :                1 - |
+*_AY_PRN_INIT :                  40 - | *_AY_PRN_INIT_Size :              1 - |
+*_AY_PRN_SCR :                   43 - | *_AY_PRN_SCR_Size :               1 - |
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 97 - 2/23/2020 18:34:50
 
 
-*_AY_PRN_TOKEN_Size :             1 - | *_BIOS :                         4F - |
-*_BIOS_JUMPS :                  100 - | *_BIOS_Size :                     1 - |
-*_BMP :                           8 - | *_BMP_Size :                      1 - |
-*_CLEAR_CMOS :                    3 - | *_CLEAR_CMOS_Size :               1 - |
-*_CLOSEMOUNT :                    4 - | *_CLOSEMOUNT_Size :               1 - |
-*_CMOS_DAY :                      6 - | *_CMOS_DAY_MONTH :                7 - |
-*_CMOS_HOUR :                     4 - | *_CMOS_HOUR_AL :                  5 - |
-*_CMOS_MINUTE :                   2 - | *_CMOS_MINUTE_AL :                3 - |
-*_CMOS_MONTH :                    8 - | *_CMOS_RW :                      55 - |
-*_CMOS_RW_Size :                  1 - | *_CMOS_SECOND :                   0 - |
-*_CMOS_SECOND_AL :                1 - | *_CMOS_YEAR :                     9 - |
-*_CMP_DRIVE :                     7 - | *_CMP_DRIVE_Size :                1 - |
-*_COLOR_CUR :                     5 - | *_COLOR_CUR_Size :                1 - |
-*_COLOR_WIN :                     4 - | *_COLOR_WIN_Size :                1 - |
-*_COMHDDN :                       7 - | *_COMHDDN_Size :                  1 - |
-*_COM_DEV :                      50 - | *_COM_DEV_Size :                  1 - |
-*_COM_FAT :                      51 - | *_COM_FAT_Size :                  1 - |
-*_CONTROL_SD :                    6 - | *_CONTROL_SD_Size :               1 - |
-*_DEVFIND :                       0 - | *_DEVFIND_Size :                  1 - |
-*_DEV_INIT :                      0 - | *_DEV_INIT_Size :                 1 - |
-*_DEV_READ :                      2 - | *_DEV_READID :                    4 - |
-*_DEV_READID_Size :               1 - | *_DEV_READ_Size :                 1 - |
-*_DEV_STATUS :                    1 - | *_DEV_STATUS_Size :               1 - |
-*_DEV_WRITE :                     3 - | *_DEV_WRITE_Size :                1 - |
-*_DIVIDE16 :                      0 - | *_DIVIDE16_Size :                 1 - |
-*_DIVIDE32 :                      2 - | *_DIVIDE32_Size :                 1 - |
-*_ENTER_DIR :                     2 - | *_ENTER_DIR_Size :                1 - |
-*_FAT12 :                         1 - | *_FAT12_Size :                    1 - |
-*_FAT16 :                         2 - | *_FAT16_Size :                    1 - |
-*_FAT32 :                         3 - | *_FAT32_Size :                    1 - |
-*_FDD :                           0 - | *_FDI :                           3 - |
-*_FDI_Size :                      1 - | *_FIND_FILEITEM :                 6 - |
-*_FIND_FILEITEM_Size :            1 - | *_FIND_MOUNTED :                  2 - |
-*_FIND_MOUNTED_Size :             1 - | *_FIND_NAME :                     5 - |
-*_FIND_NAME_Size :                1 - | *_FLAGS :                         6 - |
-*_FLAGS_Size :                    1 - | *_FNT :                           7 - |
-*_FNT_Size :                      1 - | *_FREE_PAGE :                   12D - |
-*_FREE_PAGE_Size :                3 - | *_FREINIT_VOL :                   8 - |
-*_FREINIT_VOL_Size :              1 - | *_GET_FNDVOLUME :                 3 - |
-*_GET_FNDVOLUME_Size :            1 - | *_GET_LONGNAME :                  4 - |
-*_GET_LONGNAME_Size :             1 - | *_GET_MOUNTED :                   3 - |
-*_GET_MOUNTED_Size :              1 - | *_GET_PATH :                      3 - |
-*_GET_PATH_Size :                 1 - | *_GET_TABLE_MEM :               127 - |
-*_GET_TABLE_MEM_Size :            3 - | *_GET_VIRT_BITS :                 8 - |
-*_GET_VIRT_BITS_Size :            1 - | *_HDD :                           1 - |
-*_HEX1DECTXT :                    6 - | *_HEX1DECTXT_Size :               1 - |
-*_HEX2DECTXT :                    5 - | *_HEX2DECTXT_Size :               1 - |
-*_HEX4DECTXT :                    4 - | *_HEX4DECTXT_Size :               1 - |
-*_HOB :                           6 - | *_HOB_Size :                      1 - |
-*_H_SIZE :                        3 - | *_H_SIZE_Size :                   1 - |
-*_INIT_CMOS :                     0 - | *_INIT_CMOS_Size :                1 - |
-*_INIT_FATVARS :                  0 - | *_INIT_FATVARS_Size :             1 - |
-*_INIT_KEYB_PS2 :               11B - | *_INIT_KEYB_PS2_Size :            3 - |
-*_INIT_TABLE_MEM :              124 - | *_INIT_TABLE_MEM_Size :           3 - |
-*_INIT_TEKDIR :                   A - | *_INIT_TEKDIR_Size :              1 - |
-*_INST_FATBOOT :                 54 - | *_INST_FATBOOT_Size :             1 - |
-*_KOL_VOL :                       2 - | *_KOL_VOL_Size :                  1 - |
-*_LOADIMAGE :                     5 - | *_LOADIMAGE_Size :                1 - |
-*_MATH :                         4C - | *_MATH_Size :                     1 - |
-*_MEM_MODE_128 :                 80 - | *_MEM_MODE_48 :                  40 - |
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 98 - 2/23/2020 18:20:0
+*_AY_PRN_TOKEN :                 42 - | *_AY_PRN_TOKEN_Size :             1 - |
+*_BIOS :                         4F - | *_BIOS_JUMPS :                  100 - |
+*_BIOS_Size :                     1 - | *_BMP :                           8 - |
+*_BMP_Size :                      1 - | *_CLEAR_CMOS :                    3 - |
+*_CLEAR_CMOS_Size :               1 - | *_CLOSEMOUNT :                    4 - |
+*_CLOSEMOUNT_Size :               1 - | *_CMOS_DAY :                      6 - |
+*_CMOS_DAY_MONTH :                7 - | *_CMOS_HOUR :                     4 - |
+*_CMOS_HOUR_AL :                  5 - | *_CMOS_MINUTE :                   2 - |
+*_CMOS_MINUTE_AL :                3 - | *_CMOS_MONTH :                    8 - |
+*_CMOS_RW :                      55 - | *_CMOS_RW_Size :                  1 - |
+*_CMOS_SECOND :                   0 - | *_CMOS_SECOND_AL :                1 - |
+*_CMOS_YEAR :                     9 - | *_CMP_DRIVE :                     7 - |
+*_CMP_DRIVE_Size :                1 - | *_COLOR_CUR :                     5 - |
+*_COLOR_CUR_Size :                1 - | *_COLOR_WIN :                     4 - |
+*_COLOR_WIN_Size :                1 - | *_COMHDDN :                       7 - |
+*_COMHDDN_Size :                  1 - | *_COM_DEV :                      50 - |
+*_COM_DEV_Size :                  1 - | *_COM_FAT :                      51 - |
+*_COM_FAT_Size :                  1 - | *_CONTROL_SD :                    6 - |
+*_CONTROL_SD_Size :               1 - | *_DEVFIND :                       0 - |
+*_DEVFIND_Size :                  1 - | *_DEV_INIT :                      0 - |
+*_DEV_INIT_Size :                 1 - | *_DEV_READ :                      2 - |
+*_DEV_READID :                    4 - | *_DEV_READID_Size :               1 - |
+*_DEV_READ_Size :                 1 - | *_DEV_STATUS :                    1 - |
+*_DEV_STATUS_Size :               1 - | *_DEV_WRITE :                     3 - |
+*_DEV_WRITE_Size :                1 - | *_DIVIDE16 :                      0 - |
+*_DIVIDE16_Size :                 1 - | *_DIVIDE32 :                      2 - |
+*_DIVIDE32_Size :                 1 - | *_ENTER_DIR :                     2 - |
+*_ENTER_DIR_Size :                1 - | *_FAT12 :                         1 - |
+*_FAT12_Size :                    1 - | *_FAT16 :                         2 - |
+*_FAT16_Size :                    1 - | *_FAT32 :                         3 - |
+*_FAT32_Size :                    1 - | *_FDD :                           0 - |
+*_FDI :                           3 - | *_FDI_Size :                      1 - |
+*_FIND_FILEITEM :                 6 - | *_FIND_FILEITEM_Size :            1 - |
+*_FIND_MOUNTED :                  2 - | *_FIND_MOUNTED_Size :             1 - |
+*_FIND_NAME :                     5 - | *_FIND_NAME_Size :                1 - |
+*_FLAGS :                         6 - | *_FLAGS_Size :                    1 - |
+*_FNT :                           7 - | *_FNT_Size :                      1 - |
+*_FREE_PAGE :                   12D - | *_FREE_PAGE_Size :                3 - |
+*_FREINIT_VOL :                   8 - | *_FREINIT_VOL_Size :              1 - |
+*_GET_FNDVOLUME :                 3 - | *_GET_FNDVOLUME_Size :            1 - |
+*_GET_LONGNAME :                  4 - | *_GET_LONGNAME_Size :             1 - |
+*_GET_MOUNTED :                   3 - | *_GET_MOUNTED_Size :              1 - |
+*_GET_PATH :                      3 - | *_GET_PATH_Size :                 1 - |
+*_GET_TABLE_MEM :               127 - | *_GET_TABLE_MEM_Size :            3 - |
+*_GET_VIRT_BITS :                 8 - | *_GET_VIRT_BITS_Size :            1 - |
+*_HDD :                           1 - | *_HEX1DECTXT :                    6 - |
+*_HEX1DECTXT_Size :               1 - | *_HEX2DECTXT :                    5 - |
+*_HEX2DECTXT_Size :               1 - | *_HEX4DECTXT :                    4 - |
+*_HEX4DECTXT_Size :               1 - | *_HOB :                           6 - |
+*_HOB_Size :                      1 - | *_H_SIZE :                        3 - |
+*_H_SIZE_Size :                   1 - | *_INIT_CMOS :                     0 - |
+*_INIT_CMOS_Size :                1 - | *_INIT_FATVARS :                  0 - |
+*_INIT_FATVARS_Size :             1 - | *_INIT_KEYB_PS2 :               11B - |
+*_INIT_KEYB_PS2_Size :            3 - | *_INIT_TABLE_MEM :              124 - |
+*_INIT_TABLE_MEM_Size :           3 - | *_INIT_TEKDIR :                   A - |
+*_INIT_TEKDIR_Size :              1 - | *_INST_FATBOOT :                 54 - |
+*_INST_FATBOOT_Size :             1 - | *_KOL_VOL :                       2 - |
+*_KOL_VOL_Size :                  1 - | *_LOADIMAGE :                     5 - |
+*_LOADIMAGE_Size :                1 - | *_MATH :                         4C - |
+*_MATH_Size :                     1 - | *_MEM_MODE_128 :                 80 - |
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 98 - 2/23/2020 18:34:50
 
 
-*_MEM_MODE_PENT :                C0 - | *_MOUNTER :                      53 - |
-*_MOUNTER_Size :                  1 - | *_MOUNT_RAMDISK :                 9 - |
-*_MOUNT_RAMDISK_Size :            1 - | *_MOUSE_WHEEL :                  F0 - |
-*_MULTIPLY16 :                    1 - | *_MULTIPLY16_Size :               1 - |
-*_MULTIPLY32 :                    3 - | *_MULTIPLY32_Size :               1 - |
-*_NEMO_RD_ID :                  100 - | *_NEMO_RD_ID_Size :               3 - |
-*_NEMO_RD_SEC :                 103 - | *_NEMO_RD_SEC_Size :              3 - |
-*_NEMO_WR_SEC :                 106 - | *_NEMO_WR_SEC_Size :              3 - |
-*_NGSSD_RD_ID :                 112 - | *_NGSSD_RD_ID_Size :              3 - |
-*_NGSSD_RD_SEC :                115 - | *_NGSSD_RD_SEC_Size :             3 - |
-*_NGSSD_WR_SEC :                118 - | *_NGSSD_WR_SEC_Size :             3 - |
-*_NO_INIT :                       0 - | *_NO_INIT_Size :                  1 - |
-*_NUM_KOL_H :                     B - | *_NUM_KOL_H_Size :                1 - |
-*_NUM_KOL_L :                     A - | *_NUM_KOL_L_Size :                1 - |
-*_NUM_PKT :                       7 - | *_NUM_PKT_Size :                  1 - |
-*_OPEN_FILE :                     8 - | *_OPEN_FILE_Size :                1 - |
-*_OPEN_MOUNT :                    0 - | *_OPEN_MOUNT_Size :               1 - |
-*_POSTF00 :                       0 - | *_POSTF00_Size :                  1 - |
-*_POSTF01 :                       1 - | *_POSTF01_Size :                  1 - |
-*_POSTF02 :                       2 - | *_POSTF02_Size :                  1 - |
-*_POSTF03 :                       3 - | *_POSTF03_Size :                  1 - |
-*_POSTF04 :                       4 - | *_POSTF04_Size :                  1 - |
-*_POSTF05 :                       5 - | *_POSTF05_Size :                  1 - |
-*_POSTF06 :                       6 - | *_POSTF06_Size :                  1 - |
-*_POSTF07 :                       7 - | *_POSTF07_Size :                  1 - |
-*_POS_FILES :                     B - | *_POS_FILES_Size :                1 - |
-*_PRINT_A :                      48 - | *_PRINT_A_Size :                  1 - |
-*_PRINT_MESSAGE :                47 - | *_PRINT_MESSAGE_Size :            1 - |
-*_RDWR_MOUNT :                    1 - | *_RDWR_MOUNT_Size :               1 - |
-*_READ_CMOS :                     1 - | *_READ_CMOS_Size :                1 - |
-*_READ_DIR :                      1 - | *_READ_DIR_Size :                 1 - |
-*_READ_FILE :                     9 - | *_READ_FILE_Size :                1 - |
-*_READ_KEYB_PS2 :               11E - | *_READ_KEYB_PS2_Size :            3 - |
-*_READ_STAT_PS2 :               121 - | *_READ_STAT_PS2_Size :            3 - |
-*_REAL_DRIVE :                    C - | *_REST_NAMELOAD :                 6 - |
-*_REST_NAMELOAD_Size :            1 - | *_ROM :                           9 - |
-*_ROM_Size :                      1 - | *_SCL :                           2 - |
-*_SCL_Size :                      1 - | *_SCROLL_DOWN :                  4A - |
-*_SCROLL_DOWN_Size :              1 - | *_SCROLL_UP :                    49 - |
-*_SCROLL_UP_Size :                1 - | *_SD :                            2 - |
-*_SD_NONE :                      80 - | *_SETUP_FONT :                   57 - |
-*_SETUP_FONT_Size :               1 - | *_SETUP_PAL :                    56 - |
-*_SETUP_PAL_Size :                1 - | *_SET_DEVICE :                    5 - |
-*_SET_DEVICE_Size :               1 - | *_SET_MASK_EXT :                  7 - |
-*_SET_MASK_EXT_Size :             1 - | *_SET_MODE :                     4B - |
-*_SET_MODE_Size :                 1 - | *_SET_VOL :                       1 - |
-*_SET_VOL_Size :                  1 - | *_SORT_FINDFILES :               52 - |
-*_SORT_FINDFILES_Size :           1 - | *_SPG :                           5 - |
-*_SPG_Size :                      1 - | *_TAP :                           4 - |
-*_TAPE_EMUL :                    45 - | *_TAPE_EMUL_Size :                1 - |
-*_TAPE_INIT :                    44 - | *_TAPE_INIT_Size :                1 - |
-*_TAP_Size :                      1 - | *_TEK_PKT_H :                     9 - |
-*_TEK_PKT_H_Size :                1 - | *_TEK_PKT_L :                     8 - |
-*_TEK_PKT_L_Size :                1 - | *_TO_DRV :                        4 - |
-*_TO_DRV_Size :                   1 - | *_TRD :                           1 - |
-*_TRDOS :                         4 - | *_TRDOS_Size :                    1 - |
-*_TRD_Size :                      1 - | *_TURBO_HIGH :                   20 - |
-*_TURBO_LOW :                    10 - | *_TURBO_MAX :                    30 - |
-*_TXTSCR_MODE :                   2 - | *_UNKNOWN :                       5 - |
-*_UNKNOWN_Size :                  1 - | *_VERSION :                      4D - |
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 99 - 2/23/2020 18:20:0
+*_MEM_MODE_48 :                  40 - | *_MEM_MODE_PENT :                C0 - |
+*_MOUNTER :                      53 - | *_MOUNTER_Size :                  1 - |
+*_MOUNT_RAMDISK :                 9 - | *_MOUNT_RAMDISK_Size :            1 - |
+*_MOUSE_WHEEL :                  F0 - | *_MULTIPLY16 :                    1 - |
+*_MULTIPLY16_Size :               1 - | *_MULTIPLY32 :                    3 - |
+*_MULTIPLY32_Size :               1 - | *_NEMO_RD_ID :                  100 - |
+*_NEMO_RD_ID_Size :               3 - | *_NEMO_RD_SEC :                 103 - |
+*_NEMO_RD_SEC_Size :              3 - | *_NEMO_WR_SEC :                 106 - |
+*_NEMO_WR_SEC_Size :              3 - | *_NGSSD_RD_ID :                 112 - |
+*_NGSSD_RD_ID_Size :              3 - | *_NGSSD_RD_SEC :                115 - |
+*_NGSSD_RD_SEC_Size :             3 - | *_NGSSD_WR_SEC :                118 - |
+*_NGSSD_WR_SEC_Size :             3 - | *_NO_INIT :                       0 - |
+*_NO_INIT_Size :                  1 - | *_NUM_KOL_H :                     B - |
+*_NUM_KOL_H_Size :                1 - | *_NUM_KOL_L :                     A - |
+*_NUM_KOL_L_Size :                1 - | *_NUM_PKT :                       7 - |
+*_NUM_PKT_Size :                  1 - | *_OPEN_FILE :                     8 - |
+*_OPEN_FILE_Size :                1 - | *_OPEN_MOUNT :                    0 - |
+*_OPEN_MOUNT_Size :               1 - | *_POSTF00 :                       0 - |
+*_POSTF00_Size :                  1 - | *_POSTF01 :                       1 - |
+*_POSTF01_Size :                  1 - | *_POSTF02 :                       2 - |
+*_POSTF02_Size :                  1 - | *_POSTF03 :                       3 - |
+*_POSTF03_Size :                  1 - | *_POSTF04 :                       4 - |
+*_POSTF04_Size :                  1 - | *_POSTF05 :                       5 - |
+*_POSTF05_Size :                  1 - | *_POSTF06 :                       6 - |
+*_POSTF06_Size :                  1 - | *_POSTF07 :                       7 - |
+*_POSTF07_Size :                  1 - | *_POS_FILES :                     B - |
+*_POS_FILES_Size :                1 - | *_PRINT_A :                      48 - |
+*_PRINT_A_Size :                  1 - | *_PRINT_MESSAGE :                47 - |
+*_PRINT_MESSAGE_Size :            1 - | *_RDWR_MOUNT :                    1 - |
+*_RDWR_MOUNT_Size :               1 - | *_READ_CMOS :                     1 - |
+*_READ_CMOS_Size :                1 - | *_READ_DIR :                      1 - |
+*_READ_DIR_Size :                 1 - | *_READ_FILE :                     9 - |
+*_READ_FILE_Size :                1 - | *_READ_KEYB_PS2 :               11E - |
+*_READ_KEYB_PS2_Size :            3 - | *_READ_STAT_PS2 :               121 - |
+*_READ_STAT_PS2_Size :            3 - | *_REAL_DRIVE :                    C - |
+*_REST_NAMELOAD :                 6 - | *_REST_NAMELOAD_Size :            1 - |
+*_ROM :                           9 - | *_ROM_Size :                      1 - |
+*_SCL :                           2 - | *_SCL_Size :                      1 - |
+*_SCROLL_DOWN :                  4A - | *_SCROLL_DOWN_Size :              1 - |
+*_SCROLL_UP :                    49 - | *_SCROLL_UP_Size :                1 - |
+*_SD :                            2 - | *_SD_NONE :                      80 - |
+*_SETUP_FONT :                   57 - | *_SETUP_FONT_Size :               1 - |
+*_SETUP_PAL :                    56 - | *_SETUP_PAL_Size :                1 - |
+*_SET_DEVICE :                    5 - | *_SET_DEVICE_Size :               1 - |
+*_SET_MASK_EXT :                  7 - | *_SET_MASK_EXT_Size :             1 - |
+*_SET_MODE :                     4B - | *_SET_MODE_Size :                 1 - |
+*_SET_VOL :                       1 - | *_SET_VOL_Size :                  1 - |
+*_SORT_FINDFILES :               52 - | *_SORT_FINDFILES_Size :           1 - |
+*_SPG :                           5 - | *_SPG_Size :                      1 - |
+*_TAP :                           4 - | *_TAPE_EMUL :                    45 - |
+*_TAPE_EMUL_Size :                1 - | *_TAPE_INIT :                    44 - |
+*_TAPE_INIT_Size :                1 - | *_TAP_Size :                      1 - |
+*_TEK_PKT_H :                     9 - | *_TEK_PKT_H_Size :                1 - |
+*_TEK_PKT_L :                     8 - | *_TEK_PKT_L_Size :                1 - |
+*_TO_DRV :                        4 - | *_TO_DRV_Size :                   1 - |
+*_TRD :                           1 - | *_TRDOS :                         4 - |
+*_TRDOS_Size :                    1 - | *_TRD_Size :                      1 - |
+*_TURBO_HIGH :                   20 - | *_TURBO_LOW :                    10 - |
+*_TURBO_MAX :                    30 - | *_TXTSCR_MODE :                   2 - |
+*_UNKNOWN :                       5 - | *_UNKNOWN_Size :                  1 - |
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 99 - 2/23/2020 18:34:50
 
 
-*_VERSION_Size :                  1 - | *_VIRT_DRIVE :                    3 - |
-*_V_SIZE :                        2 - | *_V_SIZE_Size :                   1 - |
-*_WINW :                         46 - | *_WINW_Size :                     1 - |
-*_WRITE_CMOS :                    2 - | *_WRITE_CMOS_Size :               1 - |
-*_X_COORD :                       0 - | *_X_COORD_Size :                  1 - |
-*_Y_COORD :                       1 - | *_Y_COORD_Size :                  1 - |
-*_ZCSD_RD_ID :                  109 - | *_ZCSD_RD_ID_Size :               3 - |
-*_ZCSD_RD_SEC :                 10C - | *_ZCSD_RD_SEC_Size :              3 - |
-*_ZCSD_WR_SEC :                 10F - | *_ZCSD_WR_SEC_Size :              3 - |
-*_ZXSCR_MODE :                    1 - |
+*_VERSION :                      4D - | *_VERSION_Size :                  1 - |
+*_VIRT_DRIVE :                    3 - | *_V_SIZE :                        2 - |
+*_V_SIZE_Size :                   1 - | *_WINW :                         46 - |
+*_WINW_Size :                     1 - | *_WRITE_CMOS :                    2 - |
+*_WRITE_CMOS_Size :               1 - | *_X_COORD :                       0 - |
+*_X_COORD_Size :                  1 - | *_Y_COORD :                       1 - |
+*_Y_COORD_Size :                  1 - | *_ZCSD_RD_ID :                  109 - |
+*_ZCSD_RD_ID_Size :               3 - | *_ZCSD_RD_SEC :                 10C - |
+*_ZCSD_RD_SEC_Size :              3 - | *_ZCSD_WR_SEC :                 10F - |
+*_ZCSD_WR_SEC_Size :              3 - | *_ZXSCR_MODE :                    1 - |
 
-    733 symbols
+    734 symbols
     680 unused symbols
 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 100 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 100 - 2/23/2020 18:34:50
 
 
   defined macros:
@@ -6150,7 +6152,7 @@ TEXTDATE                              | WORD2TXT
 
      22 macros
 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 101 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 101 - 2/23/2020 18:34:50
 
 
   defined functions:
@@ -6158,7 +6160,7 @@ TEXTDATE                              | WORD2TXT
 
 LOW                                   | HIGH                                 
 
- AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 102 - 2/23/2020 18:20:0
+ AS V1.42 Beta [Bld 146] - source file trdos.a80 - page 102 - 2/23/2020 18:34:50
 
 
   codepages:
@@ -6167,10 +6169,10 @@ LOW                                   | HIGH
 STANDARD (0 changed characters)
 
 
-0.29 seconds assembly time
+0.31 seconds assembly time
 
-    967 lines source file
-   2788 lines incl. macro expansions
+    969 lines source file
+   2790 lines incl. macro expansions
       2 passes
       0 errors
       0 warnings
