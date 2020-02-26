@@ -79,9 +79,12 @@ module zports(
 	input  wire        vg_intrq,
 	input  wire        vg_drq, // from vg93 module - drq + irq read
 	output wire        vg_wrFF_fclk, // write strobe of #FF port
+	output reg         vg_rdwr_fclk, // pulses when ANY port of TR-DOS controller was read or written
 	input  wire [ 1:0] vg_a,
+	input  wire        vg_res_n,
+	input  wire        vg_hrdy,
+	input  wire        vg_side,
 
-	output wire        vg_rdwr_fclk, // pulses when ANY port of TR-DOS controller was read or written
 	// FDD mask
 	output reg  [ 3:0] fdd_mask,
 
@@ -432,7 +435,7 @@ module zports(
 		//PORTFD:
 
 		VGSYS:
-			dout = { vg_intrq, vg_drq, /* vgFF }; */ 6'b111111 };
+			dout = { vg_intrq, vg_drq, 1'b1, (~vg_side), vg_hrdy, vg_res_n, vg_a };
 
 		KJOY:
 			dout = {3'b000, kj_in};
@@ -901,12 +904,16 @@ module zports(
 
 
 
-	// TR-DOS any port access
-	assign vg_rdwr_fclk = ((loa==VGCOM) ||
-	                       (loa==VGTRK) ||
-	                       (loa==VGSEC) ||
-	                       (loa==VGDAT) ||
-	                       (loa==VGSYS) ) && shadow && (port_wr_fclk || port_rd_fclk);
+	// TR-DOS any port access strobe -- for switching TR-DOS page to RAM page FE
+	always @(posedge fclk, negedge rst_n)
+	if( !rst_n )
+		vg_rdwr_fclk <= 1'b0;
+	else
+		vg_rdwr_fclk <= ((loa==VGCOM) ||
+		                 (loa==VGTRK) ||
+		                 (loa==VGSEC) ||
+		                 (loa==VGDAT) ||
+		                 (loa==VGSYS)  ) && shadow && (port_wr_fclk || port_rd_fclk);
 	                       
 
 
