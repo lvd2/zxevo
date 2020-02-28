@@ -455,6 +455,7 @@ struct COMPUTER
    u8 pBE; // ATM3
    u16 brk_addr; // pentevo
    u8 fddIO2Ram_mask;
+   u8 trdos_last_ff; //временный параметр, потом надо удалить
 	struct{ 
 		u8 p83; //
 		u8 p82; //
