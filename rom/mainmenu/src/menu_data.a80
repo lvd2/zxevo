@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 18.08.2019 savelij
+;LAST UPDATE: 03.03.2020 savelij
 
 ;Žˆ‘€’…‹œ ŽŠ€ (€„…‘ ‚ IX)
 ;+00 X ŠŽŽ„ˆ€’€
@@ -157,6 +157,8 @@ TXT_KILLREZID	EQU $-2
 TXT_AUTOTAPE	EQU $-2
 		DB "\r H.Delay for HDD, secs  5"
 TXT_HDDTIMEOUT	EQU $-1
+;		DB "\r L.Screensaver, minute: 5"
+;TXT_SCRSAVDELAY	EQU $-1
 		DB "\r X.Exit"
 		DB 0
 ;„‹Ÿ …‡ˆ„…’€ HONEY COMANDER
@@ -176,6 +178,7 @@ SETUPER1	DW SOUND_KEYS			;s
 	ENDIF;REZIDENT
 		DW AUTO_TAPE			;t
 		DW HDDTIMEOUT			;h
+;		DW SCRSAVTIMEOUT		;l
 		DW RESTART			;x
 SETUPER2
 ;===============Œ…ž “‘’€Ž‚ŽŠ=============================
@@ -199,6 +202,7 @@ MAINTXT		DB 0X17,0XFF,"Main menu"
 		DB 0X0D," T.Tape load"		;t
 		DB 0X0D," B.HDD boot"		;b
 		DB 0X0D," D.CD boot"		;d
+		DB 0X0D," 5.SDcard boot"	;5
 		DB 0X0D," X.Perfect Cmd"	;x
 		DB 0X0D," S.TR-DOS"		;s
 		DB 0X0D," I.48k basic"		;i
@@ -206,13 +210,14 @@ MAINTXT		DB 0X17,0XFF,"Main menu"
 		DB 0X0D," C.Setup"		;c
 		DB 0X0D," R.Service"		;r
 		DB 0
-MAINMENU_KEY	DB LOW (MAIN1-$-1),"zftbdxsiucrwmlg123489vyhejn";,0XAC
+MAINMENU_KEY	DB LOW (MAIN1-$-1),"zftbd5xsiucrwmlg123489vyhejn";,0XAC
 
 MAIN1		DW GLUBOOT			;z „ˆ‘Š…’Ž‡€ƒ“‡—ˆŠ
 		DW FILES_BROWSE			;f ‡€ƒ“‡—ˆŠ ‘ ”€’€
 		DW TAPELOAD			;t ‡€ƒ“‡Š€ ‘ ‹…’›
 		DW HDD_BOOT			;b ‘’€›‰ ‡€ƒ“‡—ˆŠ ‘ ‚ˆ’€
 		DW CDBOOT			;d ‘’€›‰ ‡€ƒ“‡—ˆŠ ‘ ‘ˆ„žŠ€
+		DW SDCARDBOOT			;5 ‡€ƒ“‡—ˆŠ ‘ SD Š€’›
 		DW PERFECT			;x PERFECT COMANDER
 		DW DOS128			;s ……•Ž„ ‚ TR-DOS
 		DW BAS48			;i ……•Ž„ ‚ …‰‘ˆŠ 48
@@ -665,6 +670,14 @@ ETXT_NONE
 T_ALL		DB "off"	;0
 T_128		DB "128"	;2
 T_48		DB " 48"	;1
+
+STOP_SEC	DB 0
+STOP_MIN	DB 0
+STOP_HOUR	DB 0
+TIMEOUTSCRSAV	DB 0
+CURR_SEC	DB 0
+CURR_MIN	DB 0
+CURR_HOUR	DB 0
 
 TXT_DOSTYPES0	DB "EVO-DOS"
 TXT_DOSTYPES1	DB " TR-DOS"

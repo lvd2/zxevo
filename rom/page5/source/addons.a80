@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 18.08.2019 savelij
+;LAST UPDATE: 01.03.2020 savelij
 
 	TITLE "addons.a80 ROM_RST82"
 
@@ -30,6 +30,7 @@ DRV_VAR		EQU 0X4000
 		RET
 
 		JP UNPACK_DOS_FE
+		JP INST_SONGLN
 
 		DUPL 0X0080-$,0XFF
 		binclude ../../dec40.bin
@@ -488,6 +489,11 @@ SET_MODE4	LD A,(TEK_MODES)
 CMOS_DEFAULT	DB 0X04,0X02,0X00,0X00,0X00,0X00
 ECMOS_DEFAULT
 
+INST_SONGLN     LD HL,SONGLNBIN
+                LD DE,0XC000
+                JP UNPACK
+
+SONGLNBIN       binclude songln_pack.bin
 		include tape.a80
 		include ay_printer.a80
 		include txtmode_proc.a80
