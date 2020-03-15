@@ -646,7 +646,11 @@ set1FFD:
          if ((conf.sound.ay_scheme == AY_SCHEME_CHRV) && ((val & 0xF0) == 0xF0)) //Alone Coder
          {
             if (conf.sound.ay_chip == (SNDCHIP::CHIP_YM2203))
-			   comp.tfmstat = val;
+             {
+				 comp.tfmstat = val;
+                 fmsoundon0 = val & 4;
+                 tfmstatuson0 = val & 2;
+             } //Alone Coder 0.36.6
             comp.active_ay = val & 1;
 			return;
          };
@@ -1145,7 +1149,7 @@ __inline unsigned char in1(unsigned port)
 
    if ((unsigned char)port == 0xFD && conf.sound.ay_scheme >= AY_SCHEME_SINGLE)
    {
-      if((conf.sound.ay_scheme == AY_SCHEME_CHRV) && (conf.sound.ay_chip == (SNDCHIP::CHIP_YM2203)) && ((comp.tfmstat&CF_TFM_REG) == 0))
+      if((conf.sound.ay_scheme == AY_SCHEME_CHRV) && (conf.sound.ay_chip == (SNDCHIP::CHIP_YM2203)) && (tfmstatuson0 == 0))
           return 0x7f /*always ready*/; //Alone Coder 0.36.6
       if ((port & 0xC0FF) != 0xC0FD) return 0xFF;
       unsigned n_ay = (conf.sound.ay_scheme == AY_SCHEME_QUADRO)? (port >> 12) & 1 : comp.active_ay;

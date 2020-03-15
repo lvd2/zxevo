@@ -98,7 +98,7 @@ void init_gs(bool Init)
        BASS::Load();
 #endif
 
-if(Init)
+   if(Init)
    {
        reset_gs();
    }

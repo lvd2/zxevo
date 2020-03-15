@@ -203,7 +203,7 @@ static inline void flush_gs_sound()
 //   assert(gs_t_states >= gscpu_t_at_frame_start);
 
    sound.update(unsigned((gs_t_states + gscpu.t) - gscpu_t_at_frame_start), lv, rv);     //!psb
-   }
+}
 
 void init_gs_frame()
 {
@@ -227,7 +227,7 @@ void flush_gs_frame()
    {
        gsleds[ch].level = abs(int(gsbyte[ch] - 0x80) * gsvol[ch]) / ((128 * 63) / 15);
        gsleds[ch].attrib = 0x0F;
-}
+   }
 }
 
 void out_gs(unsigned port, u8 val)
