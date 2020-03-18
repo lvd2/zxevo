@@ -515,8 +515,10 @@ module zports(
 	end
 
 	// fdd mask write
-	always @(posedge fclk)
-	if( zxevbd_wr_fclk && a[12:8]==BD_FDDMASK )
+	always @(posedge fclk, negedge rst_n)
+	if( !rst_n )
+		fdd_mask <= 4'd0;
+	else if( zxevbd_wr_fclk && a[12:8]==BD_FDDMASK )
 		fdd_mask <= din[3:0];
 
 
