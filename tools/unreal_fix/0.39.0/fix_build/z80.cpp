@@ -96,6 +96,7 @@ void reset(ROM_MODE mode)
 
    comp.pBF = 0; // ATM3
    comp.pBE = 0; // ATM3
+   comp.fddIO2Ram_mask = 0x00;
 
    if (conf.mem_model == MM_ATM710 || conf.mem_model == MM_ATM3)
    {
