@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalOptions>-std=c++2a -Wno-unknown-warning-option -Wno-unknown-argument -Wno-unused-command-line-argument -Wno-reserved-id-macro -Wno-gnu-anonymous-struct -Wno-old-style-cast -Wno-nonportable-system-include-path -Wno-nested-anon-types -Wno-c++98-compat-pedantic -Wno-language-extension-token -Wno-non-virtual-dtor -Wno-shadow-field-in-constructor -Wno-undef -Wno-c99-extensions -Wno-cast-align -Wno-global-constructors -Wno-exit-time-destructors -Wno-shadow -Wno-missing-field-initializers -Wno-unused-macros -Wno-switch -Wno-switch-enum -Rpass=loop-vectorize -Rpass-missed=loop-vectorize -Rpass-analysis=loop-vectorize -Xclang "-fconstexpr-steps" -Xclang "3000000" %(AdditionalOptions)</AdditionalOptions>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
+      <ProgramDataBaseFileName>
+      </ProgramDataBaseFileName>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <SupportJustMyCode>false</SupportJustMyCode>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>-pdbaltpath:$(TargetName).pdb %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>

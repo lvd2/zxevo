@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalOptions>-Zc:externConstexpr -constexpr:steps20000000  -experimental:external -external:anglebrackets -experimental:preprocessor -external:W0 -Zo -Zf %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>4061;4062;4146;4191;4200;4201;4310;4458;4459;4464;4514;4577;4626;4668;4820;5045</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>
