@@ -134,8 +134,10 @@ WSADATA wsaData;
 void soc_bind(sInfoStruct * s){
 	ZeroMemory(&sa_in, sizeof(sa_in));
 	sa_in.sin_family = AF_INET;
-	memcpy(&sa_in.sin_addr.S_un.S_addr, &stat_regs[0x0018], 4);
-	//sa_in.sin_addr.s_addr = htonl(INADDR_ANY);;
+	//memcpy(&sa_in.sin_addr.S_un.S_addr, &stat_regs[0x0018], 4);
+	char broadcast = '1';
+	setsockopt(s->s,SOL_SOCKET,SO_BROADCAST,&broadcast,sizeof(broadcast));
+	sa_in.sin_addr.s_addr = htonl(INADDR_ANY);;
 	sa_in.sin_port = (s->PORTR[1] << 8) | s->PORTR[0];
 	bind(s->s, (sockaddr *)&sa_in, sizeof(sa_in));
 	s->BINDED = 1;
