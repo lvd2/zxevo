@@ -838,23 +838,23 @@ END
 // Cursor
 //
 
-IDC_C0                  CURSOR                  "res\\cur00000.cur"
+IDC_C0                  CURSOR                  "res/cur00000.cur"
 
-IDC_C1                  CURSOR                  "res\\cur00001.cur"
+IDC_C1                  CURSOR                  "res/cur00001.cur"
 
-IDC_C2                  CURSOR                  "res\\cur00002.cur"
+IDC_C2                  CURSOR                  "res/cur00002.cur"
 
-IDC_C3                  CURSOR                  "res\\cur00003.cur"
+IDC_C3                  CURSOR                  "res/cur00003.cur"
 
-IDC_C4                  CURSOR                  "res\\cur00004.cur"
+IDC_C4                  CURSOR                  "res/cur00004.cur"
 
-IDC_C5                  CURSOR                  "res\\cur00005.cur"
+IDC_C5                  CURSOR                  "res/cur00005.cur"
 
-IDC_C6                  CURSOR                  "res\\cur00006.cur"
+IDC_C6                  CURSOR                  "res/cur00006.cur"
 
-IDC_C7                  CURSOR                  "res\\cur00007.cur"
+IDC_C7                  CURSOR                  "res/cur00007.cur"
 
-IDC_C8                  CURSOR                  "res\\cur00008.cur"
+IDC_C8                  CURSOR                  "res/cur00008.cur"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -864,7 +864,7 @@ IDC_C8                  CURSOR                  "res\\cur00008.cur"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON2               ICON                    "res\\u1.ico"
+IDI_ICON2               ICON                    "res/u1.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

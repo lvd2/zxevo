@@ -4,7 +4,7 @@
 #include "vars.h"
 
 #include "util.h"
-#include "wd93crc.h "
+#include "wd93crc.h"
 
 #pragma pack(push, 1)
 struct TFdiSecHdr

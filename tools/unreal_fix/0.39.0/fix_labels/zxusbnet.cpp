@@ -2,7 +2,7 @@
 #include "emul.h"
 #include "vars.h"
 #include "zxusbnet.h"
-#include <IPHlpApi.h>
+#include <iphlpapi.h>
 
 #define buf_size 8*1024
 

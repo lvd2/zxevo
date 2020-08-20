@@ -1,2 +1,2 @@
 #pragma once
-#include "winres.h"
+#include "WinRes.h"
