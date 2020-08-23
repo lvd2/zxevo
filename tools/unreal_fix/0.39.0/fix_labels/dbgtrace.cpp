@@ -23,9 +23,10 @@ int disasm_line(unsigned addr, char *line)
    //8000 ..DDCB0106 rr (ix+1)
    if (trace_labels)
    {
-      char *lbl = mon_labels.find(((unsigned char *)NULL)+addr); // dirty fix for virtual addresses in labels
-//      if (lbl) for (int k = 0; k < 10 && lbl[k]; line[ptr++] = lbl[k++]); //Alone Coder
-      if (lbl) for (int k = 0; (k < 10) && lbl[k]; )line[ptr++] = lbl[k++]; //Alone Coder
+      char *virtlbl = mon_labels.find(((unsigned char *)NULL)+addr);
+      char *lbl = mon_labels.find(am_r(addr));
+      if (virtlbl) lbl=virtlbl;
+      if (lbl) for (int k = 0; (k < 10) && lbl[k]; )line[ptr++] = lbl[k++];
    }
    else
    {

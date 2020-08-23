@@ -98,6 +98,8 @@ char *MON_LABELS::find(unsigned char *address)
 
 unsigned MON_LABELS::load(char *filename, unsigned char *base, unsigned size)
 {
+   int virt_addr;
+
    FILE *in = fopen(filename, "rt");
    if (!in)
    {
@@ -116,7 +118,8 @@ unsigned MON_LABELS::load(char *filename, unsigned char *base, unsigned size)
       line[l] = 0;
       if (!l) continue;
       unsigned val = 0, offset = 0;
-      if (l >= 6 && line[4] == ' ')
+      virt_addr = 0;
+      if (l >= 6 && line[0]!=':' && line[4] == ' ')
       { // адрес без номера банка xxxx label
          for (l = 0; l < 4; l++)
          {
@@ -125,6 +128,17 @@ unsigned MON_LABELS::load(char *filename, unsigned char *base, unsigned size)
             val = (val * 0x10) + hex(line[l]);
          }
          txt = line+5;
+      }
+      else if (l >= 7 && line[0]==':' && line[5] == ' ')
+      { // :xxxx label -- virtual addresses (in Z80 addr space, not coupled to pages)
+         for (l = 1; l < 5; l++)
+         {
+            if (!ishex(line[l]))
+               goto ll_err;
+            val = (val * 0x10) + hex(line[l]);
+         }
+         txt = line+6;
+         virt_addr = 1;
       }
       else if (l >= 9 && line[2] == ':' && line[7] == ' ')
       { // адрес сномером банка bb:xxxx label
@@ -145,19 +159,22 @@ unsigned MON_LABELS::load(char *filename, unsigned char *base, unsigned size)
       }
       else
       {
-   ll_err:
+ll_err:
          color(CONSCLR_ERROR);
          printf("error in %s, line %u\n", filename, l_counter);
          continue;
       }
 
-// dirty fix for virtual labels
-//      if (val < size)
-//      {
-//          add(base+val, txt);
+      if (!virt_addr && (val < size))
+      {
+          add(base+val, txt);
+          loaded++;
+      }
+      else if (virt_addr)
+      {
           add(((unsigned char *)NULL)+val, txt);
           loaded++;
-//      }
+      }
    }
    fclose(in);
    sort();

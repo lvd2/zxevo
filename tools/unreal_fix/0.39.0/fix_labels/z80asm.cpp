@@ -269,8 +269,13 @@ static char zf[] = "nz\0z\0\0nc\0c\0\0po\0pe\0p\0\0m";
 static void disasm_address(char *line, unsigned addr, char labels)
 {
    char *label = nullptr;
-   //if (labels&&addr) label = mon_labels.find(am_r(addr));
-   if (labels&&addr) label = mon_labels.find(((unsigned char *)NULL)+addr);
+   char *virtlabel = nullptr;
+   if (labels&&addr)
+   {
+       label = mon_labels.find(am_r(addr));
+       virtlabel = mon_labels.find(((unsigned char *)NULL)+addr);
+   }
+   if (virtlabel) label=virtlabel;
    if (label) {
            //strcpy(line, label);
                 int i;
