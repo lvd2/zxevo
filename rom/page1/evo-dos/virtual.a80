@@ -38,7 +38,7 @@ COPY_BLOCK1	LDI
  SETVAR _IN_H_C
  SETVAR _WR_RD_SECT
  SETVAR _CMP_RAMDISK
- SETVAR _SET_VIRT_BITS
+; SETVAR _SET_VIRT_BITS
 
  SETVAR WOUTCA
  SETVAR WWRITE_SEC_
@@ -63,7 +63,7 @@ W_DATA		DW W_OUT1F			;00 ЗАПИСЬ ПОРТА 1F
 		DW W_INHC			;0D ЧТЕНИЕ В РЕГИСТР 'H' ИЗ ПОРТА 'BC'
 		DW READ_WRITE_SEC		;0E ЧТЕНИЕ/ЗАПИСЬ СЕКТОРА
 		DW CMP_RAM_DISK			;12 ПРОВЕРКА RAM ДИСКА
-		DW SET_VIRT_BITS		;13 УСТАНОВКА ПЕРЕМЕННОЙ СЧИТАННОЙ ИЗ RST 8
+;		DW SET_VIRT_BITS		;13 УСТАНОВКА ПЕРЕМЕННОЙ СЧИТАННОЙ ИЗ RST 8
 EW_DATA
 ;[БЕЗ ВОЗВРАТА В МЕСТО ВЫЗОВА]
 		DW W_OUTCA			;13 ЗАПИСЬ РЕГИСТРА 'A' В ПОРТ 'BC'
@@ -286,7 +286,8 @@ W_OUTFF 	LD A,(REG_A)
 		LD (MASK_WRK_DRV),A		;номер дисковода
 		INC A
 		LD B,A
-		LD A,%00001000
+;		LD A,%00001000
+		LD A,%10001000
 .L1		RLCA
 		DJNZ .L1
 		LD (MASK_MNT_DRV),A		;маска смонтированного дисковода
@@ -487,12 +488,17 @@ W_WR_RD_SECT	LD A,(WR_FF)
 		AND 3
 		INC A
 		LD B,A
+		LD A,%10000000
+.L1		RLCA
+		DJNZ .L1
+		LD B,A
 		LD A,(COPY_VIRT_BITS)
-		REPT 5
-		RRCA
-		ENDM
-		DJNZ $-1
-		JP C,WR_RD_SEC_M		;РАБОТА С ПРИМОНТИРОВАННЫМ ОБРАЗОМ
+;		REPT 5
+;		RRCA
+;		ENDM
+;		DJNZ $-1
+		AND B
+		JP NZ,WR_RD_SEC_M		;РАБОТА С ПРИМОНТИРОВАННЫМ ОБРАЗОМ
 		LD BC,WIN_A1
 		LD A,0X40
 		OUT (C),A
@@ -898,18 +904,21 @@ DISK_NONE1	PUSH AF
 		POP HL
 		RET
 
-SET_RWPORT0	RST8D _MOUNTER,_MOUNT_RAMDISK
-		RST30 _SET_VIRT_BITS
-		RET
+;SET_RWPORT0	RST8D _MOUNTER,_MOUNT_RAMDISK
+;		RST30 _SET_VIRT_BITS
+;		RET
 
-SET_VIRT_BITS	LD A,(REG_A)
-		LD (COPY_VIRT_BITS),A
-		LD C,A
-		AND 3
-		LD (VIRT_DRIVE),A
-		LD A,C
-		RRCA
-		RRCA
-		AND 3
-		LD (REAL_DRIVE),A
-		RET
+;SET_VIRT_BITS	LD A,(REG_A)
+;	REPT 4
+;		RRCA
+;	ENDM
+;		LD (COPY_VIRT_BITS),A
+;		LD C,A
+;		AND 3
+;		LD (VIRT_DRIVE),A
+;		LD A,C
+;		RRCA
+;		RRCA
+;		AND 3
+;		LD (REAL_DRIVE),A
+;		RET

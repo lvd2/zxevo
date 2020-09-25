@@ -4226,7 +4226,7 @@ CALL_3D13	push	af
 		push	bc
 		ld	(TRD_5D04),de
 		ld	(TRD_5D02),hl
-		CALL SET_RWPORT0
+;		CALL SET_RWPORT0
 		LD A,0XFF
 		LD (TRD_5D15),A				; …‘‹ˆ 0,…—€’€’œ ˜€Š“	TR-DOS.ˆ€—… …	…—€’€’œ
 		LD (TRD_5D1F),A

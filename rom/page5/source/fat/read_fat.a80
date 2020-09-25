@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 01.03.2020 savelij
+;LAST UPDATE: 25.09.2020 savelij
 
 COM_FAT		EX AF,AF'
 		CALL P5_READ_BYTE
@@ -205,7 +205,7 @@ RDFAT06		POP BC				;Ž‹›‰ €‡Œ… FAT-Ž‹€‘’ˆ ‚ ‘…Š’Ž€•
 		PUSH HL				;‘Ž•€ˆ‹ˆ
 		CALL HLBCDEM			;ŠŽ‹ˆ—…‘’‚Ž Š‹€‘’…Ž‚-(ŠŽ‹ˆ—…‘’‚Ž ‘…Š’ŽŽ‚*0X80)
 		LD A,E
-		AND 0X80			;ŠŽ‹ˆ—…‘’‚Ž Œ……… 128 Š‹€‘’…Ž‚ ‚ ‘…Š’Ž… „‹Ÿ FAT32
+		AND 0X7F			;ŠŽ‹ˆ—…‘’‚Ž Œ……… 128 Š‹€‘’…Ž‚ ‚ ‘…Š’Ž… „‹Ÿ FAT32
 		OR D
 		OR C
 		OR B

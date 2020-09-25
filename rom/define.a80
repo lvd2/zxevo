@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 01.03.2020 savelij
+;LAST UPDATE: 09.04.2020 savelij
 
 ;номера функций RST 8
  INIT_VAR 0X40
@@ -67,7 +67,8 @@ _MEM_MODE_PENT	EQU %11000000			;MEMORY MODE PENT 1024 KB
  SETVAR _REST_NAMELOAD				; получение описателя файла загруженного в рамдиск
  SETVAR _CMP_DRIVE				; проверка примонтированного образа на указанной букве
  SETVAR _GET_VIRT_BITS				; получение битов смонтированных дисков
- SETVAR _MOUNT_RAMDISK				; монтирование рамдиска
+; SETVAR _MOUNT_RAMDISK				; монтирование рамдиска
+ SETVAR _SET_RAMDISK
 
 ;номера функций менеджера устройств
  INIT_VAR
@@ -129,8 +130,8 @@ _MEM_MODE_PENT	EQU %11000000			;MEMORY MODE PENT 1024 KB
  SETVAR _FNT		;FNT
  SETVAR _BMP		;BMP
  SETVAR _ROM		;ROM
-; SETVAR _HOB1		;$??
-; SETVAR _HOB2		;!??
+ SETVAR _HOB1		;$??
+ SETVAR _HOB2		;!??
 
 ;[внутренние номера типов разделов]
  INIT_VAR

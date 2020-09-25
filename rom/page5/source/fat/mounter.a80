@@ -26,6 +26,7 @@ TAB_MOUNTER	DW OPEN_MOUNT				;00 монтирование образа
 		DW CMP_DRIVE				;08 проверка примонтированного образа на указанной букве
 		DW GET_VIRT_BITS			;09 получение битов смонтированных дисков
 		DW MOUNT_RAMDISK			;0A монтирование рамдиска
+		DW SET_RAMDISK				;0B
 
 NOFUNC		RET
 
@@ -1217,72 +1218,87 @@ FNDBUF3		LD B,3
 		INC HL
 		JR FNDBUF4
 
-;[получение текущего состояния битов смонтированных дисководов]
+;[получение текущего состояния битов смонтированных дисководов и рамдиска]
 GET_VIRT_BITS	LD HL,MOUNT_DRIVES
 		LD E,0				;здесь будут биты смонтированных дисководов
 .L2		LD A,(HL)
 		AND A
 		JR Z,.L1
-		SCF
+;		SCF
+		SET 4,E
 .L1		RR E
 		LD A,0X40
 		ADD A,L
 		LD L,A
 		JR NZ,.L2
+; VIRT_BITS - в 3-0 битах биты примонтированнх образов для дисков D-A
 		CALL GET_VIRTREAL
+		AND 3
+		INC A
+		LD B,A
+		LD A,%00001000
+.L3		RLCA
+		DJNZ .L3
 		OR E
+; A xxxx0000 - биты рамдиска
+; E 0000xxxx - биты примонтированных образов
+
 ;[копирование установок виртуал/реал для EVO-DOS]
-WR_VIRT_BITS	LD (CPU2+VIRT_BITS),A
-		LD (RREG_A),A
-		PUSH BC
+WR_VIRT_BITS	PUSH BC
 		PUSH HL
+	IFDEF DOS_FE
+		LD L,A
+		AND 0X0F			; примонтированные диски
+		LD H,A
+		LD A,L
+		RRCA
+		RRCA
+		RRCA
+		RRCA
+		AND 0X0F			; рамдиск
+		OR H
+		LD BC,FDD_EMU_PORT
+		OUT (C),A
+		LD A,L
+	ENDIF
+		LD (CPU2+VIRT_BITS),A		; внутренняя переменая
+		LD (RREG_A),A			; возвращаемое значение в регистре A
 		EX AF,AF'
 		EVOPORT WIN_P2,RAM_EVODOS
 		EX AF,AF'
-		LD (CPU2+COPY_VIRT_BITS),A
+		LD (CPU2+COPY_VIRT_BITS),A	; копия переменной для эмуля
 		XOR A
 		OUT (C),A
-	IFDEF DOS_FE
-		LD A,(CPU2+VIRT_BITS)
-		LD B,A
-		AND 0X0F
-		LD C,A
-		LD A,B
-		REPT 4
-		RRCA
-		ENDM
-		AND 0X0F
-;		OR C
-;		OR 0X10
-;		LD H,0XF0
-;		LD L,A
-;		ROMCALL WRITECMOS,ROM_RST82
-		LD BC,FDD_EMU_PORT
-		OUT (C),A
-	ENDIF
 		POP HL
 		POP BC
 		RET
 
 ;[монтирование рамдиска]
 MOUNT_RAMDISK	CALL GET_VIRTREAL
-		LD C,A
+		AND 3
+		JR SET_RAMDISK.L1
+
+; отключение/установка рамдиска
+; A = >3 - отключение рамдиска
+;     0..3 - номер рамдиска
+; VIRT_BITS - 7-4 бит один установленный бит -> рамдиск 
+SET_RAMDISK	LD A,(RREG_A)
+		CP 4
+		JR C,.L1
 		LD A,(CPU2+VIRT_BITS)
-		AND 0XF0
-		LD B,A
-		LD A,C
-		REPT 4
-		RLCA
-		ENDM
-		AND B
-		JR NZ,.L1			;если смонтирован образ, то рамдиск не монтируется
-		LD A,B
-		OR C
+		AND 0X0F
 		JR WR_VIRT_BITS
 
-.L1		LD A,(CPU2+VIRT_BITS)
-		LD (RREG_A),A
-		RET
+.L1		INC A
+		LD B,A
+		LD A,%00001000
+.L2		RLCA
+		DJNZ .L2
+		LD L,A
+		LD A,(CPU2+VIRT_BITS)
+		AND 0X0F
+		OR L
+		JR WR_VIRT_BITS
 
 GET_VIRTREAL	LD H,VIRT_REAL_DRIVE
 		ROMCALL READCMOS,ROM_RST82

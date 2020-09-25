@@ -1,0 +1,40 @@
+
+;LAST UPDATE: 12.09.2019 savelij
+
+; создание таблицы смещений для автонастройки на адреса запуска
+
+; инициализация переменной для генерации таблицы смещений
+INIT_GETADR	MACRO NAME
+NAME_DIGIT := 0
+	IF MOMPASS = 1
+NAME_DIGITMAX := NAME_DIGIT
+	ENDIF
+		ENDM
+
+; генерация имени переменной для таблицы смещений
+GETADR		MACRO NAME
+$$dIgIt1 := CHARFROMSTR("\{NAME_DIGIT >> 12}",0)
+$$dIgIt2 := CHARFROMSTR("\{NAME_DIGIT >> 8}",0)
+$$dIgIt3 := CHARFROMSTR("\{NAME_DIGIT >> 4}",0)
+$$dIgIt4 := CHARFROMSTR("\{NAME_DIGIT & 0X0F}",0)
+$$dIgIt0 := "\{$$dIgIt1}\{$$dIgIt2}\{$$dIgIt3}\{$$dIgIt4}"
+NAME_{$$dIgIt0}	EQU $-2
+NAME_DIGIT := NAME_DIGIT+1
+	IF NAME_DIGITMAX < NAME_DIGIT
+NAME_DIGITMAX := NAME_DIGITMAX + 1
+	ENDIF
+		ENDM
+
+; генерация таблицы смещений
+PUTADR		MACRO NAME
+NAME_TMPDIGIT := 0
+		REPT NAME_DIGITMAX
+$$dIgIt1 := CHARFROMSTR("\{NAME_TMPDIGIT >> 12}",0)
+$$dIgIt2 := CHARFROMSTR("\{NAME_TMPDIGIT >> 8}",0)
+$$dIgIt3 := CHARFROMSTR("\{NAME_TMPDIGIT >> 4}",0)
+$$dIgIt4 := CHARFROMSTR("\{NAME_TMPDIGIT & 0X0F}",0)
+$$dIgIt0 := "\{$$dIgIt1}\{$$dIgIt2}\{$$dIgIt3}\{$$dIgIt4}"
+		DW NAME_{$$dIgIt0}
+NAME_TMPDIGIT := NAME_TMPDIGIT+1
+		ENDM
+		ENDM

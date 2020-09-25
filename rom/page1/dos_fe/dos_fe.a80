@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 21.12.2017 savelij
+;LAST UPDATE: 21.03.2020 savelij
 
 		include ../../macros.a80
 		include ../../global_vars.a80
@@ -431,12 +431,16 @@ UPDATE_AF	LD A,(OLD_AF+1)
 		EMU_JUMP 0X3FF0
 		LD BC,(OLD_BC)
 		LD A,(OLD_AF+1)
-		OUT (C),A
-		RET
+; ???
+;		OUT (C),A
+;		RET
+		LD D,A
+		JP WR_C_D
 
 ;IN A,(C)
 		EMU_JUMP 0X3FF3
 		LD BC,(OLD_BC)
+; ???
 		IN A,(C)
 		PUSH AF
 		POP HL
@@ -483,7 +487,7 @@ IB1		PUSH BC
 		PUSH HL
 		POP AF
 		LD HL,(OLD_SP)
-		LD DE,0X2A71
+		LD DE,0X2A71		; адрес возврата из обработчика прерывания внешней проги через OUT (0xFF),A
 		DEC HL
 		LD (HL),D
 		DEC HL
@@ -504,12 +508,14 @@ IB1		PUSH BC
 		LD HL,(OLD_HL)
 		LD DE,(OLD_DE)
 		LD BC,(OLD_BC)
+		LD A,(WR_FF)		; байтик для возврата через команду OUT (0xFF),A
 		EI
 		JP 0X2A53
 
 INT_RET		LD SP,0
 INT_SP		EQU $-2
 		IN A,(PEVO_CONF)
+		LD (OLD_PORT_BF),A
 		OR 1
 		OUT (PEVO_CONF),A
 		LD A,HIGH (STACK)
@@ -619,9 +625,7 @@ WRRDSECM1	LD A,(PORT_5F+0X4000)		;взяли номер сектора
 		LD E,A				;D-трек, E-сектор
 		LD A,L
 		LD HL,0X4100
-		RST 8
-		DB _MOUNTER
-		DB _RDWR_MOUNT
+		RST8 _MOUNTER,_RDWR_MOUNT
 		JP 0X3D2F
 
 		PHASE $-0X4000
@@ -705,9 +709,12 @@ VARS1
 		DUPL 0X2F57-$,0;XFF		; OUT	   (0X1F), A
 		OUT (EXIT_PORT),A
 		JR JUMP_0X2F57
+
 		JR JUMP_0X2F59			; IN	A, (0XFF)
+
 EXIT_0X2F59	OUT (EXIT_PORT),A
 JUMP_0X2F59	JP ADR_0X2F59
+
 JUMP_0X2F57	JP ADR_0X2F57
 
 		JP_EMU 0X2FB1			; OUT	   (0XFF), A
@@ -818,8 +825,11 @@ OUT_7F		LD A,(OLD_AF+1)
 ;[запись "A" в порт 0XFF]
 OUT_FF		LD A,(OLD_AF+1)
 		LD (WR_FF),A
-		OUT (0XFF),A
-		RET
+		LD D,A
+		LD BC,0X00FF
+		JR WR_C_D
+; ???		OUT (0XFF),A
+;		RET
 
 ;[запись "A" в порт (C)]
 OUT_C_A	 	LD A,(OLD_AF+1)
@@ -839,7 +849,15 @@ WRCA1		LD D,A
 		JR Z,OUT_FF
 		CP LOW (WIN_A0)
 		JR Z,WRCA3
-WRCA4		OUT (C),D
+WR_C_D		PUSH BC
+		LD BC,FDD_EMU_PORT
+		IN E,(C)
+		XOR A
+		OUT (C),A
+		POP BC
+		OUT (C),D
+		LD BC,FDD_EMU_PORT
+		OUT (C),E
 		RET
 
 ;[запись в порты ATM/PENTEVO]
@@ -853,7 +871,7 @@ WRCA3		LD A,B
 		CP HIGH (WIN_A2)
 		JR Z,WRCA2
 		CP HIGH (WIN_P2)
-		JR NZ,WRCA4
+		JR NZ,WR_C_D
 WRCA2		LD E,B
 		PUSH DE
 		PUSH HL
@@ -1035,12 +1053,13 @@ W_WR_RD_SECT	LD A,(WR_FF)
 		AND 3
 		INC A
 		LD B,A
+		LD A,%10000000
+.L1		RLCA
+		DJNZ .L1
+		LD B,A
 		LD A,(COPY_VIRT_BITS)
-		REPT 5
-		RRCA
-		ENDM
-		DJNZ $-1
-		JP C,MOUNT_RW			;работа с примонтированным образом
+		AND B
+		JP NZ,MOUNT_RW			;работа с примонтированным образом
 		LD BC,WIN_A1
 		LD A,0X40
 		OUT (C),A
@@ -1424,16 +1443,6 @@ READCMOS	PUSH BC
 		POP BC
 		LD A,L
 		AND A
-		RET
-
-;на входе: H-адрес ячейки
-;	   L-что туда записать
-WRITECMOS	PUSH BC
-		LD BC,CMOSD_SET_ADR
-		OUT (C),H
-		LD B,HIGH (CMOSD_RD_WR)
-		OUT (C),L
-		POP BC
 		RET
 
 		JP_EMU 0X3C30			; IN	A, (0X1F)

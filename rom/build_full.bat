@@ -1,46 +1,79 @@
 
 @ECHO OFF
 
+ECHO *************
+ECHO MAKE FAT BOOT
+ECHO *************
 cd fat_boot\source
 call make.bat
 del *.lst
 
+ECHO **************
+ECHO MAKE MAIN MENU
+ECHO **************
 cd ..\..\mainmenu\src
 call make.bat
 del *.lst
 
+ECHO ***********
+ECHO MAKE DOS_FE
+ECHO ***********
 cd ..\..\page1\dos_fe
 call make.bat
 del *.lst
 
+ECHO ****************
+ECHO MAKE TR-DOS 5.03
+ECHO ****************
 cd ..\..\page1\trdos503
 call make.bat
 del *.lst
 
+ECHO ***************
+ECHO MAKE START PAGE
+ECHO ***************
 cd ..\..\page0\source
 call make.bat
 del *.lst
 
+ECHO ************
+ECHO MAKE EVO-DOS
+ECHO ************
 cd ..\..\page1\evo-dos
 call make.bat
 del *.lst
 
+ECHO **************
+ECHO MAKE BASIC 128
+ECHO **************
 cd ..\..\page2\source
 call make.bat
 del *.lst
 
+ECHO *************
+ECHO MAKE BASIC 48
+ECHO *************
 cd ..\..\page3\source
 call make.bat
 del *.lst
 
+ECHO *************
+ECHO MAKE ATM CP/M
+ECHO *************
 cd ..\..\atm_cpm\source
 call make.bat
 del *.lst
 
+ECHO *******************
+ECHO MAKE RST 8 SERVICES
+ECHO *******************
 cd ..\..\page5\source
 call make.bat
 del *.lst
 
+ECHO ****************
+ECHO MAKE TR-DOS 6.10
+ECHO ****************
 cd ..\..\trdos_v6\source
 call make.bat
 del *.lst

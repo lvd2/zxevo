@@ -1,0 +1,84 @@
+
+;LAST UPDATE: 12.09.2019 savelij
+
+; генерация SCL образа
+
+; инициализация переменной для счетчика количествыа файлов
+SCL_INIT_VAR	MACRO
+SCL_NUMBERS_FILES := 0
+		ENDM
+
+; получение счетчика количества файлов в SCL образе
+SCL_GET_NUMBERS	MACRO NAME
+NAME := SCL_NUMBERS_FILES
+		ENDM
+
+; добавление записи в SCL заголовок
+; INC		переменная количества файлов в SCL файле
+; SECTORS	количество секторов добавляемого файла,
+;		если 0 то размер вычисляется из BYTES
+; TEXT		имя файла как в TR-DOS
+;		если "filenameB" адрес берется из ADRES
+;		иначе "filenameEXT" и ADRES не вставляется
+; BYTES		размер файла в байтах
+; ADRES		адрес загрузки
+SCL_RECORD	MACRO INC,SECTORS,TEXT,BYTES,ADRES
+  	IF MOMPASS > 1
+		IF LOW (BYTES)
+$$TMP := (BYTES>>8)+1
+		ELSE
+$$TMP := (BYTES>>8)
+		ENDIF
+
+		IF STRLEN(TEXT) = 9
+			DB TEXT
+			DW ADRES
+		ELSE
+			DB TEXT
+		ENDIF
+			DW BYTES
+		IF SECTORS
+			DB SECTORS+$$TMP
+		ELSE
+			IF LOW(BYTES)
+				DB ((BYTES)>>8)+1
+			ELSE
+				DB ((BYTES)>>8)
+			ENDIF
+		ENDIF
+INC := INC+1
+	ENDIF
+		ENDM
+
+; создание маркера SCL файла и количества файлов
+SCL_HEADER	MACRO NUMS
+		DB "SINCLAIR"
+	IF MOMPASS > 1
+		DB NUMS
+	ELSE
+		DB 0
+	ENDIF
+		ENDM
+
+; установка ORG для SCL файла
+SCL_ORG		MACRO ADDRS,NUMS
+	IF MOMPASS > 1
+		ORG ADDRS-NUMS
+	ELSE
+		ORG ADDRS
+	ENDIF
+		ENDM
+
+; вычисление размера каталога SCL файла без маркера и количества файлов
+SCL_HEADER_SIZE	MACRO INNUMS,OUTNUMS
+OUTNUMS := (9+INNUMS*14+0x100)
+		ENDM
+
+; вычисление количества секторов BASIC блока для SCL файла
+SCL_BASIC_SIZE	MACRO START,END,VARS
+		IF LOW(END-START)
+VARS := ((END-START)>>8)+1
+		ELSE
+VARS := ((END-START)>>8)
+		ENDIF
+		ENDM

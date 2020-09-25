@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 14.07.2019 savelij
+;LAST UPDATE: 06.03.2020 savelij
 
 		TITLE "addon1.a80 ROM_RST81"
 
@@ -145,6 +145,12 @@ INSTALL_NMIRST	ATMPORT WIN_A3,0X40		;‘‹ ‡€‚‘‘’ ’ ’€ 7FFD
 		EVOPORT WIN_P3,RAM_PROFROM
 		LD HL,CPU0
 		CALL FILL_MEM			;—‘’€ ‘’€–› ‡“ PROFROM
+	IFDEF DOS_FE
+; α΅ΰ®α Ά¨ΰβγ «μ­λε ¤¨αª®Ά®¤®Ά ―®α«¥ Άª«ξη¨¥­¨ο ¨ ―ΰ¨ ―®«­®¬ ¨­¨β¥
+		LD BC,FDD_EMU_PORT
+		XOR A
+		OUT (C),A
+	ENDIF
 ;… ‘‚€‹, …‚›‰ ‡€“‘ ‘‹… ‚‹—… ’€ ‹ €’— ›‹ ‘—…›
 INSTALLNMIRST2	LD HL,CPU3
 		CALL FILL_MEM			;—‘’€ ‘‹…„…‰ ‘’€–› RAM

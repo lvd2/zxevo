@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 06.07.2019 savelij
+;LAST UPDATE: 13.03.2020 savelij
 
 		include ../../macros.a80
 		include ../../define.a80
@@ -361,10 +361,15 @@ REALSEC		LD BC,(AFILCLS+2)
 		LD DE,(FATSTR)
 		LD BC,(FATSTR+2)
 		LD HL,SEC_FAT
+		LD A,(MANYFAT)
+.L0		DEC A
+		JP Z,BCDEHLP
 		PUSH HL
+		PUSH AF
 		CALL BCDEHLP
+		POP AF
 		POP HL
-		JP BCDEHLP
+		JP .L0
 
 REALSE1		LD HL,0XFFFE
 		EX DE,HL
