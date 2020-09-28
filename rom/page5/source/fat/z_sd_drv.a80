@@ -93,6 +93,8 @@ ZAW001		LD HL,CMD00
 ZAW006		LD A,CMD_55
 		CALL OUT_COM
 		CALL IN_OOUT
+		defb 0xed,0x70 ;in f,(c)
+		defb 0xed,0x70 ;in f,(c)
 		LD A,ACMD_41
 		OUT (C),A
 		NOP
@@ -151,6 +153,8 @@ OUTCOM		CALL CS__LOW
 OUT_COM		PUSH BC
 		CALL CS__LOW
 		LD BC,P_DATA
+		defb 0xed,0x70 ;in f,(c)
+		defb 0xed,0x70 ;in f,(c)
 		OUT (C),A
 		XOR A
 		OUT (C),A
@@ -209,6 +213,8 @@ SECM200		PUSH HL
 		LD D,E
 		LD E,0
 SECN200		POP AF
+		defb 0xed,0x70 ;in f,(c)
+		defb 0xed,0x70 ;in f,(c)
 		LD BC,P_DATA
 		OUT (C),A
 		NOP
