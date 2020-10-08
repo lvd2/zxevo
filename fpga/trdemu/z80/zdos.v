@@ -43,7 +43,8 @@ module zdos(
 	input  wire        clr_nmi, // out (#BE),a
 	input  wire        vg_rdwr_fclk,
 	input  wire [ 3:0] fdd_mask,
-	input  wire [ 1:0] vg_a
+	input  wire [ 1:0] vg_a,
+	input  wire        romnram
 );
 
 	// control of 'DOS' signal
@@ -71,7 +72,7 @@ module zdos(
 		in_trdemu <= 1'b0;
 	else if( clr_nmi )
 		in_trdemu <= 1'b0;
-	else if( vg_rdwr_fclk && fdd_mask[vg_a] )
+	else if( vg_rdwr_fclk && fdd_mask[vg_a] && dos && romnram )
 		in_trdemu <= 1'b1;
 
 

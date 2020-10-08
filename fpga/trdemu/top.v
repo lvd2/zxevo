@@ -552,7 +552,8 @@ module top(
 	           .clr_nmi     (clr_nmi     ),
 	           .vg_rdwr_fclk(vg_rdwr_fclk),
 	           .fdd_mask    (fdd_mask    ),
-	           .vg_a        (vg_ddrv     )
+	           .vg_a        (vg_ddrv     ),
+	           .romnram     (romnram[0]  )
 	         );
 
 
