@@ -504,7 +504,7 @@ void zx_fifo_put(UBYTE input)
 UBYTE zx_fifo_isfull(void)
 {
 	//always one byte unused, to distinguish between totally full fifo and empty fifo
-	return( (zx_fifo_in_ptr+1)==zx_fifo_out_ptr );
+	return( ((UBYTE)(zx_fifo_in_ptr+1))==zx_fifo_out_ptr );
 }
 
 UBYTE zx_fifo_isempty(void)
