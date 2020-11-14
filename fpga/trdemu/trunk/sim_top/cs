@@ -1,0 +1,4 @@
+#!/bin/bash
+
+#vsim -c -novopt -sv_lib sndpix work.tb
+vsim -c -vopt +acc -do "run 10ms;exit" -sv_lib sndpix work.tb
