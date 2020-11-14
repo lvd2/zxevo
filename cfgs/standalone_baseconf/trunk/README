@@ -1,6 +1,6 @@
 manually place in this dir:
 
-pentevo/avr/<name>/<branch> as 'avr'
-pentevo/fpga/<name>/<branch> as 'fpga'
+pentevo/avr/baseconf/trunk as 'avr'
+pentevo/fpga/baseconf/trunk as 'fpga'
 
 
