@@ -117,7 +117,7 @@ size: ${TARGET}
 #	../../../tools/make_fw/make_fw core.hex core.eep zxevo_beta.bin version.txt
 
 $(RELEASE).bin: core.hex core.eep
-	../../../../tools/make_fw/make_fw $(PROJECT).hex $(PROJECT).eep $(RELEASE).bin version.txt o
+	../../../../../tools/make_fw/make_fw $(PROJECT).hex $(PROJECT).eep $(RELEASE).bin version.txt o
 
 ## Clean target
 .PHONY: clean
