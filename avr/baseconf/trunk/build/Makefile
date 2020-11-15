@@ -43,16 +43,18 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 
 ## Objects that must be built in order to link
-OBJECTS = zx.o interrupts.o main.o ps2.o spi.o depacker_dirty.o rs232.o rtc.o atx.o joystick.o version.o tape.o kbmap.o
-TARGETS = zx interrupts main ps2 spi depacker_dirty rs232 rtc atx joystick version tape kbmap
+TARGETS = zx   interrupts   main   ps2   spi   depacker_dirty   rs232   rtc   atx   joystick   version   tape   kbmap
+
+
+
 
 
 ## Build
-all: $(PROJECT).elf $(PROJECT).hex $(PROJECT).eep $(PROJECT).lss size $(RELEASE).bin
-	mv $(RELEASE).bin zxevo_fw.bin
+all: $(PROJECT).elf $(PROJECT).hex $(PROJECT).eep $(PROJECT).lss $(RELEASE).bin   size
+	cp $(RELEASE).bin zxevo_fw.bin
 
-release: $(PROJECT).elf core.hex core.eep core.lss size zxevo_release.bin
-	mv zxevo_release.bin zxevo_fw.bin
+#release: $(PROJECT).elf core.hex core.eep core.lss size zxevo_release.bin
+#	mv zxevo_release.bin zxevo_fw.bin
 
 ## Compile
 zx.o: ../src/zx.c ../src/zx.h
@@ -95,8 +97,8 @@ kbmap.o: ../src/kbmap.c ../src/kbmap.h
 	$(AVRCC) $(CFLAGS) -c  $<
 
 ##Link
-$(PROJECT).elf: $(OBJECTS) $(FPGACORE).o
-	 $(AVRCC) $(LDFLAGS) $(OBJECTS) $(FPGACORE).o -o $(PROJECT).elf
+$(PROJECT).elf: $(TARGETS:%=%.o) $(FPGACORE).o
+	 $(AVRCC) $(LDFLAGS) $(TARGETS:%=%.o) $(FPGACORE).o -o $(PROJECT).elf
 
 $(FPGACORE).o: $(FPGACORE).mlz
 	$(AVROBJCOPY) -I binary -O elf32-avr -B avr:51 --rename-section .data=.progmem.data,contents,alloc,load,readonly,data --redefine-sym _binary_top_mlz_start=fpga --redefine-sym _binary_top_mlz_end=fpga_end $(FPGACORE).mlz $(FPGACORE).o
@@ -123,7 +125,7 @@ $(RELEASE).bin: core.hex core.eep
 ## Clean target
 .PHONY: clean
 clean:
-	-rm -rf $(OBJECTS) $(FPGACORE).o $(PROJECT).* dep $(RELEASE).bin zxevo_fw.bin
+	-rm -rf $(TARGETS:%=%.o) $(FPGACORE).o $(PROJECT).* dep $(RELEASE).bin zxevo_fw.bin
 
 ## program chip
 pgm: $(PROJECT).hex
