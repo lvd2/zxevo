@@ -2,18 +2,21 @@
 # Makefile for the project pentevo
 ###############################################################################
 
-## General Flags
-PROJECT = core
-MCU = atmega128
-TARGET = $(PROJECT).elf
+# tools (optionally with path)
 AVRCC ?= avr-gcc
-SIZE ?= avr-size
-OBJDUMP ?= avr-objdump
-OBJCOPY ?= avr-objcopy
+AVRSIZE ?= avr-size
+AVROBJDUMP ?= avr-objdump
+AVROBJCOPY ?= avr-objcopy
 
+
+# project naming 
+PROJECT = core
+FPGACORE = top
 RELEASE = zxevo
 
 ## Options common to compile, link and assembly rules
+MCU = atmega128
+
 COMMON = -mmcu=$(MCU)
 
 ## Compile options common for all C compilation units.
@@ -41,16 +44,14 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 ## Objects that must be built in order to link
 OBJECTS = zx.o interrupts.o main.o ps2.o spi.o depacker_dirty.o rs232.o rtc.o atx.o joystick.o version.o tape.o kbmap.o
+TARGETS = zx interrupts main ps2 spi depacker_dirty rs232 rtc atx joystick version tape kbmap
 
-## Objects explicitly added by the user
-#LINKONLYOBJECTS = fpga.o
-FPGACORE = top
 
 ## Build
-all: $(TARGET) $(PROJECT).hex $(PROJECT).eep $(PROJECT).lss size $(RELEASE).bin
+all: $(PROJECT).elf $(PROJECT).hex $(PROJECT).eep $(PROJECT).lss size $(RELEASE).bin
 	mv $(RELEASE).bin zxevo_fw.bin
 
-release: $(TARGET) core.hex core.eep core.lss size zxevo_release.bin
+release: $(PROJECT).elf core.hex core.eep core.lss size zxevo_release.bin
 	mv zxevo_release.bin zxevo_fw.bin
 
 ## Compile
@@ -94,24 +95,24 @@ kbmap.o: ../src/kbmap.c ../src/kbmap.h
 	$(AVRCC) $(CFLAGS) -c  $<
 
 ##Link
-$(TARGET): $(OBJECTS) $(FPGACORE).o
-	 $(AVRCC) $(LDFLAGS) $(OBJECTS) $(FPGACORE).o -o $(TARGET)
+$(PROJECT).elf: $(OBJECTS) $(FPGACORE).o
+	 $(AVRCC) $(LDFLAGS) $(OBJECTS) $(FPGACORE).o -o $(PROJECT).elf
 
 $(FPGACORE).o: $(FPGACORE).mlz
-	$(OBJCOPY) -I binary -O elf32-avr -B avr:51 --rename-section .data=.progmem.data,contents,alloc,load,readonly,data --redefine-sym _binary_top_mlz_start=fpga --redefine-sym _binary_top_mlz_end=fpga_end $(FPGACORE).mlz $(FPGACORE).o
+	$(AVROBJCOPY) -I binary -O elf32-avr -B avr:51 --rename-section .data=.progmem.data,contents,alloc,load,readonly,data --redefine-sym _binary_top_mlz_start=fpga --redefine-sym _binary_top_mlz_end=fpga_end $(FPGACORE).mlz $(FPGACORE).o
 
-%.hex: $(TARGET)
-	$(OBJCOPY) -O ihex $(HEX_FLASH_FLAGS)  $< $@
+%.hex: $(PROJECT).elf
+	$(AVROBJCOPY) -O ihex $(HEX_FLASH_FLAGS)  $< $@
 
-%.eep: $(TARGET)
-	$(OBJCOPY) $(HEX_EEPROM_FLAGS) -O ihex $< $@ || exit 0
+%.eep: $(PROJECT).elf
+	$(AVROBJCOPY) $(HEX_EEPROM_FLAGS) -O ihex $< $@ || exit 0
 
-%.lss: $(TARGET)
-	$(OBJDUMP) -h -S $< > $@
+%.lss: $(PROJECT).elf
+	$(AVROBJDUMP) -h -S $< > $@
 
-size: ${TARGET}
+size: $(PROJECT).elf
 	@echo .
-	@$(SIZE) -C --mcu=${MCU} ${TARGET}
+	@$(AVRSIZE) -C --mcu=${MCU} $(PROJECT).elf
 
 #zxevo_beta.bin: core.hex core.eep
 #	../../../tools/make_fw/make_fw core.hex core.eep zxevo_beta.bin version.txt
