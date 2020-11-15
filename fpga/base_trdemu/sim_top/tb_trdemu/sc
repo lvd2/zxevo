@@ -1,4 +1,0 @@
-#!/bin/bash
-
-#vsim -c -novopt -sv_lib sndpix work.tb
-vsim -c -vopt +acc -sv_lib sndpix work.tb
