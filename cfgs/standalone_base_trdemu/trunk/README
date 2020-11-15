@@ -1,0 +1,6 @@
+manually place in this dir:
+
+pentevo/avr/baseconf/trunk as 'avr'
+pentevo/fpga/base_trdemu/trunk as 'fpga'
+
+
