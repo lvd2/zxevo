@@ -1,0 +1,12 @@
+Takes the image of main AVR firmware in IHEX form and
+fixes CRC for the image in order for it to pass
+bootloader CRC test.
+
+It assumes the main program space is from 0x00000 to 0x1DFFF.
+
+It also fills unused areas explicitly with 0xFFs, otherwise if the
+AVR ISP programmer won't reprogram them, CRC check will fail.
+
+It also checks whether last two bytes with CRC were unused in
+an original image. If not, an error is generated.
+
