@@ -98,8 +98,8 @@ kbmap.o: ../kbmap.c ../kbmap.h
 	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
 
 ##Link
-$(TARGET): $(OBJECTS) $(FPGACORE)
-	 $(CC) $(LDFLAGS) $(OBJECTS) $(FPGACORE) $(LIBDIRS) $(LIBS) -o $(TARGET)
+$(TARGET): $(OBJECTS)
+	 $(CC) $(LDFLAGS) $(OBJECTS) $(LIBDIRS) $(LIBS) -o $(TARGET)
 
 top.rbf: ../../../fpga/current/quartus/top.rbf
 	cp ../../../fpga/current/quartus/top.rbf top.rbf
