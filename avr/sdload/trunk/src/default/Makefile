@@ -122,7 +122,7 @@ size: ${TARGET}
 	@avr-size -C --mcu=${MCU} ${TARGET}
 
 zxevo_beta.bin: core.hex core.eep
-	../../../tools/make_fw/make_fw core.hex core.eep zxevo_beta.bin version.txt
+	../../../../../../tools/make_fw/make_fw core.hex core.eep zxevo_beta.bin version.txt
 
 zxevo_release.bin: core.hex core.eep
 	../../../tools/make_fw/make_fw core.hex core.eep zxevo_release.bin version.txt o
