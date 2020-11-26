@@ -2,10 +2,11 @@
 #include <string.h>
 #include "diskio.h"
 
-//#define LOGENABLE
+#define LOGENABLE
 
 #ifdef LOGENABLE
-#include "../rs232.h"
+void rs232_transmit(BYTE data);
+void to_log(char* ptr);
 #define TO_LOG	to_log
 #define RS232_TRANSMIT rs232_transmit
 #else
@@ -99,18 +100,19 @@ BYTE in_oout(void){
 BYTE disk_initialize(void){
 	if(writep_status) disk_writep(0, 0);
 	CS_HIGH
-	BYTE i = 16;
+	UINT i = 64;
 	BYTE res;
 	while (--i){
 		spi_io(0xff);
 	}
-	i = 255;
+	i = 1024;
 	do{
 		outcom(CMD00);
 		res = in_oout() - 1;
 		if(res == 0x00) break;
 	}while(--i);
 	if(res){
+		TO_LOG(" (CMD00 error) ");
 		return '1';
 	}
 	outcom(CMD08);
@@ -124,10 +126,12 @@ BYTE disk_initialize(void){
 	}else{
 		res = 0x40;
 	}
-	i = 16;
+	i = 2048;
 	do{
 		out_com(CMD_55);
 		in_oout();
+		spi_io(0xff);
+		spi_io(0xff);
 		spi_io(0xff);
 		spi_io(0xff);
 		spi_io(ACMD_41);
@@ -138,22 +142,30 @@ BYTE disk_initialize(void){
 		spi_io(0xff);
 		if(in_oout()==0x00) break;
 	}while(--i);
-	if(i == 0) return '2';
+	if(i == 0) {
+		TO_LOG(" (ACMD_41 error) ");
+		return '2';
+	}
 	
-	i = 16;
+	i = 1024;
 	do{
 		out_com(CMD_59);
 		if(in_oout()==0x00) break;
 	}while(--i);
-	if(i == 0) return '3';
+	if(i == 0) {
+		TO_LOG(" (CMD_59 error) ");
+		return '3';
+	}
 	
-	i = 16;
+	i = 1024;
 	do{
 		outcom(CMD16);
 		if(in_oout()==0x00) break;
 	}while(--i);
-	if(i == 0) return '4';
-	
+	if(i == 0) {
+		TO_LOG(" (CMD16 error) ");
+		return '4';
+	}
 	out_com(CMD_58);
 	in_oout();
 	sd_blsize = spi_io(0xff) & 0x40;
@@ -162,8 +174,8 @@ BYTE disk_initialize(void){
 	spi_io(0xff);
 	
 	TO_LOG("sd_blsize ");
-	RS232_TRANSMIT((sd_blsize>>4) + 'A');
-	TO_LOG("\r\n");
+	RS232_TRANSMIT((sd_blsize>>6) + 'A');
+	TO_LOG(" ");
 	
 	
 	CS_HIGH

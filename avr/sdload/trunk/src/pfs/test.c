@@ -14,19 +14,29 @@ DIR dir;
 FILINFO fi;
 void pff_test(void){
 	UINT res;
-	to_log("\r\npf_mount: ");
-	rs232_transmit(pf_mount(&fs)+'0');
 	do
 	{
-		// power led OFF
+		res = pf_mount(&fs);
+			to_log("\r\npf_mount: ");
+			rs232_transmit(res + '0');
+		if(res){
+			continue;
+		
+		}
+		// power led OFF 
 		LED_PORT |= 1<<LED;
 
 		DDRF |= (1<<nCONFIG); // pull low for a time
 		_delay_ms(20);
 		DDRF &= ~(1<<nCONFIG);
 		while( !(PINF & (1<<nSTATUS)) ); // wait ready
-		to_log("\r\npf_open: ");
-		rs232_transmit(pf_open("TOP.RBF")+'0');
+		res = pf_open("TOP.RBF");
+			to_log("\r\npf_open: ");
+			rs232_transmit(res + '0');
+		if(res){
+			continue;
+		
+		}
 		to_log("\r\npf_read");
 		while(pf_read(dbuf, 2048, &res)==0x00){
 			rs232_transmit('.');

@@ -25,8 +25,8 @@ uint8_t disk_readp (uint8_t* buff, uint32_t sector, uint16_t offser, uint16_t co
 uint8_t disk_writep (const uint8_t* buff, uint32_t sc);
 */
 //if want Log than comment next string
-#undef LOGENABLE
-//#define LOGENABLE
+//#undef LOGENABLE
+#define LOGENABLE
 
 /** FPGA data pointer [far address] (linker symbol). */
 extern const ULONG fpga PROGMEM;
