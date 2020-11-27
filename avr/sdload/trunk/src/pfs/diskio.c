@@ -89,7 +89,7 @@ void out_com(BYTE cmd){
 
 BYTE in_oout(void){
 	BYTE res;
-	BYTE i = 0x30;
+	BYTE i = 33;
 	do{
 		res = spi_io(0xff);
 		if(res != 0xff) break;
@@ -113,7 +113,7 @@ BYTE disk_initialize(void){
 	}while(--i);
 	if(res){
 		TO_LOG(" (CMD00 error) ");
-		return '1';
+		return 1;
 	}
 	outcom(CMD08);
 	res = in_oout();
@@ -126,7 +126,7 @@ BYTE disk_initialize(void){
 	}else{
 		res = 0x40;
 	}
-	i = 2048;
+	i = 10000;
 	do{
 		out_com(CMD_55);
 		in_oout();
@@ -144,7 +144,7 @@ BYTE disk_initialize(void){
 	}while(--i);
 	if(i == 0) {
 		TO_LOG(" (ACMD_41 error) ");
-		return '2';
+		return 1;
 	}
 	
 	i = 1024;
@@ -154,7 +154,7 @@ BYTE disk_initialize(void){
 	}while(--i);
 	if(i == 0) {
 		TO_LOG(" (CMD_59 error) ");
-		return '3';
+		return 1;
 	}
 	
 	i = 1024;
@@ -164,7 +164,7 @@ BYTE disk_initialize(void){
 	}while(--i);
 	if(i == 0) {
 		TO_LOG(" (CMD16 error) ");
-		return '4';
+		return 1;
 	}
 	out_com(CMD_58);
 	in_oout();
@@ -172,11 +172,6 @@ BYTE disk_initialize(void){
 	spi_io(0xff);
 	spi_io(0xff);
 	spi_io(0xff);
-	
-	TO_LOG("sd_blsize ");
-	RS232_TRANSMIT((sd_blsize>>6) + 'A');
-	TO_LOG(" ");
-	
 	
 	CS_HIGH
 	return 0x00;
@@ -195,18 +190,23 @@ DRESULT disk_readp (BYTE* buff, DWORD sector, UINT offset, UINT count){
 			c = cache;
 			c_sector = sector;
 		}
-		CS_LOW
-		spi_io(0xff);
-		spi_io(0xff);
-		if(sd_blsize == 0x00) sector *= 512;
-		spi_io(CMD_17);
-		spi_io(((BYTE*) &sector)[3]);
-		spi_io(((BYTE*) &sector)[2]);
-		spi_io(((BYTE*) &sector)[1]);
-		spi_io(((BYTE*) &sector)[0]);
-		spi_io(0xff);
-		while(in_oout()!=0xfe);
-		UINT i = 512;
+		UINT i;
+			CS_LOW
+			spi_io(0xff);
+			spi_io(0xff);
+			spi_io(0xff);
+			spi_io(0xff);
+			if(sd_blsize == 0x00) sector *= 512;
+			spi_io(CMD_17);
+			spi_io(((BYTE*) &sector)[3]);
+			spi_io(((BYTE*) &sector)[2]);
+			spi_io(((BYTE*) &sector)[1]);
+			spi_io(((BYTE*) &sector)[0]);
+			spi_io(0xff);
+			while((i = in_oout())!=0xfe){
+				//todo убрать вечный цикл!!!
+			}
+		i = 512;
 		while(i--){
 			(*c++) = spi_io(0xff);
 		}
