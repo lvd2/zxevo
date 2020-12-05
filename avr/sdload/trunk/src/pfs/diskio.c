@@ -109,6 +109,7 @@ BYTE disk_initialize(void){
 	do{
 		outcom(CMD00);
 		res = in_oout() - 1;
+		CS_HIGH
 		if(res == 0x00) break;
 	}while(--i);
 	if(res){
@@ -128,6 +129,7 @@ BYTE disk_initialize(void){
 	}
 	i = 10000;
 	do{
+		CS_HIGH
 		out_com(CMD_55);
 		in_oout();
 		spi_io(0xff);

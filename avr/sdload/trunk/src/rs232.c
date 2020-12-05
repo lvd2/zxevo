@@ -78,6 +78,11 @@ void rs232_transmit( UBYTE data )
 	// Put data into buffer, sends the data
 	UDR1 = data;
 }
+UBYTE rs232_receive( void )
+{
+	if(UCSR1A & (1<<RXC)) return UDR1;
+	else return 0x00;
+}
 
 //#ifdef LOGENABLE
 void to_log(char* ptr)

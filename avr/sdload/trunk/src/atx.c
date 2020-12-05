@@ -19,8 +19,6 @@ void wait_for_atx_power(void)
 {
 	UBYTE j = MCUCSR;
 
-		rs232_transmit('*');
-		rs232_transmit(PORTF);
 	//clear status register
 	MCUCSR = 0;
 
@@ -56,22 +54,13 @@ void wait_for_atx_power(void)
 				soft_rst_pressed |= !(SOFTRES_PIN & (1<<SOFTRES));
 
 			} while(--i);
-		rs232_transmit('1');
-		rs232_transmit(PORTF);
 
 			// wait further for soft reset press
 			if( !soft_rst_pressed ) while( SOFTRES_PIN&(1<<SOFTRES) );
-		rs232_transmit('2');
-		rs232_transmit(PORTF);
 		}
 
-		rs232_transmit('3');
-		rs232_transmit(PORTF);
 		//switch on ATX power (PF3 pin in PORTF)
 		ATXPWRON_PORT |= (1<<ATXPWRON);
-		rs232_transmit('4');
-		rs232_transmit(PORTF);
-		rs232_transmit('*');
 
 		//1 sec delay
 		UBYTE i=50;
