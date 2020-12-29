@@ -189,6 +189,8 @@ void reset(ROM_MODE mode)
    if ((!conf.trdos_present && mode == RM_DOS) ||
        (!conf.cache && mode == RM_CACHE))
        mode = RM_SOS;
-
+   if(conf.mem_model == MM_ATM710 && mode == RM_DOS){
+	   comp.p7FFD |=  0x10;
+   }
    set_mode(mode);
 }

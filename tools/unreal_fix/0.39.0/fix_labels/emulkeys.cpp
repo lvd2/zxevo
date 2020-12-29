@@ -310,6 +310,9 @@ void main_reset() { m_reset((ROM_MODE)conf.reset_rom); }
 
 void m_nmi(ROM_MODE page)
 {
+	if(conf.mem_model == MM_ATM710 && bankr[(cpu.pc >> 14) & 3] >= RAM_BASE_M+PAGE*MAX_RAM_PAGES){
+		return;
+	}
    set_mode(page);
    sprintf(statusline, "NMI to %s", getrom(page)); statcnt = 50;
    comp.p00 = 0; // quorum

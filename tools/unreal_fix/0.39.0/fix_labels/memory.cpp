@@ -405,9 +405,11 @@ void set_mode(ROM_MODE mode)
          break;
       case RM_DOS:
          comp.flags |= CF_TRDOS;
-         comp.p7FFD |=  0x10;
-         if(conf.mem_model == MM_ATM710 || conf.mem_model == MM_ATM3)
-             comp.p7FFD &=  ~0x10;
+		 if(conf.mem_model != MM_ATM710){
+			comp.p7FFD |=  0x10;
+		 }
+         //if(conf.mem_model == MM_ATM710 || conf.mem_model == MM_ATM3)
+         //    comp.p7FFD &=  ~0x10;
          break;
    }
    set_banks();
