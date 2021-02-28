@@ -197,6 +197,7 @@ module top(
 	wire clr_nmi;
 	wire in_nmi;
 	wire in_trdemu;
+	wire trdemu_wr_disable;
 	wire [1:0] set_nmi;
 	wire imm_nmi;
 	wire nmi_buf_clr;
@@ -505,6 +506,8 @@ module top(
                                 
 				.in_nmi   (in_nmi   ),
 				.in_trdemu(in_trdemu),
+				
+				.trdemu_wr_disable(trdemu_wr_disable), 
                                 
 				.atmF7_wr(atmF7_wr_fclk),
                                 
@@ -547,6 +550,11 @@ module top(
 
 	           .dos(dos),
 
+	           .zpos(zpos),
+	           .m1_n(m1_n),
+
+
+	           .trdemu_wr_disable(trdemu_wr_disable),
 
 	           .in_trdemu   (in_trdemu   ),
 	           .clr_nmi     (clr_nmi     ),

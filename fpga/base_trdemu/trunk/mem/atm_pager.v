@@ -56,7 +56,7 @@ module atm_pager(
 				   // but has higher priority
 
 	input  wire        in_trdemu, // like 'in_nmi', page 0xFE
-
+	input  wire        trdemu_wr_disable, // disable writes to page FE when trdemu is active
 
 	input  wire        atmF7_wr, // write strobe for the xxF7 ATM port
 
@@ -123,7 +123,7 @@ module atm_pager(
 		begin
 			if( (ADDR==2'b00) && (pent1m_ram0_0 || in_nmi || in_trdemu) )
 			begin
-				wrdisable <= 1'b0;
+				wrdisable <= trdemu_wr_disable;
 
 				if( in_nmi || in_trdemu )
 				begin
