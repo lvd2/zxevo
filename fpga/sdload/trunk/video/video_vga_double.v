@@ -54,6 +54,16 @@ pg0 pg1
 	wire [ 7:0] data_out;
 
 
+	// for simulation
+	initial
+	begin
+		wr_stb <= 1'b0;
+		pages <= 1'b0;
+		ptr_in <= 10'd0;
+		ptr_out <= 10'd0;
+	end
+
+
 	always @(posedge clk) if( hsync_start )
 		pages <= ~pages;
 

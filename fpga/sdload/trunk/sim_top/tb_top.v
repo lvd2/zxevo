@@ -81,8 +81,11 @@ module tb;
 	assign zint_n = (int_n==1'b0) ? 1'b0 : 1'b1;
 
 
-
-
+	initial
+	begin
+		#100000000.0;
+		force DUT.video_top.zxborder = 4'd3;
+	end
 
 
 	initial

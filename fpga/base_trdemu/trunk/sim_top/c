@@ -8,9 +8,9 @@ if (( $#>0 ));
 then
 # SPITEST, NMITEST
 	#vlog +define+$1 -sv -novopt -incr -f vlog.opt
-	vlog +define+$1 -sv -vopt -O5 +acc -fast -incr -f vlog.opt
+	vlog +define+$1 -sv -vopt -O5 +acc -incr -f vlog.opt
 else
 	#vlog -sv -novopt -incr -f vlog.opt
-	vlog -sv -vopt -O5 +acc -fast -incr -f vlog.opt
+	vlog -sv -vopt -O5 +acc -incr -f vlog.opt
 fi
 
