@@ -1,20 +1,23 @@
 
 @echo off
 
-copy makefile.def asl-current
+copy /Y /B makefile.def asl-current
+copy /Y /B make.exe asl-current
 
 cd asl-current
 
 make
-make clean
 
-copy asl.exe ..\bin\asw.exe
-copy p2bin.exe ..\bin
-copy as.msg ..\bin
-copy cmdarg.msg ..\bin
-copy ioerrs.msg ..\bin
-copy p2bin.msg ..\bin
-copy tools.msg ..\bin
+copy /Y /B asl.exe ..\bin\asw.exe
+copy /Y /B p2bin.exe ..\bin
+copy /Y /B as.msg ..\bin
+copy /Y /B cmdarg.msg ..\bin
+copy /Y /B ioerrs.msg ..\bin
+copy /Y /B p2bin.msg ..\bin
+copy /Y /B tools.msg ..\bin
+
+make clean
+del *.exe
 
 cd ..
 
