@@ -5,8 +5,8 @@ copy makefile.def asl-current
 
 cd asl-current
 
-make clean
 make
+make clean
 
 copy asl.exe ..\bin\asw.exe
 copy p2bin.exe ..\bin
