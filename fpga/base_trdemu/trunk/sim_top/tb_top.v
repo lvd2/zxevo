@@ -59,7 +59,7 @@ module tb;
 	wire rwe_n,rucas_n,rlcas_n,rras0_n,rras1_n;
 
 
-	tri0 [15:0] ide_d;
+	tri1 [15:0] ide_d;
 
 
 	wire hsync,vsync;
@@ -800,11 +800,50 @@ module tb;
 	initial
 	begin : init_dram
 		integer i;
+		
+		integer page;
+		integer offset;
+		
+		reg [7:0] trd [0:655359];
+
+		integer fd;
+
+
+
 
 		for(i=0;i<4*1024*1024;i=i+1)
 		begin
 			put_byte(i,(i%257));
 		end
+
+		// load TRD
+		fd = $fopen("boot.trd","rb");
+
+		if( 655360!=$fread(trd,fd) )
+		begin
+			$display("Couldn't load boot.trd!\n");
+			$stop;
+		end
+
+		$fclose(fd);
+		
+		// copy TRD to RAM
+		page = 32'hF4;
+		offset = 0;
+
+		for(i=0;i<655360;i=i+1)
+		begin
+			put_byte( .addr(page*16384+offset), .data(trd[i]) );
+
+			offset = offset + 1;
+			if( offset>=16384 )
+			begin
+				offset = 0;
+				page = page - 1;
+			end
+		end
+
+
 	end
 `endif
 
