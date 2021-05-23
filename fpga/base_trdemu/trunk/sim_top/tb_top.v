@@ -807,6 +807,7 @@ module tb;
 		reg [7:0] trd [0:655359];
 
 		integer fd;
+		integer size;
 
 
 
@@ -818,20 +819,21 @@ module tb;
 
 		// load TRD
 		fd = $fopen("boot.trd","rb");
+		size=$fread(trd,fd);
 
-		if( 655360!=$fread(trd,fd) )
+		if( size>655360 || size<=0 )
 		begin
-			$display("Couldn't load boot.trd!\n");
+			$display("Couldn't load or wrong boot.trd!\n");
 			$stop;
 		end
-
 		$fclose(fd);
-		
+
+
 		// copy TRD to RAM
-		page = 32'hF4;
+		page = 32'h0F4;
 		offset = 0;
 
-		for(i=0;i<655360;i=i+1)
+		for(i=0;i<size;i=i+1)
 		begin
 			put_byte( .addr(page*16384+offset), .data(trd[i]) );
 
@@ -842,8 +844,9 @@ module tb;
 				page = page - 1;
 			end
 		end
+		
 
-
+		$display("boot.trd loaded!\n");
 	end
 `endif
 
