@@ -915,7 +915,7 @@ module tb;
 		    cycles[0]==MWR   && addrs[0][15:14]== 2'd0
 		)
 		begin
-			$display("trd INI caught! port=%04x, wraddr=%04x",addrs[1],addrs[0]);
+			$display("trd INI caught! port=%04x, wraddr=%04x, time=%t",addrs[1],addrs[0],$time());
 		end
 	end
 

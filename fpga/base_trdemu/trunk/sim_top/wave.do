@@ -8,16 +8,17 @@ add wave -noupdate -height 19 -expand -group main_old /tb/DUT/z80mem/r_mreq_n
 add wave -noupdate -height 19 -expand -group main_old /tb/DUT/external_port
 add wave -noupdate -height 19 -expand -group main_old /tb/clkz_in
 add wave -noupdate -height 19 -expand -group main_old -color Cyan /tb/m1_n
-add wave -noupdate -height 19 -expand -group main_old /tb/mreq_n
-add wave -noupdate -height 19 -expand -group main_old /tb/rd_n
-add wave -noupdate -height 19 -expand -group main_old /tb/wr_n
-add wave -noupdate -height 19 -expand -group main_old -radix hexadecimal /tb/za
-add wave -noupdate -height 19 -expand -group main_old -radix hexadecimal /tb/zd
+add wave -noupdate -height 19 -expand -group main_old -color Yellow /tb/mreq_n
+add wave -noupdate -height 19 -expand -group main_old -color Yellow /tb/rd_n
+add wave -noupdate -height 19 -expand -group main_old -color Yellow /tb/wr_n
+add wave -noupdate -height 19 -expand -group main_old -color Yellow -radix hexadecimal /tb/za
+add wave -noupdate -height 19 -expand -group main_old -color Yellow -radix hexadecimal /tb/zd
 add wave -noupdate -height 19 -expand -group main_old -color Salmon /tb/iorq_n
 add wave -noupdate -height 19 -expand -group main_old -color Salmon /tb/rd_n
 add wave -noupdate -height 19 -expand -group main_old -color Salmon /tb/wr_n
-add wave -noupdate -height 19 -expand -group main_old -radix hexadecimal /tb/za
-add wave -noupdate -height 19 -expand -group main_old -radix hexadecimal /tb/zd
+add wave -noupdate -height 19 -expand -group main_old -color Salmon -radix hexadecimal /tb/za
+add wave -noupdate -height 19 -expand -group main_old -color Salmon -radix hexadecimal /tb/zd
+add wave -noupdate -height 19 -expand -group main_old -color Magenta /tb/z80/u0/IntE
 add wave -noupdate -height 19 -expand -group main_old /tb/rfsh_n
 add wave -noupdate -height 19 -expand -group main_old /tb/int_n
 add wave -noupdate -height 19 -expand -group main_old /tb/nmi_n
@@ -984,8 +985,8 @@ add wave -noupdate -height 19 -group tb /tb/is_iowr
 add wave -noupdate -height 19 -group tb /tb/is_iack
 add wave -noupdate -height 19 -group tb /tb/is_any
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {3150600 ps} 0} {{Cursor 2} {4870303753876 ps} 0} {{Cursor 3} {1864068553500 ps} 0}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 1} {3150600 ps} 0} {{Cursor 2} {5845051365500 ps} 0} {{Cursor 3} {3049669304700 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 487
 configure wave -valuecolwidth 149
 configure wave -justifyvalue left
@@ -1000,4 +1001,4 @@ configure wave -griddelta 8
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {1864056611324 ps} {1864079637276 ps}
+WaveRestoreZoom {0 ps} {6123940598370 ps}
