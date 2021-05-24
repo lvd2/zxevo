@@ -1,28 +1,32 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate -height 19 -group main_old /tb/DUT/zclock/zpos
-add wave -noupdate -height 19 -group main_old /tb/DUT/zclock/zneg
-add wave -noupdate -height 19 -group main_old /tb/z80/BUSRQ_n
-add wave -noupdate -height 19 -group main_old /tb/z80/BUSAK_n
-add wave -noupdate -height 19 -group main_old /tb/DUT/z80mem/r_mreq_n
-add wave -noupdate -height 19 -group main_old /tb/DUT/external_port
-add wave -noupdate -height 19 -group main_old /tb/clkz_in
-add wave -noupdate -height 19 -group main_old /tb/iorq_n
-add wave -noupdate -height 19 -group main_old /tb/mreq_n
-add wave -noupdate -height 19 -group main_old /tb/rd_n
-add wave -noupdate -height 19 -group main_old /tb/wr_n
-add wave -noupdate -height 19 -group main_old /tb/m1_n
-add wave -noupdate -height 19 -group main_old /tb/rfsh_n
-add wave -noupdate -height 19 -group main_old /tb/int_n
-add wave -noupdate -height 19 -group main_old /tb/nmi_n
-add wave -noupdate -height 19 -group main_old /tb/wait_n
-add wave -noupdate -height 19 -group main_old -radix hexadecimal /tb/za
-add wave -noupdate -height 19 -group main_old -radix hexadecimal /tb/zd
-add wave -noupdate -height 19 -group main_old -radix hexadecimal /tb/zd_dut_to_z80
-add wave -noupdate -height 19 -group main_old /tb/csrom
-add wave -noupdate -height 19 -group main_old /tb/romoe_n
-add wave -noupdate -height 19 -group main_old /tb/romwe_n
-add wave -noupdate -height 19 -group main_old -radix hexadecimal /tb/z80/u0/IR
+add wave -noupdate -height 19 -expand -group main_old /tb/DUT/zclock/zpos
+add wave -noupdate -height 19 -expand -group main_old /tb/DUT/zclock/zneg
+add wave -noupdate -height 19 -expand -group main_old /tb/z80/BUSRQ_n
+add wave -noupdate -height 19 -expand -group main_old /tb/z80/BUSAK_n
+add wave -noupdate -height 19 -expand -group main_old /tb/DUT/z80mem/r_mreq_n
+add wave -noupdate -height 19 -expand -group main_old /tb/DUT/external_port
+add wave -noupdate -height 19 -expand -group main_old /tb/clkz_in
+add wave -noupdate -height 19 -expand -group main_old -color Cyan /tb/m1_n
+add wave -noupdate -height 19 -expand -group main_old /tb/mreq_n
+add wave -noupdate -height 19 -expand -group main_old /tb/rd_n
+add wave -noupdate -height 19 -expand -group main_old /tb/wr_n
+add wave -noupdate -height 19 -expand -group main_old -radix hexadecimal /tb/za
+add wave -noupdate -height 19 -expand -group main_old -radix hexadecimal /tb/zd
+add wave -noupdate -height 19 -expand -group main_old -color Salmon /tb/iorq_n
+add wave -noupdate -height 19 -expand -group main_old -color Salmon /tb/rd_n
+add wave -noupdate -height 19 -expand -group main_old -color Salmon /tb/wr_n
+add wave -noupdate -height 19 -expand -group main_old -radix hexadecimal /tb/za
+add wave -noupdate -height 19 -expand -group main_old -radix hexadecimal /tb/zd
+add wave -noupdate -height 19 -expand -group main_old /tb/rfsh_n
+add wave -noupdate -height 19 -expand -group main_old /tb/int_n
+add wave -noupdate -height 19 -expand -group main_old /tb/nmi_n
+add wave -noupdate -height 19 -expand -group main_old /tb/wait_n
+add wave -noupdate -height 19 -expand -group main_old -radix hexadecimal /tb/zd_dut_to_z80
+add wave -noupdate -height 19 -expand -group main_old /tb/csrom
+add wave -noupdate -height 19 -expand -group main_old /tb/romoe_n
+add wave -noupdate -height 19 -expand -group main_old /tb/romwe_n
+add wave -noupdate -height 19 -expand -group main_old -radix hexadecimal /tb/z80/u0/IR
 add wave -noupdate -height 19 -group dut_old /tb/DUT/res
 add wave -noupdate -height 19 -group dut_old /tb/DUT/fclk
 add wave -noupdate -height 19 -group dut_old /tb/DUT/clkz_out
@@ -644,6 +648,32 @@ add wave -noupdate -height 19 -group zmem /tb/DUT/z80mem/ramrd_reg
 add wave -noupdate -height 19 -group zmem /tb/DUT/z80mem/ramwr_reg
 add wave -noupdate -height 19 -group zmem /tb/DUT/z80mem/io
 add wave -noupdate -height 19 -group zmem /tb/DUT/z80mem/io_r
+add wave -noupdate -group dram /tb/DUT/dram/clk
+add wave -noupdate -group dram /tb/DUT/dram/rst_n
+add wave -noupdate -group dram /tb/DUT/dram/ra
+add wave -noupdate -group dram /tb/DUT/dram/rd
+add wave -noupdate -group dram /tb/DUT/dram/rwe_n
+add wave -noupdate -group dram /tb/DUT/dram/rucas_n
+add wave -noupdate -group dram /tb/DUT/dram/rlcas_n
+add wave -noupdate -group dram /tb/DUT/dram/rras0_n
+add wave -noupdate -group dram /tb/DUT/dram/rras1_n
+add wave -noupdate -group dram /tb/DUT/dram/addr
+add wave -noupdate -group dram /tb/DUT/dram/req
+add wave -noupdate -group dram /tb/DUT/dram/rnw
+add wave -noupdate -group dram /tb/DUT/dram/cbeg
+add wave -noupdate -group dram /tb/DUT/dram/rrdy
+add wave -noupdate -group dram /tb/DUT/dram/rddata
+add wave -noupdate -group dram /tb/DUT/dram/wrdata
+add wave -noupdate -group dram /tb/DUT/dram/bsel
+add wave -noupdate -group dram /tb/DUT/dram/rst_sync
+add wave -noupdate -group dram /tb/DUT/dram/reset
+add wave -noupdate -group dram /tb/DUT/dram/int_req
+add wave -noupdate -group dram /tb/DUT/dram/int_addr
+add wave -noupdate -group dram /tb/DUT/dram/int_wrdata
+add wave -noupdate -group dram /tb/DUT/dram/int_bsel
+add wave -noupdate -group dram /tb/DUT/dram/rfsh_alt
+add wave -noupdate -group dram /tb/DUT/dram/state
+add wave -noupdate -group dram /tb/DUT/dram/next_state
 add wave -noupdate -height 19 -group dut /tb/DUT/fclk
 add wave -noupdate -height 19 -group dut /tb/DUT/clkz_out
 add wave -noupdate -height 19 -group dut /tb/DUT/clkz_in
@@ -873,90 +903,89 @@ add wave -noupdate -height 19 -group dut /tb/DUT/video_data
 add wave -noupdate -height 19 -group dut /tb/DUT/video_strobe
 add wave -noupdate -height 19 -group dut /tb/DUT/video_next
 add wave -noupdate -height 19 -group dut /tb/DUT/atm_pen2
-add wave -noupdate -height 19 -expand -group tb /tb/fclk
-add wave -noupdate -height 19 -expand -group tb /tb/clkz_out
-add wave -noupdate -height 19 -expand -group tb /tb/clkz_in
-add wave -noupdate -height 19 -expand -group tb /tb/iorq_n
-add wave -noupdate -height 19 -expand -group tb /tb/mreq_n
-add wave -noupdate -height 19 -expand -group tb /tb/rd_n
-add wave -noupdate -height 19 -expand -group tb /tb/wr_n
-add wave -noupdate -height 19 -expand -group tb /tb/m1_n
-add wave -noupdate -height 19 -expand -group tb /tb/rfsh_n
-add wave -noupdate -height 19 -expand -group tb /tb/res
-add wave -noupdate -height 19 -expand -group tb /tb/ziorq_n
-add wave -noupdate -height 19 -expand -group tb /tb/zmreq_n
-add wave -noupdate -height 19 -expand -group tb /tb/zrd_n
-add wave -noupdate -height 19 -expand -group tb /tb/zwr_n
-add wave -noupdate -height 19 -expand -group tb /tb/zm1_n
-add wave -noupdate -height 19 -expand -group tb /tb/zrfsh_n
-add wave -noupdate -height 19 -expand -group tb /tb/int_n
-add wave -noupdate -height 19 -expand -group tb /tb/wait_n
-add wave -noupdate -height 19 -expand -group tb /tb/nmi_n
-add wave -noupdate -height 19 -expand -group tb /tb/zint_n
-add wave -noupdate -height 19 -expand -group tb /tb/zwait_n
-add wave -noupdate -height 19 -expand -group tb /tb/znmi_n
-add wave -noupdate -height 19 -expand -group tb /tb/za
-add wave -noupdate -height 19 -expand -group tb /tb/zd
-add wave -noupdate -height 19 -expand -group tb /tb/zd_dut_to_z80
-add wave -noupdate -height 19 -expand -group tb /tb/reset_pc
-add wave -noupdate -height 19 -expand -group tb /tb/reset_sp
-add wave -noupdate -height 19 -expand -group tb /tb/csrom
-add wave -noupdate -height 19 -expand -group tb /tb/romoe_n
-add wave -noupdate -height 19 -expand -group tb /tb/romwe_n
-add wave -noupdate -height 19 -expand -group tb /tb/rompg0_n
-add wave -noupdate -height 19 -expand -group tb /tb/dos_n
-add wave -noupdate -height 19 -expand -group tb /tb/rompg2
-add wave -noupdate -height 19 -expand -group tb /tb/rompg3
-add wave -noupdate -height 19 -expand -group tb /tb/rompg4
-add wave -noupdate -height 19 -expand -group tb /tb/rd
-add wave -noupdate -height 19 -expand -group tb /tb/ra
-add wave -noupdate -height 19 -expand -group tb /tb/rwe_n
-add wave -noupdate -height 19 -expand -group tb /tb/rucas_n
-add wave -noupdate -height 19 -expand -group tb /tb/rlcas_n
-add wave -noupdate -height 19 -expand -group tb /tb/rras0_n
-add wave -noupdate -height 19 -expand -group tb /tb/rras1_n
-add wave -noupdate -height 19 -expand -group tb /tb/ide_d
-add wave -noupdate -height 19 -expand -group tb /tb/hsync
-add wave -noupdate -height 19 -expand -group tb /tb/vsync
-add wave -noupdate -height 19 -expand -group tb /tb/red
-add wave -noupdate -height 19 -expand -group tb /tb/grn
-add wave -noupdate -height 19 -expand -group tb /tb/blu
-add wave -noupdate -height 19 -expand -group tb /tb/sdcs_n
-add wave -noupdate -height 19 -expand -group tb /tb/sddo
-add wave -noupdate -height 19 -expand -group tb /tb/sddi
-add wave -noupdate -height 19 -expand -group tb /tb/sdclk
-add wave -noupdate -height 19 -expand -group tb /tb/spick
-add wave -noupdate -height 19 -expand -group tb /tb/spidi
-add wave -noupdate -height 19 -expand -group tb /tb/spido
-add wave -noupdate -height 19 -expand -group tb /tb/spics_n
-add wave -noupdate -height 19 -expand -group tb /tb/zrst_n
-add wave -noupdate -height 19 -expand -group tb /tb/mreq_wr_n
-add wave -noupdate -height 19 -expand -group tb /tb/iorq_wr_n
-add wave -noupdate -height 19 -expand -group tb /tb/full_wr_n
-add wave -noupdate -height 19 -expand -group tb /tb/rma14
-add wave -noupdate -height 19 -expand -group tb /tb/rma15
-add wave -noupdate -height 19 -expand -group tb /tb/rpag
-add wave -noupdate -height 19 -expand -group tb /tb/fe_write
-add wave -noupdate -height 19 -expand -group tb /tb/cmos_addr
-add wave -noupdate -height 19 -expand -group tb /tb/cmos_read
-add wave -noupdate -height 19 -expand -group tb /tb/cmos_write
-add wave -noupdate -height 19 -expand -group tb /tb/cmos_rnw
-add wave -noupdate -height 19 -expand -group tb /tb/cmos_req
-add wave -noupdate -height 19 -expand -group tb /tb/bpt
-add wave -noupdate -height 19 -expand -group tb /tb/dza
-add wave -noupdate -height 19 -expand -group tb /tb/dzw
-add wave -noupdate -height 19 -expand -group tb /tb/dzr
-add wave -noupdate -height 19 -expand -group tb /tb/curr_cycle
-add wave -noupdate -height 19 -expand -group tb /tb/is_fetch
-add wave -noupdate -height 19 -expand -group tb /tb/is_mrd
-add wave -noupdate -height 19 -expand -group tb /tb/is_mwr
-add wave -noupdate -height 19 -expand -group tb /tb/is_iord
-add wave -noupdate -height 19 -expand -group tb /tb/is_iowr
-add wave -noupdate -height 19 -expand -group tb /tb/is_iack
-add wave -noupdate -height 19 -expand -group tb /tb/is_any
+add wave -noupdate -height 19 -group tb /tb/fclk
+add wave -noupdate -height 19 -group tb /tb/clkz_out
+add wave -noupdate -height 19 -group tb /tb/clkz_in
+add wave -noupdate -height 19 -group tb /tb/iorq_n
+add wave -noupdate -height 19 -group tb /tb/mreq_n
+add wave -noupdate -height 19 -group tb /tb/rd_n
+add wave -noupdate -height 19 -group tb /tb/wr_n
+add wave -noupdate -height 19 -group tb /tb/m1_n
+add wave -noupdate -height 19 -group tb /tb/rfsh_n
+add wave -noupdate -height 19 -group tb /tb/res
+add wave -noupdate -height 19 -group tb /tb/ziorq_n
+add wave -noupdate -height 19 -group tb /tb/zmreq_n
+add wave -noupdate -height 19 -group tb /tb/zrd_n
+add wave -noupdate -height 19 -group tb /tb/zwr_n
+add wave -noupdate -height 19 -group tb /tb/zm1_n
+add wave -noupdate -height 19 -group tb /tb/zrfsh_n
+add wave -noupdate -height 19 -group tb /tb/int_n
+add wave -noupdate -height 19 -group tb /tb/wait_n
+add wave -noupdate -height 19 -group tb /tb/nmi_n
+add wave -noupdate -height 19 -group tb /tb/zint_n
+add wave -noupdate -height 19 -group tb /tb/zwait_n
+add wave -noupdate -height 19 -group tb /tb/znmi_n
+add wave -noupdate -height 19 -group tb /tb/za
+add wave -noupdate -height 19 -group tb /tb/zd
+add wave -noupdate -height 19 -group tb /tb/zd_dut_to_z80
+add wave -noupdate -height 19 -group tb /tb/reset_pc
+add wave -noupdate -height 19 -group tb /tb/reset_sp
+add wave -noupdate -height 19 -group tb /tb/csrom
+add wave -noupdate -height 19 -group tb /tb/romoe_n
+add wave -noupdate -height 19 -group tb /tb/romwe_n
+add wave -noupdate -height 19 -group tb /tb/rompg0_n
+add wave -noupdate -height 19 -group tb /tb/dos_n
+add wave -noupdate -height 19 -group tb /tb/rompg2
+add wave -noupdate -height 19 -group tb /tb/rompg3
+add wave -noupdate -height 19 -group tb /tb/rompg4
+add wave -noupdate -height 19 -group tb /tb/rd
+add wave -noupdate -height 19 -group tb /tb/ra
+add wave -noupdate -height 19 -group tb /tb/rwe_n
+add wave -noupdate -height 19 -group tb /tb/rucas_n
+add wave -noupdate -height 19 -group tb /tb/rlcas_n
+add wave -noupdate -height 19 -group tb /tb/rras0_n
+add wave -noupdate -height 19 -group tb /tb/rras1_n
+add wave -noupdate -height 19 -group tb /tb/ide_d
+add wave -noupdate -height 19 -group tb /tb/hsync
+add wave -noupdate -height 19 -group tb /tb/vsync
+add wave -noupdate -height 19 -group tb /tb/red
+add wave -noupdate -height 19 -group tb /tb/grn
+add wave -noupdate -height 19 -group tb /tb/blu
+add wave -noupdate -height 19 -group tb /tb/sdcs_n
+add wave -noupdate -height 19 -group tb /tb/sddo
+add wave -noupdate -height 19 -group tb /tb/sddi
+add wave -noupdate -height 19 -group tb /tb/sdclk
+add wave -noupdate -height 19 -group tb /tb/spick
+add wave -noupdate -height 19 -group tb /tb/spidi
+add wave -noupdate -height 19 -group tb /tb/spido
+add wave -noupdate -height 19 -group tb /tb/spics_n
+add wave -noupdate -height 19 -group tb /tb/zrst_n
+add wave -noupdate -height 19 -group tb /tb/mreq_wr_n
+add wave -noupdate -height 19 -group tb /tb/iorq_wr_n
+add wave -noupdate -height 19 -group tb /tb/full_wr_n
+add wave -noupdate -height 19 -group tb /tb/rma14
+add wave -noupdate -height 19 -group tb /tb/rma15
+add wave -noupdate -height 19 -group tb /tb/rpag
+add wave -noupdate -height 19 -group tb /tb/fe_write
+add wave -noupdate -height 19 -group tb /tb/cmos_addr
+add wave -noupdate -height 19 -group tb /tb/cmos_read
+add wave -noupdate -height 19 -group tb /tb/cmos_write
+add wave -noupdate -height 19 -group tb /tb/cmos_rnw
+add wave -noupdate -height 19 -group tb /tb/cmos_req
+add wave -noupdate -height 19 -group tb /tb/dza
+add wave -noupdate -height 19 -group tb /tb/dzw
+add wave -noupdate -height 19 -group tb /tb/dzr
+add wave -noupdate -height 19 -group tb /tb/curr_cycle
+add wave -noupdate -height 19 -group tb /tb/is_fetch
+add wave -noupdate -height 19 -group tb /tb/is_mrd
+add wave -noupdate -height 19 -group tb /tb/is_mwr
+add wave -noupdate -height 19 -group tb /tb/is_iord
+add wave -noupdate -height 19 -group tb /tb/is_iowr
+add wave -noupdate -height 19 -group tb /tb/is_iack
+add wave -noupdate -height 19 -group tb /tb/is_any
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {3150600 ps} 0} {{Cursor 2} {1863936836336 ps} 0} {{Cursor 3} {1863933415900 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {3150600 ps} 0} {{Cursor 2} {4870303753876 ps} 0} {{Cursor 3} {1864068553500 ps} 0}
+quietly wave cursor active 3
 configure wave -namecolwidth 487
 configure wave -valuecolwidth 149
 configure wave -justifyvalue left
@@ -971,4 +1000,4 @@ configure wave -griddelta 8
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {1910242412926 ps} {1910249711888 ps}
+WaveRestoreZoom {1864056611324 ps} {1864079637276 ps}
