@@ -1,0 +1,53 @@
+--==<<Configuration directory structure>>==--
+
+
+
+DIR: pentevo/cfgs/<name>/<branch>/*
+
+"cfgs" directory is intended to contain complete configuration build for the
+ZxEvo: avr binaries, fpga binaries, ROM binaries, build scripts, etc.
+
+Currently it is assumed that the user (=the person willing to compile a
+configuration) re-fetches parts of configuration (avr source code tree, fpga
+source code tree, etc.) to the above DIR manually. One might create/update a
+script for that, but the point is to keep avr/fpga/etc. source code trees apart
+from configuration source code tree, which allows one to cherrypick particular
+avr, fpga, ROM, etc. sources to the given configuration. Particular example is
+to be able to build using different and uncorrelated branches of each component.
+
+<name> should be, obviously, a configuration name.
+
+<branch> is branch/tag name, mostly it would be just "trunk", but feel free to
+create your own branches whenever you feel it is appropriate.
+
+As an example, take "baseconf_standalone". There's a build script that assumes
+you already fetched appropriate avr and fpga source trees inside the directory
+where that build script is situated.
+
+That "make.sh" build script is not a Makefile, since Makefiles mostly useful
+when there are lots of sources and build process is unlikely to be iterated
+completely when just some files are changed. Here we need, basically, just to
+visit avr and fpga trees and initiate their builds, if there is need to.
+
+It is assumed that you change that "make.sh" script for yourself (but don't
+commit changes) as you might use different tools versions, tools might be placed
+under different paths, you might use miserable platforms such as Шindoшs, etc.
+
+
+
+DIR: pentevo/avr/<avr-related-name>/<branch>/* 
+
+These is avr sources that might be used in one of configurations.
+
+
+
+DIR: pentevo/fpga/<fpga-related-name>/<branch>/* 
+
+Same for FPGA.
+
+
+
+DIR: pentevo/rom/*
+
+Currently not in pentevo/rom/<name>/<branch>/* structure. This is TODO.
+
