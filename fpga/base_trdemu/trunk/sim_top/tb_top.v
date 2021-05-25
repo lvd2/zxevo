@@ -928,6 +928,19 @@ module tb;
 
 
 
+	// timestamps
+	always
+	begin
+		$display("Running for %t ms",$time()/1000000000.0);
+		#1000000.0;
+	end
+
+
+
+
+
+
+
 
 
 
