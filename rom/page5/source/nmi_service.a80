@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 20.08.2019 savelij
+;LAST UPDATE: 27.02.2021 savelij
 
 ;последовательность для RST 8
 ;старый стек	HL AF BC RF ADR_RET DE	->
@@ -158,8 +158,9 @@ B_PORT77	DB 0XFF				;байт для вывода в порт ХХ77
 P_PORT77	DB 0XFF				;старший байт адреса порта ХХ77
 
 F_INTEXT_DRV	DB 0XFF				;флаги при внешних/внутренних вызовах драйверов
-NUMHDD		DB 0XFF
-VARS_TXT_DEC	DB "4294967295\0"
+TMP_NUMHDD	DB 0XFF
+NUMSEC_LBA48	DQ 0XFFFFFFFFFFFFFFFF		;номер сектора для чтения/записи
+VARS_TXT_DEC	DB "281474976710655\0"		;число до 48 бит
 
 		PHASE $ & 0x3FFF
 		DUPL HIGH ($)*0X100+0XFF-$,0XFF

@@ -1,5 +1,7 @@
 
-;LAST UPDATE: 11.11.2018 savelij
+;LAST UPDATE: 27.02.2021 savelij
+
+VIEW_CHS	EQU 0
 
 HDD_DETECTOR	LD IX,.HDDDETECT
 		RST8 _WINW
@@ -52,7 +54,7 @@ HDD_DETECTOR	LD IX,.HDDDETECT
 		EX AF,AF'
 		LD HL,ADR_CAT
 		RST8 _COM_DEV,_COMHDDN,_DEV_READID
-		LD HL,ADR_CAT+0X2E
+		LD HL,ADR_CAT+46
 		PUSH HL
 		LD B,0X18
 .MF01		LD A,(HL)
@@ -64,45 +66,90 @@ HDD_DETECTOR	LD IX,.HDDDETECT
 		LD (HL),A
 		INC HL
 		DJNZ .MF01
-		LD HL,ADR_CAT+0X2E+42
+		LD HL,ADR_CAT+46+42
+	IF VIEW_CHS
 		LD (HL),"\r"
 		INC HL
+	ENDIF
 		LD (HL),0
 		POP HL
 		RST8 _PRINT_MESSAGE		;имя винта
+	IF VIEW_CHS
 		LD HL,.CHS
 		RST8 _PRINT_MESSAGE
 		LD HL,ADR_CAT+0X200
-		LD DE,(ADR_CAT+1*WORD)		;количество цилиндров
+		LD DE,(ADR_CAT + 1 * WORD)	;количество цилиндров
 		RST8 _MATH,_HEX2DECTXT
 		RST8 _PRINT_MESSAGE
 		LD A,"/"
 		RST8 _PRINT_A
-		LD DE,(ADR_CAT+3*WORD)		;количество головок
+		LD DE,(ADR_CAT + 3 * WORD)	;количество головок
 		RST8 _MATH,_HEX1DECTXT
 		RST8 _PRINT_MESSAGE
 		LD A,"/"
 		RST8 _PRINT_A
-		LD DE,(ADR_CAT+6*WORD)		;количество секторов
+		LD DE,(ADR_CAT + 6 * WORD)	;количество секторов
 		RST8 _MATH,_HEX1DECTXT
 		RST8 _PRINT_MESSAGE
-;		LD HL,.NEWLINE
-;		RST8 _PRINT_MESSAGE
-		LD BC,(ADR_CAT+61*WORD)
-		LD DE,(ADR_CAT+60*WORD)		;размер в LBA секторах
-		EXX
-		LD BC,0
-		LD DE,0X800
-		EXX
-		RST8 _MATH,_DIVIDE32
+	ENDIF
 		LD HL,.TXTSIZE
 		RST8 _PRINT_MESSAGE
+		LD IXL,0			; текст "MB"
+;		LD HL,.NEWLINE
+;		RST8 _PRINT_MESSAGE
+; проверка бита поддержки LBA48
+		LD HL,(ADR_CAT + 83 * WORD)
+		LD A,H
+		AND %00000100			; бит 10 в слове 83
+		JR Z,.LBA28
+; для LBA48
+.LBA48
+		LD HL,(ADR_CAT + 100 * WORD + 1); размер в секторах /256
+		LD DE,(ADR_CAT + 101 * WORD + 1)
+		LD BC,(ADR_CAT + 102 * WORD + 1)
+		LD B,3
+		CALL .DIV_LBA
+		LD A,C
+		AND A
+		JR Z,.L3
+		LD IXL,1			; текст "GB"
+		LD B,2
+		LD L,H
+		LD H,E
+		LD E,D
+		LD D,C
+		LD C,0
+		CALL .DIV_LBA
+		JR .L3
+
+; для LBA28
+.LBA28
+		LD HL,(ADR_CAT + 60 * WORD + 1)
+		LD DE,(ADR_CAT + 61 * WORD + 1)	; размер в LBA секторах
+		LD BC,3 << 8 + 0
+		CALL .DIV_LBA
+.L3		LD B,D
+		LD C,E
+		EX DE,HL
 		LD HL,ADR_CAT+0X200
 		RST8 _MATH,_HEX4DECTXT
 		RST8 _PRINT_MESSAGE
+		LD A,IXL
+		AND A
 		LD HL,.TXTMB
-		RST8 _PRINT_MESSAGE
+		JR Z,.L4
+		LD HL,.TXTGB
+.L4		RST8 _PRINT_MESSAGE
 		POP HL
+		RET
+
+.DIV_LBA
+.L1		SRL C
+		RR D
+		RR E
+		RR H
+		RR L
+		DJNZ .L1
 		RET
 
 .CDDVDFOUNDS	PUSH HL
@@ -124,6 +171,7 @@ HDD_DETECTOR	LD IX,.HDDDETECT
 
 .TXTSIZE	DB "\rSize:\0"
 .TXTMB		DB " MB\r\0"
+.TXTGB		DB " GB\r\0"
 .MASTERFOUND	DB "\rHDD master found\r\0"
 .SLAVEFOUND	DB "\rHDD slave found\r\0"
 .MASTERNONE	DB "\rHDD master not found\r\0"

@@ -1,5 +1,5 @@
 
-@echo off
+echo off
 
 ..\..\..\tools\asw\bin\asw -U -L -x -olist main.lst main.a80
 ..\..\..\tools\asw\bin\p2bin main.p main.rom -r $-$ -k

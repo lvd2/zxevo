@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 06.03.2020 savelij
+;LAST UPDATE: 26.05.2021 savelij
 
 		TITLE "addon1.a80 ROM_RST81"
 
@@ -127,6 +127,9 @@ CRC16F0		LD A,(IX)
 ;“‘’€‚€ €’—‚ RST 8  NMI, –€‹‡€– ………›•
 INSTALL_NMIRST	ATMPORT WIN_A3,0X40		;‘‹ ‡€‚‘‘’ ’ ’€ 7FFD
 		EVOPORT WIN_P6,0		;‚‹—‹ ‘’€–“ ………›•
+		LD BC,FDD_EMU_PORT
+		XOR A
+		OUT (C),A			; α΅ΰ®α Ά¨ΰβγ «μ­λε ¤¨αª®Ά®¤®Ά
 		LD A,0XEF
 		IN A,(0XFE)
 		RRCA
@@ -145,12 +148,6 @@ INSTALL_NMIRST	ATMPORT WIN_A3,0X40		;‘‹ ‡€‚‘‘’ ’ ’€ 7FFD
 		EVOPORT WIN_P3,RAM_PROFROM
 		LD HL,CPU0
 		CALL FILL_MEM			;—‘’€ ‘’€–› ‡“ PROFROM
-	IFDEF DOS_FE
-; α΅ΰ®α Ά¨ΰβγ «μ­λε ¤¨αª®Ά®¤®Ά ―®α«¥ Άª«ξη¨¥­¨ο ¨ ―ΰ¨ ―®«­®¬ ¨­¨β¥
-		LD BC,FDD_EMU_PORT
-		XOR A
-		OUT (C),A
-	ENDIF
 ;… ‘‚€‹, …‚›‰ ‡€“‘ ‘‹… ‚‹—… ’€ ‹ €’— ›‹ ‘—…›
 INSTALLNMIRST2	LD HL,CPU3
 		CALL FILL_MEM			;—‘’€ ‘‹…„…‰ ‘’€–› RAM

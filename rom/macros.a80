@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 21.03.2020 savelij
+;LAST UPDATE: 24.05.2021 savelij
 
 ;автоопределение кодировки работает неправильно
 
@@ -8,6 +8,10 @@
 
 BUILD_DEBUG	EQU 0
 REZIDENT	;включение резидента в сборку
+
+	IFDEF DOS_FE
+;TESTEMUFDD	;сборка для тестирования эмулятора
+	ENDIF
 
 DZ		MACRO DEFZ
 		DB DEFZ,0
@@ -211,6 +215,17 @@ INITVAR := 0
 		ENDIF
 		ENDM
 
+SETVAR_ALIGN	MACRO
+INITVAR := INITVAR + 0x100 - (INITVAR & 0xFF)
+ 		ENDM
+
+ALIGN		MACRO BYTES,FILL
+	IFNB
+		DB BYTES - ($ & (BYTES - 1)) DUP (0)
+	ELSE
+		DB BYTES - ($ & (BYTES - 1)) DUP (FILL)
+	ENDIF
+		ENDM
 
 MALIGN		MACRO
 	IF LOW($) = 0

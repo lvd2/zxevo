@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 21.03.2020 savelij
+;LAST UPDATE: 26.05.2021 savelij
 
 		include ../../macros.a80
 		include ../../global_vars.a80
@@ -44,7 +44,7 @@ ADR_ADDRESS	EQU $
 
 		JP_EMU 0X02BE			; OUT	   (0XFF), A
 
-		DUPL 0X801-$,0;XFF
+		DUPL 0X801-$,0
 ;[таблица адресов перехвата и вызыватора обработчиков]
 TABLE_VIRT	LABEL_GEN 0X02BE		; OUT	   (0XFF), A
 		LABEL_GEN 0X1E3A		; OUT	   (0X3F), A
@@ -431,16 +431,12 @@ UPDATE_AF	LD A,(OLD_AF+1)
 		EMU_JUMP 0X3FF0
 		LD BC,(OLD_BC)
 		LD A,(OLD_AF+1)
-; ???
-;		OUT (C),A
-;		RET
 		LD D,A
 		JP WR_C_D
 
 ;IN A,(C)
 		EMU_JUMP 0X3FF3
 		LD BC,(OLD_BC)
-; ???
 		IN A,(C)
 		PUSH AF
 		POP HL
@@ -448,10 +444,10 @@ UPDATE_AF	LD A,(OLD_AF+1)
 		RET
 
 ;[стек и обработчики]
-		DUPL STACK-$,0;XFF
+		DUPL STACK-$,0
 		DW INT_BREAK
 
-		DUPL STACK+0X41-$,0;XFF
+		DUPL STACK+0X41-$,0
 INT_BREAK	PUSH AF
 		PUSH HL
 		PUSH DE
@@ -546,11 +542,16 @@ OLD_SP		EQU $-2
 		JP 0
 ADR_EXIT	EQU $-2		
 
-		DUPL STACK+0X101-$,0;XFF
+		DUPL STACK+0X101-$,0
 ;вход в обработчик
 WORKER		LD (NUM_ADR),A
 		LD (OLD_SP),SP
 		LD SP,STACK-WORD
+		PUSH AF
+		EX (SP),HL
+		LD A,L
+		LD (OLD_AF),A
+		POP HL
 		LD A,I
 		JP PE,WORKER1
 		LD A,I
@@ -655,7 +656,7 @@ SECFREE		DW 2544				;+0XE5-количество свободных секторов
 		DB "RAMDISKO"			;+0XF5-имя дискеты
 DSK_END
 
-		DUPL 0X1000-$,0;XFF
+		DUPL 0X1000-$,0
 VARS1
 
 ;[адреса перехвата]
@@ -676,11 +677,11 @@ VARS1
 
 ;первая команда в обработчике MAGIC для возврата в пагу FE
 ;		JP_EMU 0X2A71			; OUT	   (0XFF), A
-		DUPL 0X2A73-$,0;XFF
+		DUPL 0X2A73-$,0
 		JP INT_RET			;возвращение из обработчика INT
 
 ;		JP_EMU 0X2A77			; IN	A, (0X1F)
-		DUPL 0X2A79-$,0;XFF
+		DUPL 0X2A79-$,0
 		JP RET_MNT_RW			;возвращение после вызова RST 8
 
 		JP_EMU 0X2AD9			; OUT	   (0XFF), A
@@ -693,20 +694,20 @@ VARS1
 		JP_EMU 0X2F0C			; OUT	   (0XFF), A
 		JP_EMU 0X2F1D			; OUT	   (0X5F), A
 
-		DUPL 0X2F24-$,0;XFF		; для адреса 0X2F4D
+		DUPL 0X2F24-$,0			; для адреса 0X2F4D
 		JP ADR_0X2F4D
 
 		JP_EMU 0X2F28			; OUT	   (0X1F), A
 		JP_EMU 0X2F2F			; IN	A, (0X1F)
 		JP_EMU 0X2F3C			; OUT	   (0XFF), A
 
-		DUPL 0X2F4D-$,0;XFF		; OUT	   (0XFF), A
+		DUPL 0X2F4D-$,0			; OUT	   (0XFF), A
 		OUT (EXIT_PORT),A
 		DB 0X18				; JR 0X2F24
 
 		JP_EMU 0X2F50			; OUT	   (0X7F), A
 
-		DUPL 0X2F57-$,0;XFF		; OUT	   (0X1F), A
+		DUPL 0X2F57-$,0			; OUT	   (0X1F), A
 		OUT (EXIT_PORT),A
 		JR JUMP_0X2F57
 
@@ -720,7 +721,7 @@ JUMP_0X2F57	JP ADR_0X2F57
 		JP_EMU 0X2FB1			; OUT	   (0XFF), A
 		JP_EMU 0X2FC3			; OUT	   (0X1F), A
 
-		DUPL 0X32A2-$,0;XFF
+		DUPL 0X32A2-$,0
 ;[обработчики чтения/записи портов]
 ;[запись "A" в порт 0X1F]
 OUT_1F		LD A,(OLD_AF+1)
@@ -828,8 +829,6 @@ OUT_FF		LD A,(OLD_AF+1)
 		LD D,A
 		LD BC,0X00FF
 		JR WR_C_D
-; ???		OUT (0XFF),A
-;		RET
 
 ;[запись "A" в порт (C)]
 OUT_C_A	 	LD A,(OLD_AF+1)
@@ -981,12 +980,19 @@ RDHC6		LD BC,(OLD_BC)
 		RET
 
 ;[чтение INI]
-IN_INI		LD A,(RD_1F)
+IN_INI
 		LD HL,(OLD_HL)
+		LD A,H
+		CP 0x40
+		JR C,.L1
 		DEC HL
+		LD A,(RD_1F)
 		LD (HL),A
-		INC HL
-		LD (OLD_HL),HL
+.L1
+; временно, для анрыла
+		LD A,0xD3
+		LD (0x3FD7),A
+; временно, для анрыла
 		LD HL,0X2A53
 		LD (ADR_EXIT),HL
 		JP INFF_BIT6
@@ -1495,7 +1501,7 @@ JUMP_0X3EF3	JP ADR_0X3EF3
 		JP_EMU 0X3F25			; OUT	   (0X1F), A
 		JP_EMU 0X3F33			; IN	A, (0X1F)
 
-		DUPL 0X3F40-$,0;XFF		; для адреса 0x3EF3
+		DUPL 0X3F40-$,0			; для адреса 0x3EF3
 		JP ADR_0X3EF3
 
 		JP_EMU 0X3F4D			; OUT	   (0X1F), A
@@ -1506,7 +1512,7 @@ JUMP_0X3EF3	JP ADR_0X3EF3
 
 		JP_EMU 0X3FBC			; IN	A, (0XFF)	;запись сектора
 
-		DUPL 0X3FC7-$,0;XFF
+		DUPL 0X3FC7-$,0
 JUMP_0X3FF0	JP ADR_0X3FF0
 
 		JP_EMU 0X3FCA			; IN	A, (0XFF)	;запись сектора
@@ -1520,7 +1526,7 @@ JUMP_0X3FF3	JP ADR_0X3FF3
 		JP_EMU 0X3FE5			; IN	A, (0XFF)	;чтение сектора
 
 ;		JP_EMU 0X3FEC			; INI			;чтение сектора
-		DUPL 0X3FEC-$,0;XFF
+		DUPL 0X3FEC-$,0
 		OUT (EXIT_PORT),A
 		JR JUMP_0X3FEC
 

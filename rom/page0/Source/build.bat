@@ -1,9 +1,9 @@
 
-@ECHO OFF
+echo off
 
 cd ..\..\mainmenu\src
 
-call make.bat
+call build.bat
 
 cd ..\..\page0\source
 

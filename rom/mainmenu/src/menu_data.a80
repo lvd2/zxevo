@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 10.03.2020 savelij
+;LAST UPDATE: 23.05.2021 savelij
 
 ;Žˆ‘€’…‹œ ŽŠ€ (€„…‘ ‚ IX)
 ;+00 X ŠŽŽ„ˆ€’€
@@ -698,11 +698,10 @@ ERS_FLAGS	DB 0
  BITMASK NUM_CURSOR,0	;BIT 0-=Š€ŠŽ‰ Š“‘Ž ˆ‘Ž‚€’œ, „‹Ÿ Œˆƒ€ˆŸ
 
 ;[RUN_BASIC]
-RUN_BASIC	DW 1					;ŽŒ… ‘’ŽŠˆ …‰‘ˆŠ Žƒˆ
+RUN_BASIC	DW 0X100				;ŽŒ… ‘’ŽŠˆ …‰‘ˆŠ Žƒˆ
 		DW ERUN_BASIC-RUN_BASIC-5		;„‹ˆ€ …‰‘ˆŠ ‘’ŽŠˆ
 		DB __CLEAR,__VAL,"\"65368\":"
-		DB __RANDOMIZE,__USR,__VAL,"\"15619\":"
-		DB __REM,":",__RUN,"\""
+		DB __RANDOMIZE,__USR,__VAL,"\"15619\":",__REM,":",__RUN,"\""
 RUNNAM		DUPL 8,0				;Œ…‘’Ž Ž„ 8 ‘ˆŒ‚Ž‹Ž‚ ˆŒ…ˆ „‹Ÿ ‡€“‘Š€ ”€‰‹€
 		DB 0X22,0X0D,0X80
 ERUN_BASIC

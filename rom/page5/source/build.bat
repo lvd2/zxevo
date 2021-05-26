@@ -1,9 +1,9 @@
 
-@ECHO OFF
+echo off
 
 cd ..\..\fat_boot\source
 
-call make.bat
+call build.bat
 
 cd ..\..\page5\source
 

@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 21.03.2020 savelij
+;LAST UPDATE: 26.05.2021 savelij
 
 		include ../../macros.a80
 		include ../../define.a80
@@ -44,10 +44,6 @@ INITPAGE0	LD SP,DEPKADR
 		IM 1
 		XOR A
 		OUT (0XFE),A
-	IFDEF DOS_FE
-		LD BC,FDD_EMU_PORT
-		OUT (C),A
-	ENDIF
 		LD HL,PAGES_CONF
 		LD BC,0XBC77
 		LD A,2

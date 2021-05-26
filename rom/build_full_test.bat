@@ -1,5 +1,5 @@
 
-ECHO OFF
+echo off
 
 ECHO **************
 ECHO BUILD FAT BOOT
@@ -11,7 +11,7 @@ ECHO ***************
 ECHO BUILD MAIN MENU
 ECHO ***************
 cd ..\..\mainmenu\src
-call build.bat
+call build_test
 
 ECHO ************
 ECHO BUILD DOS_FE
@@ -59,7 +59,7 @@ ECHO ********************
 ECHO BUILD RST 8 SERVICES
 ECHO ********************
 cd ..\..\page5\source
-call build.bat
+call build_test.bat
 
 ECHO *****************
 ECHO BUILD TR-DOS 6.10
@@ -73,7 +73,7 @@ ECHO *********
 ECHO BUILD ERS
 ECHO *********
 copy /B /Y page3\basic48_128.rom + page1\evo-dos_virt.rom + page5\rst8service.rom    + ff_16k.rom + page3\basic48_128.rom + page1\evo-dos_emu3d13.rom + page2\basic128.rom + page0\services.rom    ers.rom
-copy /B /Y ff_16k.rom            + ff_16k.rom             + page5\rst8service_fe.rom + ff_16k.rom + page3\basic48_128.rom + page1\tr5_03.rom        + page2\basic128.rom + page0\services_fe.rom ers_fe.rom
+copy /B /Y ff_16k.rom            + ff_16k.rom             + page5\rst8service_fe.rom + ff_16k.rom + page3\basic48_128.rom + page1\trdos503.rom        + page2\basic128.rom + page0\services_fe.rom ers_fe.rom
 
 ECHO ***************
 ECHO BUILD PENT GLUK

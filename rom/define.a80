@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 09.04.2020 savelij
+;LAST UPDATE: 27.02.2021 savelij
 
 ;номера функций RST 8
  INIT_VAR 0X40
@@ -81,6 +81,7 @@ _MEM_MODE_PENT	EQU %11000000			;MEMORY MODE PENT 1024 KB
  SETVAR _CONTROL_SD				;06 КОНТРОЛЬ НАЛИЧИЯ SD КАРТ
  SETVAR _COMHDDN				;07 ПРЯМОЙ ВЫЗОВ ДРАЙВЕРА HDD NEMO (ВРЕМЕННАЯ ФУНКЦИЯ)
  SETVAR _FREINIT_VOL				;08 ПОЛНАЯ ПЕРЕИНИЦИАЛИЗАЦИЯ РАЗДЕЛА
+ SETVAR _SET_SECTOR_NUM				;09 УСТАНОВКА НОМЕРА СЕКТОРА ДЛЯ ЧТЕНИЯ/ЗАПИСИ
 
 ;номера функций вызова драйвера устройства
  INIT_VAR

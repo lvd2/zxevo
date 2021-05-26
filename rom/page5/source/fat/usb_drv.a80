@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 06.07.2019 savelij
+;LAST UPDATE: 27.02.2021 savelij
 
 ;		include sl811_equ.a80
 
@@ -25,7 +25,7 @@ TIMEOUT_RETRY	EQU 6
 
 ;общая точка входа для работы
 COMUSBF		EX AF,AF'
-		LD (NUMHDD),A
+		LD (TMP_NUMHDD),A
 		LD A,IYL
 		AND A
 		LD A,(NEXTBYTERST8)
@@ -51,7 +51,7 @@ COMUSBF		EX AF,AF'
 		INC HL
 		LD H,(HL)
 		LD L,A
-		LD A,(NUMHDD)
+		LD A,(TMP_NUMHDD)
 		EX AF,AF'
 		EX (SP),HL
 		RET

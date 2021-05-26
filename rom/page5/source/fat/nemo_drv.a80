@@ -1,23 +1,26 @@
 
-;LAST UPDATE: 11.11.2018 savelij
+; LAST UPDATE: 27.02.2021 savelij
 
 HDD_TIME_OUT	EQU 0X0000
 
-;входные параметры общие:
-;HL-адрес загрузки в память
-;BCDE-32-х битный номер сектора
-;A-количество секторов (512 байт)
-;только для многоблочной записи/чтении
+ENABLE_INIR	EQU 0		; чтение секторов винта INIR'ом
 
-;выдаваеьые ошибки
+; входные параметры общие:
+; HL - адрес чтения/записи в память
+; BCDE - 32-х битный номер сектора
+; A - количество секторов (512 байт)
+; A' - бит 0 = 0/1 Master/Slave
+; только для многоблочной записи/чтении
+
+; выдаваемые ошибки
 ; 0 - ok
 ; 1 - ошибка таймаут
 ; 6 - ошибка выполнения команды
 ; 7 - обнаружен CD/DVD
 
-;общая точка входа для работы с HDD NEMO
+; общая точка входа для работы с HDD NEMO
 COMHDDN		EX AF,AF'
-		LD (NUMHDD),A
+		LD (TMP_NUMHDD),A
 		LD A,IYL
 		AND A
 		LD A,(NEXTBYTERST8)
@@ -41,7 +44,7 @@ COMHDDN1	ADD A,A
 		INC HL
 		LD H,(HL)
 		LD L,A
-		LD A,(NUMHDD)
+		LD A,(TMP_NUMHDD)
 		EX AF,AF'
 		EX (SP),HL
 		RET
@@ -63,20 +66,20 @@ TBLHDDN		DW .HDDINIT
 		DW .DRIVER_WRITE_SECTORS		;WRITE MULTI
 		DW .DRIVER_READ_ID
 
-;Входные параметры общие:
-;HL-адрес загрузки в память
-;BCDE-32-х битный номер сектора
-;A-количество блоков (блок=512 байт)
-;только для многоблочной записи/чтении
-;на выходе:
-;H-для MASTER 0-HDD, 1-CD-ROM, 0XFF-none
-;L-для SLAVE  0-HDD, 1-CD-ROM, 0XFF-none
+; Входные параметры общие:
+; HL - адрес чтения/записи в память
+; BCDE-32-х битный номер сектора
+; A-количество блоков (блок=512 байт)
+; только для многоблочной записи/чтении
+; на выходе:
+; H-для MASTER 0-HDD, 1-CD-ROM, 0XFF-none
+; L-для SLAVE  0-HDD, 1-CD-ROM, 0XFF-none
 .HDDINIT	PUSH IX
 		PUSH DE
 		PUSH BC
-		LD IX,0XEC << 8 + 1
+		LD IX,_IDENTIFY_DEVICE << 8 + 1
 		PUSH HL
-		LD BC,0XE000
+		LD BC,0xE000
 		LD DE,0
 		CALL .READ_ID_TEST
 		POP HL
@@ -89,9 +92,9 @@ TBLHDDN		DW .HDDINIT
 .HDDINIT_1	CALL Z,.INIT_91
 		LD D,A
 .HDDINIT_5	PUSH DE
-		LD IX,0XEC << 8 + 1
+		LD IX,_IDENTIFY_DEVICE << 8 + 1
 		PUSH HL
-		LD BC,0XF000
+		LD BC,0xF000
 		LD DE,0
 		CALL .READ_ID_TEST
 		POP HL
@@ -133,7 +136,7 @@ TBLHDDN		DW .HDDINIT
 		DEC A
 		OUT (C),A
 		LD C,PN_1F7
-		LD A,0X91
+		LD A,_INIT_DEVICE_PARAMETERS
 		OUT (C),A
 		LD DE,0X4000
 .INI_911	DEC DE
@@ -182,12 +185,13 @@ TBLHDDN		DW .HDDINIT
 		PUSH DE
 		LD D,B
 		LD E,C
-.SEND_CMD_1	LD BC,0XFF<<8+PN_3F6
-		LD A,%00001010
-		OUT (C),A
+.SEND_CMD_1
+;		LD BC,0XFF<<8+PN_3F6
+;		LD A,%00001010
+;		OUT (C),A
 		LD C,PN_1F6
 		LD A,D
-		AND 0XF0
+		AND 0xF0
 		OUT (C),A
 		LD C,PN_1F7
 		LD HL,HDD_TIME_OUT
@@ -236,7 +240,7 @@ TBLHDDN		DW .HDDINIT
 .READ_ID_TEST	PUSH IX
 		PUSH DE
 		PUSH BC
-		LD IXH,0XEC
+;		LD IXH,_IDENTIFY_DEVICE
 		CALL .SEND_CMD_TEST
 		JR .READID_WAIT_
 
@@ -252,10 +256,10 @@ TBLHDDN		DW .HDDINIT
 		LD C,E
 		EX AF,AF'
 		BIT 0,A
-		LD B,0XE0
+		LD B,0xE0
 		JR Z,.DRVRDID1
-		LD B,0XF0
-.DRVRDID1	LD IXH,0XEC
+		LD B,0xF0
+.DRVRDID1	LD IXH,_IDENTIFY_DEVICE
 		CALL .SEND_CMD_TEST
 .READID_WAIT_	AND A
 		JR NZ,.READID_ERROR
@@ -307,7 +311,7 @@ TBLHDDN		DW .HDDINIT
 		PUSH DE
 		PUSH BC
 		LD IXL,A
-		LD IXH,0X20
+		LD IXH,_READ_SECTORS
 		CALL .SEND_CMD
 		AND A
 		JR NZ,.READID_ERROR
@@ -341,7 +345,7 @@ TBLHDDN		DW .HDDINIT
 		PUSH DE
 		PUSH BC
 		LD IXL,A
-		LD IXH,0X30
+		LD IXH,_WRITE_SECTORS
 		CALL .SEND_CMD
 		AND A
 		JR NZ,.READID_ERROR
@@ -385,8 +389,27 @@ TBLHDDN		DW .HDDINIT
 		LD C,LOW (WIN_A0)
 		OUT (C),A
 .RD2MEM2	LD BC,PN_1F0
+	IF ENABLE_INIR
 		INIR
 		INIR
+	ELSE
+		LD A,0X40
+		LD C,PN_1F0
+		PUSH DE
+.READSC1	REPT 4
+		IN E,(C)
+		INC C
+		IN D,(C)
+		DEC C
+		LD (HL),E
+		INC HL
+		LD (HL),D
+		INC HL
+		ENDM
+		DEC A
+		JR NZ,.READSC1 
+		POP DE
+	ENDIF
 		LD BC,WIN_P6
 		XOR A
 		OUT (C),A
