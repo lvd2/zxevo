@@ -117,6 +117,8 @@ sndpix(
 
 		if( mysocket>=0 )
 			close(mysocket);
+
+		mysocket=-1;
 	}
 
 
