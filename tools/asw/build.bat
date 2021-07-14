@@ -8,13 +8,12 @@ cd asl-current
 
 make
 
-copy /Y /B asl.exe ..\bin\asw.exe
-copy /Y /B p2bin.exe ..\bin
-copy /Y /B as.msg ..\bin
-copy /Y /B cmdarg.msg ..\bin
-copy /Y /B ioerrs.msg ..\bin
-copy /Y /B p2bin.msg ..\bin
-copy /Y /B tools.msg ..\bin
+copy /Y /B *.exe ..\bin
+copy /Y /B *.msg ..\bin
+move ..\bin\asl.exe ..\bin\asw.exe
+del ..\bin\mkdepend.exe
+del ..\bin\make.exe
+del ..\bin\rescomp.exe
 
 make clean
 del *.exe

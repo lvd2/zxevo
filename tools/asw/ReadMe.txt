@@ -1,5 +1,5 @@
 
-Исходники взяты отсюда http://john.ccac.rwth-aachen.de:8000/ftp/as/source/c_version/asl-current.tar.gz
+Исходники взяты отсюда (latest beta version) http://john.ccac.rwth-aachen.de:8000/as/
 
 Изменения:
 - перед сборкой для Win32 копируется файл Makefile.def в папку исходников.
