@@ -1,35 +1,50 @@
 
-;LAST UPDATE: 20.04.2014 savelij
+; LAST UPDATE: 06.07.2021 savelij
 
-ERORDRV		EQU BUF_TEKVOL			;2 ‚‡‚€’ ‘ ‰ ‚ A
-CAL_FAT		EQU ERORDRV+2			;1 €‹ FAT
-MANYFAT		EQU CAL_FAT+1			;1 ‹—…‘’‚ FAT-’€‹–
-BYTSSEC		EQU MANYFAT+1			;1 ‹—…‘’‚ ‘…’‚ ‚ ‹€‘’……
-ROOTCLS		EQU BYTSSEC+1			;4 ‘…’ €—€‹€ ROOT „…’
-ROOTZAP		EQU ROOTCLS+4			;2 ‹-‚ ‡€‘…‰ ‚ ROOT „…’
-SEC_FAT		EQU ROOTZAP+2			;4 ‹—…‘’‚ ‘…’‚ „‰ ”€’
-RSVDSEC		EQU SEC_FAT+4			;2 €‡… …‡…‚‰ ‹€‘’
-STARTRZ		EQU RSVDSEC+2			;4 €—€‹ „‘€/€‡„…‹€
-FRSTDAT		EQU STARTRZ+4			;4 €„…‘ …‚ƒ ‘…’€ „€›• ’ BPB
-SEC_DSC		EQU FRSTDAT+4			;4 ‹—…‘’‚ ‘…’‚ € „‘…/€‡„…‹…
-CLS_DSC		EQU SEC_DSC+4			;4 ‹—…‘’‚ ‹€‘’…‚ € „‘…/€‡„…‹…
-FATSTR		EQU CLS_DSC+4			;4 €—€‹ …‚‰ FAT ’€‹–›
-FILE_SZ		EQU FATSTR+4			;4 €‡… ”€‰‹€ ‚ €‰’€•
-KOLWCLS		EQU FILE_SZ+4			;4 ‹—…‘’‚ ‘‚„›• ‹€‘’…‚
-LST0ZAP		EQU KOLWCLS+4			;4 …‚›‰ ‘‚„›‰ ‹€‘’…
-LSTLOAD		EQU LST0ZAP+4			;4 … ‘…’€ ‡€ƒ“†…ƒ ‚ “”…
-TEK_DIR		EQU LSTLOAD+4			;4 ‹€‘’… ’…“™…‰ DIR
-TEK_ZAP		EQU TEK_DIR+4			;2 ’…“™€ ‡€‘ ‚ DIR
-SAVEZAP		EQU TEK_ZAP+2			;2 ‘•€…€ ’…“™€ ‡–
-TEK_LVL		EQU SAVEZAP+2			;1 ’…“™‰ “‚… €’€‹ƒ€
-TEK_LEV		EQU TEK_LVL+1			;1 ƒ‹“€ €•†„… ‚ „…’•
-FREECLS		EQU TEK_LEV+1			;8 ‘•€…›… ………›… „‹ ’€’€
-KOLFIND		EQU FREECLS+8			;2 ‹—…‘’‚ €‰„…›•  €‘… ”€‰‹‚
-AFILCLS		EQU KOLFIND+2			;4 … ’…“™…ƒ ‹€‘’…€
+ SETVAR ERORDRV,		WORD	;EQU BUF_TEKVOL			;2 ‚‡‚€’ ‘ ‰ ‚ A
+; SETVAR CAL_FAT,		BYTE	;EQU ERORDRV+2			;1 €‹ FAT
+; SETVAR MANYFAT,		BYTE	;EQU CAL_FAT+1			;1 ‹—…‘’‚ FAT-’€‹–
+; SETVAR BYTSSEC,		BYTE	;EQU MANYFAT+1			;1 ‹—…‘’‚ ‘…’‚ ‚ ‹€‘’……
+; SETVAR ROOTCLS,		DWORD	;EQU BYTSSEC+1			;4 ‘…’ €—€‹€ ROOT „…’
+ SETVAR ROOTZAP,		WORD	;EQU ROOTCLS+4			;2 ‹-‚ ‡€‘…‰ ‚ ROOT „…’
+; SETVAR SEC_FAT,		DWORD	;EQU ROOTZAP+2			;4 ‹—…‘’‚ ‘…’‚ „‰ ”€’
+; SETVAR RSVDSEC,		WORD	;EQU SEC_FAT+4			;2 €‡… …‡…‚‰ ‹€‘’
+; SETVAR STARTRZ,		DWORD	;EQU RSVDSEC+2			;4 €—€‹ „‘€/€‡„…‹€
+; SETVAR FRSTDAT,		DWORD	;EQU STARTRZ+4			;4 €„…‘ …‚ƒ ‘…’€ „€›• ’ BPB
+; SETVAR SEC_DSC,		DWORD	;EQU FRSTDAT+4			;4 ‹—…‘’‚ ‘…’‚ € „‘…/€‡„…‹…
+; SETVAR CLS_DSC,		DWORD	;EQU SEC_DSC+4			;4 ‹—…‘’‚ ‹€‘’…‚ € „‘…/€‡„…‹…
+; SETVAR FATSTR,			DWORD	;EQU CLS_DSC+4			;4 €—€‹ …‚‰ FAT ’€‹–›
+; SETVAR FILE_SZ,		DWORD	;EQU FATSTR+4			;4 €‡… ”€‰‹€ ‚ €‰’€•
+; SETVAR KOLWCLS,		DWORD	;EQU FILE_SZ+4			;4 ‹—…‘’‚ ‘‚„›• ‹€‘’…‚
+; SETVAR LST0ZAP,		DWORD	;EQU KOLWCLS+4			;4 …‚›‰ ‘‚„›‰ ‹€‘’…
+; SETVAR LSTLOAD,		DWORD	;EQU LST0ZAP+4			;4 … ‘…’€ ‡€ƒ“†…ƒ ‚ “”…
+; SETVAR TEK_DIR,		DWORD	;EQU LSTLOAD+4			;4 ‹€‘’… ’…“™…‰ DIR
+ SETVAR TEK_ZAP,		WORD	;EQU TEK_DIR+4			;2 ’…“™€ ‡€‘ ‚ DIR
+ SETVAR SAVEZAP,		WORD	;EQU TEK_ZAP+2			;2 ‘•€…€ ’…“™€ ‡–
+ SETVAR TEK_LVL,		BYTE	;EQU SAVEZAP+2			;1 ’…“™‰ “‚… €’€‹ƒ€
+ SETVAR TEK_LEV,		BYTE	;EQU TEK_LVL+1			;1 ƒ‹“€ €•†„… ‚ „…’•
+; SETVAR FREECLS,		8	;EQU TEK_LEV+1			;8 ‘•€…›… ………›… „‹ ’€’€
+ SETVAR KOLFIND,		WORD	;EQU FREECLS+8			;2 ‹—…‘’‚ €‰„…›•  €‘… ”€‰‹‚
+ SETVAR AFILCLS,		DWORD	;EQU KOLFIND+2			;4 … ’…“™…ƒ ‹€‘’…€
+ 
+ SETVAR NumSec2Buf,		DWORD	; ­®¬¥ΰ α¥ªβ®ΰ  § £ΰγ¦¥­­®£® Ά ΅γδ¥ΰ
+ SETVAR NumsSectorsVol,		DWORD	; ª®«¨η¥αβΆ® α¥ªβ®ΰ®Ά ­  ΰ §¤¥«¥
+ SETVAR NumsClustersVol,	DWORD	; ª®«¨η¥αβΆ® ª« αβ¥ΰ®Ά ­  ΰ §¤¥«¥
+ SETVAR FATType,		BYTE	; β¨― FAT: 0-12/1-16/2-32
+ SETVAR NumFATs,		BYTE	; ª®«¨η¥αβΆ® FAT β ΅«¨ζ
+ SETVAR SecPerClus,		BYTE	; ª®«¨η¥αβΆ® α¥ªβ®ΰ®Ά Ά ª« αβ¥ΰ¥
+ SETVAR FATSize,		DWORD	; ΰ §¬¥ΰ FAT β ΅«¨ζλ Ά α¥ªβ®ΰ ε
+ SETVAR StartSecVol,		DWORD	; ­®¬¥ΰ αβ ΰβ®Ά®£® α¥ªβ®ΰ  ΰ §¤¥« 
+ SETVAR NumSecFAT1,		DWORD	; ­®¬¥ΰ α¥ªβ®ΰ  ―¥ΰΆ®© FAT β ΅«¨ζλ
+ SETVAR NumSecFAT2,		DWORD	; ­®¬¥ΰ α¥ªβ®ΰ  Άβ®ΰ®© FAT β ΅«¨ζλ
+ SETVAR NumSecRootDir,		DWORD	; ­®¬¥ΰ α¥ªβ®ΰ  ª®ΰ­¥Ά®© ¤¨ΰ¥ªβ®ΰ¨¨
+ SETVAR FirstSecData,		DWORD	; ­®¬¥ΰ α¥ªβ®ΰ  ­ η «  ®΅« αβ¨ ¤ ­­λε
+ SETVAR CurrentDIRCluster,	DWORD	; ­®¬¥ΰ ª« αβ¥ΰ  β¥ªγι¥© DIR
+ SETVAR RootDIRCluster,		DWORD	; ­®¬¥ΰ ª« αβ¥ΰ  ª®ΰ­¥Ά®© DIR
 
-NUM_FILE_SRC	EQU AFILCLS+4			;2 … ‘€’…‹ ”€‰‹€ (’“„€)
-FILE_SRC	EQU NUM_FILE_SRC+2		;20 ‘€’…‹ ’›’ƒ ”€‰‹€ (’“„€)
+ SETVAR NUM_FILE_SRC,		WORD	;EQU AFILCLS+4			;2 … ‘€’…‹ ”€‰‹€ (’“„€)
+ SETVAR FILE_SRC,		0x20	;EQU NUM_FILE_SRC+2		;20 ‘€’…‹ ’›’ƒ ”€‰‹€ (’“„€)
 
-CRC_VOL		EQU ERORDRV+0XFE		;2 CRC ………›• €‡„…‹€
+CRC_VOL			EQU ERORDRV+0XFE		;2 CRC ………›• €‡„…‹€
 
-TEK_LEV_DIR	EQU CRC_VOL-0X50		;50 “”… •€… ‡–  •†„…  „€
+TEK_LEV_DIR		EQU CRC_VOL-0X50		;50 “”… •€… ‡–  •†„…  „€

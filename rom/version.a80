@@ -1,14 +1,14 @@
 
-;LAST UPDATE: 25.05.2021 savelij
+; LAST UPDATE: 01.08.2021 savelij
 
-;версия в бинарном виде ERS
-VERSBIN		EQU 0x00005817
+; версия в бинарном виде ERS
+VERSBIN		EQU 0x00005818
 
 	IFDEF DOS_FE
-VERSBIOS	EQU "0.58.17 test FE "
+VERSBIOS	EQU "0.58.18 test FE "
 	ELSE
-VERSBIOS	EQU "0.58.17 "
+VERSBIOS	EQU "0.58.18 "
 	ENDIF
 
-;версия в бинарном виде Evo-DOS
+; версия в бинарном виде Evo-DOS
 VERSEVODOS	EQU "0.51"

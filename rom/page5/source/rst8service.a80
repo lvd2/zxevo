@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 27.02.2021 savelij
+; LAST UPDATE: 06.07.2021 savelij
 
 PAGE	
 	TITLE "rst8service.a80 ROM_RST83"
@@ -10,13 +10,17 @@ PAGE
 		include ../../ports_ide.a80
 		include ../../ports_ngs.a80
 		include ../../sdcomand.a80
+
+ INIT_VAR BUF_TEKVOL
 		include ../../fat_vars.a80
+
 		include ../../bootsecfat.a80
 		include ../../evodos_vars.a80
 		include ../../tmpkeys.a80
 		include ../../nums_devices.a80
 		include ../../version.a80
 		include ../../cmd_cdhdd.a80
+		include ../../fat_dir.a80
 		include fat/sl811_equ.a80
 		include struct_mount.a80
 

@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 26.05.2021 savelij
+; LAST UPDATE: 01.08.2021 savelij
 
 		TITLE "addon1.a80 ROM_RST81"
 
@@ -130,6 +130,7 @@ INSTALL_NMIRST	ATMPORT WIN_A3,0X40		;СНЯЛИ ЗАВИСИМОСТЬ ОТ ПОРТА 7FFD
 		LD BC,FDD_EMU_PORT
 		XOR A
 		OUT (C),A			; сброс виртуальных дисководов
+		LD (B_PORT_VIRT),A
 		LD A,0XEF
 		IN A,(0XFE)
 		RRCA

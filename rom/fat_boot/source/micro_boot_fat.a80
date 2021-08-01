@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 13.03.2020 savelij
+; LAST UPDATE: 07.07.2021 savelij
 
 		include ../../macros.a80
 		include ../../define.a80
@@ -12,7 +12,8 @@
 DRV_VAR		EQU 0X4000
 
 		ORG DRV_VAR+0X200
-		include fat_vars.a80
+ INIT_VAR $
+		include ../../fat_vars.a80
 
 		ORG DRV_VAR+0X300
 
@@ -50,10 +51,10 @@ SETLOADER	LD (LOADSCS1),HL		;“‘’€‚‹ €„…‘ —’€‹ ‘…’‚
 		JR Z,SETMASL
 		LD A,0XF0
 SETMASL		LD (MAS_SLA),A
-		LD HL,(FILE_SRC+0X14)
-		LD (AFILCLS+2),HL
-		LD HL,(FILE_SRC+0X1A)
-		LD (AFILCLS),HL
+		LD BC,(FILE_SRC+0X14)
+		LD (AFILCLS+2),BC
+		LD DE,(FILE_SRC+0X1A)
+		LD (AFILCLS),DE
 		LD A,(FILE_SRC+9)
 		CP "P"
 		JP Z,RUNSPG2			;……•„ € ‡€“‘ SPG ”€‰‹€
@@ -78,7 +79,9 @@ READ01		LD A,H
 		DEC A				;…‚›‰ ‘…’ ‡€ƒ“†…, ƒ“‡’ € 1 ……
 		EXX
 		JP Z,LDIRBUF			;…‘‹ ‘…’ 1 ……‘  ‡€“‘
+		DEC A
 		LD IXL,A			;‡€‹ ‹—…‘’‚ ‘…’‚-1
+		JP Z,READ08			; ¥α«¨ δ ©« Ά«¥§ Ά 2 α¥ªβ®ΰ 
 		EXX
 		CALL LD_ONES			;……‘ ‘’€’‚ …‚ƒ ‘…’€
 		PUSH DE				;€„…‘ “„€ „€‹…… ƒ“‡’
@@ -89,7 +92,7 @@ READ01		LD A,H
 		JR NC,READ04
 		INC BC				;BCDE=BCDE+1
 READ04		POP HL				;‚ HL €„…‘ „‹ „‹†… ‡€ƒ“‡
-		LD IY,(BYTSSEC)			;LY=‹-‚ ‘…’‚ ‚ ‹€‘’……
+		LD IY,(SecPerClus)		;LY=‹-‚ ‘…’‚ ‚ ‹€‘’……
 		LD A,IXL
 		CP IYL				;‘…’‚ ‘’€‹‘ …… —… ‚ ‹€‘’……
 		JR C,READ02			;……•„ € „‡€ƒ“‡“ ‘’€’€ ‘…’‚
@@ -101,7 +104,11 @@ READ04		POP HL				;‚ HL €„…‘ „‹ „‹†… ‡€ƒ“‡
 		JR READ05
 
 READ07		PUSH HL
+		LD DE,(AFILCLS)
+		LD BC,(AFILCLS + 2)
 		CALL RDFATZP			;‹“—’ … ‘‹…„“™…ƒ ‹€‘’…€
+		LD (AFILCLS),DE
+		LD (AFILCLS + 2),BC
 		CALL LST_CLS			;‚…€ € —€… FAT –…—
 		POP HL
 		JR C,RUNLOAD			;…‘‹ ‹€‘’…€ ‡€—‹‘, ’ ‡€“‘ ‡€ƒ“†…ƒ
@@ -118,6 +125,16 @@ READ05		CALL LOADSCS			;‡€ƒ“‡€ ‘…’‚
 		JR Z,RUNLOAD			;‘…’€ —‹‘, ……•„ € ‡€“‘
 		LD IXL,A			;‘‹ ‘…’‚ ‘’€‹‘ ‡€ƒ“‡’
 		JR READ07			;„‹†€… ‡€ƒ“‡“
+
+; ΰ §¬¥ΰ ª®¤  Ά Hobeta ¬¥­¥¥ 2 α¥ªβ®ΰ®Ά
+; ª®―¨ΰγ¥¬ εΆ®αβ ―¥ΰΆ®£® α¥ªβ®ΰ  ¨ ¤®£ΰγ¦ ¥¬ ¨§ Άβ®ΰ®£® α ―¥ΰ¥­®α®¬
+READ08		EXX
+		CALL LD_ONES
+		PUSH DE
+		EXX
+		POP HL
+		LD IXL,1
+		JR READ03
 
 ;‡€ƒ“‡€ ‹—…‘’‚€ ‘…’‚, …‘‹ ‘’€‹‘ ……… €‡…€ ‹€‘’…€
 READ02		AND A
@@ -180,16 +197,17 @@ LOADSCS		PUSH HL
 		EX (SP),HL
 		RET
 
-;[—’…… ”€‰‹€]
-;IXL-€‡… ‹€‘’…€ 
-;IXH-TEMP VAR        
-;IYL-‹—…‘’‚ ‘…’‚ „‹ ‡€ƒ“‡
-;IYH-‘…™…… ‚ ‹€‘’……
+; ηβ¥­¨¥ δ ©« 
+; BCDE - ­®¬¥ΰ ª« αβ¥ΰ  ®βªγ¤  £ΰγ§¨βμ
+; IXL - ΰ §¬¥ΰ ª« αβ¥ΰ  
+; IXH - Άΰ¥¬¥­­λ¥ ―¥ΰ¥¬¥­­λ¥
+; IYL - ª®«¨η¥αβΆ® α¥ªβ®ΰ®Ά ¤«ο § £ΰγ§ª¨
+; IYH - α¬¥ι¥­¨¥ Ά ª« αβ¥ΰ¥
 LD_FILE		PUSH BC				;‘’€… 16 ’ …€ ‹€‘’…€
 		PUSH DE				;‹€„… 16 ’ …€ ‹€‘’…€
 		PUSH HL				;‘•€‹ €„…‘ ‡€ƒ“‡
 		CALL REALSEC			;……‚…‹ … ‹€‘’…€ ‚ … ‘…’€
-		LD IX,(BYTSSEC)
+		LD IX,(SecPerClus)
 		LD A,IYH			;‘…™…… ‚ ‹€‘’……
 		LD L,A
 		LD H,0
@@ -232,7 +250,7 @@ LDFILE4		LD A,IYL			;‹—…‘’‚ ‘…’‚ „‹ ‡€ƒ“‡
 		RET
 
 ;[‚…€ …€ ‹€‘’…€]
-LST_CLS		LD A,(CAL_FAT)
+LST_CLS		LD A,(FATType)
 		AND A
 		JR NZ,LST_CL1
 		LD HL,0X0FF7
@@ -253,9 +271,7 @@ LST_CL2		LD HL,0X0FFF
 		RET
 
 ;[—’…… ‘‹…„“™…ƒ ‹€‘’…€]
-RDFATZP		LD BC,(AFILCLS+2)
-		LD DE,(AFILCLS)
-		LD A,(CAL_FAT)
+RDFATZP		LD A,(FATType)
 		AND A
 		JR Z,RDFATS0
 		DEC A
@@ -265,7 +281,7 @@ RDFATZP		LD BC,(AFILCLS+2)
 		EX DE,HL
 		LD HL,0
 		ADC HL,BC
-		ADD HL,BC
+		ADD HL,BC		; HLDE = BCDE * 2
 		LD A,E
 		LD E,D
 		LD D,L
@@ -276,8 +292,6 @@ RDFATZP		LD BC,(AFILCLS+2)
 		LD C,(HL)
 		INC HL
 		LD B,(HL)
-RDFATS5		LD (AFILCLS+2),BC
-		LD (AFILCLS),DE
 		RET
 
 RDFATS1		LD BC,0
@@ -286,7 +300,7 @@ RDFATS1		LD BC,0
 		LD D,C
 RDFATS2		PUSH AF
 		PUSH BC
-		LD HL,FATSTR
+		LD HL,NumSecFAT1
 		CALL BCDEHLP
 		CALL LOADLST
 		POP BC
@@ -298,7 +312,7 @@ RDFATS2		PUSH AF
 		LD E,(HL)
 		INC HL
 		LD D,(HL)
-		JR RDFATS5
+		RET
 
 RDFATS0		LD H,D
 		LD L,E
@@ -314,8 +328,8 @@ RDFATS0		LD H,D
 		SRL E
 		PUSH AF
 		PUSH HL
-		LD HL,FATSTR
-		CALL BCDEHLP
+		LD DE,(NumSecFAT1)
+		LD BC,(NumSecFAT1 + 2)
 		CALL LOADLST
 		POP BC
 		LD A,B
@@ -325,7 +339,7 @@ RDFATS0		LD H,D
 		LD B,(HL)
 		INC HL
 		LD A,H
-		CP HIGH (BUF_512_)+2
+		CP HIGH (BUF_512)+2
 		JR NZ,RDFATS4
 		PUSH BC
 		LD BC,0
@@ -338,38 +352,27 @@ RDFATS4		POP AF
 		LD BC,0
 		RRA
 		JR NC,RDFATS3
-		REPT 4
+	REPT 4
 		SRL D
 		RR E
-		ENDM
+	ENDM
 RDFATS3		LD A,D
 		AND 0X0F
 		LD D,A
-		JR RDFATS5
+		RET
 
 ;[…€‡‚€… …€ ‹€‘’…€]
 ;‚›—‘‹…… …€‹ƒ ‘…’€
 ;€ ‚•„… BCDE=… FAT
 ;€ ‚›•„… BCDE=€„…‘ ‘…’€
-REALSEC		LD BC,(AFILCLS+2)
-		LD DE,(AFILCLS)
-		LD A,B
+REALSEC		LD A,B
 		OR C
 		OR D
 		OR E
 		JR NZ,REALSE1
-		LD DE,(FATSTR)
-		LD BC,(FATSTR+2)
-		LD HL,SEC_FAT
-		LD A,(MANYFAT)
-.L0		DEC A
-		JP Z,BCDEHLP
-		PUSH HL
-		PUSH AF
-		CALL BCDEHLP
-		POP AF
-		POP HL
-		JP .L0
+		LD DE,(NumSecRootDir)
+		LD BC,(NumSecRootDir + 2)
+		RET
 
 REALSE1		LD HL,0XFFFE
 		EX DE,HL
@@ -377,20 +380,18 @@ REALSE1		LD HL,0XFFFE
 		EX DE,HL
 		INC HL
 		ADC HL,BC			;… ‹€‘’…€-2
-		LD A,(BYTSSEC)
-		JR REALSE3
+		LD A,(SecPerClus)
+		JR REALSE2
 
-REALSE2		SLA E
+REALSE3		SLA E
 		RL D
 		RL L
 		RL H
-REALSE3		RRCA
-		JR NC,REALSE2			;“†‹ € €‡… ‹€‘’…€
+REALSE2		RRCA
+		JR NC,REALSE3			;“†‹ € €‡… ‹€‘’…€
 		LD B,H
 		LD C,L
-		LD HL,STARTRZ
-		CALL BCDEHLP			;€‚‹ ‘…™…… ’ €—€‹€ „‘€
-		LD HL,FRSTDAT
+		LD HL,FirstSecData
 		JP BCDEHLP			;€‚‹ ‘…™…… ’ €—€‹€ €‡„…‹€
 
 ;[BCDE/512]

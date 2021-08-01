@@ -1,11 +1,9 @@
 
-;LAST UPDATE: 22.08.2019 savelij
+; LAST UPDATE: 01.08.2021 savelij
 
 loc_3C47	LD BC,WIN_A3
 		LD A,0XFF
 		OUT (C),A		;возврат привязки к порту 7FDD
-;		xor	a
-;		call	SET_PAGE
 LOC_3C4B	LD DE,0XFFFF
 		ld	a, 7
 		jp	loc_9
@@ -15,7 +13,6 @@ loc_3C50	ld	sp, 0X5BFF
 		LD A,0X40
 		OUT (C),A		;разблокировка привязки к порту 7FFD
 		ld	a, 1Fh ! 0XFF
-;		call	SET_PAGE
 		LD BC,WIN_P3
 		OUT (C),A
 		ld	hl, 0C000h
@@ -49,62 +46,44 @@ loc_3C61	add	a, (hl)
 		ld	de, 5B00h
 		ld	bc, 2500h
 		ldir
-;		ld	sp, TRD_5F00
 		LD BC,WIN_P3		;порт установки номера страницы
 		ld	a, 1Eh ! 0XFF
-;		call	SET_PAGE
-;		call	LDIR_HL_DE
 		LD HL,LDIR_HL_DE
 		LD DE,.E1
 		JP (HL)
 
 .E1		ld	a, 3 ! 0XFF
-;		call	SET_PAGE
-;		call	LDIR_DE_HL
 		LD HL,LDIR_DE_HL
 		LD DE,.E2
 		JP (HL)
 
 .E2		ld	a, 1Dh ! 0XFF
-;		call	SET_PAGE
-;		call	LDIR_HL_DE
 		LD HL,LDIR_HL_DE
 		LD DE,.E3
 		JP (HL)
 
 .E3		ld	a, 1 ! 0XFF
-;		call	SET_PAGE
-;		call	LDIR_DE_HL
 		LD HL,LDIR_DE_HL
 		LD DE,.E4
 		JP (HL)
 
 .E4		ld	a, 1Ch ! 0XFF
-;		call	SET_PAGE
-;		call	LDIR_HL_DE
 		LD HL,LDIR_HL_DE
 		LD DE,.E5
 		JP (HL)
 
 .E5
-;		xor	a
-;		call	SET_PAGE
 		LD A, 0 ! 0XFF
-;		call	LDIR_DE_HL
 		LD HL,LDIR_DE_HL
 		LD DE,.E6
 		JP (HL)
 
 .E6		ld	a, 1Bh ! 0XFF
-;		call	SET_PAGE
-;		call	LDIR_HL_DE
 		LD HL,LDIR_HL_DE
 		LD DE,.E7
 		JP (HL)
 
 .E7
-;		xor	a
-;		call	SET_PAGE
 		LD A,0 ! 0XFF
 		OUT (C),A		;вернули страницу
 		LD BC,WIN_A3
@@ -112,23 +91,6 @@ loc_3C61	add	a, (hl)
 		OUT (C),A		;возврат привязки к порту 7FDD
 		ld	sp, (0X5B73)
 		ret
-
-;SET_PAGE
-;		push	af
-;		and	7
-;		or	10h
-;		ld	bc, 7FFDh
-;		out	(c), a
-;		pop	af
-;		and	18h
-;		cpl
-;		ld	bc, 0FFF7h
-;		out	(c), a
-;		ret
-;		LD BC,WIN_P3
-;		CPL
-;		OUT (C),A
-;		RET
 
 LDIR_DE_HL	OUT (C),A
 		ld	a, 0FFh

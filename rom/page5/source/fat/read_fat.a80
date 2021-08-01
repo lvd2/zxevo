@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 25.09.2020 savelij
+; LAST UPDATE: 06.07.2021 savelij
 
 COM_FAT		EX AF,AF'
 		CALL P5_READ_BYTE
@@ -66,29 +66,29 @@ ROOTDIR		PUSH IY
 		ADD HL,HL
 		ADD HL,HL
 		ADD HL,HL
-		LD BC,BUF_TABLVOL+2
+		LD BC,BUF_TABLVOL + 2
 		ADD HL,BC
 		LD A,(HL)
 		LD HL,BUF_TABLVOL
 		CALL INIT_FATVARS
-		LD DE,(TEK_DIR)
-		LD BC,(TEK_DIR+2)
+		LD DE,(CurrentDIRCluster)
+		LD BC,(CurrentDIRCluster + 2)
 		CALL INIT_TEKDIR
 		POP IY
 		RET
 
-;–€‹‡€– ………›• FAT
-;€ ‚•„…:
-;HL=€„…‘ ’€‹–› €‰„…›• €‡„…‹‚
-;DE=D-… ‚›€ƒ €‡„…‹€, E-‹—…‘’‚ €‰„…›• €‡„…‹‚
-;A=’ €‡„…‹€ …‘‹ €‰„… MBR
-;€ ‚›•„…:
-;BCDE=… ‹€‘’…€ …‚‰ „…’
-;A=’ €‡„…‹€ …‘‹ MBR … €‰„…
+; ¨­¨ζ¨ «¨§ ζ¨ο ―¥ΰ¥¬¥­­λε FAT
+;   Άε®¤¥:
+; HL =  ¤ΰ¥α β ΅«¨ζλ ­ ©¤¥­λε ΰ §¤¥«®Ά
+; DE = D - ­®¬¥ΰ Άλ΅ΰ ­­®£® ΰ §¤¥« , E - ª®«¨η¥αβΆ® ­ ©¤¥­­λε ΰ §¤¥«®Ά
+; A = β¨― ΰ §¤¥«  ¥α«¨ ­ ©¤¥­ MBR
+;   Άλε®¤¥:
+; BCDE = ­®¬¥ΰ ª« αβ¥ΰ  ª®ΰ­¥Ά®© ¤¨ΰ¥ªβ®ΰ¨¨
+; A = β¨― ΰ §¤¥«  ¥α«¨ MBR ­¥ ­ ©¤¥­
 INIT_FATVARS	PUSH HL
-		LD HL,0XFFFF
-		LD (LSTLOAD+2),HL
-		LD (CAL_FAT),A
+		LD HL,0xFFFF
+		LD (NumSec2Buf + 2),HL
+		LD (FATType),A
 		LD E,D
 		LD D,0
 		EX DE,HL
@@ -101,177 +101,160 @@ INIT_FATVARS	PUSH HL
 		INC HL
 		INC HL
 		CALL LOADZP
-		LD (STARTRZ),DE
-		LD (STARTRZ+2),BC		;… …‚ƒ ‘…’€ €‡„…‹€
+		LD (StartSecVol),DE
+		LD (StartSecVol + 2),BC		; ­®¬¥ΰ ―¥ΰΆ®£® α¥ªβ®ΰ  ΰ §¤¥« 
 		CALL LOADLST
-		PUSH HL
-		POP IX
 		CALL VALID_BOOTSEC
 		AND A
 		JR Z,RDFAT07
 		SCF
 		RET
 
-RDFAT07		LD HL,0
-		LD E,(IX+_BPB_FATSz16)
-		LD D,(IX+_BPB_FATSz16+1)
-		LD A,D
-		OR E
-		JR NZ,RDFAT01			;…‘‹ … FAT12/16 (BPB_FATSZ16=0)
-		LD E,(IX+_BPB_FATSz32)
-		LD D,(IX+_BPB_FATSz32+1)
-		LD L,(IX+_BPB_FATSz32+2)
-		LD H,(IX+_BPB_FATSz32+3)
-						;’ …… ‡ ‘…™… +36
-RDFAT01		LD (SEC_FAT+2),HL
-		LD (SEC_FAT),DE			;—‘‹ ‘…’‚ € FAT-’€‹–“
+RDFAT07
+		LD A,(BUF_512 + _BPB_SecPerClus)
+		LD (SecPerClus),A
+		LD HL,(BUF_512 + _BPB_RsvdSecCnt)
+		ADD HL,DE
+		LD (NumSecFAT1),HL
 		LD HL,0
-		LD E,(IX+_BPB_TotSec16)
-		LD D,(IX+_BPB_TotSec16+1)
+		LD DE,(BUF_512 + _BPB_FATSz16)
 		LD A,D
 		OR E
-		JR NZ,RDFAT02			;…‘‹ … FAT12/16 (BPB_TOTSEC16=0)
-		LD E,(IX+_BPB_TotSec32)
-		LD D,(IX+_BPB_TotSec32+1)
-		LD L,(IX+_BPB_TotSec32+2)
-		LD H,(IX+_BPB_TotSec32+3)
-						;’ …… ‡ ‘…™… +32
-RDFAT02		LD (SEC_DSC+2),HL
-		LD (SEC_DSC),DE			;-‚ ‘…’‚ € „‘…/€‡„…‹…
+		JR NZ,RDFAT01			; ¥α«¨ ­¥ FAT12/16 (_BPB_FATSz16 == 0)
+		LD DE,(BUF_512 + _BPB_FATSz32)
+		LD HL,(BUF_512 + _BPB_FATSz32 + 2)	; ’ …… ‡ ‘…™… +36
+RDFAT01		LD (FATSize),DE
+		LD (FATSize + 2),HL		;—‘‹ ‘…’‚ € FAT-’€‹–“
 
-;‚›—‘‹… ROOTDIRSECTORS
-		LD E,(IX+_BPB_RootEntCnt)
-		LD D,(IX+_BPB_RootEntCnt+1)
-		LD (ROOTZAP),DE
+		LD HL,0
+		LD DE,(BUF_512 + _BPB_TotSec16)
+		LD A,D
+		OR E
+		JR NZ,.L1			;…‘‹ … FAT12/16 (BPB_TOTSEC16=0)
+		LD DE,(BUF_512 + _BPB_TotSec32)
+		LD HL,(BUF_512 + _BPB_TotSec32+2)
+						;’ …… ‡ ‘…™… +32
+.L1		LD (NumsSectorsVol + 2),HL
+		LD (NumsSectorsVol),DE		;-‚ ‘…’‚ € „‘…/€‡„…‹…
+
+; Άλη¨α«ο¥¬ ROOTDIRSECTORS
+		LD DE,(BUF_512 + _BPB_RootEntCnt)
 		LD BC,0
-		LD H,B
-		LD L,C
 		LD A,D
 		OR E
 		JR Z,RDFAT03
 		LD A,0X10
 		CALL BCDE_A
-		EX DE,HL
 
 ;’ …€‹‡‚€€ ”“‹€
 ;ROOTDIRSECTORS=((BPB_ROOTENTCNT*32)++(BPB_BYTSPERSEC-1))/BPB_BYTSPERSEC
 ;‚ HL ROOTDIRSECTORS. …‘‹ FAT32, ’ HL=0 ‚‘…ƒ„€
 
-RDFAT03		PUSH HL				;ROOTDIRSECTORS
-		LD A,(IX+_BPB_NumFATs)
-		LD (MANYFAT),A
-		LD DE,(SEC_FAT)
-		LD HL,(SEC_FAT+2)
+RDFAT03		PUSH DE				;ROOTDIRSECTORS
+		LD A,(BUF_512 + _BPB_NumFATs)
+		LD (NumFATs),A
 		DEC A
-		JR Z,RDFAT06			;…‘‹ FAT ’€‹–€ 1,’ … “†€…
-RDFAT05		EX DE,HL
-		ADD HL,HL
+		JR Z,.L1
+		LD HL,NumSecFAT1
+		CALL LOADZP
+		LD HL,FATSize
+		CALL BCDEHLP
+		LD (NumSecFAT2),DE
+		LD (NumSecFAT2 + 2),BC
+.L1		LD HL,FATSize
+		CALL BCDEHLP
+		LD (NumSecRootDir),DE
+		LD (NumSecRootDir + 2),BC
+		POP HL
+; ¤®΅ Ά«ο¥¬ ΰ §¬¥ΰ ROOTDIR
+		ADD HL,DE
 		EX DE,HL
-		ADC HL,HL
-		DEC A
-		JR NZ,RDFAT05
-RDFAT06		POP BC				;‹›‰ €‡… FAT-‹€‘’ ‚ ‘…’€•
-		CALL HLDEPBC			;€‚‹ ROOTDIRSECTORS
-		LD C,(IX+_BPB_RsvdSecCnt)
-		LD B,(IX+_BPB_RsvdSecCnt+1)
-		LD (RSVDSEC),BC
-		CALL HLDEPBC			;€‚‹ BPB_RESVDSECCNT
-		LD (FRSTDAT),DE
-		LD (FRSTDAT+2),HL		;‹†‹ … …‚ƒ ‘…’€ „€›•
+		LD HL,0
+		ADC HL,BC
+		ADD HL,BC
 		LD B,H
 		LD C,L
-		LD HL,SEC_DSC
-		CALL BCDEHLM			;‚›—‹ ‡ ‹ƒ -‚€ ‘…’‚ €‡„…‹€
-		LD A,(IX+0X0D)
-		LD (BYTSSEC),A			;‹—…‘’‚ ‘…’‚ € ‹€‘’…
-		CALL BCDE_A			;€‡„…‹‹ € -‚ ‘…’‚ ‚ ‹€‘’……
-		LD (CLS_DSC),DE
-		LD (CLS_DSC+2),BC		;‹†‹ ‹-‚ ‹€‘’…‚ € €‡„…‹…
+		LD (FirstSecData),DE
+		LD (FirstSecData + 2),BC
+		LD HL,NumsSectorsVol
+		CALL BCDEHLM
+		LD A,(SecPerClus)
+		CALL BCDE_A
+		LD (NumsClustersVol),DE
+		LD (NumsClustersVol + 2),BC
 
-		LD A,(CAL_FAT)
+		LD A,(FATType)
 		CP 0XFF
 		JR NZ,RDFAT04
-;…„…‹…… ’€ FAT  ’‘“‘’‚ MBR
-		LD DE,(SEC_FAT-1)
-		LD BC,(SEC_FAT+1)
-		LD E,0				;BCDE=‹—…‘’‚ ‘…’‚ *0X100
+; ®―ΰ¥¤¥«¥­¨¥ β¨―  FAT ―ΰ¨ ®βαγαβΆ¨¨ MBR
+		LD DE,(FATSize - 1)
+		LD BC,(FATSize + 1)
+		LD E,0				; BCDE = ª®«¨η¥αβΆ® α¥ªβ®ΰ®Ά * 0x100
 		PUSH BC
-		PUSH DE				;‘•€‹
+		PUSH DE				; α®εΰ ­¨«¨
 		SRL B
 		RR C
 		RR D
-		RR E				;BCDE=‹—…‘’‚ ‘…’‚ *0X80
-		LD HL,CLS_DSC			;‹—…‘’‚ ‹€‘’…‚ € FAT
-		PUSH HL				;‘•€‹
-		CALL HLBCDEM			;‹—…‘’‚ ‹€‘’…‚-(‹—…‘’‚ ‘…’‚*0X80)
+		RR E				; BCDE = ª®«¨η¥αβΆ® α¥ªβ®ΰ®Ά * 0x80
+		LD HL,NumsClustersVol		; ª®«¨η¥αβΆ® ª« αβ¥ΰ®Ά ­  FAT
+		PUSH HL				; α®εΰ ­¨«¨
+		CALL HLBCDEM			; ª®«¨η¥αβΆ® ª« αβ¥ΰ®Ά - (ª®«¨η¥αβΆ® α¥ªβ®ΰ®Ά * 0x80)
 		LD A,E
-		AND 0X7F			;‹—…‘’‚ ……… 128 ‹€‘’…‚ ‚ ‘…’… „‹ FAT32
+		AND 0X7F			; ª®«¨η¥αβΆ® ¬¥­¥¥ 128 ª« αβ¥ΰ®Ά Ά α¥ªβ®ΰ¥ ¤«ο FAT32
 		OR D
 		OR C
 		OR B
-		LD A,2
+		LD A,2				; FAT32
 		POP HL
 		POP DE
 		POP BC
-		JR Z,RDFAT04			;FAT32 …‘‹ ”‹€ƒ Z=0
-		CALL HLBCDEM			;‹—…‘’‚ ‹€‘’…‚-(‹—…‘’‚ ‘…’‚*0X100)
+		JR Z,RDFAT04			; FAT32 ¥α«¨ δ« £ Z=0
+		CALL HLBCDEM			; ª®«¨η¥αβΆ® ª« αβ¥ΰ®Ά - (ª®«¨η¥αβΆ® α¥ªβ®ΰ®Ά * 0x100)
 		LD A,D
 		OR C
 		OR B
-		LD A,1
-		JR Z,RDFAT04			;FAT16 …‘‹ ”‹€ƒ Z=0
-		XOR A				;€—… FAT12
+		LD A,1				; FAT16
+		JR Z,RDFAT04			; FAT16 ¥α«¨ δ« £ Z=0
+		XOR A				; ¨­ η¥ FAT12
+		LD (FATType),A
 
-;„‹ FAT12/16 ROOT ‹€‘’…=0
-;„‹ FAT32 ……  ‘…™… +44
-;€ ‚›•„… BCDE-‘…’ ROOTDIR ‹€‘’…
-RDFAT04		LD (CAL_FAT),A
-		AND A
-		PUSH AF
-		LD DE,0
-		LD B,D
-		LD C,E
-		JR Z,FSRROO2			;FAT12
-		DEC A
-		JR Z,FSRROO2			;FAT16
-		LD E,(IX+_BPB_RootClus)
-		LD D,(IX+_BPB_RootClus+1)
-		LD C,(IX+_BPB_RootClus+2)
-		LD B,(IX+_BPB_RootClus+3)	;FAT32
-FSRROO2		LD (ROOTCLS),DE
-		LD (ROOTCLS+2),BC		;‘…’ ROOT „…’
-		LD (TEK_DIR),DE
-		LD (TEK_DIR+2),BC
-FSRR121		PUSH DE
-		PUSH BC
-		LD DE,(RSVDSEC)
-		LD BC,0
-		LD HL,STARTRZ
-		CALL BCDEHLP
-		LD (FATSTR),DE
-		LD (FATSTR+2),BC
-		XOR A
+; ¤«ο FAT12/16 ROOT ª« αβ¥ΰ = 0
+; ¤«ο FAT32 ΅¥ΰ¥¬ ―® α¬¥ι¥­¨ξ +44
+;   Άλε®¤¥: BCDE - ‘…’ ROOTDIR ‹€‘’…
+RDFAT04		XOR A
 		LD (TEK_LEV),A
 		LD (BUF_PATH),A
 		CALL INIT_PATH
-		POP BC
-		POP DE
-		POP AF
+		LD A,(FATType)
+		AND A
+		LD DE,0
+		LD B,D
+		LD C,E
+		JR Z,.L1			;FAT12-NONE
+		DEC A
+		JR Z,.L1			;FAT16
+		LD DE,(BUF_512 + _BPB_RootClus)
+		LD BC,(BUF_512 + _BPB_RootClus + 2)	;FAT32
+.L1		LD (CurrentDIRCluster),DE
+		LD (CurrentDIRCluster + 2),BC	; ­®¬¥ΰ β¥ªγι¥£® ª« αβ¥ΰ 
+		LD (RootDIRCluster),DE
+		LD (RootDIRCluster + 2),BC	; ­®¬¥ΰ ª®ΰ­¥Ά®£® ª« αβ¥ΰ 
 		RET
 
-;[―ΰ®Ά¥ΰª  0 α¥ªβ®ΰ  ΰ §¤¥« ]
-VALID_BOOTSEC	LD A,(IX+_BPB_BytsPerSec+1)
+; ―ΰ®Ά¥ΰª  0 α¥ªβ®ΰ  ΰ §¤¥« 
+VALID_BOOTSEC	LD HL,(BUF_512 + _BPB_BytsPerSec)
+		LD A,H
 		SUB 2
-		OR (IX+_BPB_BytsPerSec)
+		OR L
 		JR NZ,VALID_BOOTSEC1
-		LD D,(IX+_BPB_SecPerClus)
-		OR D
+		LD HL,(BUF_512 + _BPB_SecPerClus)
+		OR L
 		JR Z,VALID_BOOTSEC1
 		NEG
-		AND D
-		CP D
+		AND L
+		CP L
 		JR NZ,VALID_BOOTSEC1
-		LD A,(IX+_BPB_NumFATs)
+		LD A,(BUF_512 + _BPB_NumFATs)
 		DEC A
 		CP 7
 		JR NC,VALID_BOOTSEC1
@@ -284,14 +267,14 @@ VALID_BOOTSEC	LD A,(IX+_BPB_BytsPerSec+1)
 VALID_BOOTSEC1	OR IXH
 		RET
 
-;”‚€… ’€‹–› ‹€‘’…‚ DIR
-; ‘ …‚‰ "‹…ƒ€‹‰" ‡€‘ ‚ DIR
+; δ®ΰ¬¨ΰ®Ά ­¨¥ β ΅«¨ζλ ª« αβ¥ΰ®Ά DIR
+; ¨ ―®¨αª ―¥ΰΆ®© "«¥£ «μ­®©" § ―¨α¨ Ά DIR
 INIRTSC		PUSH AF
-		LD HL,0XFFFF
-		LD (LSTLOAD+2),HL
+		LD HL,0xFFFF
+		LD (NumSec2Buf + 2),HL
 		LD HL,BUF_TDIRCLS
-		LD DE,(TEK_DIR)
-		LD BC,(TEK_DIR+2)
+		LD DE,(CurrentDIRCluster)
+		LD BC,(CurrentDIRCluster + 2)
 		CALL SAVEZP
 		LD A,D
 		OR E
@@ -306,14 +289,14 @@ NEXTCLS		PUSH HL
 		CALL SAVEZP
 		JR NEXTCLS
 
-LASTCLS		LD BC,0XFFFF
+LASTCLS		LD BC,0xFFFF
 		CALL SAVEZP
 		CALL POSTF02
 		POP AF
 		RET
 
 ;—’…… ‘‹…„“™…ƒ …€ ‹€‘’…€
-RDFATZP		LD A,(CAL_FAT)
+RDFATZP		LD A,(FATType)
 		AND A
 		JR Z,RDFATS0
 		DEC A
@@ -323,7 +306,7 @@ RDFATZP		LD A,(CAL_FAT)
 		EX DE,HL
 		LD HL,0
 		ADC HL,BC
-		ADC HL,BC
+		ADD HL,BC		; HLDE = BCDE * 2
 		LD A,E
 		LD E,D
 		LD D,L
@@ -342,7 +325,7 @@ RDFATS1		LD BC,0
 		LD D,C
 RDFATS2		PUSH AF
 		PUSH BC
-		LD HL,FATSTR
+		LD HL,NumSecFAT1
 		CALL BCDEHLP
 		CALL LOADLST
 		POP BC
@@ -370,8 +353,8 @@ RDFATS0		LD H,D
 		SRL E
 		PUSH AF
 		PUSH HL
-		LD HL,FATSTR
-		CALL BCDEHLP
+		LD DE,(NumSecFAT1)
+		LD BC,(NumSecFAT1 + 2)
 		CALL LOADLST
 		POP BC
 		LD A,B
@@ -394,35 +377,26 @@ RDFATS4		POP AF
 		LD BC,0
 		RRA
 		JR NC,RDFATS3
-		REPT 4
+	REPT 4
 		SRL D
 		RR E
-		ENDM
+	ENDM
 RDFATS3		LD A,D
 		AND 0X0F
 		LD D,A
 		RET
 
-;‚›—‘‹…… …€‹ƒ ‘…’€
-;€ ‚•„…: BCDE=… ‹€‘’…€ FAT
-;€ ‚›•„…: BCDE=€„…‘ ‘…’€
+; Άλη¨α«¥­¨¥ ­®¬¥ΰ  ΰ¥ «μ­®£® α¥ªβ®ΰ 
+;   Άε®¤¥: BCDE = ­®¬¥ΰ ª« αβ¥ΰ  FAT
+;   Άλε®¤¥: BCDE = ­®¬¥ΰ α¥ªβ®ΰ 
 REALSEC		LD A,B
 		OR C
 		OR D
 		OR E
 		JR NZ,REALSE1
-		LD DE,(FATSTR)
-		LD BC,(FATSTR+2)
-		LD HL,SEC_FAT
-		LD A,(MANYFAT)
-.L0		DEC A
-		JP Z,BCDEHLP
-		PUSH HL
-		PUSH AF
-		CALL BCDEHLP
-		POP AF
-		POP HL
-		JR .L0
+		LD DE,(NumSecRootDir)
+		LD BC,(NumSecRootDir + 2)
+		RET
 
 REALSE1		LD HL,0XFFFE
 		EX DE,HL
@@ -430,7 +404,7 @@ REALSE1		LD HL,0XFFFE
 		EX DE,HL
 		INC HL
 		ADC HL,BC			;… ‹€‘’…€-2
-		LD A,(BYTSSEC)
+		LD A,(SecPerClus)
 		JR REALSE2
 
 REALSE3		SLA E
@@ -441,14 +415,12 @@ REALSE2		RRCA
 		JR NC,REALSE3			;“†‹ € €‡… ‹€‘’…€
 		LD B,H
 		LD C,L
-		LD HL,STARTRZ
-		CALL BCDEHLP			;€‚‹ ‘…™…… ’ €—€‹€ „‘€
-		LD HL,FRSTDAT
+		LD HL,FirstSecData
 		JP BCDEHLP			;€‚‹ ‘…™…… ’ €—€‹€ €‡„…‹€
 
 ;‘•€… ‘…’ ‡€ƒ“†…›‰ ‚ “”…
-LSTSAVE		LD BC,(LSTLOAD+2)
-		LD DE,(LSTLOAD)
+LSTSAVE		LD DE,(NumSec2Buf)
+		LD BC,(NumSec2Buf + 2)
 		LD HL,BUF_512
 		LD A,1
 		CALL TO_DRV
@@ -463,8 +435,8 @@ LOADLST		CALL CPNUMSC
 		LD HL,BUF_512
 		RET
 
-LOADLS1		LD (LSTLOAD+2),BC
-		LD (LSTLOAD),DE
+LOADLS1		LD (NumSec2Buf),DE
+		LD (NumSec2Buf + 2),BC
 		LD HL,BUF_512
 		PUSH HL
 		LD A,1
@@ -475,8 +447,8 @@ LOADLS1		LD (LSTLOAD+2),BC
 		POP HL
 		RET
 
-;‚…€ € “†… ‡€ƒ“†…›‰ ‘…’
-CPNUMSC		LD HL,LSTLOAD
+; ―ΰ®Ά¥ΰª  ­  ­®¬¥ΰ γ¦¥ § £ΰγ¦¥­­λ© α¥ªβ®ΰ
+CPNUMSC		LD HL,NumSec2Buf
 		LD A,(HL)
 		INC HL
 		CP E
@@ -494,7 +466,7 @@ CPNUMSC		LD HL,LSTLOAD
 		RET
 
 ;‚…€ € ‘‹…„‰ ‹€‘’…
-LST_CLS		LD A,(CAL_FAT)			;‚‡‹ ’ FAT
+LST_CLS		LD A,(FATType)			;‚‡‹ ’ FAT
 		AND A
 		JR NZ,LST_CL1
 		LD HL,0X0FF7			;„‹ FAT12
@@ -585,8 +557,8 @@ GETFZA4		PUSH AF
 		POP IY
 		RET
 
-;—’…… ‘…’€ DIR  …“ BC
-;€ ‚›•„…: A=0XFF-‚›•„ ‡€ …„…‹› DIR
+; ηβ¥­¨¥ α¥ªβ®ΰ  DIR ―® ­®¬¥ΰγ BC
+;   Άλε®¤¥: A = 0xFF - Άλε®¤ §  ―ΰ¥¤¥«λ DIR
 RDDIRSC		PUSH BC
 		LD D,B
 		LD E,C
@@ -595,7 +567,7 @@ RDDIRSC		PUSH BC
 		CALL BCDE_A
 		LD A,E
 		PUSH AF
-		LD A,(BYTSSEC)
+		LD A,(SecPerClus)
 		PUSH AF
 		CALL BCDE_A
 		LD HL,BUF_TDIRCLS;TDIRCLS
@@ -670,7 +642,7 @@ POS_FILES	LD D,A
 		PUSH HL
 		LD A,(RREG_A)
 		LD BC,(RREG_C)
-POSITFILE1	CP LOW ((ENDTPOS-TPOSITF)/2)
+POSITFILE1	CP LOW ((ENDTPOS - TPOSITF) / 2)
 		RET NC
 		ADD A,A
 		LD DE,TPOSITF
@@ -707,20 +679,20 @@ POSTF01		LD HL,(SAVEZAP)
 POSTF03		LD A,B
 		AND A
 		RET Z
-		PUSH BC
+.L1		PUSH BC
 		CALL PRVLEGZ
 		POP BC
-		DJNZ $-5
+		DJNZ .L1
 		RET
 
 ;……’€’ € "B" ”€‰‹‚ ‚……„
 POSTF04		LD A,B
 		AND A
 		RET Z
-		PUSH BC
+.L1		PUSH BC
 		CALL NXTLEGZ
 		POP BC
-		DJNZ $-5
+		DJNZ .L1
 		RET
 
 ;„‘—…’ ‹—…‘’‚€ "‹…ƒ€‹›•" ‡€‘…‰
@@ -730,53 +702,53 @@ POSTF05		LD BC,0
 		POP BC
 		EXX
 		CALL RDDIRSC
-		LD DE,0X20
-KOL_ZA4		LD A,(HL)
+		LD DE,_DIR_StructSize
+.L4		LD A,(HL)
 		CP "."
-		JR NZ,KOL_ZA1+2
+		JR NZ,.L5
 		INC HL
 		LD A,(HL)
 		DEC HL
 		CP "."
-		JR Z,KOL_ZA1+2
+		JR Z,.L5
 		INC BC
 		ADD HL,DE
-		JR KOL_ZA4
+		JR .L4
 
-KOL_ZA1		INC BC
+.L1		INC BC
 		ADD HL,DE
-		LD A,H
-		CP HIGH (BUF_512)+2
-		JR NZ,KOL_ZA2
+.L5		LD A,H
+		CP HIGH (BUF_512) + 2
+		JR NZ,.L2
 		CALL RDDIRSC
 		LD D,0
 		AND A
-		JR Z,KOL_ZA2
-		CALL KOL_ZA3
+		JR Z,.L2
+		CALL .L3
 		DEC A
 		RET
 
-KOL_ZA2		LD E,0X0B
+.L2		LD E,_DIR_Attr
 		ADD HL,DE
 		LD A,(HL)
 		AND A
 		SBC HL,DE
-		LD E,0X20
-		CP 0X0F
-		JR Z,KOL_ZA1
-		CP 8
-		JR Z,KOL_ZA1
+		LD E,_DIR_StructSize
+		CP 0X0F			; ¤«¨­­®¥ ¨¬ο?
+		JR Z,.L1
+		CP 8			; ¨¬ο ΰ §¤¥« ?
+		JR Z,.L1
 		LD A,(HL)
-		CP 0XE5
-		JR Z,KOL_ZA1
+		CP 0XE5			; γ¤ «¥­­λ© δ ©«?
+		JR Z,.L1
 		AND A
-		JR Z,KOL_ZA3
+		JR Z,.L3
 		EXX
 		INC BC
 		EXX
-		JR KOL_ZA1
+		JR .L1
 
-KOL_ZA3		LD D,B
+.L3		LD D,B
 		LD E,C
 		EXX
 		PUSH BC
@@ -814,7 +786,7 @@ CPTEKZP		CALL RDDIRSC
 		AND A
 		RET
 
-;‘‘ ’…“™…‰ ‡– ‚ 0  ‘ …‚‰ "‹…ƒ€‹‰" ‡€‘
+; α΅ΰ®α β¥ªγι¥© ―®§¨ζ¨¨ Ά 0 ¨ ―®¨αª ―¥ΰΆ®© "«¥£ «μ­®©" § ―¨α¨
 POSTF02		LD BC,0
 		LD (TEK_ZAP),BC
 		CALL RDDIRSC
@@ -959,7 +931,7 @@ HLDEPBC		EX DE,HL
 INIT_PATH	EVOPORT WIN_P5,RAM_MOUNTER
 		LD A,(SETDVOL)
 		LD D,A
-		ADD A,HIGH (TEK_BUFPATH+CPU5)+4
+		ADD A,HIGH (TEK_BUFPATH + CPU5) + 4
 		LD H,A
 		LD L,0
 		LD A,"E"
@@ -983,7 +955,7 @@ RENEW_PATH	EVOPORT WIN_P5,RAM_MOUNTER
 ;„€‚‹…… „…’  ’…“™…“ “’ (‚•„ ‚ „…’)
 		EX DE,HL
 		LD A,(SETDVOL)
-		ADD A,HIGH (TEK_BUFPATH+CPU5)+4
+		ADD A,HIGH (TEK_BUFPATH + CPU5) + 4
 		LD H,A
 		LD L,0XFF
 		LD L,(HL)
@@ -1027,7 +999,7 @@ RENEWPATH4	EX DE,HL
 
 ;“—…… ’…“™…ƒ “’ (‚›•„ ‚ …„›„“™“ „…’)
 MINUS_PATH	LD A,(SETDVOL)
-		ADD A,HIGH (TEK_BUFPATH+CPU5)+4
+		ADD A,HIGH (TEK_BUFPATH + CPU5) + 4
 		LD H,A
 		LD L,0XFF
 		LD L,(HL)
@@ -1061,7 +1033,7 @@ GET_PATH	EVOPORT WIN_P5,RAM_MOUNTER
 		LD L,C
 		LDIR
 		LD C,A				;BC=‘‹ €‰’ ……‘’ ‚ €„…‘  ‡€‘“
-		LD A,HIGH (CPU6)-1
+		LD A,HIGH (CPU6) - 1
 		ADD A,D
 		LD H,A
 		LD DE,(RREG_L)			;“„€ ……‘’ “’
@@ -1071,7 +1043,7 @@ GETPATH1	PUSH HL
 		PUSH HL
 		LD A,(SETDVOL)
 		LD D,A
-		ADD A,HIGH (TEK_BUFPATH+CPU5)+4
+		ADD A,HIGH (TEK_BUFPATH + CPU5) + 4
 		LD H,A
 		LD L,0XFF
 		LD A,(HL)
@@ -1080,90 +1052,6 @@ GETPATH1	PUSH HL
 		LD L,C
 		LDIR
 		POP HL
-		RET
-
-;‚•†„…… ‚ DIR
-ENTER_DIR	LD IYL,INTERNAL
-		CALL READ_DIR
-		PUSH AF
-		PUSH DE
-		PUSH HL
-		CALL RENEW_PATH
-		POP HL
-		POP DE
-		POP AF
-		BIT 4,A
-		EX AF,AF'
-		LD A,E
-		EX AF,AF'
-		LD E,A
-		LD D,(HL)
-		RET Z
-		EXX
-		EX AF,AF'
-		BIT 7,A
-		JR Z,ENT_DI2
-		LD HL,TEK_LEV
-		LD A,(HL)
-		AND A
-		EXX
-		RET Z
-		EXX
-		DEC A
-		LD (HL),A
-		ADD A,A
-		LD H,HIGH (BUF_DIRCEP+CPU6)
-		LD L,A
-		LD A,(HL)
-		INC L
-		LD H,(HL)
-		LD L,A
-		JR ENT_DI1
-
-ENT_DI2		LD HL,TEK_LEV
-		LD A,(HL)
-		INC A
-		CP 0X10
-		EXX
-		RET Z
-		EXX
-		LD (HL),A
-		DEC A
-		ADD A,A
-		LD H,HIGH (BUF_DIRCEP+CPU6)
-		LD L,A
-		LD BC,(TEK_ZAP)
-		LD (HL),C
-		INC L
-		LD (HL),B
-ENT_DI1		EXX
-		PUSH DE
-		LD DE,0X14
-		ADD HL,DE
-		LD C,(HL)
-		INC HL
-		LD B,(HL)
-		LD E,5
-		ADD HL,DE
-		LD E,(HL)
-		INC HL
-		LD D,(HL)
-		LD A,B
-		OR C
-		OR D
-		OR E
-		JR NZ,ENT_DI0
-		LD DE,(ROOTCLS)
-		LD BC,(ROOTCLS+2)
-ENT_DI0		LD (TEK_DIR),DE
-		LD (TEK_DIR+2),BC
-		POP DE
-INIT_TEKDIR	PUSH DE
-		PUSH IY
-		LD IYL,INTERNAL
-		CALL INIRTSC
-		POP IY
-		POP DE
 		RET
 
 ;’„€—€ ’ƒ … ”€‰‹€, …‘‹ „‹… ’‘“‘’‚“…’
@@ -1225,7 +1113,7 @@ GETLNG2		DEC BC
 		EXX
 		BIT 6,C
 		POP HL
-		JR NZ,GETLNGE+1
+		JR NZ,GETLNGE + 1
 		LD C,A
 		EXX
 		LD A,5
@@ -1309,7 +1197,7 @@ GETLNG5		EXX
 		DEC B
 		EXX
 		RET Z
-		JR GETLNG1+3
+		JR GETLNG1 + 3
 ;401,410-44F,451
 
 ;€ ‚•„…:   DE=‘‘ €‘…‰
@@ -1375,7 +1263,7 @@ FIND_FILEITEM	PUSH IY
 		AND A
 		EXX
 		JR NZ,FINDF2
-		LD A,(CAL_FAT)
+		LD A,(FATType)
 		CP 2
 		JR NC,FINDF2
 		EXX
@@ -1385,9 +1273,9 @@ FINDF2		INC BC
 		CALL RDDIRSC
 		LD A,C
 		AND 0X0F
-		REPT 4
+	REPT 4
 		ADD A,A
-		ENDM
+	ENDM
 		LD E,A
 		LD D,0
 		EX DE,HL
@@ -1449,8 +1337,8 @@ FINDF1		EX DE,HL
 		LD (HL),A
 		INC HL
 		LD (ADR_SKLAD_NAME),HL
-FINDF4		LD A,(ADR_SKLAD+1)
-		CP HIGH (CPU3)+0X10
+FINDF4		LD A,(ADR_SKLAD + 1)
+		CP HIGH (CPU3) + 0X10
 		JR C,FINDF2			;… ‹…… 2048 „‚/”€‰‹‚ ‚ ’…“™…‰ „…’
 FINDF3		LD HL,(KOLFIND)
 		POP IY
@@ -1473,8 +1361,8 @@ SET_MASK_EXT	LD A,(RREG_A)
 		RET
 
 SET_MASK_EXT1	LD HL,(RREG_L)
-		LD DE,BUF_256-CPU6
-		LD BC,0X10*3+1
+		LD DE,BUF_256 - CPU6
+		LD BC,0X10 * 3 + 1
 		CALL LDIR_BYTES
 		LD HL,BUF_256
 		LD DE,EXT4FOUND
@@ -1512,7 +1400,7 @@ READ_FILE	EX AF,AF'
 		LD HL,(RREG_L)			;€„…‘ ‡€ƒ“‡
 		EXX
 		LD DE,(SAVE_IY)			;‘…™…… ‚ ‹€‘’……
-		LD A,(BYTSSEC)
+		LD A,(SecPerClus)
 		LD H,A				;‹—…‘’‚ ‘…’‚ ‚ ‹€‘’……
 		LD A,(RREG_A)
 		LD L,A				;‹—…‘’‚ ‘…’‚ „‹ ‡€ƒ“‡
@@ -1523,7 +1411,7 @@ LD_FILE00	EXX
 		LD DE,(SAVE_IY)			;‘…™…… ‚ ‹€‘’……
 		LD HL,LD_FILE8
 		PUSH HL
-		LD A,(BYTSSEC)			;‹—…‘’‚ ‘…’‚ ‚ ‹€‘’……
+		LD A,(SecPerClus)		;‹—…‘’‚ ‘…’‚ ‚ ‹€‘’……
 		LD H,A				;‹—…‘’‚ ‘…’‚ ‚ ‹€‘’……
 		EX AF,AF'
 		LD L,A				;‹—…‘’‚ ‘…’‚ „‹ ‡€ƒ“‡
@@ -1585,7 +1473,7 @@ LD_FILE3	LD D,A			;IYH,A
 		CALL RDFATZP			;—’€‹ … ‘‹…„“™…ƒ ‹€‘’…€
 		POP IY
 		LD (AFILCLS),DE
-		LD (AFILCLS+2),BC
+		LD (AFILCLS + 2),BC
 		CALL LST_CLS			;‚…‹, € †…’ ’ ‘‹…„‰ ‹€‘’…?
 		POP HL				;‚‘‘’€‚‹ €„…‘ ‡€ƒ“‡
 		RET C				;…‘‹ ‘‹…„‰, ‚›•„
@@ -1609,16 +1497,16 @@ OPENFILE1	PUSH IY
 		LD IYL,INTERNAL
 		CALL READ_DIR
 		LD DE,FILE_SRC
-		LD BC,0X20
+		LD BC,_DIR_StructSize
 		PUSH DE
 		LDIR
 		LD HL,0
-		LD A,(CAL_FAT)
+		LD A,(FATType)
 		CP 2
 		JR C,OPENFILE2			;…‘‹ ’ … FAT32 ’ ‘’€… 16 ’ “‹… 
-		LD HL,(FILE_SRC+0X14)
-OPENFILE2	LD (AFILCLS+2),HL
-		LD HL,(FILE_SRC+0X1A)
+		LD HL,(FILE_SRC + _DIR_FstClusHI)
+OPENFILE2	LD (AFILCLS + 2),HL
+		LD HL,(FILE_SRC + _DIR_FstClusLO)
 		LD (AFILCLS),HL
 		LD HL,(TEK_ZAP)
 		LD (NUM_FILE_SRC),HL
@@ -1647,7 +1535,7 @@ FIND_NAME	LD A,IYL
 		JR NZ,FINDNAME01
 		PUSH HL
 		LD HL,(RREG_L)
-		LD DE,BUF_256-CPU6
+		LD DE,BUF_256 - CPU6
 		LD BC,0X10
 		CALL LDIR_BYTES
 		LD HL,EFINDNAME
@@ -1716,11 +1604,95 @@ CMP_NAME_B	LD A,(DE)
 		JR C,CMPNAME01
 		CP "{"
 		JR NC,CMPNAME01
-		AND 0XDF
+		AND %11011111
 CMPNAME01	CP (HL)
 		RET NZ
 		INC DE
 		INC HL
 		DJNZ CMP_NAME_B
 		XOR A
+		RET
+
+;‚•†„…… ‚ DIR
+ENTER_DIR	LD IYL,INTERNAL
+		CALL READ_DIR
+		PUSH AF
+		PUSH DE
+		PUSH HL
+		CALL RENEW_PATH
+		POP HL
+		POP DE
+		POP AF
+		BIT 4,A
+		EX AF,AF'
+		LD A,E
+		EX AF,AF'
+		LD E,A
+		LD D,(HL)
+		RET Z
+		EXX
+		EX AF,AF'
+		BIT 7,A
+		JR Z,ENT_DI2
+		LD HL,TEK_LEV
+		LD A,(HL)
+		AND A
+		EXX
+		RET Z
+		EXX
+		DEC A
+		LD (HL),A
+		ADD A,A
+		LD H,HIGH (BUF_DIRCEP + CPU6)
+		LD L,A
+		LD A,(HL)
+		INC L
+		LD H,(HL)
+		LD L,A
+		JR ENT_DI1
+
+ENT_DI2		LD HL,TEK_LEV
+		LD A,(HL)
+		INC A
+		CP 0X10
+		EXX
+		RET Z
+		EXX
+		LD (HL),A
+		DEC A
+		ADD A,A
+		LD H,HIGH (BUF_DIRCEP + CPU6)
+		LD L,A
+		LD BC,(TEK_ZAP)
+		LD (HL),C
+		INC L
+		LD (HL),B
+ENT_DI1		EXX
+		PUSH DE
+		LD DE,_DIR_FstClusHI
+		ADD HL,DE
+		LD C,(HL)
+		INC HL
+		LD B,(HL)
+		LD E,5
+		ADD HL,DE
+		LD E,(HL)
+		INC HL
+		LD D,(HL)
+		LD A,B
+		OR C
+		OR D
+		OR E
+		JR NZ,ENT_DI0
+		LD DE,(RootDIRCluster)
+		LD BC,(RootDIRCluster + 2)
+ENT_DI0		LD (CurrentDIRCluster),DE
+		LD (CurrentDIRCluster + 2),BC
+		POP DE
+INIT_TEKDIR	PUSH DE
+		PUSH IY
+		LD IYL,INTERNAL
+		CALL INIRTSC
+		POP IY
+		POP DE
 		RET

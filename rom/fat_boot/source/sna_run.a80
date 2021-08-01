@@ -1,7 +1,8 @@
 
-;LAST UPDATE: 26.04.2019 savelij
+; LAST UPDATE: 07.07.2021 savelij
 
 ; 26.04.2019 поправлено описание структуры
+; 07.07.2021 перед вызовом LD_FILE в реги BCDE загружается номер кластера откуда читать
 
 LSNAST	STRUCT	;заголовок снапшотов
 RI		DB	?
@@ -162,7 +163,11 @@ RUNSNA_LP5
 RUNSNA_L1P
 	xor a
 	out (PEVO_CONF),a
+		LD DE,(AFILCLS)
+		LD BC,(AFILCLS + 2)
 	call LD_FILE
+		LD (AFILCLS),DE
+		LD (AFILCLS + 2),BC
 	ld a,1
 	out (PEVO_CONF),a
 	ret

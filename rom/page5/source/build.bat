@@ -1,5 +1,5 @@
 
-echo off
+echo on
 
 cd ..\..\fat_boot\source
 

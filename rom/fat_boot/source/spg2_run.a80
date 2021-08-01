@@ -1,4 +1,8 @@
 
+; LAST UPDATE: 07.07.2021 savelij
+
+; 07.07.2021 перед вызовом LD_FILE в реги BCDE загружается номер кластера откуда читать
+
 ;SPG runner, version 0.2
 ;EVO version
 
@@ -253,7 +257,11 @@ LOADING		PUSH IX
 		ADD A,A
 		ADD A,A
 		LD IYL,A
+		LD DE,(AFILCLS)
+		LD BC,(AFILCLS + 2)
 		CALL LD_FILE
+		LD (AFILCLS),DE
+		LD (AFILCLS + 2),BC
 		POP IX
 		RET
 
