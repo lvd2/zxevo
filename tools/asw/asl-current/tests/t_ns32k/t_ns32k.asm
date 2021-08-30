@@ -187,7 +187,10 @@ table:	db	x'0a, x'1a, x'3a, x'5a, x'7a, x'6a, x'4a
 
 	cmpmw	10(r0), 16(r1), 4; CE 45 42 0A 10 06
 
+	; Note that opposed to ADDQi and MOVQi, CMPQi allows immediate dest
+
 	cmpqb	-8,r0		; 1C 04
+	cmpqd	1,0xa1		; 9F A0 00 00 00 A1
 
 	cmpsb			; 0E 04 00
 
@@ -423,6 +426,15 @@ table:	db	x'0a, x'1a, x'3a, x'5a, x'7a, x'6a, x'4a
 
 	expect	1130
 	movlf	l2,l4		; only F allwed as dest
+	endexpect
+
+	; similar to CMPi, CMPf allows immediate "dest". Plain number is not interpreted as PC-rel
+
+	cmpf	1.0,1		; BE 09 A5  3F 80 00 00  3F 80 00 00
+	cmpf	1.0,1.0		; BE 09 A5  3F 80 00 00  3F 80 00 00
+	addf	1.0,1		; BE C1 A6  3F 80 00 00  B3 CF
+	expect	1133
+	addf	1.0,1.0
 	endexpect
 
 	custom	on

@@ -1,5 +1,5 @@
 
-; LAST UPDATE: 01.08.2021 savelij
+; LAST UPDATE: 30.08.2021 savelij
 
 ; автоопределение кодировки работает неправильно
 
@@ -228,7 +228,7 @@ NAME_Size	EQU SIZE		; размер
 INITVAR := INITVAR+BYTE
 NAME_Size	EQU BYTE
 		ENDIF
-__NAME		EQU $			; текущий адрес
+NAME_CurAdr	EQU $			; текущий адрес
 		ENDM
 
 ; перенос метки назад на указанное число байт
