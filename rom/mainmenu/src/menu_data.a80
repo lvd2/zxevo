@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 23.05.2021 savelij
+;LAST UPDATE: 07.10.2021 savelij
 
 ;Žˆ‘€’…‹œ ŽŠ€ (€„…‘ ‚ IX)
 ;+00 X ŠŽŽ„ˆ€’€
@@ -243,7 +243,7 @@ MAIN2		DW CHNGTURBO			;w ˆ‡Œ……ˆ… ’“Ž
 ;===============ƒ‹€‚Ž… Œ…ž===============================
 
 ;[„‹Ÿ ‡€ƒ“‡Šˆ ‘ ‹…’›]
-BAS4TAPE	binclude "BAS4TAPE.BIN"
+BAS4TAPE	binclude "bas4tape.bin"
 EBAS4TAPE
 
 ;„‹Ÿ ‡€ƒ“‡Šˆ ‘ ‹…’›
@@ -439,7 +439,9 @@ VERS_CONF	DB "NONE                            "
 VERS_BOOT	DB "NONE                            "
 ;€‘…—€’Š€ ‚…Œ…ˆ ˆ „€’› ‘ŽŠˆ ERS
 	IF BUILD_DEBUG=1
-		DB 0X16,0X05,0X00,0X17,BLUE,"Build ERS:  ",TIME,"  "
+		DB 0X16,0X05,0X00,0X17,BLUE,"Build ERS:  "
+		TEXTTIME
+		DB "  "
 		TEXTDATE
 		DB "  "
 	ENDIF
