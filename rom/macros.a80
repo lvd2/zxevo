@@ -178,13 +178,14 @@ YYEAR := YYEAR - 2000
 	ENDIF
 
 ; генерация времени
+; "9:28:8"
 SIZETIME	EQU STRLEN (TIME)
 __POS := 0
 ; извлечение часа
 HHOUR := CHARFROMSTR (TIME, __POS) - '0'
 __POS := __POS + 1
 	IF MOMPASS > 1
-	IF (CHARFROMSTR (TIME, __POS) <> '/')
+	IF (CHARFROMSTR (TIME, __POS) <> ':')
 HHOUR := HHOUR * 10 + CHARFROMSTR (TIME, __POS) - '0'
 __POS := __POS + 2
 	ELSE
@@ -195,7 +196,7 @@ __POS := __POS + 1
 MMINUTE := CHARFROMSTR (TIME, __POS) - '0'
 __POS := __POS + 1
 	IF MOMPASS > 1
-	IF (CHARFROMSTR (TIME, __POS) <> '/')
+	IF (CHARFROMSTR (TIME, __POS) <> ':')
 MMINUTE := MMINUTE * 10 + CHARFROMSTR (TIME, __POS) - '0'
 __POS := __POS + 2
 	ELSE
