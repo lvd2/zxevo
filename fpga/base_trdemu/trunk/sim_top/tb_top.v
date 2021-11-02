@@ -939,7 +939,15 @@ module tb;
 
 
 
+	// generate nmi after 2s
+	initial
+	begin
+		#2000000000.0;
 
+		force DUT.set_nmi[0] = 1'b1;
+		#1000000.0;
+		release DUT.set_nmi[0];
+	end
 
 
 

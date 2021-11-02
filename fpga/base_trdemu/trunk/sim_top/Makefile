@@ -18,7 +18,7 @@ clean:
 	rm $(APPL) $(MODELLIB)
 
 $(MODELLIB) : $(SRCLIB) sndpix.h Makefile
-	gcc  -O2 -g -shared -Bsymbolic -fPIC -I$(PLI_INCLUDE) $(SRCLIB) -o $(MODELLIB)
+	gcc -O2 -g -shared -Bsymbolic -fPIC -I$(PLI_INCLUDE) $(SRCLIB) -o $(MODELLIB)
 
 $(APPL) : $(SRCAPP) Makefile
 	gcc -O2 -g  $(SRCAPP) -o $(APPL) -lSDL
