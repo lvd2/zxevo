@@ -4,3 +4,16 @@ pentevo/avr/baseconf/trunk as 'avr'
 pentevo/fpga/base_trdemu/trunk as 'fpga'
 
 
+
+Для wsl:
+Пересобрать mhmt и make_fw.
+
+
+
+Для Windows:
+скачать архив отсюда https://blog.zakkemble.net/avr-gcc-builds/
+и распаковать.
+В файле winbuild.bat исправить путь до 
+папки bin из выше скаченного архива.
+winbuild.bat не собирает исходники fpga, т.е. они должны быть
+предварительно собраны.
