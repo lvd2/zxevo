@@ -45,6 +45,16 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 TARGETS = zx interrupts main ps2 spi depacker_dirty rs232 rtc atx joystick version tape kbmap
 
 
+ifeq ($(OS),Windows_NT)
+	FAKESED = $(abspath ../../../../../tools/fakesed.bat)
+	MAKEFW = "../../../../../tools/make_fw/make_fw.exe"
+	AVRSIZEOPT =
+	CP = copy /Y
+else
+	MAKEFW = ../../../../../tools/make_fw/make_fw
+	AVRSIZEOPT = -C --mcu=${MCU}
+	CP = cp
+endif
 
 
 # Build dependencies
@@ -52,14 +62,20 @@ TARGETS = zx interrupts main ps2 spi depacker_dirty rs232 rtc atx joystick versi
 .PHONY: all
 
 all: $(PROJECT).elf $(PROJECT).hex $(PROJECT).eep $(PROJECT).lss $(RELEASE).bin   size
-	cp $(RELEASE).bin zxevo_fw.bin
+	$(CP) $(RELEASE).bin zxevo_fw.bin
 
 # must not be before .PHONY and all targets
 include $(TARGETS:%=%.d)
 
 # dependencies generation
+ifeq ($(OS),Windows_NT)
+%.d: ../src/%.c Makefile
+	$(FAKESED) "$(AVRCC) -MM $(CFLAGS) $<" $@
+else
 %.d: ../src/%.c Makefile
 	$(AVRCC) -MM $(CFLAGS) $< | sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' > $@
+endif
+
 
 # Compile
 %.o: ../src/%.c Makefile
@@ -84,13 +100,13 @@ $(FPGACORE).o: $(FPGACORE).mlz
 
 size: $(PROJECT).elf
 	@echo .
-	@$(AVRSIZE) -C --mcu=${MCU} $(PROJECT).elf
+	@$(AVRSIZE) $(AVRSIZEOPT) $(PROJECT).elf
 
 #zxevo_beta.bin: core.hex core.eep
 #	../../../tools/make_fw/make_fw core.hex core.eep zxevo_beta.bin version.txt
 
 $(RELEASE).bin: core.hex core.eep
-	../../../../../tools/make_fw/make_fw $(PROJECT).hex $(PROJECT).eep $(RELEASE).bin version.txt o
+	$(MAKEFW) $(PROJECT).hex $(PROJECT).eep $(RELEASE).bin version.txt o
 
 ## Clean target
 .PHONY: clean
