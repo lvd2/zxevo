@@ -90,6 +90,7 @@ module video_top(
 	input  wire        atm_palwr,
 	input  wire [ 5:0] atm_paldata,
 	input  wire [ 5:0] atm_paldatalow,
+	input  wire        pal444_ena,
 
 
 	input  wire        up_ena,
@@ -380,7 +381,8 @@ module video_top(
 		.atm_palwr  (atm_palwr  ),
 		.atm_paldata(atm_paldata),
 		.atm_paldatalow(atm_paldatalow), //GgRrBb
-		
+		.pal444_ena(pal444_ena),
+
 		.up_palsel(up_palsel),
 		.up_paper (up_paper ),
 		.up_ink   (up_ink   ),

@@ -130,6 +130,7 @@ module zports(
 	output wire        atm_palwr,   // palette write strobe
 	output wire [ 5:0] atm_paldata, // palette write data
 	output wire [ 5:0] atm_paldatalow, // palette write data low bits (ATM3)
+	output reg         pal444_ena, // ATM3 palette on
 
 	output wire        covox_wr,
 	output wire        beeper_wr,
@@ -461,7 +462,7 @@ module zports(
 		end
 
 		ZXEVBF: begin
-			dout = { 3'b000, brk_ena, set_nmi, fntw_en_reg, romrw_en_reg, shadow_en_reg };
+			dout = { 2'b00, pal444_ena, brk_ena, set_nmi, fntw_en_reg, romrw_en_reg, shadow_en_reg };
 		end
 
 		ZXEVBE,		// TODO: remove read capability from xxBE
@@ -858,6 +859,7 @@ module zports(
 		fntw_en_reg   <= 1'b0;
 		set_nmi       <= 1'b0;
 		brk_ena       <= 1'b0;
+		pal444_ena    <= 1'b0;
 	end
 	else if( zxevbf_wr_fclk )
 	begin
@@ -866,6 +868,7 @@ module zports(
 		fntw_en_reg   <= din[2];
 		set_nmi       <= din[3];
 		brk_ena       <= din[4];
+		pal444_ena    <= din[5];
 	end
 
 	assign romrw_en = romrw_en_reg;

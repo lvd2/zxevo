@@ -57,6 +57,7 @@ module video_palframe(
 	input  wire        atm_palwr,
 	input  wire [ 5:0] atm_paldata,
 	input  wire [ 5:0] atm_paldatalow,
+	input  wire        pal444_ena,
 
 
 	output wire [ 5:0] palcolor, // just for palette readback
@@ -99,14 +100,21 @@ module video_palframe(
 			reg [8:0] pal_addr;
 			pal_addr = atm_palwr ? { 5'd0, zxcolor } : { 3'b100, up_paladdr };
 
-			palette[pal_addr] <= atm_palwr ? {atm_paldata[3:2],/*1'b0*/atm_paldatalow[3:2],atm_paldata[5:4],/*1'b0*/atm_paldatalow[5:4],atm_paldata[1:0],/**/atm_paldatalow[1:0]} : up_paldata;
+			palette[pal_addr] <= atm_palwr ?
+			                     {atm_paldata[3:2],pal444_ena?atm_paldatalow[3:2]:atm_paldata[3:2],
+			                      atm_paldata[5:4],pal444_ena?atm_paldatalow[5:4]:atm_paldata[5:4],
+			                      atm_paldata[1:0],pal444_ena?atm_paldatalow[1:0]:atm_paldata[1:0]
+			                     }
+			                   : up_paldata;
 		end
 
 		palette_read <= palette[palette_color];
 	end
 
 
-	assign palcolor = {palette_read[7:6/*4:3*/],palette_read[11:10/*7:6*/], palette_read[3:2/*1:0*/]};
+	assign palcolor = pal444_ena?
+	                  {palette_read[5:4],palette_read[9:8], palette_read[1:0]}
+	                 :{palette_read[7:6/*4:3*/],palette_read[11:10/*7:6*/], palette_read[3:2/*1:0*/]};
 
 
 
@@ -140,6 +148,8 @@ module video_palframe(
 	wire [1:0] red;
 	wire [1:0] grn;
 	wire [1:0] blu;
+
+	wire bigpal_ena = up_ena | pal444_ena;
 
 	video_palframe_mk3bit red_color
 	(

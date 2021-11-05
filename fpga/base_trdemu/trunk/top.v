@@ -421,6 +421,7 @@ module top(
 	wire       atm_palwr;
 	wire [5:0] atm_paldata;
 	wire [5:0] atm_paldatalow;
+	wire pal444_ena;
 
 	wire [7:0] fontrom_readback;
 
@@ -748,6 +749,7 @@ module top(
 		.atm_palwr  (atm_palwr  ),
 		.atm_paldata(atm_paldata),
 		.atm_paldatalow(atm_paldatalow),
+		.pal444_ena(pal444_ena),
 		
 		.up_ena    (up_ena    ),
 		.up_paladdr(up_paladdr),
@@ -862,6 +864,7 @@ module top(
 		.atm_palwr  (atm_palwr  ),
 		.atm_paldata(atm_paldata),
 		.atm_paldatalow(atm_paldatalow),
+		.pal444_ena(pal444_ena),
 
 		.beeper_wr(beeper_wr),
 		.covox_wr (covox_wr ),
