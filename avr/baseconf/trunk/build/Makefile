@@ -46,7 +46,6 @@ TARGETS = zx interrupts main ps2 spi depacker_dirty rs232 rtc atx joystick versi
 
 
 ifeq ($(OS),Windows_NT)
-	FAKESED = $(abspath ../../../../../tools/fakesed.bat)
 	MAKEFW = "../../../../../tools/make_fw/make_fw.exe"
 	AVRSIZEOPT =
 	CP = copy /Y
@@ -68,14 +67,8 @@ all: $(PROJECT).elf $(PROJECT).hex $(PROJECT).eep $(PROJECT).lss $(RELEASE).bin 
 include $(TARGETS:%=%.d)
 
 # dependencies generation
-ifeq ($(OS),Windows_NT)
 %.d: ../src/%.c Makefile
-	$(FAKESED) "$(AVRCC) -MM $(CFLAGS) $<" $@
-else
-%.d: ../src/%.c Makefile
-	$(AVRCC) -MM $(CFLAGS) $< | sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' > $@
-endif
-
+	echo $@ $(subst \, ,$(shell $(AVRCC) -MM $(CFLAGS) $<)) > $@
 
 # Compile
 %.o: ../src/%.c Makefile
@@ -99,8 +92,7 @@ $(FPGACORE).o: $(FPGACORE).mlz
 	$(AVROBJDUMP) -h -S $< > $@
 
 size: $(PROJECT).elf
-	@echo .
-	@$(AVRSIZE) $(AVRSIZEOPT) $(PROJECT).elf
+	$(AVRSIZE) $(AVRSIZEOPT) $(PROJECT).elf
 
 #zxevo_beta.bin: core.hex core.eep
 #	../../../tools/make_fw/make_fw core.hex core.eep zxevo_beta.bin version.txt
