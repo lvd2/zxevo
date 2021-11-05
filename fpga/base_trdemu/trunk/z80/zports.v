@@ -129,6 +129,7 @@ module zports(
 
 	output wire        atm_palwr,   // palette write strobe
 	output wire [ 5:0] atm_paldata, // palette write data
+	output wire [ 5:0] atm_paldatalow, // palette write data low bits (ATM3)
 
 	output wire        covox_wr,
 	output wire        beeper_wr,
@@ -902,7 +903,8 @@ module zports(
 
 	assign atm_palwr = vg_wrFF_fclk & atm_pen2;
 
-	assign atm_paldata = { ~din[4], ~din[7], ~din[1], ~din[6], ~din[0], ~din[5] };
+	assign atm_paldata = { ~din[4], ~din[7], ~din[1], ~din[6], ~din[0], ~din[5] }; //GgRrBb
+	assign atm_paldatalow = { ~a[4+8], ~a[7+8], ~a[1+8], ~a[6+8], ~a[0+8], ~a[5+8] }; //GgRrBb
 
 
 

@@ -89,6 +89,7 @@ module video_top(
 	// atm palette write strobe adn data
 	input  wire        atm_palwr,
 	input  wire [ 5:0] atm_paldata,
+	input  wire [ 5:0] atm_paldatalow,
 
 
 	input  wire        up_ena,
@@ -378,6 +379,7 @@ module video_top(
 
 		.atm_palwr  (atm_palwr  ),
 		.atm_paldata(atm_paldata),
+		.atm_paldatalow(atm_paldatalow), //GgRrBb
 		
 		.up_palsel(up_palsel),
 		.up_paper (up_paper ),
