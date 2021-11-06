@@ -1,47 +1,29 @@
 
-; LAST UPDATE: 06.07.2021 savelij
+; LAST UPDATE: 06.11.2021 savelij
 
  SETVAR ERORDRV,		WORD	;EQU BUF_TEKVOL			;2 ВОЗВРАТ С ОШИБКОЙ В A
-; SETVAR CAL_FAT,		BYTE	;EQU ERORDRV+2			;1 КАЛИБР FAT
-; SETVAR MANYFAT,		BYTE	;EQU CAL_FAT+1			;1 КОЛИЧЕСТВО FAT-ТАБЛИЦ
-; SETVAR BYTSSEC,		BYTE	;EQU MANYFAT+1			;1 КОЛИЧЕСТВО СЕКТОРОВ В КЛАСТЕРЕ
-; SETVAR ROOTCLS,		DWORD	;EQU BYTSSEC+1			;4 СЕКТОР НАЧАЛА ROOT ДИРЕКТОРИИ
+ SETVAR FATType,		BYTE	; тип FAT: 0-12/1-16/2-32
+ SETVAR NumFATs,		BYTE	; количество FAT таблиц
+ SETVAR SecPerClus,		BYTE	; количество секторов в кластере
+ SETVAR RootDIRCluster,		DWORD	; номер кластера корневой DIR
+ SETVAR NumSecRootDir,		DWORD	; номер сектора корневой директории
  SETVAR ROOTZAP,		WORD	;EQU ROOTCLS+4			;2 КОЛ-ВО ЗАПИСЕЙ В ROOT ДИРЕКТОРИИ
-; SETVAR SEC_FAT,		DWORD	;EQU ROOTZAP+2			;4 КОЛИЧЕСТВО СЕКТОРОВ ОДНОЙ ФАТ
-; SETVAR RSVDSEC,		WORD	;EQU SEC_FAT+4			;2 РАЗМЕР РЕЗЕРВНОЙ ОБЛАСТИ
-; SETVAR STARTRZ,		DWORD	;EQU RSVDSEC+2			;4 НАЧАЛО ДИСКА/РАЗДЕЛА
-; SETVAR FRSTDAT,		DWORD	;EQU STARTRZ+4			;4 АДРЕС ПЕРВОГО СЕКТОРА ДАННЫХ ОТ BPB
-; SETVAR SEC_DSC,		DWORD	;EQU FRSTDAT+4			;4 КОЛИЧЕСТВО СЕКТОРОВ НА ДИСКЕ/РАЗДЕЛЕ
-; SETVAR CLS_DSC,		DWORD	;EQU SEC_DSC+4			;4 КОЛИЧЕСТВО КЛАСТЕРОВ НА ДИСКЕ/РАЗДЕЛЕ
-; SETVAR FATSTR,			DWORD	;EQU CLS_DSC+4			;4 НАЧАЛО ПЕРВОЙ FAT ТАБЛИЦЫ
-; SETVAR FILE_SZ,		DWORD	;EQU FATSTR+4			;4 РАЗМЕР ФАЙЛА В БАЙТАХ
-; SETVAR KOLWCLS,		DWORD	;EQU FILE_SZ+4			;4 КОЛИЧЕСТВО СВОБОДНЫХ КЛАСТЕРОВ
-; SETVAR LST0ZAP,		DWORD	;EQU KOLWCLS+4			;4 ПЕРВЫЙ СВОБОДНЫЙ КЛАСТЕР
-; SETVAR LSTLOAD,		DWORD	;EQU LST0ZAP+4			;4 НОМЕР СЕКТОРА ЗАГРУЖЕННОГО В БУФЕР
-; SETVAR TEK_DIR,		DWORD	;EQU LSTLOAD+4			;4 КЛАСТЕР ТЕКУЩЕЙ DIR
+ SETVAR FATSize,		DWORD	; размер FAT таблицы в секторах
+ SETVAR StartSecVol,		DWORD	; номер стартового сектора раздела
+ SETVAR FirstSecData,		DWORD	; номер сектора начала области данных
+ SETVAR NumsSectorsVol,		DWORD	; количество секторов на разделе
+ SETVAR NumsClustersVol,	DWORD	; количество кластеров на разделе
+ SETVAR NumSecFAT1,		DWORD	; номер сектора первой FAT таблицы
+ SETVAR NumSecFAT2,		DWORD	; номер сектора второй FAT таблицы
+ SETVAR NumSec2Buf,		DWORD	; номер сектора загруженного в буфер
+ SETVAR CurrentDIRCluster,	DWORD	; номер кластера текущей DIR
  SETVAR TEK_ZAP,		WORD	;EQU TEK_DIR+4			;2 ТЕКУЩАЯ ЗАПИСЬ В DIR
  SETVAR SAVEZAP,		WORD	;EQU TEK_ZAP+2			;2 СОХРАНЕННАЯ ТЕКУЩАЯ ПОЗИЦИЯ
  SETVAR TEK_LVL,		BYTE	;EQU SAVEZAP+2			;1 ТЕКУЩИЙ УРОВЕНЬ КАТАЛОГА
  SETVAR TEK_LEV,		BYTE	;EQU TEK_LVL+1			;1 ГЛУБИНА НАХОЖДЕНИЯ В ДИРЕКТОРИЯХ
-; SETVAR FREECLS,		8	;EQU TEK_LEV+1			;8 СОХРАНЕНЫЕ ПЕРЕМЕННЫЕ ДЛЯ ОТКАТА
  SETVAR KOLFIND,		WORD	;EQU FREECLS+8			;2 КОЛИЧЕСТВО НАЙДЕННЫХ ПО МАСКЕ ФАЙЛОВ
  SETVAR AFILCLS,		DWORD	;EQU KOLFIND+2			;4 НОМЕР ТЕКУЩЕГО КЛАСТЕРА
  
- SETVAR NumSec2Buf,		DWORD	; номер сектора загруженного в буфер
- SETVAR NumsSectorsVol,		DWORD	; количество секторов на разделе
- SETVAR NumsClustersVol,	DWORD	; количество кластеров на разделе
- SETVAR FATType,		BYTE	; тип FAT: 0-12/1-16/2-32
- SETVAR NumFATs,		BYTE	; количество FAT таблиц
- SETVAR SecPerClus,		BYTE	; количество секторов в кластере
- SETVAR FATSize,		DWORD	; размер FAT таблицы в секторах
- SETVAR StartSecVol,		DWORD	; номер стартового сектора раздела
- SETVAR NumSecFAT1,		DWORD	; номер сектора первой FAT таблицы
- SETVAR NumSecFAT2,		DWORD	; номер сектора второй FAT таблицы
- SETVAR NumSecRootDir,		DWORD	; номер сектора корневой директории
- SETVAR FirstSecData,		DWORD	; номер сектора начала области данных
- SETVAR CurrentDIRCluster,	DWORD	; номер кластера текущей DIR
- SETVAR RootDIRCluster,		DWORD	; номер кластера корневой DIR
-
  SETVAR NUM_FILE_SRC,		WORD	;EQU AFILCLS+4			;2 НОМЕР ОПИСАТЕЛЯ ФАЙЛА (ОТКУДА)
  SETVAR FILE_SRC,		0x20	;EQU NUM_FILE_SRC+2		;20 ОПИСАТЕЛЬ ОТКРЫТОГО ФАЙЛА (ОТКУДА)
 
