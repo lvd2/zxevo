@@ -990,8 +990,8 @@ IN_INI
 		LD (HL),A
 .L1
 ; временно, для анрыла
-		LD A,0xD3
-		LD (0x3FD7),A
+;		LD A,0xD3
+;		LD (0x3FD7),A
 ; временно, для анрыла
 		LD HL,0X2A53
 		LD (ADR_EXIT),HL

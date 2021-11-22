@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 27.02.2021 savelij
+; LAST UPDATE: 22.11.2021 savelij
 
 ;номера функций RST 8
  INIT_VAR 0X40
@@ -38,6 +38,9 @@ _TURBO_MAX	EQU %00110000			;TURBO 14,0 MHZ
 _MEM_MODE_48	EQU %01000000			;MEMORY MODE 48 KB
 _MEM_MODE_128	EQU %10000000			;MEMORY MODE 128 KB
 _MEM_MODE_PENT	EQU %11000000			;MEMORY MODE PENT 1024 KB
+
+; биты ошибок
+ BITMASK INCORRECTFPGA,		7		; прошивка FPGA zxevo_fw.bin не той системы
 
 ;функции деления, умножения, преобразования числа в текст
  INIT_VAR

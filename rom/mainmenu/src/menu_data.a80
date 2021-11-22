@@ -1,5 +1,5 @@
 
-;LAST UPDATE: 07.10.2021 savelij
+; LAST UPDATE: 22.11.2021 savelij
 
 ;‘€’…‹ € (€„…‘ ‚ IX)
 ;+00 X „€’€
@@ -479,6 +479,9 @@ TYPESFONT	DB 0X16,0X0D,0X00,0X17,MAGENTA,"J.Type FONT:    ",0X17,0XFF,"  ATM",0
 ETYPESFONT	EQU $-6
 TXT_AUTOMOUNT	DB 0X16,0X0E,0X00,0X17,MAGENTA,"N.Automount TRD:  ",0X17,0XFF,"off",0
 ETXT_AUTOMOUNT	EQU $-3
+
+;[β¥ªαβ ­¥ α®®βΆ¥βαβΆ¨ο ―ΰ®θ¨ª¨ FPGA]
+INCORRECTFPGA	DB 0x16,0x16,0x00,0x17,RED << 3 + WHITE," Incorrect FPGA zxevo_fw.bin ",0
 
 ;[‘‘ ‹€‚ ‚……›• ‚‘…ƒ„€]
 MAIN_KEYS	DB LOW (EMAIN_KEYS-$-1),"qaop ",0X07,0X08,0X09,0X0A,0X0B,0X0D

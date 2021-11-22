@@ -1,5 +1,5 @@
 
-; LAST UPDATE: 06.07.2021 savelij
+; LAST UPDATE: 22.11.2021 savelij
 
 PAGE	
 	TITLE "rst8service.a80 ROM_RST83"
@@ -214,6 +214,22 @@ VERSION_	LD HL,VERSBIN >> 16
 		LD (RREG_C),HL
 		LD HL,VERSBIN & 0XFFFF
 		LD (RREG_E),HL
+	IFDEF DOS_FE
+		LD L,1				; требует прошивки zxevo_fw.bin из standalone_base_trdemu
+	ELSE
+		LD L,0				; прошивка не критична
+	ENDIF
+		LD BC,FDD_EMU_PORT
+		IN H,(C)			; сохраняем текущее значение порта
+		LD E,%00001010
+		OUT (C),E			; записали число
+		IN A,(C)			; прочитали обратно
+		CP E
+		JR Z,.L1
+		SET B_INCORRECTFPGA,L		; при не совпадении зашито zxevo_fw.bin не той системы
+.L1		LD A,L
+		LD (RREG_A),A			; выставили в A что получилось
+		OUT (C),H			; восстановили текщее значение порта
 		RET
 
 SETUP_FONT_	ROMCALL SETUP_FONT,ROM_RST81
