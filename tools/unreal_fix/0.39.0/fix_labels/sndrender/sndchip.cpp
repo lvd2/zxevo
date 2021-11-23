@@ -196,6 +196,7 @@ void SNDCHIP::write(unsigned timestamp, unsigned char val)
          fc = r.fC;
          break;
       case 6:
+         if (val==0) val++; //fixed noise 0/ 2021.11.24 /Dexus
          fn = val*2;
          break;
       case 7:

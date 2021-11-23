@@ -332,9 +332,9 @@ char K_INPUT::readdevices()
       if (conf.input.mousewheel == MOUSE_WHEEL_KEMPSTON)
       {
          if (wheel_delta < 0)
-             wheel -= 0x10;
+             wheel += 0x10; //24.11.2021 Alone
          if (wheel_delta > 0)
-             wheel += 0x10;
+             wheel -= 0x10; //24.11.2021 Alone
          mbuttons = (mbuttons & 0x0F) + (wheel & 0xF0);
       }
 //~
