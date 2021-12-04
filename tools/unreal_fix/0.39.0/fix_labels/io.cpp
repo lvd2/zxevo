@@ -284,7 +284,7 @@ void out(unsigned port, unsigned char val)
          }
 
          if ((p1 & 0x9F) == 0x9F && !(comp.aFF77 & 0x4000))
-             atm_writepal(val); // don't return - write to TR-DOS system port
+             atm_writepal(port, val); // don't return - write to TR-DOS system port
       }
 
       if(conf.mem_model == MM_PROFI)
@@ -579,7 +579,7 @@ set1FFD:
 
          if (conf.mem_model == MM_ATM450 && (port & 0x8202) == (0x7DFD & 0x8202))
          {
-             atm_writepal(val);
+             atm_writepal(port, val);
              return;
          }
 

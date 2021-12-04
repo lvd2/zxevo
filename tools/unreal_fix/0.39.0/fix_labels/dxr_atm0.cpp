@@ -98,14 +98,14 @@ static void line_atm0_32d(unsigned char *dst, unsigned char *src, unsigned *tab,
     for (unsigned x = 0; x < 640; x += 16, ++src_offset)
     {
         src_offset &= 0x1FFF;
-        d[x+0]  = d[x+1]  = tab[0+2*src[ega0_ofs + src_offset]];
-        d[x+2]  = d[x+3]  = tab[1+2*src[ega0_ofs + src_offset]];
+        d[x+0]  = d[x+1]  = tab[0+2*src[ega0_ofs + src_offset]]; //"ink" pixel
+        d[x+2]  = d[x+3]  = tab[1+2*src[ega0_ofs + src_offset]]; //"paper" pixel
         d[x+4]  = d[x+5]  = tab[0+2*src[ega1_ofs + src_offset]];
         d[x+6]  = d[x+7]  = tab[1+2*src[ega1_ofs + src_offset]];
         d[x+8]  = d[x+9]  = tab[0+2*src[ega2_ofs + src_offset]];
         d[x+10] = d[x+11] = tab[1+2*src[ega2_ofs + src_offset]];
         d[x+12] = d[x+13] = tab[0+2*src[ega3_ofs + src_offset]];
-        d[x+14] = d[x+15] = tab[1+2*src[ega3_ofs + src_offset]];
+        d[x+14] = d[x+15] = tab[1+2*src[ega3_ofs + src_offset]]; //00RRGGBB
     }
 }
 

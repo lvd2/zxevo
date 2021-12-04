@@ -638,6 +638,46 @@ void pixel_tables()
     {
         hires_sc_tables();
     }
+    
+if ((conf.mem_model == MM_ATM3) && ((comp.pBF&0x20) != 0)) { //added by Alone Coder 04.12.2021 (no ULAplus!!! no default palette!!! ATM3 only!!!):
+   PALETTE_OPTIONS *pl = &pals[conf.pal];
+   //colorindex = comp.border_attr;
+ for (u8 colorindex = 0; colorindex < 16; colorindex++) {
+   unsigned r0, g0, b0;
+   u16 atm3color = comp.atm3_pal[colorindex];
+   r0 = (((atm3color>>1)<<3)&8) + (((atm3color>>6)<<2)&4) + (((atm3color>>9)<<1)&2) + ((atm3color>>14)&1);
+   g0 = (((atm3color>>4)<<3)&8) + (((atm3color>>7)<<2)&4) +(((atm3color>>12)<<1)&2) + ((atm3color>>15)&1);
+   b0 = (((atm3color>>0)<<3)&8) + (((atm3color>>5)<<2)&4) + (((atm3color>>8)<<1)&2) + ((atm3color>>13)&1);
+   r0 = (r0^15) * 17; //0..255
+   g0 = (g0^15) * 17; //0..255
+   b0 = (b0^15) * 17; //0..255
+   unsigned r = 0xFF & ((r0 * pl->r11 + g0 * pl->r12 + b0 * pl->r13) / 0x100); //pl->r11 etc. = 0..0x100
+   unsigned g = 0xFF & ((r0 * pl->r21 + g0 * pl->r22 + b0 * pl->r23) / 0x100);
+   unsigned b = 0xFF & ((r0 * pl->r31 + g0 * pl->r32 + b0 * pl->r33) / 0x100);
+        // prepare palette in bitmap header for GDI renderer
+/*   gdibmp.header.bmiColors[colorindex].rgbRed = pal0[colorindex].peRed = BYTE(r);
+   gdibmp.header.bmiColors[colorindex].rgbGreen = pal0[colorindex].peGreen = BYTE(g);
+   gdibmp.header.bmiColors[colorindex].rgbBlue = pal0[colorindex].peBlue = BYTE(b);
+   setpal(0);*/
+   u32 rgb = (r<<16) + (g<<8) + b;
+//pixels in EGA are shown in order "ink","paper" (%PIpppiii) with this code (src[] is ZX Spectrum memory):
+//        d[x+0]  = d[x+1]  = tab[0+2*src[ega0_ofs + src_offset]]; //"ink" pixel
+//        d[x+2]  = d[x+3]  = tab[1+2*src[ega0_ofs + src_offset]]; //"paper" pixel
+   //unsigned *tab = t.p4bpp32[0] (even lines) or [1] (odd lines);
+   u8 inkindex = (colorindex&7) + ((colorindex&8)<<3);
+   for (u8 paper = 0; paper < 16; paper++) {
+        u8 paperindex = ((paper&7)<<3) + ((paper&8)<<4);
+        t.p4bpp32[0][0+2*(inkindex+paperindex)] = rgb; //"ink" pixel (even lines)
+        t.p4bpp32[1][0+2*(inkindex+paperindex)] = rgb; //"ink" pixel (odd lines)
+   }
+   u8 paperindex = ((colorindex&7)<<3) + ((colorindex&8)<<4);
+   for (u8 ink = 0; ink < 16; ink++) {
+        u8 inkindex = (ink&7) + ((ink&8)<<3);
+        t.p4bpp32[0][1+2*(inkindex+paperindex)] = rgb; //"paper" pixel (even lines)
+        t.p4bpp32[1][1+2*(inkindex+paperindex)] = rgb; //"paper" pixel (odd lines)
+   }
+ }
+}
 }
 
 void video_color_tables()

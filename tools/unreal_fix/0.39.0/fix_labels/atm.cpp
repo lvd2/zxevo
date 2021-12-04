@@ -5,6 +5,7 @@
 #include "memory.h"
 #include "draw.h"
 #include "atm.h"
+#include "funcs.h"
 
 static void atm_memswap()
 {
@@ -292,8 +293,9 @@ void set_atm_aFE(unsigned char addr)
 }
 
 static u8 atm_pal[0x10] = { 0 };
+//static u16 atm3_pal[0x10] = { 0 };
 
-void atm_writepal(unsigned char val)
+void atm_writepal(unsigned port, unsigned char val)
 {
    assert(comp.border_attr < 0x10);
    atm_pal[comp.border_attr] = val;
@@ -304,7 +306,12 @@ void atm_writepal(unsigned char val)
    comp.comp_pal[PalIdx + 1*8] =
    comp.comp_pal[PalIdx + 3*8] =
    comp.comp_pal[PalIdx + 5*8] = u8(t.atm_pal_map[val]);
-   temp.comp_pal_changed = 1;
+   temp.comp_pal_changed = 1; //to call pixel_tables()
+
+//added by Alone Coder 04.12.2021:
+   comp.atm3_pal[comp.border_attr] = (val&0xff) + (port&0xff00); //%grbG11RB(low), %grbG11RB(high), inverted
+        // transform with current settings
+        
 }
 
 u8 atm_readpal()

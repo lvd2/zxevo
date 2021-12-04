@@ -492,6 +492,7 @@ struct COMPUTER
       SNDRENDER sound;
    } tape;
    unsigned char comp_pal[0x40]; // Формат палитры GggRrrBb (формат ULA+)
+   u16 atm3_pal[0x40]; // Формат палитры %grbG11RB(low in HSB), %grbG11RB(high in LSB), inverted
    unsigned char ide_hi_byte_r, ide_hi_byte_w, ide_hi_byte_w1, ide_read, ide_write; // high byte in IDE i/o
    unsigned char profrom_bank;
    
