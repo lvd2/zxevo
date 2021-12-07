@@ -1,13 +1,15 @@
 #!/bin/bash
 
-cd ../../mainmenu/src
+if [ ! -v ASL_PATH ]; then
+	ASL_PATH="../../../tools/asl/bin/"
+fi
 
-./build.sh
+if [ ! -v MHMT_PATH ]; then
+	MHMT_PATH="../../../tools/mhmt/"
+fi
 
-cd ../../page0/source
+$ASL_PATH/asl -U -L -x -olist services.lst services.a80
+$ASL_PATH/p2bin services.p ../services.rom -r '$-$' -k
 
-../../../tools/asl/bin/asl -U -L -x -olist services.lst services.a80
-../../../tools/asl/bin/p2bin services.p ../services.rom -r '$-$' -k
-
-../../../tools/asl/bin/asl -U -L -x -olist services_fe.lst -D DOS_FE services.a80
-../../../tools/asl/bin/p2bin services.p ../services_fe.rom -r '$-$' -k
+$ASL_PATH/asl -U -L -x -olist services_fe.lst -D DOS_FE services.a80
+$ASL_PATH/p2bin services.p ../services_fe.rom -r '$-$' -k

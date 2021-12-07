@@ -1,15 +1,24 @@
 #!/bin/bash
 
-../../../tools/asl/bin/asl -U -L -x -olist main.lst main.a80
-../../../tools/asl/bin/p2bin main.p main.rom -r '$-$' -k
+if [ ! -v ASL_PATH ]; then
+	ASL_PATH="../../../tools/asl/bin/"
+fi
 
-../../../tools/asl/bin/asl -U -L -x -olist main_fe.lst -D DOS_FE main.a80
-../../../tools/asl/bin/p2bin main.p main_fe.rom -r '$-$' -k
+if [ ! -v MHMT_PATH ]; then
+	MHMT_PATH="../../../tools/mhmt/"
+fi
 
-../../../tools/asl/bin/asl -U -L cmosset.a80
-../../../tools/asl/bin/p2bin cmosset.p cmosset.rom -r '$-$' -k
+$ASL_PATH/asl -U -L -x -olist main.lst main.a80
+$ASL_PATH/p2bin main.p main.rom -r '$-$' -k
 
-../../../tools/mhmt/mhmt -mlz main.rom ../main_pack.rom
-../../../tools/mhmt/mhmt -mlz main_fe.rom ../main_fe_pack.rom
-../../../tools/mhmt/mhmt -mlz cmosset.rom ../cmosset_pack.rom
-../../../tools/mhmt/mhmt -mlz chars_eng.bin ../chars_pack.rom
+$ASL_PATH/asl -U -L -x -olist main_fe.lst -D DOS_FE main.a80
+$ASL_PATH/p2bin main.p main_fe.rom -r '$-$' -k
+
+$ASL_PATH/asl -U -L cmosset.a80
+$ASL_PATH/p2bin cmosset.p cmosset.rom -r '$-$' -k
+
+$MHMT_PATH/mhmt -mlz main.rom ../main_pack.rom
+$MHMT_PATH/mhmt -mlz main_fe.rom ../main_fe_pack.rom
+$MHMT_PATH/mhmt -mlz cmosset.rom ../cmosset_pack.rom
+$MHMT_PATH/mhmt -mlz chars_eng.bin ../chars_pack.rom
+

@@ -1,50 +1,66 @@
 #!/bin/bash
 
+set -x
+
+# cd to the dir where the script is situated
+cd ${0%/*}
+
+
 # BUILD FAT BOOT
-cd fat_boot/source
+pushd fat_boot/source
 ./build.sh
+popd
 
 # BUILD MAIN MENU
-cd ../../mainmenu/src
+pushd mainmenu/src
 ./build.sh
+popd
 
 # BUILD DOS_FE
-cd ../../page1/dos_fe
+pushd page1/dos_fe
 ./build.sh
+popd
 
 # BUILD TR-DOS 5.03
-cd ../../page1/trdos503
+pushd page1/trdos503
 ./build.sh
+popd
 
 # BUILD START PAGE
-cd ../../page0/source
+pushd page0/source
 ./build.sh
+popd
 
 # BUILD EVO-DOS
-cd ../../page1/evo-dos
+pushd page1/evo-dos
 ./build.sh
+popd
 
 # BUILD BASIC 128
-cd ../../page2/source
+pushd page2/source
 ./build.sh
+popd
 
 # BUILD BASIC 48
-cd ../../page3/source
+pushd page3/source
 ./build.sh
+popd
 
 # BUILD ATM CP/M
-cd ../../atm_cpm/source
+pushd atm_cpm/source
 ./build.sh
+popd
 
 # BUILD RST 8 SERVICES
-cd ../../page5/source
+pushd page5/source
 ./build.sh
+popd
 
 # BUILD TR-DOS 6.10 
-cd ../../trdos_v6/source
+pushd trdos_v6/source
 ./build.sh
+popd
 
-cd ../..
 
 # BUILD ERS 
 cat page3/basic48_128.rom page1/evo-dos_virt.rom page5/rst8service.rom    ff_16k.rom page3/basic48_128.rom page1/evo-dos_emu3d13.rom page2/basic128.rom page0/services.rom    > ers.rom
@@ -68,4 +84,4 @@ rm ers_fe.rom
 rm glukpent.rom
 rm basics_std.rom
 
-read -rsn1 -p "Press any key to continue . . .";
+#read -rsn1 -p "Press any key to continue . . .";
