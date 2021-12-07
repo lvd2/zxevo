@@ -8,57 +8,57 @@ cd ${0%/*}
 
 # BUILD FAT BOOT
 pushd fat_boot/source
-./build.sh
+source build.sh
 popd
 
 # BUILD MAIN MENU
 pushd mainmenu/src
-./build.sh
+source build.sh
 popd
 
 # BUILD DOS_FE
 pushd page1/dos_fe
-./build.sh
+source build.sh
 popd
 
 # BUILD TR-DOS 5.03
 pushd page1/trdos503
-./build.sh
+source build.sh
 popd
 
 # BUILD START PAGE
 pushd page0/source
-./build.sh
+source build.sh
 popd
 
 # BUILD EVO-DOS
 pushd page1/evo-dos
-./build.sh
+source build.sh
 popd
 
 # BUILD BASIC 128
 pushd page2/source
-./build.sh
+source build.sh
 popd
 
 # BUILD BASIC 48
 pushd page3/source
-./build.sh
+source build.sh
 popd
 
 # BUILD ATM CP/M
 pushd atm_cpm/source
-./build.sh
+source build.sh
 popd
 
 # BUILD RST 8 SERVICES
 pushd page5/source
-./build.sh
+source build.sh
 popd
 
 # BUILD TR-DOS 6.10 
 pushd trdos_v6/source
-./build.sh
+source build.sh
 popd
 
 
