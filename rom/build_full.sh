@@ -2,8 +2,32 @@
 
 set -x
 
+
+#if ASL and MHMT paths are already set, convert them to absolute right now
+if [ -v ASL_PATH ]; then
+	ASL_PATH="$(cd $ASL_PATH; pwd)"
+fi
+
+if [ -v MHMT_PATH ]; then
+	MHMT_PATH="$(cd $MHMT_PATH; pwd)"
+fi
+
+
 # cd to the dir where the script is situated
 cd ${0%/*}
+
+
+# set ASL and MHMT paths if not already set, also converting them to absolute
+if [ ! -v ASL_PATH ]; then
+	ASL_PATH="../tools/asl/bin/"
+	ASL_PATH="$(cd $ASL_PATH; pwd)"
+fi
+
+if [ ! -v MHMT_PATH ]; then
+	MHMT_PATH="../tools/mhmt/"
+	MHMT_PATH="$(cd $MHMT_PATH; pwd)"
+fi
+
 
 
 # BUILD FAT BOOT
