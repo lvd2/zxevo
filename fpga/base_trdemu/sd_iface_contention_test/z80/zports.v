@@ -321,6 +321,8 @@ module zports(
 
 
 
+	reg [7:0] sd_rd_buffer;
+
 
 
 
@@ -447,7 +449,7 @@ module zports(
 		SDCFG:
 			dout = 8'h00; // always SD inserted, SD is in R/W mode
 		SDDAT:
-			dout = sd_dataout;
+			dout = sd_rd_buffer;
 
 
 		PORTF7: begin
@@ -827,6 +829,12 @@ module zports(
 
 	// data for SPI module
 	assign sd_datain = sddat_rd ? 8'hFF : din;
+
+
+	// latch SD read data to fix bug with reading SD card in 48k and 128k contention modes
+	always @(posedge fclk)
+	if( sd_start )
+		sd_rd_buffer <= sd_dataout;
 
 
 
