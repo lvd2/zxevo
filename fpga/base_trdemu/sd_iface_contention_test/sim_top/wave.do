@@ -1,33 +1,33 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate -expand -group main_old /tb/DUT/zclock/zpos
-add wave -noupdate -expand -group main_old /tb/DUT/zclock/zneg
-add wave -noupdate -expand -group main_old /tb/z80/BUSRQ_n
-add wave -noupdate -expand -group main_old /tb/z80/BUSAK_n
-add wave -noupdate -expand -group main_old /tb/DUT/z80mem/r_mreq_n
-add wave -noupdate -expand -group main_old /tb/DUT/external_port
-add wave -noupdate -expand -group main_old -color Blue /tb/clkz_in
-add wave -noupdate -expand -group main_old -color Cyan /tb/m1_n
-add wave -noupdate -expand -group main_old /tb/rfsh_n
-add wave -noupdate -expand -group main_old -color Yellow /tb/mreq_n
-add wave -noupdate -expand -group main_old -color {Green Yellow} /tb/rd_n
-add wave -noupdate -expand -group main_old -color Red /tb/wr_n
-add wave -noupdate -expand -group main_old -color White -radix hexadecimal /tb/za
-add wave -noupdate -expand -group main_old -color Yellow -radix hexadecimal /tb/zd
-add wave -noupdate -expand -group main_old -color Salmon /tb/iorq_n
-add wave -noupdate -expand -group main_old -color Salmon /tb/rd_n
-add wave -noupdate -expand -group main_old -color Salmon /tb/wr_n
-add wave -noupdate -expand -group main_old -color White -radix hexadecimal /tb/za
-add wave -noupdate -expand -group main_old -color Salmon -radix hexadecimal /tb/zd
-add wave -noupdate -expand -group main_old -radix hexadecimal /tb/zd_dut_to_z80
-add wave -noupdate -expand -group main_old -color Magenta /tb/z80/u0/IntE
-add wave -noupdate -expand -group main_old -radix hexadecimal /tb/z80/u0/IR
-add wave -noupdate -expand -group main_old /tb/int_n
-add wave -noupdate -expand -group main_old /tb/nmi_n
-add wave -noupdate -expand -group main_old /tb/wait_n
-add wave -noupdate -expand -group main_old /tb/csrom
-add wave -noupdate -expand -group main_old /tb/romoe_n
-add wave -noupdate -expand -group main_old /tb/romwe_n
+add wave -noupdate -group main_old /tb/DUT/zclock/zpos
+add wave -noupdate -group main_old /tb/DUT/zclock/zneg
+add wave -noupdate -group main_old /tb/z80/BUSRQ_n
+add wave -noupdate -group main_old /tb/z80/BUSAK_n
+add wave -noupdate -group main_old /tb/DUT/z80mem/r_mreq_n
+add wave -noupdate -group main_old /tb/DUT/external_port
+add wave -noupdate -group main_old -color Blue /tb/clkz_in
+add wave -noupdate -group main_old -color Cyan /tb/m1_n
+add wave -noupdate -group main_old /tb/rfsh_n
+add wave -noupdate -group main_old -color Yellow /tb/mreq_n
+add wave -noupdate -group main_old -color {Green Yellow} /tb/rd_n
+add wave -noupdate -group main_old -color Red /tb/wr_n
+add wave -noupdate -group main_old -color White -radix hexadecimal /tb/za
+add wave -noupdate -group main_old -color Yellow -radix hexadecimal /tb/zd
+add wave -noupdate -group main_old -color Salmon /tb/iorq_n
+add wave -noupdate -group main_old -color Salmon /tb/rd_n
+add wave -noupdate -group main_old -color Salmon /tb/wr_n
+add wave -noupdate -group main_old -color White -radix hexadecimal /tb/za
+add wave -noupdate -group main_old -color Salmon -radix hexadecimal /tb/zd
+add wave -noupdate -group main_old -radix hexadecimal /tb/zd_dut_to_z80
+add wave -noupdate -group main_old -color Magenta /tb/z80/u0/IntE
+add wave -noupdate -group main_old -radix hexadecimal /tb/z80/u0/IR
+add wave -noupdate -group main_old /tb/int_n
+add wave -noupdate -group main_old /tb/nmi_n
+add wave -noupdate -group main_old /tb/wait_n
+add wave -noupdate -group main_old /tb/csrom
+add wave -noupdate -group main_old /tb/romoe_n
+add wave -noupdate -group main_old /tb/romwe_n
 add wave -noupdate -group dut_old /tb/DUT/res
 add wave -noupdate -group dut_old /tb/DUT/fclk
 add wave -noupdate -group dut_old /tb/DUT/clkz_out
@@ -624,9 +624,6 @@ add wave -noupdate -group zmem /tb/DUT/z80mem/win
 add wave -noupdate -group zmem /tb/DUT/z80mem/page
 add wave -noupdate -group zmem /tb/DUT/z80mem/romnram
 add wave -noupdate -group zmem /tb/DUT/z80mem/wrdisable
-add wave -noupdate -group zmem /tb/DUT/z80mem/rd_buf
-add wave -noupdate -group zmem /tb/DUT/z80mem/cached_addr
-add wave -noupdate -group zmem /tb/DUT/z80mem/cached_addr_valid
 add wave -noupdate -group zmem /tb/DUT/z80mem/cache_hit
 add wave -noupdate -group zmem /tb/DUT/z80mem/dram_beg
 add wave -noupdate -group zmem /tb/DUT/z80mem/opfetch
@@ -984,8 +981,24 @@ add wave -noupdate -group tb /tb/is_iord
 add wave -noupdate -group tb /tb/is_iowr
 add wave -noupdate -group tb /tb/is_iack
 add wave -noupdate -group tb /tb/is_any
+add wave -noupdate -group sd /tb/DUT/sdcs_n
+add wave -noupdate -group sd /tb/DUT/sddo
+add wave -noupdate -group sd /tb/DUT/sdclk
+add wave -noupdate -group sd /tb/DUT/sddi
+add wave -noupdate -group sdgovno /tb/sdgovnoemu/cs_n
+add wave -noupdate -group sdgovno /tb/sdgovnoemu/clk
+add wave -noupdate -group sdgovno /tb/sdgovnoemu/doo
+add wave -noupdate -group sdgovno /tb/sdgovnoemu/di
+add wave -noupdate -group sdgovno -radix hexadecimal /tb/sdgovnoemu/counter
+add wave -noupdate -group sdgovno -radix hexadecimal /tb/sdgovnoemu/bitphase
+add wave -noupdate -group sdgovno -radix hexadecimal /tb/sdgovnoemu/shout
+add wave -noupdate /tb/paper
+add wave -noupdate /tb/mreq_n
+add wave -noupdate /tb/wr_n
+add wave -noupdate /tb/hsync
+add wave -noupdate /tb/vsync
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {3150600 ps} 0} {{Cursor 2} {5845051365500 ps} 0} {{Cursor 3} {3049669304700 ps} 0}
+WaveRestoreCursors {{Cursor 1} {998699845 ps} 0} {{Cursor 2} {363980252 ps} 0} {{Cursor 3} {3049669304700 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 487
 configure wave -valuecolwidth 149
@@ -1001,4 +1014,4 @@ configure wave -griddelta 8
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {765872811795 ps}
+WaveRestoreZoom {0 ps} {2721144832 ps}

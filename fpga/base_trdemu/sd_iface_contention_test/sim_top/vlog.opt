@@ -44,4 +44,4 @@ pixer.v
 
 spitest_print.v
 spitest_avr.v
-
+sdgovnoemu.v

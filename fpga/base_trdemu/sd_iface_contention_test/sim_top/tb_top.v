@@ -568,7 +568,7 @@ module tb;
 
 
 
-
+/*
 `ifdef SPITEST
 	// spitest printing module
 	// does not hurt at any time (yet), so attached forever
@@ -595,6 +595,17 @@ module tb;
 	assign spick   = 1'b0;
 	assign spido   = 1'b1;
 `endif
+*/
+
+	sdgovnoemu sdgovnoemu
+	(
+		.cs_n(sdcs_n),
+		.clk(sdclk),
+		.doo(sddo),
+		.di(sddi)
+	);
+
+
 
 
 
@@ -616,7 +627,6 @@ module tb;
 	end
 */
 
-	// log INI command
 	wire [15:0] #(0.1) dza;
 	wire [ 7:0] #(0.1) dzw;
 	wire [ 7:0] #(0.1) dzr;
@@ -684,19 +694,25 @@ module tb;
 	end
 
 
-	// actual break
 	always @(negedge is_any)
 	begin
-		if( cycles[3]==FETCH && addrs[3][15:0 ]==16'h3FEC && rdata[3]==8'hED &&
-		    cycles[2]==FETCH &&                              rdata[2]==8'hA2 &&
-		    cycles[1]==IORD  &&
-		    cycles[0]==MWR   && addrs[0][15:14]== 2'd0
-		)
+		if( curr_cycle==MWR )
 		begin
-			$display("trd INI caught! port=%04x, wraddr=%04x, time=%t",addrs[1],addrs[0],$time());
+			$display("MEM WRITE: wraddr=%04x, wrdata=%02x, time=%t",dza,dzw,$time());
 		end
 	end
 
+
+	wire paper = tb.DUT.video_top.hpix & tb.DUT.video_top.vpix;
+
+	always @(paper)
+	begin
+		if( paper )
+			$display("paper ON!, time=%t",$time());
+		else
+			$display("paper Off, time=%t",$time());
+
+	end
 
 
 
@@ -715,17 +731,6 @@ module tb;
 
 
 
-
-
-	// generate nmi after 2s
-	initial
-	begin
-		#2000000000.0;
-
-		force DUT.set_nmi[0] = 1'b1;
-		#1000000.0;
-		release DUT.set_nmi[0];
-	end
 
 
 
