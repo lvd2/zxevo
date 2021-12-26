@@ -57,7 +57,9 @@ module video_palframe(
 	input  wire        atm_palwr,
 	input  wire [ 5:0] atm_paldata,
 	input  wire [ 5:0] atm_paldatalow,
+
 	input  wire        pal444_ena,
+
 
 
 	output wire [ 5:0] palcolor, // just for palette readback
@@ -77,6 +79,7 @@ module video_palframe(
 	reg ctr_h;
 	//reg ctr_v;
 	reg [1:0] phase; //frame number
+
 
 
 	always @(posedge clk)
@@ -101,10 +104,15 @@ module video_palframe(
 			pal_addr = atm_palwr ? { 5'd0, zxcolor } : { 3'b100, up_paladdr };
 
 			palette[pal_addr] <= atm_palwr ?
+
 			                     {atm_paldata[3:2],pal444_ena?atm_paldatalow[3:2]:atm_paldata[3:2],
+
 			                      atm_paldata[5:4],pal444_ena?atm_paldatalow[5:4]:atm_paldata[5:4],
+
 			                      atm_paldata[1:0],pal444_ena?atm_paldatalow[1:0]:atm_paldata[1:0]
+
 			                     }
+
 			                   : up_paldata;
 		end
 
@@ -113,7 +121,9 @@ module video_palframe(
 
 
 	assign palcolor = pal444_ena?
+
 	                  {palette_read[5:4],palette_read[9:8], palette_read[1:0]}
+
 	                 :{palette_read[7:6/*4:3*/],palette_read[11:10/*7:6*/], palette_read[3:2/*1:0*/]};
 
 
@@ -137,11 +147,16 @@ module video_palframe(
 	//always @(posedge clk) if( vsync_start )
 	//	ctr_v <= ~ctr_v;
 	//
+
 	initial phase = 2'b00;
+
 	always @(posedge clk) if( vsync_start )
+
 		phase <= phase+2'b01;
 
+
 	//wire plus1 = ctr_14[1] ^ ctr_h ^ ctr_v;
+
 
 
 
@@ -149,14 +164,20 @@ module video_palframe(
 	wire [1:0] grn;
 	wire [1:0] blu;
 
+
 	wire bigpal_ena = up_ena | pal444_ena;
+
 
 	video_palframe_mk3bit red_color
 	(
 		//.plus1    (plus1            ),
+
 		.phase    (phase),
+
 		.x        (ctr_14[2:1]      ),
+
 		.y        (ctr_h            ),
+
 		.color_in (palette_read[11:8/*7:5*/]),
 		.color_out(red              )
 	);
@@ -165,22 +186,35 @@ module video_palframe(
 	(
 		//.plus1    (plus1            ),
 		.phase    (phase),
+
 		.x        (ctr_14[2:1]      ),
+
 		.y        (ctr_h            ),
+
 		.color_in (palette_read[7:4/*4:2*/]),
 		.color_out(grn              )
 	);
 	//
 	video_palframe_mk3bit blu_color
+
 	(
+
 		//.plus1    (plus1            ),
+
 		.phase    (phase),
+
 		.x        (ctr_14[2:1]      ),
+
 		.y        (ctr_h            ),
+
 		.color_in (palette_read[3:0/*4:2*/]),
+
 		.color_out(blu              )
+
 	);
+
 	//
+
 	//assign blu = palette_read[1:0];
 
 	assign color = (hblank | vblank) ? 6'd0 : {grn,red,blu};
@@ -189,25 +223,36 @@ module video_palframe(
 endmodule
 
 
+
 module video_palframe_mk3bit
 (
 	//input  wire       plus1,
 	input  wire [1:0] phase,
+
 	input  wire [1:0] x,
+
 	input  wire       y,
+
 
 	input  wire [3:0/*2:0*/] color_in,
 	output reg  [1:0] color_out
 );
-wire [3:0] colorlevel;
-wire [1:0] gridlevel;
-wire       gridy;
-wire [1:0] gridindex;
+
+	reg [3:0] colorlevel;
+	reg [1:0] gridlevel;
+
+	reg       gridy;
+
+	reg [1:0] gridindex;
+
 
 	always @*
+
 	begin
 
+
 //colorlevel_table[3:0] = {0,1,2,2,3, 4,5,6,6,7, 8,9,10,10,11, 12};
+
 	  case( color_in )
 /*		3'b000:  color_out <= 2'b00;
 		3'b001:  color_out <= plus1 ? 2'b01 : 2'b00;
@@ -215,42 +260,78 @@ wire [1:0] gridindex;
 		3'b011:  color_out <= plus1 ? 2'b10 : 2'b01;
 		3'b100:  color_out <= 2'b10;
 		3'b101:  color_out <= plus1 ? 2'b11 : 2'b10;
+
 		default: color_out <= 2'b11;
+
 		*/
+
 		4'b0000: colorlevel = 4'b0000;
 		4'b0001: colorlevel = 4'b0001;
+
 		4'b0010,
+
 		4'b0011: colorlevel = 4'b0010;
+
 		4'b0100: colorlevel = 4'b0011;
 
+
+
 		4'b0101: colorlevel = 4'b0100;
+
 		4'b0110: colorlevel = 4'b0101;
+
 		4'b0111,
+
 		4'b1000: colorlevel = 4'b0110;
+
 		4'b1001: colorlevel = 4'b0111;
 
+
+
 		4'b1010: colorlevel = 4'b1000;
+
 		4'b1011: colorlevel = 4'b1001;
+
 		4'b1100,
+
 		4'b1101: colorlevel = 4'b1010;
+
 		4'b1110: colorlevel = 4'b1011;
 
+
+
 		default: colorlevel = 4'b1100;
+
 	  endcase
 
+
+
 //поскольку мы на входе скандаблера, то подуровни 1/4 и 3/4 между главными уровнями будут скакать жирными линиями
+
 //фиксим это сдвигом фазы y по ксору с x[1] именно для этих подуровней (для 1/2 такой фикс сломает сетку)
+
 //colorlevel_grid = {{0,2},{3,1}};
+
 	  gridy = y ^ (x[1] & colorlevel[0]);
+
 	  gridindex = {gridy+phase[1], x[0]+phase[0]};
+
 	  case(gridindex[1:0])
+
 	    2'b00: gridlevel = 2'b00;
+
 	    2'b01: gridlevel = 2'b10;
+
 	    2'b10: gridlevel = 2'b11;
+
 	    2'b11: gridlevel = 2'b01;
+
 	  endcase
+
 	
+
 	  color_out = colorlevel[3:2] + ((colorlevel[1:0] > gridlevel[1:0]) ? 2'b01 : 2'b00);
+
 	end
 
 endmodule
