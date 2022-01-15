@@ -286,8 +286,8 @@ W_OUTFF 	LD A,(REG_A)
 		LD (MASK_WRK_DRV),A		;номер дисковода
 		INC A
 		LD B,A
-;		LD A,%00001000
-		LD A,%10001000
+		LD A,%00001000
+;		LD A,%10001000
 .L1		RLCA
 		DJNZ .L1
 		LD (MASK_MNT_DRV),A		;маска смонтированного дисковода

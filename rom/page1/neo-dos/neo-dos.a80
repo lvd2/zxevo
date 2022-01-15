@@ -1,0 +1,5836 @@
+
+; LAST UPDATE: 15.01.2022 savelij
+
+PAGE
+		TITLE "evo-dos.a80"
+
+		include ../../macros.a80
+		include ../../define.a80
+		include ../../global_vars.a80
+		include ../../bas_trd_vars.a80
+		include ../../basic_tokens.a80
+		include ../../evodos_vars.a80
+		include ../../version.a80
+		include macros.a80
+
+ZASTV_X		EQU 7					; координата X печати надписи BETA128
+ZASTV_Y		EQU 7					; координата Y печати надписи BETA128
+ZASTV_PIX	EQU ZASTV_Y*0X20+0X4000+ZASTV_X+9	; адрес вывода скошенных уголков
+ZASTV_ATR	EQU ZASTV_Y*0X20+0X5800+ZASTV_X		; адрес вывода цвета для скошенных уголков
+
+		ORG 0
+		di
+		ld	de,0xffff
+		JP HC_REZIDENT
+
+		DB 1
+		nop
+loc_9		out	(0xfe),a
+		ld	a,0x3f
+		jr	loc_24
+
+	DUPL 0X0010-$,0
+		jp	PRINT_A_			; RST 10 печать символа
+
+	DUPL ADR_SEL_ROM-$,0XFF
+LOC_14		OUT (C),A
+		NOP
+		RET
+
+	DUPL 0X0018-$,0XFF
+		jp	PRINT_MSG			; RST 18 печать текстового сообщения
+
+	DUPL 0X0020-$,0XFF
+		jp	CALL2BASIC			; RST 20 вызов подпрограмм из басика 48
+
+loc_24		LD HL,0XFFFF
+		jr	loc_2B
+
+		jp	ADR_OPEN_CHAN			; RST 28
+
+loc_2B		LD I,A
+		XOR A
+		JR LOC_33
+
+	DUPL 0X33-$,0XFF
+LOC_33		LD SP,HL
+		LD B,A
+		LD C,A
+		JR loc_3A
+
+		ei					; RST 38
+		ret
+
+loc_3A
+	REPT 8
+		PUSH BC
+	ENDM
+		LD HL,0XA500
+		ADD HL,SP
+		JR C,loc_3A
+		ld	(P_RAMT),hl
+		ld	de,0x3eaf
+		ld	bc,0xa8
+		ld	a,e
+		ex	de,hl
+		ld	sp,0x6000
+		ld	(TRD_5F00),hl
+		ld	hl,loc_79
+		push	hl
+		ld	hl,loc_3D2F
+		push	hl
+		ld	hl,0xb8ed			; команда LDDR
+		jr	EXECUTECOM2HL
+
+		jp	MAGIC
+
+EXECUTECOM2HL	ld	(TRD_5F10),hl
+		push	af
+		ld	a,0xc9
+		ld	(TRD_5F12),a
+		pop	af
+		ld	hl,(TRD_5F00)
+		jp	TRD_5F10
+
+loc_79		ex	de,hl
+		inc	hl
+		ld	(UDG),hl
+		dec	hl
+		ld	bc,0x40				; надоел этот писк по сбросу
+		ld	(RASP),bc
+		ld	(RAMTOP),hl
+		ld	hl,0x3C00
+		ld	(CHARS),hl
+		ld	hl,(RAMTOP)
+		ld	(hl),0x3e
+		dec	hl
+		ld	sp,hl
+		dec	hl
+		dec	hl
+		ld	(ERR_SP),hl
+		ld	de,0x1303
+		push	de
+		im	1
+		ld	iy,ERR_NR
+		ld	hl,TRD_5CB6			; для проверки наличия INTERFACE1
+		ld	(CHANS),hl
+		ld	de,0x15af
+		ld	bc,0x15
+		ex	de,hl
+		call	COPY_BAS2VARS
+		ex	de,hl
+		dec	hl
+		ld	(DATADD),hl
+		inc	hl
+		ld	(PROG),hl
+		ld	(VARS),hl
+		ld	(hl),0x80
+		inc	hl
+		ld	(E_LINE),hl			; адрес	начала редактируемой строки
+		ld	(hl),0x0d
+		inc	hl
+		ld	(hl),0x80
+		inc	hl
+		ld	(WORKSP),hl
+		ld	(STKBOT),hl
+		ld	(STKEND),hl
+		ld	a,0x38
+		ld	(ATTR_P),a
+		ld	(ATTR_T),a
+		ld	(BORDCR),a
+		ld	hl,0x0523
+		ld	(REPDEL),hl
+		dec	(iy-0x3a)
+		dec	(iy-0x36)
+		ld	hl,0x15c6
+		ld	de,STRMS
+		ld	bc,0x0e
+		call	COPY_BAS2VARS
+		set	1,(iy+1)
+		ld	hl,TRD_5CC2			; содержит 0xC9 для перехода из TR-DOS в BASIC
+		ld	(hl),0xc9
+		rst	0x20
+		dw	0x0edf				; очистка буфера принтера
+		ld	hl,DF_SZ			; количество строк в служебном экране
+		ld	(hl),2
+		ld	hl,0x128b
+		push	hl
+		ld	a,0xaa
+		ld	(NOT_USED),a
+		ei
+		jp	IN_DOS_15616
+
+COPY_BAS2VARS	ld	(TRD_5F00),hl
+		ld	hl,loc_3D2F
+		push	hl
+		ld	hl,0xb0ed			; команда LDIR
+		ld	(TRD_5F10),hl
+		ld	hl,(TRD_5F00)
+		jp	TRD_5F10
+
+; обработка номера строки автостарта программы на бейсике
+WORK4AUTORUN	call	DELETE_BUF			; удаление буфера, если канал не открыт
+		call	CLEAR_SCREEN			; очистка основного экрана
+		ld	hl,(E_LINE)			; адрес откуда взять номер строки автостарта
+		inc	hl
+		ld	e,(hl)
+		inc	hl
+		ld	d,(hl)				; получили номер строки автостарта
+		ld	a,d
+		or	e
+		ex	de,hl
+		jr	z,loc_140			; если номер строки =0, то без автозапуска
+		xor	a
+		ld	(TRD_5D10),a			; старший байт ошибки
+loc_140		push	hl
+		call	RESTORE_SP			; восстановление перехватчика ошибок
+		pop	hl
+		ld	(NEWPPC),hl
+		xor	a
+		ld	(NSPPS),a
+		rst	0x20
+		dw	0x16b0				; установка области редактирования до минимума
+		ld	hl,(PROG)
+		dec	hl
+		ld	(DATADD),hl
+		ld	sp,(ERR_SP)
+		ld	a,(TRD_5D10)			; старший байт ошибки
+		or	a
+		ld	hl,0x1b76
+		jr	z,loc_166
+		rst	0x20
+		dw	0x1bb0				; сообщение "OK"
+loc_166		push	hl
+		ld	hl,TRD_5CC2
+		push	hl
+		ret
+
+CONTINUE_15619
+	DUPL 3,0
+		call	CREATE_BUF			; создание буфера
+		ld	a,0xff
+		ld	(TRD_5D15),a			; если 0, печатать шапку TR-DOS, иначе не печатать
+		xor	a
+		ld	(TRD_5CF7),a
+		ld	a,0xaa
+		ld	(TRD_5D17),a			; рисование заставки, если 0xAA
+		ld	hl,CP_ERROR
+		ld	(TRD_5D1A),hl			; внутренний адрес завершения интерпретатора команд
+		ld	hl,0
+		add	hl,sp
+		ld	(TRD_5D1C),hl			; сохранение регистра SP
+		dec	hl
+		dec	hl
+		ld	sp,hl
+		call	MARK_SP				; установка стека для перехвата	ошибок
+		ld	hl,(RAMTOP)
+		ld	de,(CH_ADD)
+		sbc	hl,de
+		ex	de,hl
+		jr	nc,loc_1A5
+		or	a
+		ld	de,0x101
+		sbc	hl,de
+loc_1A5		ld	(CH_ADD),hl
+loc_1A8		call	CP_0D_OR_80
+loc_1AB		jp	z,END_COMAND
+		cp	__REM
+		inc	hl
+		jr	nz,loc_1A8
+		call	CP_0D_OR_80
+		jr	z,loc_1AB
+		cp	":"
+		jp	nz,END_COMAND
+		inc	hl
+		call	SAE2_HL_
+		ld	hl,(TRD_5D11)			; адрес	строки команды TR-DOS
+		jp	loc_30A
+
+CP_0D_OR_80	ld	a,(hl)
+		cp	0x0d
+		ret	z
+		cp	0x80
+		ret	z
+		or	a
+		ret
+
+		call	REWRITE_9SEC
+; подпрограмма завершение командного процессора
+END_COMAND	ld	hl,0
+		ld	(TRD_5CF8),hl			; дисковод при операции	с 2 файлами
+		call	DELETE_BUF
+		call	CLEAR_WORKSPACE
+		ld	hl,TRD_5D17			; рисование заставки, если 0xAA
+		ld	(hl),0xaa
+		ld	hl,TRD_5D1F
+		ld	a,(hl)
+		or	a
+		ld	(hl),0
+		jr	nz,loc_1F3
+		call	DEL_5BYTES
+		call	FIND_ENDSTR			; поиск	конца строки
+loc_1F3		ld	sp,(TRD_5D1C)			; сохранение регистра SP
+		ld	hl,(TRD_5D1A)			; внутренний адрес завершения интерпретатора команд
+		ld	bc,(TRD_5D0F)			; номер	ошибки TR-DOS
+		ld	b,0
+		jp	(hl)
+
+; DCU (вызывает с адреса 0x0207)
+CP_ERROR	call	RESTORE_SP			; проверка на ошибку
+		bit	7,(iy+0)
+		ret	nz
+		ld	de,TRD_5CC2
+		ld	sp,(ERR_SP)
+		push	de
+		ret
+
+; поиск	конца строки
+FIND_ENDSTR	call	GET_SYMSTR
+		cp	0x0d
+		ret	z
+		call	GET_NEXT_SYM
+		jr	FIND_ENDSTR			; поиск	конца строки
+
+; установка стека для перехвата	ошибок
+MARK_SP		ld	hl,(ERR_SP)
+		ld	(TRD_5D13),hl			; копия	ERR_SP
+		ld	hl,(TRD_5D1C)			; сохранение регистра SP
+		dec	hl
+		dec	hl
+		ld	(ERR_SP),hl
+		ld	de,loc_3D16
+		ld	(hl),e
+		inc	hl
+		ld	(hl),d
+		ret
+
+; восстановление перехватчика ошибок
+RESTORE_SP	ld	hl,(TRD_5D13)			; копия	ERR_SP
+loc_0235	ld	(ERR_SP),hl
+		ret
+
+IN_COMMAND_CPU	ld	hl,0				; вхождение в командный	процессор доса
+		ld	(TRD_5CF7),hl
+		add	hl,sp
+		ld	(TRD_5D1C),hl			; сохранение регистра SP
+		dec	hl
+		dec	hl
+		ld	sp,hl
+		call	MARK_SP				; установка стека для перехвата	ошибок
+; 2 вызова перенесены для устранения пропадания курсора
+; при повторном входе в TR-DOS из меню BASIC 128
+		call	CLEAR_SCREEN			; очистка основного экрана
+		call	OPEN_CHAN_2			; открытие канала 2
+		ld	hl,TRD_5D17			; рисование заставки, если 0xAA
+		ld	a,(hl)
+		cp	0xaa
+		ld	a,0
+		ld	(TRD_5D0F),a			; номер	ошибки TR-DOS
+		jp	z,COMMAND_CPU
+		ld	(hl),0xaa
+		ld	hl,ZASTAVKA			; текст	заставки доса
+		rst	0x18
+		call	OUT_COLOR_LINE			; рисование цветных линий заставки доса
+		CALL ADD_TXT_VERS
+
+	DUPL 0X0271-$,0
+loc_271		ld	a,(NOT_USED)			; проверка на 0xAA
+		cp	0xaa
+		jr	nz,COMMAND_CPU			; если не 0xAA,то вход в командный процессор
+
+	DUPL 0X027B-$,0
+loc_27B		ld	hl,(E_LINE)			; адрес	начала редактируемой строки
+		ld	a,0xfe
+		ld	(TRD_5D0E),a			; 0xFE - работает BASIC, иначе TR-DOS
+		ld	(hl),0xf7
+		inc	hl
+		ld	(hl),0x22
+		inc	hl
+		ld	(hl),"b"
+		inc	hl
+		ld	(hl),"o"
+		inc	hl
+		ld	(hl),"o"
+		inc	hl
+		ld	(hl),"t"
+		inc	hl
+		ld	(hl),0x22
+		inc	hl
+		ld	(K_CUR),hl
+		ld	(hl),0x0d
+		inc	hl
+		ld	(hl),0x80
+		inc	hl
+		ld	(WORKSP),hl
+		ld	(STKBOT),hl
+		ld	(STKEND),hl
+		set	3,(iy+1)
+		jr	GO2RUNBOOT
+
+; перенос 3 байт
+LDI3_HL2DE	ld	b,3
+loc_2B2		ld	a,(hl)
+		ld	(de),a
+		inc	hl
+		inc	de
+		djnz	loc_2B2
+		ret
+
+; остановка мотора дисковода
+STOP_MOTOR	ld	b,0x20
+loc_2BB		push	bc
+		xor	8
+		out	(0xff),a
+		push	af
+		ld	a,5
+		call	PAUSE_C_A
+		pop	af
+		pop	bc
+		djnz	loc_2BB
+		ret
+
+; командный процессор DOS
+COMMAND_CPU	ld	hl,(TRD_5D1C)			; сохранение регистра SP
+		dec	hl
+		dec	hl
+		ld	sp,hl
+		call	OPEN_CHAN_0			; открытие канала 0
+		ld	a,(0X5D16)
+		or	3
+		call	STOP_MOTOR
+		ld	a,(TRD_5D16)
+		call	STOP_MOTOR
+		xor	a
+		ld	(TRD_5D15),a			; если 0, печатать шапку TR-DOS, иначе не печатать
+		call	GET_COMMAND			; принятие и обработка команд
+		call	SAE2E_LINE
+GO2RUNBOOT	call	CLEAR_DOWN_SCR			; очистка нижней части экрана
+		ld	hl,COMMAND_CPU
+		ld	(TRD_5D1A),hl			; внутренний адрес завершения интерпретатора команд
+		xor	a
+		ld	(TRD_5D0F),a			; номер	ошибки TR-DOS
+		ld	(TRD_5CEF),a
+		ld	hl,(E_LINE)			; адрес	начала редактируемой строки
+		push	hl
+		ld	de,TRD_5D20			; для сохранения 3 символов введеной строки
+		call	LDI3_HL2DE			; перенос 3 байт
+		pop	hl
+		ld	(TRD_5D11),hl			; адрес	строки команды TR-DOS
+loc_30A		ld	a,(hl)
+		ld	b,a
+		and	0x80
+		ld	a,b
+		jr	z,loc_31A
+		cp	__RETURN
+		jr	z,loc_31A
+		push	af
+		call	ACTIV_DEF_DSK			; выбор	дисковода по умолчанию
+		pop	af
+loc_31A		ld	hl,CODE_BYTE_COM		; таблица бейсик команд для TR-DOS
+		dec	hl
+		ld	c,0
+loc_320		inc	c
+		ld	d,a
+		ld	a,LOW (ECODE_BYTE_COM-CODE_BYTE_COM)
+		cp	c
+		JP C,ENDCOMAND
+		ld	a,d
+		inc	hl
+		cp	(hl)
+		jr	nz,loc_320
+LOC_32D		cp	__RETURN
+		call	nz,CREATE_BUF			; создание буфера
+		ld	a,9
+		ld	(TRD_5D06),a			; количество символов имени файла при поиске
+		xor	a
+		ld	(TRD_5D0F),a			; номер	ошибки TR-DOS
+		ld	(TRD_5CD6),a			; 0xFF - команда принята синтаксическим анализатором
+		ld	(TRD_5D10),a			; старший байт ошибки
+		ld	hl,FLAGS
+		res	7,(hl)
+		ld	b,0
+		ld	hl,SPIS_ADR_COM			; таблица адресов исполнения команд
+		dec	c
+		sla	c
+		add	hl,bc
+		ld	e,(hl)
+		inc	hl
+		ld	d,(hl)
+		ex	de,hl
+LOC_353		push	hl
+		ld	de,END_COM
+		push	de
+		jp	(hl)
+
+END_COM		ld	hl,FLAGS
+		set	7,(hl)
+		pop	hl
+		jp	(hl)
+
+; текст заставки доса
+ZASTAVKA	DB "\x16\x01\x06 NEO-DOS "
+ZASTAVKA_VER	DB "Ver ",VERS_DOS,"  \r\r\x7F"
+		DB " 2010 Created for PentEvo 4MB "
+		DB "\x16\x05\x0CNedoPC\x16",ZASTV_Y,ZASTV_X
+ROM_VER		DC "Nedo Emul"
+
+END_OUT_DIR	call	READ_9SEC			; чтение 9 сектора
+		call	PRINT_0D
+		call	PRINT_0D
+loc_3B5		ld	bc,(TRD_5E0A)
+		call	PRINT_CHISLO			; печать числа
+		ld	hl,TXT_FREE_
+		rst	0x18
+GOTO_END	jp	END_COMAND
+
+; печать сообщения об ошибке
+PRINT_ERROR	push	af
+		ld	a,(TRD_5D0E)			; 0xFE - работает BASIC, иначе TR-DOS
+		cp	__RETURN
+		jr	nz,CP4PRINT_HEAD
+		pop	af
+		ret
+
+CP4PRINT_HEAD	pop	af
+		ld	(TRD_5D0F),a			; номер	ошибки TR-DOS
+		ld	a,(TRD_5D15)			; если 0, печатать шапку TR-DOS, иначе не печатать
+		or	a
+		call	z,PRINT_MSG			; печать текстового сообщения
+		ret
+
+ERR_NOFILES	ld	hl,TXT_NOFILES_
+		ld	a,1
+		jp	PRINT_TXTERR
+
+ERR_OK		ld	hl,TXT_OK_			; "O.K."
+		xor	a
+		jp	PRINT_TXTERR
+
+; чтение сектора 0 каталога
+RD_0SEC2BUF	xor	a
+		ld	(TRD_5CCC),a			; текущий номер	сектора	при чтении каталога
+; чтение сектора каталога по номеру
+READ_NUM_SEC	ld	de,(TRD_5CCC)			; текущий номер	сектора	при чтении каталога
+		ld	d,0
+READ_SEC4NEM	call	CREATE_BUF			; создание буфера
+		ld	hl,TRD_5D25
+		ld	b,1
+		jp	COM_05				; чтение секторов
+
+; чтение 9 сектора
+READ_9SEC	call	CREATE_BUF			; создание буфера
+		ld	de,8
+		jr	READ_SEC4NEM
+
+; настройка на дискету
+COM_18		call	READ_9SEC			; чтение 9 сектора
+		ld	a,(TRD_5E0C)
+		cp	0x10
+		jr	z,CP_TYPE_DSK
+		ld	hl,TXT_DISCERROR_
+		rst	0x18
+		jr	GOTO_END
+
+CP_TYPE_DSK	call	GET_TYPE_DISK
+		res	0,(hl)
+		res	1,(hl)
+		ld	a,(TRD_5E08)
+		bit	0,a
+		jr	nz,loc_425
+		set	0,(hl)
+loc_425		bit	3,a
+		ret	nz
+		set	1,(hl)
+		ret
+
+CP_SECOND_SYM	ld	hl,(TRD_5D11)			; адрес	строки команды TR-DOS
+		inc	hl
+		ld	a,(hl)
+		cp	0x0d
+		ret
+
+CAT		call	CP_SECOND_SYM			; выполнение команды CAT
+		ld	bc,2
+		ld	(TRD_5CDB),bc
+		jr	z,loc_46A
+		cp	"#"
+		jr	nz,CODES
+		ld	(CH_ADD),hl
+		call	SET_NUM_CHAN
+		call	GET_SYMSTR
+		cp	0x0d
+		jr	z,loc_46A
+		cp	","
+		jp	nz,SINTAX_ERROR
+		call	GET_NEXT_SYM
+		call	PUT_NUMDSK_STK
+		jr	loc_460
+
+CODES		call	SET_AND_PUT
+loc_460		call	EXIT_IF_SINTAX
+		call	GET_STKBOT_
+		ex	de,hl
+		call	SETUP_DSK
+loc_46A		call	EXIT_IF_SINTAX
+		ld	a,(TRD_5CF6)			; дисковод для временной операции
+		ld	(TRD_5CF9),a			; дисковод при операции	с 2 файлами
+		call	COM_18				; настройка на дискету
+		ld	a,(TRD_5CDB)
+loc_479		cp	2
+		push	af
+		call	z,CLEAR_SCREEN			; очистка основного экрана
+		pop	af
+		cp	0x11
+		jp	nc,SINTAX_ERROR
+		call	OPENSTREAM
+		ld	a,0xff
+		ld	(TRD_5CF8),a			; дисковод при операции	с 2 файлами
+		ld	hl,TXT_TITLE_			; "TITLE:"
+		rst	0x18
+		ld	hl,TRD_5E1A
+		rst	0x18
+		call	PRINT_0D
+		ld	a,(TRD_5E09)
+		ld	hl,TRD_5E19
+		sub	(hl)
+		push	hl
+		call	PRINT_CHISLO_A_
+		ld	hl,TXT_NOFILES+2
+		rst	0x18
+		pop	hl
+		ld	c,(hl)
+		call	CONV2_2BYTES
+		ld	hl,TXT_DELFILE_			; " DEL. FILE"
+		rst	0x18
+		call	RD_0SEC2BUF			; чтение сектора 0 каталога
+		ld	hl,TRD_5D25
+loc_4B6		call	CP_END_DIR			; проверка окончания директории
+		call	PRINT_0D
+		ld	a,(TRD_5CF6)			; дисковод для временной операции
+		add	a,"A"
+		rst	0x10
+		ld	b,2
+loc_4C4		call	CP_END_DIR			; проверка окончания директории
+		push	bc
+		ld	a,":"
+		rst	0x10
+		push	hl
+		call	PRINT_FILENAME			; печать имени файла
+		ld	bc,0x0d
+		pop	hl
+		push	hl
+		add	hl,bc
+		ld	c,(hl)
+		push	bc
+		ld	a,c
+		ld	b,2
+		cp	0x0a
+		jr	c,loc_4DF
+		dec	b
+loc_4DF		cp	0x64
+		jr	nc,loc_4E8
+loc_4E3		ld	a," "
+		rst	0x10
+		djnz	loc_4E3
+loc_4E8		pop	bc
+		call	PRINT_CHISLO			; печать числа
+		pop	hl
+		pop	bc
+		ld	de,0x10
+		add	hl,de
+		djnz	loc_4C4
+		jr	loc_4B6
+
+; проверка окончания директории
+CP_END_DIR	push	hl
+		push	bc
+		ld	a,(TRD_5CF9)			; дисковод при операции	с 2 файлами
+		ld	hl,TRD_5CF6			; дисковод для временной операции
+		cp	(hl)
+		call	nz,COM_01			; настройка на дисковод
+		pop	bc
+		pop	hl
+		jp	CP_END_CAT
+
+ADD_10		ld	de,0x10
+		add	hl,de
+		ret
+
+CP_END_BUF	push	hl
+		push	bc
+		ld	bc,0xa1db
+		add	hl,bc
+		jr	c,READ_SEC2BUF
+		pop	bc
+		pop	hl
+		ret
+
+READ_SEC2BUF	ld	hl,TRD_5CCC			; текущий номер	сектора	при чтении каталога
+		inc	(hl)
+		call	READ_NUM_SEC			; чтение сектора каталога по номеру
+		pop	bc
+		pop	hl
+		ld	hl,TRD_5D25
+		ret
+
+NUMDSK2BYTE	and	0xdf
+		sbc	a,"A"
+		jp	c,SINTAX_ERROR
+		cp	4
+		jp	nc,SINTAX_ERROR
+		ret
+
+CP_ON_STKBOT	call	GET_STKBOT_
+		ld	a,c
+		or	b
+		jp	z,SINTAX_ERROR
+		ret
+
+NEW		call	INP_2STR2STKBOT			; выполнение команды NEW
+		call 	EXIT_IF_SINTAX
+		call	INP_EXTFILENAME			; прием расширения файла
+		call	SET_CP_FILENAME
+		ld	a,(TRD_5CF6)			; дисковод для временной операции
+		ld	(TRD_5CF8),a			; дисковод при операции	с 2 файлами
+		jp	nz,ERR_NOFILES
+		push	bc
+		call	RDHEAD_FILENAME			; чтение описателя файла
+		call	SET_CP_FILENAME
+		push	af
+		ld	a,(TRD_5CF8)			; дисковод при операции	с 2 файлами
+		ld	hl,TRD_5CF6			; дисковод для временной операции
+		cp	(hl)
+		jp	nz,SINTAX_ERROR
+		call	COM_18				; настройка на дискету
+		pop	af
+		jp	z,FILE_EXISTS
+		pop	bc
+loc_569		call	SETHEADFILENAME
+		call	REWRITE_9SEC			; перезапись 9 сектора
+		jp	ERR_OK
+
+CP_HIGH_ERR	ld	a,(TRD_5D10)			; старший байт ошибки
+		or	a
+		ret
+
+CP_ERASED_FILES	ld	a,(TRD_5D07)			; счетчик удаленных файлов
+		or	a
+		jp	z,ERR_NOFILES
+		jp	ERR_OK
+
+; запрос на удаление файла
+GET_OVERWRITE_	push	bc
+		call	CLEAR_SCREEN			; очистка основного экрана
+		ld	a,(TRD_5CF6)			; дисковод для временной операции
+		add	a,"A"
+		call	PRINT_A_
+		ld	a,":"
+		call	PRINT_A_
+		ld	hl,TRD_5CDD			; имя файла
+		call	PRINT_FILENAME			; печать имени файла
+		ld	hl,TXT_FILEEXIST		; "FILE EXISTS"
+		call	PRINT_MSG			; печать текстового сообщения
+		call	GET_KEYS			; ожидание нажатия клавиши
+		cp	"Y"
+		push	af
+		call	CLEAR_SCREEN			; очистка основного экрана
+		pop	af
+		pop	bc
+		ret	nz
+		push	bc
+		call	CLEAR_SCREEN			; очистка основного экрана
+		pop	bc
+		call	ERASE_FILE			; удаление файла
+		xor	a
+		ret
+
+CP_EXT_SHARP	ld	a,(TRD_5CE5)			; расширение файла
+		cp	"#"
+		jr	z,FINDFILENAME_0A
+		xor	a
+		ret
+
+FINDFILENAME_0A	ld	a,0x0a
+		ld	(TRD_5D06),a			; количество символов имени файла при поиске
+		call	FIND_FILENAME			; поиск	файла по имени файла
+		ld	a,9
+		ld	(TRD_5D06),a			; количество символов имени файла при поиске
+		ret
+
+COPY_STAR_STAR	ld	a,(TRD_5CDD)			; выполнение команды COPY *,*
+		cp	"*"
+		jp	nz,ERR_NOFILES
+		call	GET_STKBOT_
+		ex	de,hl
+		call	SETUP_DSK
+		ld	a,(hl)
+		cp	"*"
+		jp	nz,SINTAX_ERROR
+		ld	a,(TRD_5CF6)			; дисковод для временной операции
+		ld	(TRD_5CF9),a			; дисковод при операции	с 2 файлами
+		ld	a,(TRD_5CF9)			; дисковод при операции	с 2 файлами
+		call	COM_01				; настройка на дисковод
+		call	COM_18				; настройка на дискету
+		ld	a,0xff
+		ld	(TRD_5D0D),a
+loc_5F4		ld	a,(TRD_5CF8)			; дисковод при операции	с 2 файлами
+		call	COM_01				; настройка на дисковод
+		call	COM_18				; настройка на дискету
+		ld	a,(TRD_5D0D)
+		inc	a
+		ld	(TRD_5D0D),a
+		ld	c,a
+		call	RDHEAD_FILENAME			; чтение описателя файла
+		ld	a,(TRD_5CDD)			; имя файла
+		cp	0
+		jp	z,ERR_OK
+		cp	1
+		jr	z,loc_5F4
+		ld	hl,TRD_5CE6			; для <C> - стартовый адрес, для <B> - длина программы
+		ld	de,TRD_5CED			; номер	первого	трека файла
+		ld	bc,7
+		ldir 
+		ld	a,(TRD_5CF9)			; дисковод при операции	с 2 файлами
+		call	COM_01				; настройка на дисковод
+		call	FIND_FILENAME			; поиск	файла по имени файла
+		jr	nz,loc_634
+		call	CP_EXT_SHARP
+		jr	nz,loc_634
+		call	GET_OVERWRITE_			; запрос на удаление файла
+		jr	nz,loc_5F4
+loc_634		call	COPY_FILE2DSK			; копирование файлов на 2 дисководах
+		call	REWRITE_9SEC			; перезапись 9 сектора
+		jr	loc_5F4
+
+; копирование файлов на	2 дисководах
+COPY_FILE2DSK	call	READ_9SEC			; чтение 9 сектора
+		ld	a,(TRD_5E09)
+		cp	0x80
+		jp	z,ERR_DIRFULL			; в директории места нету 
+		ld	hl,TRD_5CED			; номер	первого	трека файла
+ 		ld	de,TRD_5CE6			; для <C> - стартовый адрес, для <B> - длина программы
+ 		ld	bc,7
+		ldir 
+		ld	de,(TRD_5CEA)			; длина	файла в	секторах
+		ld	d,0
+		or	a
+		ld	hl,(TRD_5E0A)
+		sbc	hl,de
+		jp	c,loc_1C45
+		ld	(TRD_5E0A),hl
+		ld	hl,(TRD_5E06)
+		ld	(TRD_5CEB),hl			; номер	первого	сектора	файла
+		push	hl
+		call	COPY_FILE			; копирование файла на 2 дисководах
+		pop	hl
+		ld	(TRD_5CEB),hl			; номер	первого	сектора	файла
+		ld	hl,(TRD_5CF4)
+		ld	(TRD_5E06),hl
+		ld	hl,TRD_5E09
+		inc	(hl)
+		ld	c,(hl)
+		dec	c
+		ld	b,0
+		push	bc
+		ld	de,9
+		ld	(TRD_5CF4),de
+		call	REWRITE_9SEC			; перезапись 9 сектора
+		pop	bc
+		call	SETHEADFILENAME
+		ret
+
+COPY		ld	hl,(TRD_5D11)			; адрес	строки команды TR-DOS
+		inc	hl
+		ld	a,(hl)
+		and	0xdf
+		cp	"S"
+		jp	z,COPY_S
+		cp 	"B"
+		jp	z,COPY_B
+		call	INP_2STR2STKBOT
+		call	EXIT_IF_SINTAX
+		call	RESERVED_RAM
+		call	INP_EXTFILENAME			; прием расширения файла
+		call	SET_CP_FILENAME
+		ld	a,(TRD_5CF6)			; дисковод для временной операции
+		ld	(TRD_5CF8),a			; дисковод при операции	с 2 файлами
+		jp	nz,COPY_STAR_STAR		; выполнение команды COPY *,*
+		call	RDHEAD_FILENAME			; чтение описателя файла
+ 		ld	hl,TRD_5CE6			; для <C> - стартовый адрес, для <B> - длина программы
+ 		ld	de,TRD_5CED			; номер	первого	трека файла
+		ld	bc,7
+		ldir 
+		call	SET_CP_FILENAME
+		push	af
+		push	bc
+	 	ld	a,(TRD_5CF6)			; дисковод для временной операции
+		ld	(TRD_5CF9),a			; дисковод при операции	с 2 файлами
+		ld	a,(TRD_5CF8)			; дисковод при операции	с 2 файлами
+		call	COM_01				; настройка на дисковод
+		call	COM_18				; настройка на дискету
+		ld	a,(TRD_5CF9)			; дисковод при операции	с 2 файлами
+		call	COM_01				; настройка на дисковод
+		call	COM_18				; настройка на дискету
+		pop	bc
+		pop	af
+		jr	nz,loc_6F3
+		call	CP_EXT_SHARP
+		jr	nz,loc_6F3
+		call	GET_OVERWRITE_			; запрос на удаление файла
+		jp	nz,ERR_OK
+loc_6F3		call	COPY_FILE2DSK			; копирование файлов на 2 дисководах
+		call	REWRITE_9SEC			; перезапись 9 сектора
+		ld	a,(TRD_5CE5)			; расширение файла
+		cp	"#"
+		jp	nz,ERR_OK
+		ld	a,0x0a
+		ld	(TRD_5D06),a			; количество символов имени файла при поиске
+		ld	hl,TRD_5CE6			; для <C> - стартовый адрес, для <B> - длина программы
+		inc	(hl)
+		ld	a,(TRD_5CF8)			; дисковод при операции	с 2 файлами
+		call	COM_01				; настройка на дисковод
+		call	CP_EXT_SHARP
+		jp	nz,ERR_OK
+		call	RDHEAD_FILENAME			; чтение описателя файла
+		ld	hl,TRD_5CE6			; для <C> - стартовый адрес, для <B> - длина программы
+		ld	de,TRD_5CED			; НОМЕР	ПЕРВОГО	ТРЕКА ФАЙЛА
+		ld	bc,7
+		ldir
+		ld	a,(TRD_5CF9)			; дисковод при операции	с 2 файлами
+		call	COM_01				; настройка на дисковод
+		call	COM_18				; настройка на дискету
+		jr	loc_6F3
+
+; копирование файла на 2 дисководах
+COPY_FILE	ld	a,(TRD_5CF1)
+		or	a
+		ret	z
+		push	hl
+		ld	hl,TRD_5D23
+		sub	(hl)
+		pop	hl
+		jr	nc,loc_775
+		ld	a,(TRD_5CF1)
+		ld	b,a
+		xor	a
+		ld	(TRD_5CF1),a
+loc_744		push	bc
+		ld	a,(TRD_5CF8)			; дисковод при операции	с 2 файлами
+		call	COM_01				; настройка на дисковод
+		pop	bc
+		push	bc
+		ld	hl,(TRD_5CCF)			; временное сохранение WORK_SP
+		push	hl
+		ld	de,(TRD_5CF2)
+		call	COM_05				; чтение секторов
+		ld	hl,(TRD_5CF4)
+		ld	(TRD_5CF2),hl
+		ld	a,(TRD_5CF9)			; дисковод при операции	с 2 файлами
+		call	COM_01				; настройка на дисковод
+		pop	hl
+		pop	bc
+		ld	de,(TRD_5CEB)			; номер	первого	сектора	файла
+		call	COM_06				; запись секторов
+		ld	hl,(TRD_5CF4)
+		ld	(TRD_5CEB),hl			; номер	первого	сектора	файла
+		jr	COPY_FILE			; копирование файла на 2 дисководах
+
+loc_775		ld	(TRD_5CF1),a
+		push	hl
+		ld	hl,TRD_5D23
+		ld	b,(hl)
+		pop	hl
+		xor	a
+		jr	loc_744
+
+; удаление файла
+ERASE_FILE	xor	a
+		ld	(TRD_5D07),a			; счетчик удаленных файлов
+		jr	ERASE_FILES
+
+ERASE		call	SET_AND_PUT			; выполнение команды ERASE
+		call	EXIT_IF_SINTAX
+		call	INP_EXTFILENAME			; прием расширения файла
+		xor	a
+		ld	(TRD_5D07),a			; счетчик удаленных файлов
+		call	FIND_FILE			; поиск	файла по имени
+		call	ERASE_FILES
+		jp	nz,CP_ERASED_FILES
+		jp	ERR_OK
+
+ERASE_FILES	ld	a,(TRD_5CDD)			; имя файла
+		ld	(TRD_5D08),a			; первый символ	имени файла
+		ret	nz
+		ld	hl,TRD_5D07			; счетчик удаленных файлов
+		inc	(hl)
+		push	bc
+		call	READ_9SEC			; чтение 9 сектора
+		ld	a,(TRD_5E09)
+		pop	bc
+		inc	c
+		cp	c
+		jr	nz,loc_7BC
+		dec	a
+		ld	(TRD_5E09),a
+		xor	a
+loc_7BC		push	af
+		jr	z,loc_7C3
+		ld	hl,TRD_5E19
+		inc	(hl)
+loc_7C3		push	bc
+		call	REWRITE_9SEC			; перезапись 9 сектора
+		pop	bc
+		dec	c
+		call	RDHEAD_FILENAME			; чтение описателя файла
+		pop	af
+		jp	z,loc_7D2
+		ld	a,1
+loc_7D2		ld	(TRD_5CDD),a			; имя файла
+		push	af
+		call	WRHEAD_FILENAME			; сохранение описателя файла
+		ld	a,(TRD_5D08)			; первый символ	имени файла
+		ld	(TRD_5CDD),a			; имя файла
+		pop	af
+		jr	z,WR_NEW_FREE_SEC
+		call	FIND_FILENAME			; поиск	файла по имени файла
+		jr	ERASE_FILES
+
+WR_NEW_FREE_SEC	call	READ_9SEC			; чтение 9 сектора
+		ld	hl,(TRD_5CEB)			; номер	первого	сектора	файла
+		ld	(TRD_5E06),hl
+		ld	de,(TRD_5CEA)			; длина	файла в	секторах
+		ld	hl,(TRD_5E0A)
+		ld	d,0
+		add	hl,de
+		ld	(TRD_5E0A),hl
+		jp	REWRITE_9SEC			; перезапись 9 сектора
+
+;===============FREE SPACE 1============
+		include virtual.a80
+		include extend.a80
+		include raznoe.a80
+		include patch.a80
+		include hc_resident.a80			; для резидента HONEY COMANDER
+;=======END OF FREE SPACE 1=============
+
+		TITLE "evo-dos.a80"
+
+	DUPL 0X1018-$,0XFF
+COM_STAR	call	SET_AND_PUT
+		call	EXIT_IF_SINTAX
+		call	CP_ON_STKBOT
+		ld	a,(de)
+		call	NUMDSK2BYTE
+		ld	(TRD_5D19),a			; дисковод по умолчанию
+		call	COM_01				; настройка на дисковод
+		jp	ERR_OK
+
+; прием	расширения файла
+INP_EXTFILENAME	ld	b,"C"
+		ld	a,(TRD_5CD6)			; 0xFF - команда принята синтаксическим анализатором
+		or	a
+		jr	nz,loc_104D
+		call	GET_SYMSTR
+		cp	__CODE
+		ld	b,"C"
+		jr	z,loc_104D
+		cp	__DATA
+		ld	b,"D"
+		jr	z,loc_104D
+		cp	"#"
+		ld	b,"#"
+		jr	z,loc_104D
+		ld	b,"B"
+loc_104D	ld	hl,TRD_5CE5			; расширение файла
+		ld	(hl),b
+		ret
+
+; ОЖИДАНИЕ НАЖАТИЯ КЛАВИШИ
+GET_KEYS	di
+		push	hl
+		push	bc
+		push	de
+loc_1056	rst	0x20
+		dw	0x028e				; сканирование клавиатуры
+		ld	c,0
+		jr	nz,loc_1056
+		rst	0x20 
+		dw	0x031e				; проверка значения нажатой клавиши
+		jr	nc,loc_1056
+		dec	d
+		ld	e,a
+		rst	0x20
+		dw	0x0333				; декодирование	клавиатуры
+		pop	de
+		pop	bc
+		pop	hl
+		and	0xdf
+		ei
+		ret
+
+; рисование цветных линий заставки доса
+OUT_COLOR_LINE	ld	hl,ZASTV_ATR
+		ld	b,0x0a
+loc_1073	ld	(hl),7
+		inc	hl
+		djnz	loc_1073
+		ld	(hl),2
+		inc	hl
+		ld	(hl),0x16
+		inc	hl
+		ld	(hl),0x34
+		inc	hl
+		ld	(hl),0x25
+		inc	hl
+		ld	(hl),0x28
+		inc	hl
+		ld	(hl),7
+		ld	hl,ZASTV_PIX
+		ld	b,8
+		xor	a
+loc_108F	push	bc
+		scf
+		rla
+		push	hl
+		push	af
+		ld	b,5
+loc_1096	inc	hl
+		ld	(hl),a
+		djnz	loc_1096
+		pop	af
+		pop	hl
+		pop	bc
+		ld	de,0x100
+		add	hl,de
+		djnz	loc_108F
+		ret
+
+		ret
+
+TXT_DELFILES	db " Del."
+TXT_FILE_S_	DZ " File(s)"
+TXT_TITLE	DC "Title: "
+TXT_DISKDRIVE	DZ "\x17\x11 Disk Drive: "
+TXT_1SPACE	DZ "\x17\x10 "
+TXT_40TRK_SS	DZ "\x17\x10 40 Track S. Side"
+TXT_80TRK_SS	DZ "\x17\x10 80 Track S. Side"
+TXT_40TRK_DS	DZ "\x17\x10 40 Track D. Side"
+TXT_80TRK_DS	DZ "\x17\x10 80 Track D. Side"
+TXT_FREESECS	DZ "\x17\x10 Free Sector "
+TXT_FILENAME	DZ "\r\r  File Name    Start Length Line"
+
+CREATE_222BYTES	ld	hl,(WORKSP)
+		ld	(TRD_5CCF),hl			; временное сохранение WORK_SP
+		ld	bc,0x222
+		jp	CREATE_FREERAM
+
+; печать числа из регистра HL в десятичном виде
+PRINT_HL_CHISLO	xor	a
+		ld	de,10000
+loc_1161	sbc	hl,de
+		jr	c,loc_1168
+		inc	a
+		jr	loc_1161
+
+loc_1168	add	a,"0"
+		call	PRINT_A_CHISLO
+		add	hl,de
+		xor	a
+		ld	de,1000
+loc_1172	sbc	hl,de
+		jr	c,loc_1179
+		inc	a
+		jr	loc_1172
+
+loc_1179	add	a,"0"
+		call	PRINT_A_CHISLO
+		add	hl,de
+		xor	a
+		ld	de,100
+loc_1183	sbc	hl,de
+		jr	c,loc_118A
+		inc	a
+		jr	loc_1183
+
+loc_118A	add	a,"0"
+		call	PRINT_A_CHISLO
+		add	hl,de
+		xor	a
+		ld	de,10
+loc_1194	sbc	hl,de
+		jr	c,loc_119B
+		inc	a
+		jr	loc_1194
+
+loc_119B	add	a,"0"
+		call	PRINT_A_CHISLO
+		add	hl,de
+		ld	a,l
+		add	a,"0"
+		call	PRINT_A_CHISLO
+		ret
+
+PRINT_A_CHISLO	push	hl
+		push	de
+		call	PRINT_A_
+		pop	de
+		pop	hl
+		ret
+
+FIND_END_BUFDIR	push	hl
+		push	bc
+		ld	a,(TRD_5CF9)			; дисковод при операции	с 2 файлами
+		ld	hl,TRD_5CF6			; дисковод для временной операции
+		cp	(hl)
+		call	nz,COM_01			; настройка на дисковод
+		pop	bc
+		pop	hl
+		call	CP_END_BUF
+		ld	a,(hl)
+		or	a
+		jp	z,END_COMAND
+		cp	1
+		call	z,ADD_10
+		ret	nz
+		jr	FIND_END_BUFDIR
+
+LIST		call	CP_SECOND_SYM
+		ld	bc,2
+		ld	(TRD_5CDB),bc
+		jr	z,loc_1205
+		cp	"#"
+		jr	nz,LIST4CODES
+		ld	(CH_ADD),hl
+		call	SET_NUM_CHAN
+		call	GET_SYMSTR
+		cp	0x0d
+		jr	z,loc_1205
+		cp	","
+		jp	nz,SINTAX_ERROR
+		call	GET_NEXT_SYM
+		call	PUT_NUMDSK_STK
+		jr	loc_11FB
+
+LIST4CODES	call	SET_AND_PUT
+loc_11FB	call	EXIT_IF_SINTAX
+		call	GET_STKBOT_
+		ex	de,hl
+		call	SETUP_DSK
+loc_1205	call	EXIT_IF_SINTAX
+		ld	a,(TRD_5CF6)			; дисковод для временной операции
+		ld	(TRD_5CF9),a			; дисковод при операции	с 2 файлами
+		call	COM_18				; настройка на дискету
+		ld	a,(TRD_5CDB)
+		cp	2
+		push	af
+		call	z,CLEAR_SCREEN			; очистка основного экрана
+		pop	af
+		cp	0x11
+		jp	nc,SINTAX_ERROR
+		call	OPENSTREAM
+		ld	a,0xff
+		ld	(TRD_5CF8),a			; дисковод при операции	с 2 файлами
+		call	CREATE_222BYTES
+		ld	hl,TRD_5E06
+		ld	de,(TRD_5CCF)			; временное сохранение WORK_SP
+		ld	bc,0X20
+		ldir
+		call	RD_0SEC2BUF			; чтение сектора 0 каталога
+		ld	hl,TRD_5D25
+		push	hl
+loc_123E	ld	hl,TXT_TITLE			; "TITLE:"
+		push	bc
+		rst	0x18
+		ld	hl,(TRD_5CCF)			; временное сохранение WORK_SP
+		ld	bc,0x14
+		add	hl,bc
+		rst	0x18
+		ld	hl,TXT_DISKDRIVE
+		rst	0x18
+		ld	a,(TRD_5CF6)			; дисковод для временной операции
+		add	a,"A"
+		call	PRINT_A_
+		call	PRINT_0D
+		ld	hl,(TRD_5CCF)			; временное сохранение WORK_SP
+		ld	bc,3
+		add	hl,bc
+		ld	a,(hl)
+		ld	hl,(TRD_5CCF)			; временное сохранение WORK_SP
+		ld	bc,0x13
+		add	hl,bc
+		sub	(hl)
+		push	hl
+		call	PRINT_CHISLO_A_
+		ld	hl,TXT_DELFILES+5
+		rst	0x18
+		ld 	hl,(TRD_5CCF)			; временное сохранение WORK_SP
+		ld	bc,2
+		add	hl,bc
+		ld	a,(hl)
+		ld	hl,TXT_40TRK_SS
+		cp	0x19
+		jr	z,loc_1292
+		ld	hl,TXT_80TRK_SS
+		cp	0x18
+		jr	z,loc_1292
+		ld	hl,TXT_40TRK_DS
+		cp	0x17
+		jr	z,loc_1292
+		ld	hl,TXT_80TRK_DS
+loc_1292	rst	0x18
+		pop	hl
+		ld	c,(hl)
+		call	CONV2_2BYTES
+		ld	hl,TXT_DELFILES			; " DEL. FILE(S)"
+		rst	0x18
+		ld	hl,TXT_FREESECS
+		rst	0x18
+		ld	hl,(TRD_5CCF)			; временное сохранение WORK_SP
+		ld	bc,4
+		add	hl,bc
+		ld	c,(hl)
+		inc	hl
+		ld	b,(hl)
+		call	PRINT_CHISLO			; печать числа
+		ld	hl,TXT_FILENAME
+		rst	0x18
+		pop	bc
+		pop	hl
+		ld	b,0x10				; сколько имен файлов за проход вывести на экран
+loc_12B5	call	FIND_END_BUFDIR			; проверка на окончание директории
+		call	PRINT_0D			; перевод строки
+		push	bc
+		push	hl
+		call	PRINT_FILENAME			; печать имени файла
+		ld	bc,0x0d
+		pop	hl
+		push	hl
+		add	hl,bc
+		ld	c,(hl)
+		push	bc
+		ld	a,c
+		ld	b,2
+		cp	10
+		jr	c,loc_12D0
+		dec	b
+loc_12D0	cp	100
+		jr	nc,loc_12D9
+loc_12D4	ld	a," "
+		rst	0x10
+		djnz	loc_12D4
+loc_12D9	pop	bc
+		call	PRINT_CHISLO			; печать числа
+		ld	hl,TXT_1SPACE
+		rst	0x18
+		pop	hl
+		push	hl
+		ld	bc,9
+		add	hl,bc
+		ld	e,(hl)
+		inc	hl
+		ld	d,(hl)
+		push	hl
+		ex	de,hl
+		call	PRINT_HL_CHISLO
+		ld	a," "
+		call	PRINT_A_
+		pop	hl
+		inc	hl
+		ld	e,(hl)
+		inc	hl
+		ld	d,(hl)
+		ex	de,hl
+		call	PRINT_HL_CHISLO
+		pop	hl
+		push	hl
+		ld	bc,8
+		add	hl,bc
+		ld	a,(hl)
+		cp	"B"
+		call	z,PRN_ADR_ASTART
+		pop	hl
+		pop	bc
+		ld	de,0x10
+		add	hl,de
+		djnz	loc_12B5
+		push	hl
+		call	PRINT_0D
+		call	PRINT_0D
+		jp	loc_123E
+
+PRN_ADR_ASTART	ld	bc,5
+		add	hl,bc
+		ld	b,(hl)
+		inc	hl
+		ld	e,(hl)
+		inc	hl
+		ld	d,(hl)
+		dec	b
+		jr	z,loc_1335
+		dec	b
+		jr	z,loc_1335
+		ld	a,0x10
+loc_132C	inc	e
+		cp	e
+		jr	nz,loc_1333
+		ld	e,0
+		inc	d
+loc_1333	djnz	loc_132C
+loc_1335	ld	hl,(TRD_5CCF)			; временное сохранение WORK_SP
+		ld	bc,0x21
+		add	hl,bc
+		ld	b,2
+		push	hl
+		call	COM_05				; чтение секторов
+		ld	a,0x80
+		pop	hl
+		ld	bc,0x200
+		cpir
+		ld	a,(hl)
+		cp	0xaa
+		ret	nz
+		inc	hl
+		ld	c,(hl)
+		inc	hl
+		ld	b,(hl)
+		ld	a,b
+		or	c
+		ret	z
+		push	bc
+		ld	a," "
+		call	PRINT_A_
+		pop	bc
+		call	PRINT_CHISLO			; печать числа
+		ret
+
+COPY_S		call	SET_CH_ADD
+		call	GET_NEXT_SYM
+		call	PUT_NUMDSK_STK
+		call	EXIT_IF_SINTAX
+		call	RESERVED_RAM
+		ld	hl,TXT_INS_SRC			; "INSERT SOURCE DISK THEN PRESS Y"
+		call	PRINT_MSG			; печать текстового сообщения
+loc_1375	call	GET_KEYS			; ожидание нажатия клавиши
+		cp	"Y"
+		jr	nz,loc_1375
+		call	CLEAR_DOWN_SCR			; очистка нижней части экрана
+		call	INP_EXTFILENAME			; прием расширения файла
+		call	SET_CP_FILENAME
+		jp	nz,ERR_NOFILES
+		call	COPY_ON1DSK
+		ld	a,(TRD_5CE5)			; расширение файла
+		cp	"#"
+		jp	nz,ERR_OK
+loc_1393	ld	a,0x0a
+		ld	(TRD_5D06),a			; количество символов имени файла при поиске
+		ld	hl,TRD_5CE6			; для <C> - стартовый адрес, для <B> - длина программы
+		inc	(hl)
+		call	CLEAR_SCREEN			; очистка основного экрана
+		ld	hl,TXT_INS_SRC			; "INSERT SOURCE DISK THEN PRESS Y"
+		call	PRINT_MSG			; печать текстового сообщения
+loc_13A5	call	GET_KEYS			; ожидание нажатия клавиши
+		cp	"Y"
+		jr	nz,loc_13A5
+		call	FIND_FILENAME			; поиск	файла по имени файла
+		jp	nz,ERR_OK
+		call	COPY_ON1DSK
+		jr	loc_1393
+
+COPY_ON1DSK	call	RDHEAD_FILENAME			; ЧТЕНИЕ ОПИСАТЕЛЯ ФАЙЛА
+		ld	hl,TRD_5CE6			; для <C> - стартовый адрес, для <B> - длина программы
+		ld	de,TRD_5CED			; номер	первого	трека файла
+		ld	bc,7
+		ldir
+		ld	a,(TRD_5CF1)
+		ld	(TRD_5D10),a			; старший байт ошибки
+		call	COM_18				; настройка на дискету
+		call	GET_TYPE_DISK
+		ld	(TRD_5CD9),a			; промежуточная	длина для <B> и	<C>
+		ld	a,0xff
+		ld	(TRD_5D21),a
+		call	COPY_ON1DSK_
+		ld 	hl,(TRD_5D1F)
+		ld	(TRD_5CEB),hl			; номер	первого	сектора	файла
+		ld	hl,(TRD_5CF4)
+		ld	(TRD_5E06),hl
+		ld	hl,TRD_5E09
+		inc	(hl)
+		ld	c,(hl)
+		dec	c
+		ld	b,0
+		push	bc
+		ld	de,9
+		ld	(TRD_5CF4),de
+		call	REWRITE_9SEC			; перезапись 9 сектора
+		pop	bc
+		call	SETHEADFILENAME
+		call	REWRITE_9SEC			; перезапись 9 сектора
+		ret
+
+CP_FREESEC	xor	a
+		ld	(TRD_5D21),a
+		call	COM_18				; настройка на дискету
+		call	GET_TYPE_DISK
+		ld	(TRD_5CDA),a
+		call	FIND_FILENAME			; поиск	файла по имени файла
+		jp	z,FILE_EXISTS
+		call	READ_9SEC			; чтение 9 сектора
+		ld	a,(TRD_5E09)
+		cp	0x80
+		jp	z,ERR_DIRFULL
+		ld	hl,TRD_5CED			; номер	первого	трека файла
+		ld	de,TRD_5CE6			; ДЛЯ <C> - стартовый адрес, для <B> - длина программы
+		ld	bc,7
+		ldir
+		call	READ_9SEC			; чтение 9 сектора
+		ld	a,(TRD_5D10)			; старший байт ошибки
+		ld	(TRD_5CEA),a			; длина	файла в	секторах
+		ld	de,(TRD_5CEA)			; длина	файла в	секторах
+		ld	d,0
+		or	a
+		ld	hl,(TRD_5E0A)
+		sbc	hl,de
+		jp	c,loc_1C45
+		ld	(TRD_5E0A),hl
+		ld	hl,(TRD_5E06)
+		ld	(TRD_5CEB),hl			; номер	первого	сектора	файла
+		ld	(TRD_5D1F),hl
+		ret
+
+COPY_ON1DSK_	ld	a,(TRD_5CF1)
+		or	a
+		ret	z
+		ld	a,(TRD_5D21)
+		or	a
+		jr	nz,loc_146F
+		call	CLEAR_SCREEN			; очистка основного экрана
+		ld	hl,TXT_INS_SRC			; "INSERT SOURCE DISK THEN PRESS Y"
+		call	PRINT_MSG			; печать текстового сообщения
+loc_1465	call	GET_KEYS			; ожидание нажатия клавиши
+		cp	"Y"
+		jr	nz,loc_1465
+		call	CLEAR_DOWN_SCR			; очистка нижней части экрана
+loc_146F	ld	a,(TRD_5CF1)
+		or	a
+		ret	z
+		push	hl
+		ld	hl,TRD_5D23
+		sub	(hl)
+		pop	hl
+		jr	nc,loc_14CB
+		ld	a,(TRD_5CF1)
+		ld	b,a
+		xor	a
+		ld	(TRD_5CF1),a
+loc_1484	push	bc
+		ld	(TRD_5CCE),a			; 0x00 - тение сектора, 0xFF - запись сектора
+		ld	hl,(TRD_5CCF)			; временное сохранение WORK_SP
+		push	hl
+		ld	de,(TRD_5CF2)
+		call	SET_DSK_SOURCE
+		call	COM_05				; ЧТЕНИЕ СЕКТОРОВ
+		ld	hl,(TRD_5CF4)
+		ld	(TRD_5CF2),hl
+		call	CLEAR_SCREEN			; очистка основного экрана
+		ld	hl,TXT_INS_DEST			; "INSERT DESTINATION DISK"
+		call	PRINT_MSG			; печать текстового сообщения
+loc_14A5	call	GET_KEYS			; ожидание нажатия клавиши
+		cp	"Y"
+		jr	nz,loc_14A5
+		call	CLEAR_DOWN_SCR			; очистка нижней части экрана
+		ld	a,(TRD_5D21)
+		or	a
+		call	nz,CP_FREESEC
+		pop	hl
+		pop	bc
+		ld	de,(TRD_5CEB)			; номер	первого	сектора	файла
+		call	SETUP_DSK_DEST
+		call	COM_06
+		ld	hl,(TRD_5CF4)
+		ld	(TRD_5CEB),hl			; номер	первого	сектора	файла
+		jp	COPY_ON1DSK_
+
+loc_14CB	ld	(TRD_5CF1),a
+		push	hl
+		ld	hl,TRD_5D23
+		ld	b,(hl)
+		pop	hl
+		xor	a
+		jp	loc_1484
+
+SET_DSK_SOURCE	push	hl
+		push	de
+		call	GET_TYPE_DISK
+		ld	a,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		ld	(hl),a
+		pop	de
+		pop	hl
+		ret
+
+SETUP_DSK_DEST	push	hl
+		push	de
+		call	GET_TYPE_DISK
+		ld	a,(TRD_5CDA)
+		ld	(hl),a
+		pop	de
+		pop	hl
+		ret
+
+CP_FREE_DEST	xor	a
+		ld	(TRD_5D21),a
+		call	COM_18				; настройка на дискету
+		call	GET_TYPE_DISK
+		ld	(TRD_5CDA),a
+		ld	a,(TRD_5E08)
+		ld	(TRD_5CE7),a			; для <C> - стартовый адрес, для <B> - длина программы
+		ld	hl,640
+		cp	0x19
+		jr	z,SAVE_SECS_DEST
+		ld	hl,1280
+		cp	0x18
+		jr	z,SAVE_SECS_DEST
+		cp	0x17
+		jr	z,SAVE_SECS_DEST
+		ld	hl,2560
+		cp	0x16
+		jr	z,SAVE_SECS_DEST
+		jp	SINTAX_ERROR
+
+SAVE_SECS_DEST	ld	(TRD_5CDD),hl			; имя файла
+		ld	bc,(TRD_5CDF)
+		sbc	hl,bc
+		jp	c,loc_1C45
+		ret
+
+COPY_B		call	EXIT_IF_SINTAX
+		call	RESERVED_RAM
+		ld	hl,TXT_BACKUPDISK		; "BACKUP DISK"
+		call	PRINT_MSG			; печать текстового сообщения
+		ld	hl,TXT_INS_SRC			; "INSERT SOURCE DISK THEN PRESS Y"
+		call	PRINT_MSG			; печать текстового сообщения
+loc_153E	call	GET_KEYS			; ожидание нажатия клавиши
+		cp	"Y"
+		jr	nz,loc_153E
+		call	CLEAR_DOWN_SCR			; очистка нижней части экрана
+		ld	a,0xff
+		ld	(TRD_5D21),a
+		call	COM_18				; настройка на дискету
+		call	GET_TYPE_DISK
+		ld	(TRD_5CD9),a			; промежуточная	длина для <B> и	<C>
+		ld	a,(TRD_5E08)
+		cp	0x19
+		ld	hl,640
+		jr	z,loc_1575
+		ld	hl,1280
+		cp	0x18
+		jr	z,loc_1575
+		cp	0x17
+		jr	z,loc_1575
+		ld	hl,2560
+		cp	0x16
+		jr	z,loc_1575
+		jp	SINTAX_ERROR
+
+loc_1575	ld	bc,(TRD_5E0A)
+		sbc	hl,bc
+		ld	(TRD_5CE5),hl			; расширение файла
+		ld	(TRD_5CDF),hl
+		ld	hl,0
+		ld	(TRD_5CE1),hl
+		ld	(TRD_5CE3),hl
+		call	COPY_SECTORS
+		call	COM_18				; НАСТРОЙКА НА ДИСКЕТУ
+		ld	a,(TRD_5CE7)			; для <C> - стартовый адрес, для <B> - длина программы
+		ld	(TRD_5E08),a
+		ld	hl,(TRD_5CDD)			; имя файла
+		ld	bc,(TRD_5CDF)
+		sbc	hl,bc
+		ld	(TRD_5E0A),hl
+		call	SETUP_DSK_DEST
+		ld	de,9
+		ld	(TRD_5CF4),de
+		call	REWRITE_9SEC			; перезапись 9 сектора
+		JP	ERR_OK
+
+CP_COPY_SECS	ld	hl,(TRD_5CE5)			; расширение файла
+		ld	a,h
+		or	l
+		ret
+
+COPY_SECTORS	call	CP_COPY_SECS
+		ret	z
+		ld	a,(TRD_5D21)
+		or	a
+		jr	nz,loc_15DB
+		call	CLEAR_SCREEN			; очистка основного экрана
+		ld	hl,TXT_BACKUPDISK		; "BACKUP DISK"
+		call	PRINT_MSG			; печать текстового сообщения
+		ld	hl,TXT_INS_SRC			; "INSERT SOURCE DISK THEN PRESS Y"
+		call	PRINT_MSG			; печать текстового сообщения
+loc_15D1	call	GET_KEYS			; ожидание нажатия клавиши
+		cp	"Y"
+		jr	nz,loc_15D1
+		call	CLEAR_DOWN_SCR			; очистка нижней части экрана
+loc_15DB	call	CP_COPY_SECS
+		ret	z
+		push	bc
+		push	hl
+		ld	hl,TRD_5D23
+		ld	c,(hl)
+		ld	b,0
+		pop	hl
+		sbc	hl,bc
+		pop	bc
+		jp	nc,loc_1644
+		ld	bc,(TRD_5CE5)			; расширение файла
+		ld	hl,0
+		ld	(TRD_5CE5),hl			; расширение файла
+loc_15F8	push	bc
+		ld	hl,(TRD_5CCF)			; временное сохранение WORK_SP
+		push	hl
+		call	SET_DSK_SOURCE
+		ld	de,(TRD_5CE1)
+		ld	b,c
+		call	COM_05				; чтение секторов
+		ld	hl,(TRD_5CF4)
+		ld	(TRD_5CE1),hl
+		call	CLEAR_SCREEN			; очистка основного экрана
+		ld	hl,TXT_BACKUPDISK		; "BACKUP DISK"
+		call	PRINT_MSG			; печать текстового сообщения
+		ld	hl,TXT_INS_DEST			; "INSERT DESTINATION DISK"
+		call	PRINT_MSG			; печать текстового сообщения
+loc_161D	call	GET_KEYS			; ожидание нажатия клавиши
+		cp	"Y"
+		jr	nz,loc_161D
+		call	CLEAR_DOWN_SCR			; очистка нижней части экрана
+		ld	a,(TRD_5D21)
+		or	a
+		call	nz,CP_FREE_DEST
+		pop	hl
+		pop	bc
+		ld	de,(TRD_5CE3)
+		ld	b,c
+		call	SETUP_DSK_DEST
+		call	COM_06
+		ld	hl,(TRD_5CF4)
+		ld	(TRD_5CE3),hl
+		jp	COPY_SECTORS
+
+loc_1644	ld	(TRD_5CE5),hl			; расширение файла
+		push	hl
+		ld	hl,TRD_5D23
+		ld	c,(hl)
+		ld	b,0
+		pop	hl
+		xor	a
+		jp	loc_15F8
+
+CP_ERASED_FILE	call	RDHEAD_FILENAME			; чтение описателя файла
+		ld	a,(TRD_5CDD)			; имя файла
+		cp	1
+		ret
+
+; считывание описателя в буфер 0x5CDD
+COM_08		ld	c,a
+; чтение описателя файла
+RDHEAD_FILENAME	xor	a
+loc_165E	push	bc
+		call	RD_HEAD_COPY
+		pop	bc
+		ret
+
+; запись описателя файла на диск
+COM_09		ld	c,a
+		call	SETHEADFILENAME
+		jp	REWRITE_9SEC			; ПЕРЕЗАПИСЬ 9 СЕКТОРА
+
+SETHEADFILENAME	ld	a,0xff
+		jr	loc_165E
+
+RESERVED_RAM	ld	a,0xff
+		ld	(TRD_5D0E),a			; 0xFE - работает BASIC, иначе TR-DOS
+		call	CP_FREE_SECS
+		ld	hl,(WORKSP)
+		ld	(TRD_5CCF),hl			; временное сохранение WORK_SP
+		jp	CREATE_FREERAM
+
+CP_FREE_SECS	rst	0x20
+		dw	0x1f1a				; проверка размера свободной памяти
+		ld	hl,0xffff
+		sbc	hl,bc
+		ld	a,h
+		cp	0x10
+		jr	nc,loc_168F
+		ld	a,0x11
+loc_168F	dec	a
+		ld	(TRD_5D23),a
+		ld	b,a
+		ld	c,0
+		ret
+
+ADD_FILESIZE	ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		LD	(TRD_5CDB),hl
+		ld	de,(TRD_5CEA)			; длина	файла в	секторах
+		ld	hl,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		ld	d,0
+		add	hl,de
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+		ret
+
+MOVE		call	EXIT_IF_SINTAX
+		call	RESERVED_RAM
+		call	COM_18				; настройка на дискету
+		ld	a,(TRD_5E19)
+		or	a
+		jp	z,ERR_OK
+		ld	hl,0
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+		ld	c,0xff
+loc_16C3	inc	c
+		call	CP_ERASED_FILE
+		jr	nz,loc_16C3
+		ld	a,c
+		ld	(TRD_5CD4),a
+		ld	hl,(TRD_5CEB)			; номер	первого	сектора	файла
+		ld	(TRD_5CD5),hl
+		call	ADD_FILESIZE
+loc_16D6	inc	c
+		call	CP_ERASED_FILE
+		jr	z,loc_16D6
+		cp	0
+		jp	nz,loc_1710
+		ld	a,(TRD_5CD4)
+		ld	c,a
+loc_16E5	inc	c
+		call	CP_ERASED_FILE
+		cp	0
+		jr	z,REINIT_9SEC
+		xor	a
+		ld	(TRD_5CDD),a			; имя файла
+		call	WRHEAD_FILENAME			; сохранение описателя файла
+		call	ADD_FILESIZE
+		jr	loc_16E5
+
+	DUPL 0X1710-$,0XFF
+loc_1710	ld	a,(TRD_5CEA)			; длина	файла в	секторах
+		ld	(TRD_5CD3),a
+		ld	(TRD_5CD1),a
+		ld	hl,(TRD_5CEB)			; номер	первого	сектора	файла
+		ld	(TRD_5CD5),hl
+		push	bc
+		call	MOVE_FILE
+		pop	bc
+		ld	hl,(TRD_5CF4)
+		ld	(TRD_5CD5),hl
+		ld	(TRD_5CEB),hl			; номер	первого	сектора	файла
+		xor	a
+		ld	(TRD_5CEA),a			; длина	файла в	секторах
+		ld	a,(TRD_5CDD)			; имя файла
+		push	af
+		ld	a,1
+		ld	(TRD_5CDD),a			; имя файла
+		call	WRHEAD_FILENAME			; сохранение описателя файла
+		pop	af
+		ld	(TRD_5CDD),a			; имя файла
+		ld	a,(TRD_5CD4)
+		ld	c,a
+		ld	hl,(TRD_5CDB)
+		ld	(TRD_5CEB),hl			; номер	первого	сектора	файла
+		ld	a,(TRD_5CD1)
+		ld	(TRD_5CEA),a			; длина	файла в	секторах
+		call	WRHEAD_FILENAME			; сохранение описателя файла
+		ld	a,(TRD_5CD4)
+		inc	a
+		ld	c,a
+		call	RDHEAD_FILENAME			; чтение описателя файла
+		ld	hl,(TRD_5CD5)
+		ld	(TRD_5CEB),hl			; номер	первого	сектора	файла
+		call	WRHEAD_FILENAME			; сохранение описателя файла
+		ld	a,(TRD_5CD4)
+		ld	c,a
+		jp	loc_16C3
+
+REINIT_9SEC	ld	hl,(TRD_5CCF)			; временное сохранение WORK_SP
+		ld	bc,0x1000
+		call	DEL_WORKRAM
+		call	READ_9SEC			; чтение 9 сектора
+		ld	hl,(TRD_5E0A)
+		ld	de,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		add	hl,de
+		ld	(TRD_5E0A),hl
+		ld	a,(TRD_5E09)
+		ld	hl,TRD_5E19
+		sub	(hl)
+		ld	(TRD_5E09),a
+		ld	(hl),0
+		ld	hl,(TRD_5CD5)
+		ld	(TRD_5E06),hl
+		push	af
+		call	REWRITE_9SEC			; перезапись 9 сектора
+		pop	af
+		ld	c,a
+		call	RDHEAD_FILENAME			; чтение описателя файла
+		xor	a
+		ld	(TRD_5CDD),a			; имя файла
+		jp	loc_569
+
+MOVE_FILE	ld	a,(TRD_5CD3)
+		or	a
+		ret	z
+		push	hl
+		ld	hl,TRD_5D23
+		sub	(hl)
+		pop	hl
+		jr	nc,loc_17DD
+		ld	a,(TRD_5CD3)
+		ld	b,a
+		xor	a
+		ld	(TRD_5CD3),a
+loc_17BA	push	bc
+		ld	hl,(TRD_5CCF)			; временное сохранение WORK_SP
+		push	hl
+		ld	de,(TRD_5CD5)
+		call	COM_05				; чтение секторов
+		ld	hl,(TRD_5CF4)
+		ld	(TRD_5CD5),hl
+		pop	hl
+		pop	bc
+		ld	de,(TRD_5CD7)			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		call	COM_06
+		ld	hl,(TRD_5CF4)
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		jr	MOVE_FILE
+
+loc_17DD	ld	(TRD_5CD3),a
+		push	hl
+		ld	hl,TRD_5D23
+		ld	b,(hl)
+		pop	hl
+		xor	a
+		jr	loc_17BA
+
+RD_HEAD_COPY	push	af
+		ld	hl,TRD_5CCC			; текущий номер	сектора	при чтении каталога
+		ld	(hl),0
+		ld	a,c
+loc_17F0	sub	0x10
+		jr	c,loc_17F7
+		inc	(hl)
+		jr	loc_17F0
+
+loc_17F7	add	a,0x10
+		ld	c,a
+		push	bc
+		call	READ_NUM_SEC			; чтение сектора каталога по номеру
+		pop	bc
+		pop	af
+		call	FIND_HEAD_BUF
+		ld	de,TRD_5CDD			; имя файла
+		ld	bc,0x10
+		or	a
+		jr	z,loc_180D
+		ex	de,hl
+loc_180D	ldir
+		ret
+
+VERIFY		ld	a,0xff
+		ld	(TRD_5CF9),a			; дисковод при операции	с 2 файлами
+LOAD		call	ZERO2HIGH_ERR
+loc_1818	call	LOAD_FILE
+		call	EXIT_IF_SINTAX
+		ld	a,0xff
+		ld	(TRD_5D10),a			; старший байт ошибки
+		ld	a,(TRD_5CF9)			; дисковод при операции	с 2 файлами
+		cp	0xff
+		jp	z,ERR_OK
+		ld	a,(TRD_5CE5)			; расширение файла
+		cp	"B"
+		jp	z,WORK4AUTORUN			; обработка строки автозапуска бейсика
+		jp	ERR_OK
+
+LOAD_FILE	call	GET_PARAMS
+		call	EXIT_IF_SINTAX
+		call	CP_PARAMS
+		jp	RD_FILE
+
+GET_LOAD_CODE	ld	hl,(CH_ADD)
+		inc	hl
+		ld	a,(hl)
+		cp	0x0d
+		ret	z
+		ld	a,1
+		ld	(TRD_5CD6),a			; 0xFF - команда принята синтаксическим анализатором
+		call	INPUT_PARAMS
+ZERO2HIGH_ERR	xor	a
+		ld	(TRD_5D10),a			; старший байт ошибки
+		ret
+
+sub_1857	call	INP_EXTFILENAME			; прием расширения файла
+		ld	a,"B"
+		cp	b
+		jr	nz,loc_1866
+		ld	hl,(CH_ADD)
+		dec	hl
+		ld	(CH_ADD),hl
+loc_1866	call	INPUT_PARAMS
+		ld	hl,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	hl,(TRD_5CDB)
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+		xor	a
+		ld	(TRD_5CD6),a			; 0xFF - команда принята синтаксическим анализатором
+		ret
+
+GET_PARAMS	call	CP_SECOND_SYM
+		jp	z,loc_27B
+		call	SET_AND_PUT
+		call	CP_HIGH_ERR
+		call	nz,sub_1857
+		call	GET_SYMSTR
+		cp	__CODE
+		call	z,GET_LOAD_CODE
+		cp	__DATA
+		push	af
+		call	CP_HIGH_ERR
+		call	z,INP_EXTFILENAME		; прием расширения файла
+		pop	af
+		call	z,READ_MASSIV
+		call	EXIT_IF_SINTAX
+		call	FIND_FILE			; поиск	файла по имени
+FIND_RD_HEAD	jp	nz,ERR_NOFILES
+		call	RDHEAD_FILENAME			; чтение описателя файла
+		ret
+
+CP_PARAMS	ld	a,(TRD_5CD6)
+		or	a
+		ld	hl,(TRD_5CE6)			; адрес загрузки из описателя файла
+		jr	z,loc_18B7
+		ld	hl,(TRD_5CD9)			; адрес загрузки из командной строки
+loc_18B7	CALL ADR_START_COM
+		NOP
+		cp	3
+		ld	a,(TRD_5CEA)			; длина файла в секторах
+		push	de
+		ld	de,(TRD_5CE8)			; длина программы из описателя
+		jr	nz,loc_18CB
+		ld	de,(TRD_5CDB)			; длина файла для загрузки изкомандной строки
+loc_18CB	ld	b,a
+		ld	(TRD_5CDB),de
+		ld	a,(TRD_5CE5)			; расширение файла
+		cp	"C"
+		ld	a,b
+		jr	nz,loc_18FD
+		ld	a,b
+		cp	d
+		jr	z,loc_18F6
+		dec	a
+		cp	d
+		ld	a,b
+		jr	z,loc_18F6
+		ld	a,(TRD_5CD6)			; 0xFF - команда принята синтаксическим анализатором
+		cp	3
+		ld	a,b
+		jr	z,loc_18F6
+		xor	a
+		ld	(TRD_5CD6),a			; 0xFF - команда принята синтаксическим анализатором
+		ld	d,b
+		ld	e,0
+		ld	(TRD_5CDB),de
+		jr	loc_18F9
+
+loc_18F6	call	LOAD_FULLFILE
+loc_18F9	ld	a,b
+		call	KOLWO_SECS
+loc_18FD	ld	b,a
+		ld	a,(TRD_5CE5)			; расширение файла
+		cp	"C"
+		pop	de
+		ret	z
+		push	de
+		cp	"B"
+		push	af
+		call	z,LOAD4BASIC
+		pop	af
+		cp	"D"
+		call	z,LOAD4DATA
+		call	LOAD_FULLFILE
+		ld	a,(TRD_5CDC)
+		ld b,a
+		pop de
+		ret
+
+LOAD_FULLFILE	ld	a,3
+		ld	(TRD_5CD6),a			; 0xFF - команда принята синтаксическим анализатором
+		ret
+
+RD_FILE		call	CP_HIGH_ERR
+		jr	z,loc_192D
+		push	af
+		call	NUM_SEC_FILE
+		pop	af
+		cp	0xff
+loc_192D	push	af
+		call	z,RD_SECTORS
+		pop	af
+		jr	z,loc_1937
+		jp	COM_06
+
+loc_1937	ld	a,(TRD_5CD6)			; 0xFF - команда принята синтаксическим анализатором
+		cp	3
+		call	z,RD_OR_VERIFY
+		ld	hl,(E_LINE)			; адрес	начала редактируемой строки
+		dec	hl
+		ld	(hl),0x80
+		ret
+
+RD_OR_VERIFY	ld	a,(TRD_5CF9)			; дисковод при операции	с 2 файлами
+		cp	0xff
+		jp	nz,LOAD_END_FILE
+		ld	a,(TRD_5CDB)
+		or	a
+		ret	z
+		ld	c,a
+		ld	b,1
+		ld	de,(TRD_5CF4)
+		jr	loc_196A
+
+RD_SECTORS	ld	a,(TRD_5CF9)			; дисковод при операции	с 2 файлами
+		cp	0xff
+		jp	nz,COM_05			; чтение секторов
+		ld 	(TRD_5CF4),de
+		ld	c,0
+loc_196A	ld	a,b
+		or	a
+		ret	z
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	(TRD_5CD9),de			; промежуточная	длина для <B> и	<C>
+loc_1974	push	bc
+		ld	b,1
+		ld	de,(TRD_5CD9)			; промежуточная	длина ДЛЯ <B> и	<C>
+		ld	hl,TRD_5D25
+		call	COM_05				; чтение секторов
+		ld	hl,(TRD_5CF4)
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+		pop	bc
+		ld	hl,(TRD_5CD7)			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	de,TRD_5D25
+loc_198E	ld	a,(de)
+		cp	(hl)
+		jr	nz,loc_199D
+		inc	hl
+		inc	de
+		dec	c
+		jr	nz,loc_198E
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		djnz	loc_1974
+		ret
+
+loc_199D	ld	hl,TXT_VERIFYERR		; "VERIFY ERROR."
+		ld	a,0x0d
+		jp	PRINT_TXTERR
+
+PEEK		ld	a,0xff
+		jr	loc_19AB
+
+POKE		ld	a,0xee
+loc_19AB	ld	(TRD_5D10),a			; старший байт ошибки
+		jp	loc_1818
+
+MERGE		ld	a,0xff
+		ld	(TRD_5D1F),a
+		call	GET_PARAMS
+		call	EXIT_IF_SINTAX
+		ld	a,(TRD_5CE5)			; расширение файла
+		cp	"B"
+		jp	nz,SINTAX_ERROR
+		ld	bc,(TRD_5CE6)			; для <C> - стартовый адрес, для <B> - длина программы
+		ld	(TRD_5CDB),bc
+		push	bc
+		inc	bc
+		rst	0x20
+		dw	0x30				; создание свободного места
+		ld	(hl),0x80
+		ex	de,hl
+		pop	de
+		push	hl
+		ld	de,(TRD_5CEB)			; номер	первого	сектора	файла
+		call	LOAD_FULLFILE
+		ld	a,(TRD_5CDC)
+		ld	b,a
+		call	ZERO2HIGH_ERR
+		call	RD_FILE
+		pop	hl
+		ld	de,(PROG)
+		rst	0x20
+		dw	0x08d2				; работа со строками программы на бейсике
+		jp	ERR_OK
+
+CP_FREE4PROG	ex	de,hl
+		scf
+		sbc	hl,de
+		ret	c
+		ld	de,0x0a
+		add	hl,de
+		ld	b,h
+		ld	c,l
+CP_FREE_RAM	rst	0x20 
+		dw	0x1f05				; проверка свободной памяти
+		ret
+
+LOAD4BASIC	ld	de,(PROG)
+		ld	hl,(E_LINE)			; адрес	начала редактируемой строки
+		dec	hl
+		push	hl
+		push	de
+		sbc	hl,de
+		ld	de,(TRD_5CE6)			; для <C> - стартовый адрес, для <B> - длина программы
+		push	de
+		push	hl
+		ld	hl,0
+		ld	a,(TRD_5CF9)			; дисковод при операции	с 2 файлами
+		cp	0xff
+		jr	z,loc_1A20
+		ld	hl,5
+loc_1A20	add	hl,de
+		ld	(TRD_5CDB),hl
+		pop	hl
+		ld	a,(TRD_5CF9)			; дисковод при операции	с 2 файлами
+		cp	0xff
+		jr	nz,loc_1A31
+		pop	de
+		pop	de
+		pop	hl
+		jr	loc_1A48
+
+loc_1A31	call	CP_FREE4PROG
+		pop	bc
+		pop	de
+		pop	hl
+		push	bc
+		rst	0x20
+		dw	0x19e5				; восстановление
+		pop	bc
+		call	RESERV_RAM
+		inc	hl
+		ld	bc,(TRD_5CE8)			; длина	программы
+		add	hl,bc
+		ld	(VARS),hl
+loc_1A48	ld	hl,(PROG)
+		ret
+
+LOAD4DATA	ld	de,(TRD_5CE8)			; длина	программы
+		ld	(TRD_5CDB),de
+		ld	hl,(TRD_5CD7)			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	a,(TRD_5CF9)			; дисковод при операции	с 2 файлами
+		cp	0xff
+		ret	z
+		ld	hl,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		push	hl
+		call	CP_FREE4PROG
+		pop	hl
+		ld	a,h
+		or	l
+		jr	z,loc_1A79
+		ld	hl,(TRD_5CD7)			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		dec	hl
+		dec	hl
+		dec	hl
+		ld	bc,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		inc	bc
+		inc	bc
+		inc	bc
+		call	DEL_WORKRAM
+loc_1A79	ld	hl,(E_LINE)			; адрес	начала редактируемой строки
+		dec	hl
+		ld	bc,(TRD_5CE8)			; длина	программы
+		push	bc
+		inc	bc
+		inc	bc
+		inc	bc
+		call	RESERV_RAM
+		inc	hl
+		ld	a,(TRD_5CD2)
+		ld	(hl),a
+		inc	hl
+		pop	de
+		ld	(hl),e
+		inc	hl
+		ld	(hl),d
+		inc	hl
+		ret
+
+NUM_SEC_FILE	ld	a,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		ld	c,b
+		ld	b,a
+		ld	a,c
+		cp	b
+		jr	c,loc_1AB6
+		ld	a,b
+		or	a
+		jp	z,SINTAX_ERROR
+		dec	b
+		jr	z,loc_1AB0
+		ld	a,0x10
+loc_1AA7	inc	e
+		cp	e
+		jr	nz,loc_1AAE
+		ld	e,0
+		inc	d
+loc_1AAE	djnz	loc_1AA7
+loc_1AB0	ld	b,1
+		ld	hl,(TRD_5CD7)			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ret
+
+loc_1AB6	ld	hl,TXT_R_O
+		ld	a,5
+		jp	PRINT_TXTERR
+
+CP_FILE_FREE	call	FIND_FILE			; поиск	файла по имени
+		jp	z,FILE_EXISTS
+CP_FREE_ON_DSK	call	READ_9SEC			; чтение 9 сектора
+		ld	a,(TRD_5E09)
+		cp	0x80
+		jp	z,ERR_DIRFULL
+		ret
+
+SAVE		call	ZERO2HIGH_ERR
+		ld	hl,0
+		ld	(TRD_5CD1),hl
+		call	SET_AND_PUT
+		call	GET_SYMSTR
+		cp	__CODE
+		jr	z,loc_1B39
+		cp	__LINE
+		jr	nz,loc_1AF8
+		call	SET_NUM_CHAN
+		call	EXIT_IF_SINTAX
+		ld	hl,(TRD_5CDB)
+		ld	(TRD_5CD1),hl
+		ld	hl,TRD_5CE5			; расширение файла
+		jr	loc_1B1F
+
+loc_1AF8	cp	__SCREENS
+		jr	nz,loc_1B0D
+		ld	hl,0x4000
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	hl,0x1b00
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+		ld	(TRD_5CDB),hl
+		jr	loc_1B48
+
+loc_1B0D	call	EXIT_IF_SINTAX
+		call	GET_SYMSTR
+		ld	hl,TRD_5CE5			; расширение файла
+		cp	__DATA
+		jr	z,loc_1B2C
+		cp	0x0d
+		jp	nz,SINTAX_ERROR
+loc_1B1F	ld	(hl),"B"
+		call	CP_FILE_FREE
+		call	DEL_5BYTES
+loc_1B27	call	SET_START_SIZE
+		jr	loc_1B53
+
+loc_1B2C	ld	(hl),"D"
+		call 	CP_FILE_FREE
+		call	CP_MASSIV
+		jr	nc,loc_1B53
+		jp	c,SINTAX_ERROR
+loc_1B39	call	GET_START_SIZE
+		ld	hl,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	hl,(TRD_5CDB)
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+loc_1B48	call	EXIT_IF_SINTAX
+		ld	a,"C"
+		ld	(TRD_5CE5),a			; расширение файла
+		call	CP_FILE_FREE
+loc_1B53	call	SAVE_FILE
+		jp	loc_569
+
+SAVE_FILE	ld	hl,(TRD_5CD7)			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	(TRD_5CE6),hl			; для <C> - стартовый адрес, для <B> - длина программы
+		ex	de,hl
+		ld	hl,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		ld	a,l
+		or	h
+		jp	z,SINTAX_ERROR
+		ld	a,l
+		or	a
+		jr	z,loc_1B6D
+		inc	h
+loc_1B6D	ld	a,h
+		ld	(TRD_5CEA),a			; длина	файла в	секторах
+		ld	e,a
+		ld	d,0
+		ld	hl,(TRD_5E0A)
+		sbc	hl,de
+		jp	c,loc_1C45
+		push	hl
+		ld	hl,(E_LINE)			; адрес	начала редактируемой строки
+		ld	(hl),__SCREENS
+		inc	hl 
+		ld	de,(TRD_5CD1)
+		ld	(hl),e
+		inc	hl
+		ld	(hl),d
+		ld	hl,(TRD_5CDB)
+		ld	(TRD_5CE8),hl			; длина	программы
+		ld	hl,(TRD_5E06)
+		ld	(TRD_5CEB),hl			; номер	первого	сектора	файла
+		ex	de,hl
+		ld	hl,(TRD_5CE6)			; для <C> - стартовый адрес, для <B> - длина программы
+		ld	a,(TRD_5CEA)			; длина	файла в	секторах
+		ld	b,a
+		call	COM_06
+		ld	hl,(TRD_5CF4)
+		push	hl
+		call	READ_9SEC			; чтение 9 сектора
+		pop	hl
+		ld	(TRD_5E06),hl
+		pop	hl
+		ld	(TRD_5E0A),hl
+		ld	hl,TRD_5E09
+		ld	a,(hl)
+		ld	(TRD_5D1E),a
+		inc	(hl)
+		push	hl
+		call	REWRITE_9SEC			; перезапись 9 сектора
+		pop	hl
+		ld	c,(hl)
+		dec	c
+		ld	a,(TRD_5CE5)			; расширение файла
+		cp	"B"
+		call	z,SET_HEAD_STSZ
+		ret
+
+SET_HEAD_STSZ	ld	hl,(E_LINE)			; адрес	начала редактируемой строки
+		ld	de,(PROG)
+		scf
+		sbc	hl,de
+		ld	(TRD_5CE6),hl			; для <C> - стартовый адрес, для <B> - длина программы
+		ld	hl,(VARS)
+		sbc	hl,de
+		ld	(TRD_5CE8),hl			; длина	программы
+		ret
+
+SET_START_SIZE	ld	hl,(VARS)
+		ld	de,(PROG)
+		sbc	hl,de
+		ld	(TRD_5CDB),hl
+		ld	hl,(PROG)
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	hl,(E_LINE)			; адрес	начала редактируемой строки
+		inc	hl
+		inc	hl
+		inc	hl
+		sbc	hl,de
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+		ret
+
+READ_MASSIV	call	FIND_MASSIV
+		ret	nc
+		ld	hl,0
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+		ld	a,(TRD_5CF9)			; дисковод при операции	с 2 файлами
+		cp	0xff
+		ret	nz
+		jp	loc_1C13
+
+CP_MASSIV	call	FIND_MASSIV
+		ret	nc
+loc_1C13	ld	a,0x0e
+		ld	hl,TXT_ARRAYNOT			; "ARRAY NOT FOUND"
+		jp	PRINT_TXTERR
+
+FIND_MASSIV	call	GET_NEXT_SYM
+		call	LOOK_VARS
+		set	7,c
+		ld	a,c
+		ld	(TRD_5CD2),a
+		jr	nc,loc_1C2B
+loc_1C29	scf
+		ret
+
+loc_1C2B	jr	nz,loc_1C29
+		inc	hl
+		ld	e,(hl)
+		inc	hl
+		ld	d,(hl)
+		inc	hl
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	(TRD_5CDB),de
+		ld	(TRD_5CD9),de			; промежуточная	длина для <B> и	<C>
+		call	GET_NEXT_SYM
+		cp	")"
+		jr	nz,loc_1C2B
+		ret
+
+loc_1C45	ld	hl,TXT_NOSPACE_
+		ld	a,3
+PRINT_TXTERR	call	PRINT_ERROR			; печать сообщения об ошибке
+		jp	END_COMAND
+
+FILE_EXISTS	ld	hl,TXT_FILEEXISTS_
+		ld	a,2
+		jr	PRINT_TXTERR
+
+SET_FILENAME	ld	hl,TRD_5CDD			; имя файла
+		ld	b,8
+loc_1C5C	ld	(hl)," "
+		inc	hl
+		djnz	loc_1C5C
+		call	CP_ON_STKBOT
+		ex	de,hl
+		call	SETUP_DSK
+		ld	a,c
+		or	a
+		jp	z,SINTAX_ERROR
+		cp	9
+		jr	c,loc_1C73
+		ld	c,8
+loc_1C73	ld	a,(hl)
+		cp	" "
+		jp	c,SINTAX_ERROR
+		ld	de,TRD_5CDD			; имя файла
+		push	bc
+		ldir
+		pop	bc
+		ret
+
+; выбор диска для форматирования
+SETUP_DSK	inc	hl
+		ld	a,(hl)				; второй символ в кавычках
+		cp	":"				; если не ":", то
+		jr	nz,loc_1C98			; переход на выбор текущего дисковода
+		dec	hl
+		ld	a,(hl)				; иначе забираем из строки букву дисковода
+		call	NUMDSK2BYTE			; установка дисковода на котором будет форматирование
+		push	bc
+		push	hl
+		call	COM_01				; настройка на дисковод
+		pop	hl
+		pop	bc
+		dec	bc
+		dec	bc				; пропускаем имя дисковода в имени диска
+		inc	hl
+		inc	hl				; сдвинули указатель в введенной строке на начало имени диска
+		ret
+
+loc_1C98	dec	hl
+		ld	a,(TRD_5D19)			; дисковод по умолчанию
+		push	bc
+		push	hl
+		call	COM_01				; настройка на дисковод
+		pop	hl
+		pop	bc
+		ret
+
+FIND_HEAD_BUF	ld	l,c
+		ld	h,0
+		add	hl,hl
+		add	hl,hl
+		add	hl,hl
+		add	hl,hl
+		ld	bc,TRD_5D25
+		add	hl,bc
+		ret
+
+SET_CP_FILENAME	call	SET_FILENAME
+; поиск	файла по имени файла
+FIND_FILENAME	call	RD_0SEC2BUF			; чтение сектора 0 каталога
+		ld	b,0x80
+		ld	c,0
+loc_1CBA	push	bc
+		call	FIND_HEAD_BUF
+		call	CP_END_BUF
+		pop	bc
+		push	bc
+		ld	a,c
+		cp	0x10
+		jr	nz,loc_1CCD
+		pop	bc
+		ld	c,0
+		jr	loc_1CBA
+
+loc_1CCD	ld	de,TRD_5CDD			; имя файла
+		ld	a,(TRD_5D06)			; количество символов имени файла при поиске
+		ld	b,a
+		xor	a 
+		cp	(hl)
+		jr	nz,loc_1CDB
+		pop	bc
+		jr	loc_1CE4
+
+loc_1CDB	call	COMPARE_B_SYM
+		pop	bc
+		jr	z,loc_1CE7
+		inc	c
+		djnz	loc_1CBA
+loc_1CE4	or	0xff
+		ret
+
+loc_1CE7	ld	a,0x80
+		sub	b
+		ld	c,a
+		ld	(TRD_5D1E),a
+		xor	a
+		ret	z
+
+; поиск файла по имени и расширению
+COM_0A		call	FIND_FILENAME			; поиск	файла по имени файла
+		ld	hl,TRD_5D0F			; номер	ошибки TR-DOS
+		ld	(hl),c
+		ret	z
+		ld	(hl),0xff
+		ret
+
+RETURN		call	EXIT_IF_SINTAX
+		CALL	DELETE_BUFFER
+		res	3,(iy+1)
+		call	RESTORE_SP			; восстановление перехватчика ошибок
+		ld	sp,(TRD_5D1C)			; сохранение регистра SP
+		exx			;LD HL,(ERR_SP)
+		ld	hl,0x2758	;DEC HL
+		exx			;LD A,0X12
+		dec	hl		;CP (HL)
+		ld	a,0x12		;JR NZ,LOCRET_1D19
+		cp	(hl)		;DEC HL
+		ret	nz		;LD (ERR_SP),HL
+		dec	hl		;LOCRET_1D19	RET
+		jp	loc_0235
+
+SINTAX_ERROR	bit	7,(iy+0)
+		jr	z,loc_1D25
+		ld	a,0x0b
+		ld	(ERR_NR),a
+loc_1D25	inc	a
+		ld	hl,TXT_ERROR_
+loc_1D29	call	PRINT_ERROR			; печать сообщения об ошибке
+		jp	END_COMAND
+
+loc_1D2F	ld	a,(ERR_NR)
+		ld	hl,TXT_BREAK			; "*BREAK*"
+		cp	0x14
+		jr	z,loc_1D29
+		cp	0x0c
+		jr	z,loc_1D29
+		ld	hl,TXT_OUTRAM			; "OUT OF RAM"
+		cp	3
+		jr	z,loc_1D29
+		ld	hl,TXT_ARRAYNOT			; "ARRAY NOT FOUND"
+		cp	1
+		jr	z,loc_1D29
+		jr	SINTAX_ERROR
+
+RUN		call	ZERO2HIGH_ERR
+		call	LOAD_FILE
+		call	EXIT_IF_SINTAX
+		ld	hl,(TRD_5CE6)
+		ld	a,(TRD_5CE5)			; расширение файла
+		cp	"B"
+		JP	RUN_FILE
+
+		push	hl
+		ret
+
+CLEAR_WORKSPACE	ld	hl,TRD_5D0E			; 0xFF - работает BASIC, иначе TR-DOS
+		ld	a,(hl)
+loc_1D67	cp	0xff
+		ld	(hl),0
+		ret	nz
+		rst	0x20
+		dw	0x16bf				; очистка рабочей области и стека калькулятора
+		ret
+
+CP_SINTAX	bit	7,(iy+1)
+		ret
+
+EXIT_IF_SINTAX	call	CP_SINTAX
+		ret	nz
+		pop	hl
+		ret
+
+; ЗАНЕСЕНИЕ ЧИСЛА НА СТЕК КАЛЬКУЛЯТОРА
+CHISLO2STKBOT	call	GET_NEXT_SYM
+		call	BC2STKBOT
+		jr	CP_SINTAX
+
+; открытие канала 0
+OPEN_CHAN_0	xor	a
+OPENSTREAM	rst	0x20
+		dw	0x1601				; открытие канала
+		ret
+
+; открытие канала 2
+OPEN_CHAN_2	ld	a,2
+		jr	OPENSTREAM
+
+GET_SYMSTR	rst	0x20
+		dw	0x18				; выборка символа из (CH_ADD)
+		ret
+
+CALL2BASEDIT	call	OPEN_CHAN_0			; открытие канала 0
+		rst	0x20
+		dw	0x0f2c				; редактор командной строки
+		ret
+
+; очистка основного экрана
+CLEAR_SCREEN	rst	0x20
+		dw	0x0d6b				; очистка экрана
+		ret
+
+LOOK_VARS	rst	0x20
+		dw	0x28b2				; LOOK-VARS. фиг знает че делает
+		ret
+
+; очистка нижней части экрана
+CLEAR_DOWN_SCR	rst	0x20
+		dw	0x0d6e				; очистка нижней части экрана
+		ret
+
+PRINT_CHISLO_A_	ld	c,a
+CONV2_2BYTES	ld	b,0
+		jp	PRINT_CHISLO
+
+PRINT_CHISLO	push	bc
+	DUPL 3,0
+		pop	bc
+		rst	0x20
+		dw	0x1a1b				; печать сообщений и номеров строк
+	DUPL 3,0
+		ret
+
+GET_STKBOT_	rst	0x20
+		dw	0x2bf1				; чтение дна стека калькулятора
+		ret
+
+FIND_LAST	rst	0x20
+		dw	0x1e99				; поиск	последнего целого числа
+		ret
+
+PUT_NUMDSK_STK	rst	0x20
+		dw	0x1c8c
+		ret
+
+BC2STKBOT	rst	0x20
+		dw	0x1c82
+		ret
+
+SET_CH_ADD	ld	hl,(TRD_5D11)			; адрес	строки команды TR-DOS
+		inc	hl
+		ld	(CH_ADD),hl
+		ret
+
+INP_2STR2STKBOT	call	SET_AND_PUT
+loc_1DD0	call	GET_SYMSTR
+		cp	","
+		jp	nz,SINTAX_ERROR
+		call	GET_NEXT_SYM
+		call	PUT_NUMDSK_STK
+		ret
+
+SET_AND_PUT	call	SET_CH_ADD
+		jp	PUT_NUMDSK_STK
+
+GET_START_SIZE	call	GET_SYMSTR
+		cp	__CODE
+		ret	nz
+INPUT_PARAMS	call	CHISLO2STKBOT			; занесение числа на стек калькулятора
+		jr	z,loc_1DFB
+		call	FIND_LAST
+		ld	(TRD_5CD9),bc			; промежуточная	длина для <B> и	<C>
+		ld	(TRD_5CDB),bc
+loc_1DFB	call	GET_SYMSTR
+		cp	","
+		jr	z,SET_NUM_CHAN
+		cp	0x0d
+		jp	nz,SINTAX_ERROR
+		call	EXIT_IF_SINTAX
+		ret
+
+SET_NUM_CHAN	call	CHISLO2STKBOT			; занесение числа на стек калькулятора
+		ret	z
+		call	FIND_LAST
+		ld	(TRD_5CDB),bc
+		ld	a,3
+		ld	(TRD_5CD6),a			; 0xFF - команда принята синтаксическим анализатором
+		ret
+
+DEL_5BYTES	ld	hl,(TRD_5D11)			; адрес	строки команды TR-DOS
+		rst	0x20
+		dw	0x11a7				; удаление из командной	стpоки пятибайтных чисел
+		ret
+
+CREATE_FREERAM	ld	hl,(WORKSP)
+		rst	0x20
+		dw	0x30				; создание свободного места
+		ret
+
+GET_NEXT_SYM	rst	0x20
+		dw	0x20				; печать следующего символа
+		ret
+
+DEL_WORKRAM	rst	0x20
+		dw	0x19e8				; удаление области памяти
+		ret
+
+RESERV_RAM	rst	0x20
+		dw	0x1655
+		ret
+
+WR_NUM_TRACK	call	GET_NUM_TRACK			; FIX
+		ld	a,h
+		out	(0x3f),a
+		ret
+
+; чтение секторов
+COM_05		xor	a
+		jr	loc_1E64
+
+WRHEAD_FILENAME	call	SETHEADFILENAME			; сохранение описателя файла
+REWRITE_9SEC	ld	de,(TRD_5CF4)			; перезапись 9 сектора
+		dec	de
+		ld	b,1
+		ld 	hl,TRD_5D25
+; запись секторов
+COM_06		JR SAVE_SECTORS
+
+	DUPL 0X1E62-$,0
+SAVE_SECTORS	ld	a,0xff
+loc_1E64	ld	(TRD_5CCE),a			; 0x00 - чтение сектора, 0xFF - запись сектора
+loc_1E67	ld	(TRD_5CF4),de
+		push	bc
+		push	hl
+		call	WR_NUM_TRACK
+		pop	hl
+		pop	bc
+		xor	a
+		or	b
+		ret	z
+loc_1E75	push	bc
+		push	hl
+		call	COM_04
+		ld	a,(TRD_5CF4)
+		call	COM_03
+		ld	a,(TRD_5CF5)
+		call	COM_02
+		ld	a,(TRD_5CCE)			; 0x00 - чтение сектора, 0xFF - запись сектора
+		or	a
+		push	af
+		call	z,LOAD_SECTOR
+		pop	af
+		call	nz,SAVE_SECTOR
+		pop	hl
+		ld	de,0x100
+		add	hl,de
+		push	hl
+		ld	a,0x10
+		ld	hl,TRD_5CF4
+		inc	(hl)
+		cp	(hl)
+		jr	nz,loc_1EA7
+		ld	(hl),0
+		ld	hl,TRD_5CF5
+		inc	(hl)
+loc_1EA7	pop	hl
+		pop	bc
+		djnz	loc_1E75
+		ret
+
+KOLWO_SECS	push	hl
+		ld	h,a
+		ld	l,0
+		push	hl
+		sbc	hl,de
+		call	c,LOAD_FILLFILE
+		pop	hl
+		ld	a,h
+		pop	hl
+		ret	c
+		ld	a,d
+		ret
+
+LOAD_FILLFILE	xor	a
+		ld	(TRD_5CD6),a			; 0xFF - команда принята синтаксическим анализатором
+		scf
+		ret
+
+FORMAT		ld	hl,0xffff
+		LD	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+		ld	(TRD_5CD1),hl
+		call	CP_SECOND_SYM
+		jp	z,SINTAX_ERROR
+		call	SET_AND_PUT
+		call	EXIT_IF_SINTAX
+		call	SET_FILENAME
+
+	DUPL 0X1EE1-$
+		CALL FORMAT_RAM
+		JR Z,END_FORMAT
+		ld	a,80
+loc_1EE8	ld	(TRD_5CD7),a			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		call	COM_00
+		call	COM_17
+		call	PAUSE_3_C_A
+		ld	e,1
+		call	FORMAT_TREK
+		call	COM_16
+		ld	e,0
+		call	FORMAT_TREK
+
+	DUPL 0X1F08-$
+		call	COM_17
+		call	PAUSE_3_C_A
+		call	loc_3EB5
+		ld	a,0X80
+		ld	(TRD_5CDA),a
+loc_1F1B	call	FORMAT_DISK
+
+END_FORMAT	CALL CP_TYPEDRIVE
+		CALL Z,CREATE_TRDTABL
+		CALL CLEAR_DOWN_SCR
+		LD HL,TRD_5D25
+		LD DE,TRD_5D26
+		LD BC,0XFF
+		LD (HL),B
+		LDIR
+		JR loc_1F50
+
+	DUPL 0X1F50-$,0
+loc_1F50	ld	a,0x16
+		ld	hl,2544
+loc_1F55	ld	(TRD_5E08),a
+		ld	(TRD_5E0A),hl
+		ld	a,1
+		ld	(TRD_5E07),a
+		ld	a,0X10
+		ld	(TRD_5E0C),a
+		ld	hl,TRD_5E0F
+		ld	de,TRD_5E10
+		ld	bc,8
+		ld	(hl)," "
+		ldir
+		ld	hl,TRD_5CDD			; имя файла
+		ld	de,TRD_5E1A
+		ld	bc,8
+		ldir					; перенос имени диска
+		call	COM_16
+		ld	b,1
+		ld	de,8
+		ld	hl,TRD_5D25
+		call	SAVE_SECTORS
+		ld	a,(TRD_5CD6)			; 0xFF - команда принята синтаксическим анализатором
+		push	af
+		xor	a
+		ld	(TRD_5CE5),a			; расширение файла
+		ld	hl,(TRD_5E0A)
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	hl,TRD_5CDD			; имя файла
+		rst	0x18
+		ld	a,0x0d
+		rst	0x10
+		ld	hl,(TRD_5CD7)			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		pop	af
+		push	hl
+		ld	d,0
+		ld	e,a
+		sbc	hl,de
+		ld	b,h
+		ld	c,l
+		call	PRINT_CHISLO			; печать числа
+		ld	a,"/"
+		rst	0x10
+		pop	bc
+		call	PRINT_CHISLO			; печать числа
+		jp	END_COMAND
+
+; таблица номеров секторов для форматирования
+;TABL_SECTORS	DB 0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,0x10,0x01
+TABL_SECTORS	DB 0x01,0x09,0x02,0x0A,0x03,0x0B,0x04,0x0C,0x05,0x0D,0x06,0x0E,0x07,0x0F,0x08,0x10,0x01
+
+CP_DISK_TRACK	call	GET_TIME_HEAD			; получение времени перемещения	головки
+		or	11h
+		ld	b,a
+		ld	a,32h
+		call	HEAD_POSITION
+		ld	a,2
+		call	HEAD_POSITION
+		call	PAUSE725779T
+		in	a,(1Fh)
+		and	4
+		ld	a,80				; 80 дорожек
+		jr	z,loc_1FE7
+		ld	a,40				; 40 дорожек
+loc_1FE7	ld	(TRD_5CD7),a			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ret
+
+; установка стороны 0 диска
+COM_16		ld	a,(TRD_5D16)			; КОПИЯ	СИСТЕМНОГО РЕГИСТРА (ПОРТ 0xFF)
+		or	0x3c
+loc_1FF0	ld	(TRD_5D16),a			; копия	системного регистра (порт 0xFF)
+		out	(0xff),a
+		ret
+
+; установка стороны 1 диска
+COM_17		ld	a,(TRD_5D16)			; копия	системного регистра (порт 0xFF)
+		and	0x6f
+		jr	loc_1FF0
+
+FORMAT_TREK	di
+		ld	a,0xf4
+		out	(0x1f),a
+		ld	hl,TABL_SECTORS
+		ld	c,0x7f
+loc_2007	ld	b,0x0a
+		ld	d,0x4e
+		call	WRITE_C_D_B
+		ld	b,0x0c
+		ld	d,0
+		call	WRITE_C_D_B
+		ld	b,3
+		ld	d,0xf5
+		call	WRITE_C_D_B
+		ld	d,0xfe
+		call	WRITE_C_D_1
+		ld	d,e
+		call	WRITE_C_D_1
+		ld	d,0
+		call	WRITE_C_D_1
+		ld	d,(hl)
+		call	WRITE_C_D_1
+		ld	d,1
+		call	WRITE_C_D_1
+		ld	d,0xf7
+		call	WRITE_C_D_1
+		ld	b,0x16
+		ld	d,0x4e
+		call	WRITE_C_D_B
+		ld	b,0x0c
+		ld	d,0
+		call	WRITE_C_D_B
+		ld	b,3
+		ld	d,0xf5
+		call	WRITE_C_D_B
+		ld	d,0xfb
+		call	WRITE_C_D_1
+		ld	b,0
+		ld	d,0
+		call	WRITE_C_D_B
+		ld	d,0xf7
+		call	WRITE_C_D_1
+		ld	b,0x3c
+		ld	d,0x4e
+		call	WRITE_C_D_B
+		ld	a,(hl)
+		inc	hl
+		cp	0x10
+		jr	nz,loc_2007
+		ld	b,0
+		call	WRITE_C_D_B
+		jp	m,loc_2076
+		call	WRITE_C_D_B
+loc_2076	in	a,(0x1f)
+		and	0x40
+		jp	nz,loc_3F39			; READ ONLY
+CP_NUM_TRACK	ld	a,(TRD_5CD8)			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		or	a
+		ret	nz
+		ld	c,0x7f
+		ld	a,e
+		out	(0x3f),a
+		ld	hl,TABL_SECTORS+1
+loc_208A	ld	b,3
+		ld	a,(hl)
+		out	(0x5f),a
+		push	hl
+loc_2090	di
+		ld	a,0x80
+		out	(0x1f),a
+		push	bc
+		call	RD_DATAPORT
+		in	a,(0x1f)
+		and	0x7f
+		pop	bc
+		jr	z,loc_20A6
+		djnz	loc_2090
+		ld	hl,TRD_5CD6			; 0xFF - команда принята синтаксическим анализатором
+		inc	(hl)
+loc_20A6	pop	hl
+		ld	a,(hl)
+		inc	hl
+		cp	1
+		jr	nz,loc_208A
+		ei
+		ret
+
+WRITE_C_D_1	ld	b,1
+WRITE_C_D_B	in	a,(0xff)
+		and	0xc0
+		jr	z,WRITE_C_D_B
+		ret	m
+		out	(c),d
+		djnz	WRITE_C_D_B
+		ret
+
+FORMAT_DISK	ld	hl,TRD_5CD7			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	b,(hl)
+		xor	a
+		inc	hl
+		ld	(hl),a
+		ld	e,0xff
+loc_20C6	push	bc
+		inc	e
+		ld	a,e
+		ld	b,0x18
+		call	HEAD_POSITION
+		call	COM_16
+		CALL loc_20D1
+
+	DUPL 0X20DE-$,0
+		call	FORMAT_TREK
+loc_20E1	pop	bc
+		djnz	loc_20C6
+		ret
+
+DELETE_BUF	push	af
+		ld	a,(TRD_5CF8)			; дисковод при операции	с 2 файлами
+		cp	0xff
+		jr	z,loc_211C
+		pop	af
+		jp	DEL_BUF
+
+; проверка наличия INTERFACE1
+CP_INTERFACE1	push	af
+		ld	a,(TRD_5CB6)			; для проверки наличия INTERFACE1
+		cp	0F4h
+		jr	z,loc_211C
+		xor	a
+		ld	hl,TRD_5D18
+		or	(hl)
+		ld	(hl),0FFh
+		jr	z,loc_211C
+		ld	a,(TRD_5D0C)
+		or	a
+		ld	hl,TRD_5CC3
+		ld	de,TRD_5D33
+		jr	nz,loc_2111
+		ld	de,TRD_5E34
+loc_2111	ld	b,2Dh
+loc_2113	ld	c,(hl)
+		ld	a,(de)
+		ld	(hl),a
+		ld	a,c
+		ld	(de),a
+		inc	hl
+		inc	de
+		djnz	loc_2113
+loc_211C	pop	af
+		ret
+
+; удаление введенной строки после выполнения команды
+CLRBUF_EDITOR	CALL CLRBUF_EDITOR2
+		ld	(hl),0x0d
+		ld	(K_CUR),hl
+		inc	hl
+		ld	(hl),0x80
+		ret
+
+; восстановление введеной строки в буфере редактора
+RESTORE_COMSTR	ld	de,(E_LINE)			; адрес	начала редактируемой строки
+		ld	hl,TRD_5D20			; для сохранения 3 символов введеной строки
+		call	LDI3_HL2DE			; перенос 3 байт
+		ret
+
+; принятие и обработка команд
+GET_COMMAND	ld	a,(TRD_5D0F)			; номер	ошибки TR-DOS
+		or	a
+		push	af
+		call	nz,RESTORE_COMSTR		; если была ошибка, то возвращаем 3 сохранненых байта
+		pop	af
+		call	z,CLRBUF_EDITOR			; если ошибки не было, то очистка буфера строки редактирования
+		ld	hl,(E_LINE)			; адрес	начала редактируемой строки
+		call	PRINT_0D
+		ld	a,(TRD_5D19)			; дисковод по умолчанию
+		add	a,"A"
+		rst	0x10
+		ld	a,">"
+		rst	0x10
+		ld	hl,ERR_NR
+		ld	(hl),0xff
+		jp	CALL2BASEDIT
+
+sub_2158	call	GET_NEXT_SYM
+		call	GET_SYMSTR
+		cp	","
+		jp	nz,SINTAX_ERROR
+		ld	hl,(TRD_5CDB)
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+		call	SET_NUM_CHAN
+		call	EXIT_IF_SINTAX
+		ld	hl,(TRD_5CDB)
+		ld	a,h
+		or	a
+		jp	nz,SINTAX_ERROR
+		inc	hl
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	hl,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		ld	(TRD_5CDB),hl
+		ret
+
+OPEN		ld	hl,(TRD_5D11)			; адрес	строки команды TR-DOS
+		ld	(CH_ADD),hl
+		call	SET_NUM_CHAN
+		call	loc_1DD0
+loc_218E	call	GET_SYMSTR
+		cp	"A"
+		jr	nc,loc_219A
+		call	GET_NEXT_SYM
+		jr	loc_218E
+
+loc_219A	cp	0xa5
+		push	af
+		call	z,sub_2158
+		pop	af
+		jr	z,loc_21AE
+		and	0xdf
+		cp	"R"
+		jr	z,loc_21AE
+		cp	"W"
+		jp	nz,SINTAX_ERROR
+loc_21AE	ld	(TRD_5D09),a
+		call	EXIT_IF_SINTAX
+		ld	a,"#"
+		ld	(TRD_5CE5),a			; расширение файла
+		ld	a,0
+		ld	(TRD_5CE6),a			; для <C> - стартовый адрес, для <B> - длина программы
+		call	FIND_ENDFILE
+		push	af
+		call	CP_STREAMS
+		pop	af
+		push	af
+		call	nz,CREATE_BLOCK0
+		pop	af
+		call	OPEN_STREAM
+		ld	hl,(TRD_5D11)			; адрес	строки команды TR-DOS
+		ld	bc,0x124
+		add	hl,bc
+		ld	(TRD_5D11),hl			; адрес	строки команды TR-DOS
+		jp	END_COMAND
+
+FIND_ENDFILE	ld	a,0x0a
+		ld	(TRD_5D06),a			; количество символов имени файла при поиске
+		call	SET_CP_FILENAME
+		push	af
+		call	COM_18				; настройка на дискету
+		pop	af
+		jr	nz,loc_2206
+		ld	a,(TRD_5D09)
+		cp	"R"
+		jr	z,loc_2201
+loc_21F1	ld	hl,TRD_5CE6			; для <C> - стартовый адрес, для <B> - длина программы
+		inc	(hl)
+		call	FIND_FILENAME			; поиск	файла по имени файла
+		jr	z,loc_21F1
+		ld	hl,TRD_5CE6			; для <C> - стартовый адрес, для <B> - длина программы
+		dec	(hl)
+		call	FIND_FILENAME			; поиск	файла по имени файла
+loc_2201	call	RDHEAD_FILENAME			; чтение описателя файла
+		xor	a
+		ret
+
+loc_2206	ld	a,(TRD_5D09)
+		cp	"R"
+		ret	nz
+		jp	ERR_NOFILES
+
+CP_STREAMS	ld	a,(TRD_5CDB)
+		rst	0x20
+		dw	0x1727
+		ld	a,b
+		or	c
+		jp	nz,loc_221B
+		ret
+
+loc_221B	ld	a,0x19
+		ld	(ERR_NR),A
+		ld	hl,TXT_STREAMOPEN		; "STREAM OPENED"
+		ld	a,0x0a
+loc_2225	jp	PRINT_TXTERR
+
+loc_2228	ld	a,0x0b
+		ld	hl,TXT_NODISKFILE		; "NOT DISK FILE"
+		jr	loc_2225
+
+INITFREEACCESS	push	hl
+		ld	c,0x20
+		rst	0x28
+		ld	a,(TRD_5CD7)			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	(hl),a
+		inc	hl
+		xor	a
+		ld	(hl),a
+		inc	hl
+		ld	(hl),a
+		inc	hl
+		ld	(hl),a
+		ld	a,0x7f
+		pop	hl
+		ret
+
+OPEN_STREAM	push	af
+		call	CP_STREAMS
+		ex	de,hl
+		ld	hl,(PROG)
+		ld	bc,(CHANS)
+		sbc	hl,bc
+		ex	de,hl
+		ld	(hl),e
+		inc	hl
+		ld	(hl),d
+		call	CREATE_HEADCHAN
+		ld	a,(TRD_5D09)
+		cp	0xa5
+		call	z,INITFREEACCESS
+		jr	z,loc_226B
+		ld	a,(TRD_5D09)
+		cp	"R"
+		ld	a,0xff
+		jr	nz,loc_226B
+		xor	a
+loc_226B	ld	(hl),a
+		pop	af
+		jp	loc_2270
+
+loc_2270	push	af
+		ld	bc,0x14
+		add	hl,bc
+		push	hl
+		call	GET_TEKSECFILE
+		pop	hl
+		inc	hl
+		ld	b,1
+		pop	af
+		or	a
+		push	af
+		call	nz,COM_06
+		pop	af
+		call	z,COM_05			; чтение секторов
+		ret
+
+CREATE_BLOCK0	ld	hl,(TRD_5CD7)			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		push	hl
+		ld	hl,0x2000
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		call	CREATE_BLOCK
+		pop	hl
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ret
+
+CREATE_BLOCK	ld	hl,0x1000
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+		call	CP_FREE_ON_DSK
+		call	SAVE_FILE
+		ld	hl,0
+		ld	(TRD_5CE8),hl			; длина	программы
+		call	SETHEADFILENAME
+		jp	REWRITE_9SEC			; перезапись 9 сектора
+
+CREATE_HEADCHAN	ld	hl,(PROG)
+		dec	hl
+		ld	(CURCHL),hl
+		push	hl
+		ld	bc,0x124
+		call	RESERV_RAM
+		ld	a,0
+		ld	b,0
+loc_22C4	ld	(de),a
+		dec	de
+		djnz	loc_22C4
+		pop	hl
+		push	hl
+		ld 	de,loc_3D0E
+		ld	(hl),e
+		inc	hl
+		ld	(hl),d
+		inc	hl
+		ld	de,loc_3D06
+		ld	(hl),e
+		inc	hl
+		ld	(hl),d
+		inc	hl
+		ld	(hl),"D"
+		inc	hl
+		inc	hl
+		inc	hl
+		inc	hl
+		inc	hl
+		ld	(hl),"$"
+		inc	hl
+		ld	(hl),1
+		inc	hl
+		ld	a,(TRD_5CF6)			; дисковод для временной операции
+		ld	(hl),a
+		inc	hl
+		ld	a,(TRD_5D1E)
+		ld	(hl),a
+		inc	hl
+		ld	a,(TRD_5D09)
+		cp	"R"
+		ld	(hl),0
+		jr	z,loc_22FC
+		ld	a,(TRD_5CE8)			; длина	программы
+		ld	(hl),a
+loc_22FC	inc	hl
+		ld	(hl),b
+		jr	z,loc_2304
+		ld	a,(TRD_5CE9)			; длина	программы
+		ld	(hl),a
+loc_2304	inc	hl
+		ex	de,hl
+		pop	hl
+		push	de
+		ld	de,0x10
+		add	hl,de
+		ex	de,hl
+		ld	hl,TRD_5CDD			; имя файла
+		ld	bc,0x10
+		ldir
+		pop	hl
+		ret
+
+GET_ADRTEKSYM	ld	c,0x0d
+		rst	0x28
+		ld	c,(hl)
+		rst	0x28
+		ld	bc,0x24
+		add	hl,bc
+		ret
+
+GET_ADRTEKFRG	ld	c,0x24
+ADR_OPEN_CHAN	ld	b,0
+		ld	hl,(CURCHL)
+		add	hl,bc
+		ret
+
+CP_ENDOFSECTOR	ld	c,0x0d
+		rst	0x28
+		inc	(hl)
+		ret	nz
+		push	hl
+		call	SET_DISK
+		call	SAVE_TEKSECTOR			; запись текущего сектора
+		pop	hl
+		inc	hl
+		inc	(hl)
+		push	hl
+		call	LOADINGSECTOR
+		pop	hl
+		ld	a,0x10
+		cp	(hl)
+		ret	nz
+		push	hl
+		ld	c,0x0f
+		rst	0x28
+		ld	a,(hl)
+		cp	0x7f
+		pop	hl
+		jr	z,loc_2358
+		ld	hl,(CURCHL)
+		call	SAVE_HEAD_BLK
+		ld	c,0x0e
+		rst	0x28
+		jp	loc_2379
+
+loc_2358	call	FIND_NEXT_BLK
+		push	af
+		call	z,LOADINGSECTOR
+		ld	c,0x0e
+		rst	0x28
+		pop	af
+		call	nz,CREATE_NEWBLOCK
+		ret
+
+sub_2367	ld	(hl),0
+		ld	c,0x19
+		rst	0x28
+		ld	d,0x20
+		ld	e,(hl)
+		ret
+
+CREATE_NEWBLOCK	call	sub_2367
+		ld	(TRD_5CD7),de			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		jr	CREATE_BLK
+
+loc_2379	call	sub_2367
+		inc	e
+		ld	(TRD_5CD7),de			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+CREATE_BLK	call	CREATE_BLOCK
+		call	DEL_BUF
+		ld	c,0x10
+		rst	0x28
+		ex	de,hl
+		ld	hl,TRD_5CDD			; имя файла
+		ld	bc,0x10
+		ldir
+		ld	c,0x0c
+		rst	0x28
+		ld	a,(TRD_5D1E)
+		ld	(hl),a
+		ret
+
+FIND_END_SEC	ld	c,0x0d
+		rst	0x28
+		inc	(hl)
+		ret	nz
+		inc	hl
+		inc	(hl)
+		push	hl
+		call	SET_DISK
+		ld	c,0x23
+		rst	0x28
+		ld	a,(hl)
+		or	a
+		jr	z,loc_23B6
+		pop	hl
+		push	hl
+		dec	(hl)
+		call	SAVE_TEKSECTOR			; запись текущего сектора
+		pop	hl
+		push	hl
+		inc	(hl)
+loc_23B6	call	LOADINGSECTOR
+		pop	hl
+		ld	a,0x10
+		cp	(hl)
+		call	z,OPEN_NEXT_BLK
+		ret
+
+OPEN_NEXT_BLK	call	FIND_NEXT_BLK
+		push	af
+		call	DEL_BUF
+		pop	af
+		jp	nz,ERR_ENDOFFILE
+		jp	LOADINGSECTOR
+
+FIND_NEXT_BLK	ld	(hl),0
+		ld	c,0x19
+		rst	0x28
+		inc	(hl)
+		ld	c,0x10
+		rst	0x28
+		ld	de,TRD_5CDD			; имя файла
+		ld	bc,0x10
+		ldir
+		call	FIND_FILENAME			; поиск	файла по имени файла
+		ret	nz
+OPEN_BLK	call	RDHEAD_FILENAME			; чтение описателя файла
+		ld	c,0x10
+		rst	0x28
+		ex	de,hl
+		ld	hl,TRD_5CDD			; имя файла
+		ld	bc,0x10
+		ldir
+		ld	c,0x0c
+		rst	0x28
+		ld	a,(TRD_5D1E)
+		ld	(hl),a
+		xor	a
+		ret
+
+; запись текущего сектора
+SAVE_TEKSECTOR	call	GET_TEKSECFILE
+		call	GET_ADRTEKFRG
+		ld	b,1
+		call	COM_06
+		ld	c,0x0f
+		rst	0x28
+		ld	a,(hl)
+		cp	0x7f
+		ret	z
+		call	GET_ADRTEKFRG
+		xor	a
+		ld	b,a
+loc_2413	ld	(hl),a
+		inc	hl
+		djnz	loc_2413
+		ret
+
+LOADINGSECTOR	call 	GET_TEKSECFILE
+		call	GET_ADRTEKFRG
+		ld	b,1
+		jp	COM_05				; чтение секторов
+
+GET_TEKSECFILE	ld	hl,(CURCHL)
+		ld	bc,0x1e
+		add	hl,bc
+		ld	e,(hl)
+		inc	hl
+		ld	d,(hl)
+		ld	c,0x0e
+		rst	0x28
+		ld	b,(hl)
+		dec	b
+		inc	b
+		push	af
+		ld	a,0x10
+		jr	z,loc_2441
+loc_2438	inc	e
+		cp	e
+		jr	nz,loc_243F
+		ld	e,0
+		inc	d
+loc_243F	djnz	loc_2438
+loc_2441	pop	af
+		ret
+
+SET_DISK	ld	c,0x0b
+		rst	0x28
+		ld	a,(hl)
+		jp	COM_01				; настройка на дисковод
+
+OUT_SYM2FILE	ld	hl,TRD_5CC2			; содержит 0xC9. для перехода из TR-DOS в BASIC
+		push	hl
+	DUPL 4,0
+		push	af
+	DUPL 3,0
+		ld	a,0x0a
+		ld	(TRD_5D06),a			; количество символов имени файла при поиске
+		pop	af
+		call	WORK4FREEACCESS
+		push	af
+		call	CP_FILE_OPENED
+		jp	z,ERR_INVALID_IO
+		pop	af
+		call	GET_ADRTEKSYM
+		ld	(hl),a
+		jp	CP_ENDOFSECTOR
+
+CP_END_BLK	ld	c,0x0d
+		rst	0x28
+		ld	a,(hl)
+		ld	bc,0x0e
+		add	hl,bc
+		cp	(hl)
+		ret	nz
+		ld	c,0x0e
+		rst	0x28
+		ld	a,(hl)
+		ld	bc,0x0e
+		add	hl,bc
+		cp	(hl)
+		ret	nz
+		ld	hl,TRD_5CB6			; для проверки наличия INTERFACE1
+		ld	a,(hl)
+		cp	0xf4
+		jr	z,ERR_ENDOFFILE
+		bit	4,(hl)
+		jr	z,ERR_ENDOFFILE
+		or	1
+		pop	hl
+		ret
+
+ERR_ENDOFFILE	ld	a,7
+loc_2494	ld	(ERR_NR),a
+		call	DELETE_BUF
+		rst	0x20
+		dw	0x0058
+		ret
+
+ERR_INVALID_IO	ld	a,0x17
+		jr	loc_2494
+
+WORK4FREEACCESS	ld	d,a
+		ld	c,0x0f
+		rst	0x28
+		ld	a,(hl)
+		cp	0x7f
+		ld	a,d
+		ret	nz
+		ld	bc,0x13
+		add	hl,bc
+		ld	a,(hl)
+		or	a
+		ld	a,d
+		jr	nz,loc_24D5
+		dec	hl
+		ld	a,(hl)
+		or	a
+		jr	nz,loc_24C2
+		push	bc
+		push	hl
+		push	de
+		call	W16B2WORKSP
+		pop	de
+		pop	hl
+		pop	bc
+loc_24C2	ld	c,(hl)
+		ld	a,d
+		ex	de,hl
+		ld	hl,(TRD_5CCF)			; временное сохранение WORK_SP
+		add	hl,bc
+		cp	6
+		ld	(hl),a
+		call	z,WORK_NUMSAVE
+		ld	c,0x21
+		rst	0x28
+		inc	(hl)
+		pop	hl
+		ret
+
+loc_24D5	dec	hl
+		ld	a,(hl)
+		dec	hl
+		inc	a
+		cp	(hl)
+		inc	hl
+		inc	(hl)
+		push	hl
+		push	af
+		ld	c,0x23
+		rst	0x28
+		ld	(hl),0xff
+		pop	af
+		pop	hl
+		jr	c,loc_24EE
+		ld	a,d
+		cp	0x0d
+		jr	z,loc_24F2
+		pop	bc
+		ret
+
+loc_24EE	ld	a,d
+		cp	0x0d
+		ret	nz
+loc_24F2	xor	a
+		ld	(hl),a
+		inc	hl
+		ld	(hl),a
+		ld	a,d
+		ret
+
+W16B2WORKSP	ld	hl,(WORKSP)
+		ld	(TRD_5CCF),hl			; временное сохранение WORK_SP
+		ld	bc,0x10
+		jp	CREATE_FREERAM
+
+WORK_NUMSAVE	ld	(hl),0x0d
+		ld	hl,(CH_ADD)
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	hl,(TRD_5CCF)			; временное сохранение WORK_SP
+		ld	(CH_ADD),hl
+		ld	hl,FLAGS
+		res	7,(hl)
+		call	BC2STKBOT
+		ld	hl,FLAGS
+		set	7,(hl)
+		ld	hl,(TRD_5CCF)			; временное сохранение WORK_SP
+		ld	(CH_ADD),hl
+		call	BC2STKBOT
+		call	FIND_LAST
+		push	bc
+		pop	de
+		ld	c,0x20
+		rst	0x28
+		ld	b,(hl)
+		xor	a
+		ld	hl,0
+		ld	(TRD_5CDB),hl
+loc_2538	add	hl,de
+		jr	nc,loc_2544
+		push	hl
+		ld	hl,(TRD_5CDB)
+		inc	hl
+		ld	(TRD_5CDB),HL
+		pop	hl
+loc_2544	djnz	loc_2538
+		ld	(TRD_5CD9),HL			; промежуточная	длина для <B> и	<C>
+		ld	a,(TRD_5CDB)
+		ld	hl,TRD_5CDA
+		rrd
+		and	0x0f
+		ld	(TRD_5CDB),a
+		ld	hl,(TRD_5CD7)			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	(CH_ADD),hl
+		call	OPEN_SAVED
+		ld	c,0x21
+		rst	0x28
+		ld	a,0xff
+		ld	(hl),a
+		inc	hl
+		ld	(hl),a
+		ret
+
+OPEN_SAVED	ld	c,0x19
+		rst	0x28
+		ld	a,(TRD_5CDA)
+		cp	(hl)
+		jp	nz,loc_2584
+		ld	c,0x0e
+		rst	0x28
+		ld	a,(TRD_5CDB)
+		cp	(hl)
+		jp	nz,loc_25A7
+loc_257C	ld	c,0x0d
+		rst	0x28
+		ld	a,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		ld	(hl),a
+		ret
+
+loc_2584	call	CPANDZERO23
+		call	nz,SAVE_TEK_SEC
+		ld	a,(TRD_5CDA)
+		ld	c,0x19
+		rst	0x28
+		ld	(hl),a
+		ld	c,0x10
+		rst	0x28
+		ld	de,TRD_5CDD			; имя файла
+		ld	bc,0x10
+		ldir
+		call	FIND_FILENAME			; поиск	файла по имени файла
+		jp	nz,loc_25D2
+		call	OPEN_BLK
+		jr	loc_25AD
+
+loc_25A7	call	CPANDZERO23
+		call	nz,SAVE_TEK_SEC
+loc_25AD	ld	a,(TRD_5CDB)
+		ld	c,0x0e
+		rst	0x28
+		ld	(hl),a
+		push	hl
+		call	SET_DISK
+		call	LOADINGSECTOR
+		pop	hl
+		dec	hl
+		ld	a,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		ld	(hl),a
+		jr	loc_257C
+
+SAVE_TEK_SEC	call	SET_DISK
+		call	SAVE_TEKSECTOR			; запись текущего сектора
+		ret
+
+CPANDZERO23	ld	c,0x23
+		rst	0x28
+		ld	a,(hl)
+		or	a
+		ld	(hl),0
+		ret
+
+loc_25D2	ld	hl,(TRD_5CDA)
+		ld	h,0x20
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	hl,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		push	hl
+		ld	hl,(TRD_5CDB)
+		push	hl
+		call	CREATE_BLK
+		pop	hl
+		ld	(TRD_5CDB),hl
+		pop	hl
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+		jr	loc_25AD
+
+INPUTDATAFILE
+	DUPL 3,0
+		ld	hl,TV_FLAG
+		res	3,(hl)
+		ld	hl,(ERR_SP)
+		ld	e,(hl)
+		inc	hl
+		ld	d,(hl)
+		or	a
+		ld	hl,0x107F
+		sbc	hl,de
+		jr	nz,loc_2626
+		ld	sp,(ERR_SP)
+		pop	de
+		pop	de
+		ld	(ERR_SP),de
+loc_260F	call	INPUT_SYM_FILE
+		jr	c,loc_261D
+loc_2614	ld	hl,TRD_5CC2			; содержит 0xC9. для перехода из TR-DOS в BASIC
+		push	hl
+		ld	hl,DELETE_BUF
+		push	hl
+		ret
+
+loc_261D	cp	0x0d
+		jr	z,loc_2614
+		rst	0x20
+		dw	0x0f85
+		jr	loc_260F
+
+loc_2626	call	INPUT_SYM_FILE
+		jr	loc_2614
+
+INPUT_SYM_FILE	ld	a,0x0a
+		ld	(TRD_5D06),a			; количество символов имени файла при поиске
+		call	CP_FILE_OPENED
+		jr	z,loc_2642
+		cp	0x7f
+		jp	nz,ERR_INVALID_IO
+		ld	bc,0x13
+		add	hl,bc
+		ld	(hl),0
+		jr	loc_2645
+
+loc_2642	call	CP_END_BLK
+loc_2645	call	GET_ADRTEKSYM
+		ld	a,(hl)
+		push	af
+		call	FIND_END_SEC
+		pop	af
+		scf
+		ret
+
+CP_FILE_OPENED	ld	c,0x0f
+		rst	0x28
+		ld	a,(hl)
+		or	a
+		ret
+
+CLOSE		ld	hl,(TRD_5D11)			; адрес	строки команды TR-DOS
+		ld	(CH_ADD),hl
+		call	SET_NUM_CHAN
+		call	EXIT_IF_SINTAX
+		ld	a,(TRD_5CDB)
+		rst	0x20
+		dw	0x1727
+		ld	a,b
+		or	c
+		jp	z,END_COMAND
+		push	hl
+		ld	hl,(CHANS)
+		add	hl,bc
+		ld	a,(hl)
+		ld	hl,loc_3D0E
+		cp	h
+		pop	hl
+		jp	nz,loc_2228
+		ld	(hl),0
+		inc	hl
+		ld	(hl),0
+		ld	(TRD_5CD9),bc			; промежуточная	длина для <B> и	<C>
+		ld	hl,(CHANS)
+		add	hl,bc
+		dec	hl
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		call	sub_26CE
+		ld	hl,(TRD_5CD7)			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	bc,0x124
+		call	DEL_WORKRAM
+		ld	hl,STRMS
+		ld	b,0x10
+loc_269D	push	bc
+		ld	bc,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		ld	e,(hl)
+		inc	hl
+		ld	d,(hl)
+		ex	de,hl
+		sbc	hl,bc
+		ex	de,hl
+		jr	c,loc_26BC
+		ld	d,(hl)
+		dec	hl
+		ld	e,(hl)
+		inc	hl
+		push	hl
+		ex	de,hl
+		ld	bc,0x124
+		sbc	hl,bc
+		ex	de,hl
+		pop	hl
+		ld	(hl),d
+		dec	hl
+		ld	(hl),e
+		inc	hl
+loc_26BC	inc	hl
+		pop	bc
+		djnz	loc_269D
+		ld	hl,(TRD_5D11)			; адрес	строки команды TR-DOS
+		ld	bc,0x124
+		sbc	hl,bc
+		ld	(TRD_5D11),hl			; адрес	строки команды TR-DOS
+		jp	END_COMAND
+
+sub_26CE	ld	bc,0x0f
+		add	hl,bc
+		ld	a,(hl)
+		or	a
+		ret	z
+		ld	hl,(TRD_5CD7)			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	(CURCHL),hl
+		call	SAVE_HEAD_BLK
+		jp	SAVE_TEKSECTOR			; запись текущего сектора
+
+SAVE_HEAD_BLK	ld	bc,0x0d
+		add	hl,bc
+		ld	e,(hl)
+		inc	hl
+		ld	d,(hl)
+		ld	bc,0x0d
+		add	hl,bc
+		ld	(hl),e
+		inc	hl
+		ld	(hl),d
+		ld	c,0x10
+		rst	0x28
+		ld	de,TRD_5CDD			; имя файла
+		ld	bc,0x10
+		ldir
+		call	SET_DISK
+		ld	c,0x0c
+		rst	0x28
+		ld	c,(hl)
+		call	SETHEADFILENAME
+		jp	REWRITE_9SEC			; перезапись 9 сектора
+
+PRINT_MSG	ld	a,(hl)
+		or	a
+		ret	z
+		and	0x7f
+		rst	0x10
+		bit	7,(hl)
+		ret	nz
+		inc	hl
+		jr	PRINT_MSG			; печать текстового сообщения
+
+COMPARE_B_SYM	ld	a,(de)
+		cp	(hl)
+		ret	nz
+		inc	de
+		inc	hl
+		djnz	COMPARE_B_SYM
+		ret
+
+loc_271B	ld	hl,TXT_NODISK_			; "NO DISK"
+		ld	a,6
+		jp	PRINT_TXTERR
+
+ERR_DIRFULL	ld	hl,TXT_DIRFULL			; "DIRECTORY FULL"
+		ld	a,4
+		jp	PRINT_TXTERR
+
+SET_TAPELDERR	ld	a,0x1a
+		jr	SET_NUM_ERR
+
+		ld	a,0x12
+SET_NUM_ERR	ld	(ERR_NR),a
+		ret
+
+		ld	a,3
+		jr	SET_NUM_ERR
+
+; проверка дорожки
+COM_15		xor	a
+		ld	(TRD_5CD8),a			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	(TRD_5CD6),a			; 0xFF - команда принята синтаксическим анализатором
+		in	a,(0x1f)
+		ld	(TRD_5CCD),a			; 0x80 - готовность дисковода
+		ld	e,d
+		push	de
+		ld	a,e
+		out	(0x7f),a
+		ld	a,0x18
+		call	COM2VG_WAIT
+		ld	a,(TRD_5CCD)			; 0x80 - готовность дисковода
+		and	0x80
+		call	nz,PAUSE_3_C_A
+		pop	de
+		call	CP_NUM_TRACK
+		ld	a,(TRD_5CD6)			; 0xFF - команда принята синтаксическим анализатором
+		or	a
+		ret	z
+		ld	a,7
+		ld	(TRD_5D0F),a			; номер	ошибки TR-DOS
+		ret
+
+TXT_OK_		DZ "O.K."
+TXT_VERIFYERR	DC "Verify Error.\r"
+TXT_BACKUPDISK	DC "BACKUP DISK\r"
+TXT_INS_DEST	DZ "Insert Destination disk\rthen press Y"
+TXT_INS_SRC	DZ "Insert Source disk then press Y"
+TXT_BREAK	DC "*BREAK*\r"
+TXT_OUTRAM	DC "Out of RAM\r"
+TXT_ARRAYNOT	DC "Array not found\r"
+TXT_DIRFULL	DC "Directory full\r"
+TXT_NODISK_	DC "No disk\r"
+TXT_STREAMOPEN	DC "Stream opened\r"
+TXT_NODISKFILE	DC "Not disk file\r"
+TXT_FILEEXIST	DC "File exists\rOver write?(Y/N)"
+
+CALL_3D13	push	af
+		push	bc
+		ld	(TRD_5D04),de
+		ld	(TRD_5D02),hl
+	DUPL 3
+		LD A,0XFF
+		LD (TRD_5D15),A				; если 0,печатать шапку	TR-DOS, иначе не печатать
+		LD (TRD_5D1F),A
+		pop	bc
+		pop	af
+		ld	hl,CP_ERROR			; адрес	завершения интерпретатора
+		ld	(TRD_5D1A),hl			; внутренний адрес завершения интерпретатора команд
+		ld	hl,0
+		add	hl,sp
+		ld	(TRD_5D1C),hl			; сохранение текущего стека
+		dec	hl
+		dec	hl
+		ld	sp,hl
+		push	af
+		call	MARK_SP				; установка стека для перехвата	ошибок
+		ld	hl,COMAND_TBL
+		LD A,C
+		CP LOW ((ECOMAND_TBL-COMAND_TBL)/2)+1
+		JP NC,END_COMAND
+		ADD A,A
+		LD E,A
+		POP AF
+		LD D,0
+		ADD HL,DE
+		LD E,(HL)
+		INC HL
+		LD D,(HL)
+		LD HL,END_COMAND
+		PUSH HL
+		PUSH DE
+		LD HL,(TRD_5D02)
+		LD DE,(TRD_5D04)
+		RET
+
+COMAND_TBL	DW COM_00				; восстановление ВГ93
+		DW COM_01				; настройка на дисковод
+		DW COM_02				; установка головки на дорожку
+		DW COM_03				; установка номера сектора
+		DW COM_04				; установка адреса буфера
+		DW COM_05				; чтение секторов
+		DW COM_06				; запись секторов
+		DW COM_07				; вывод каталога в канал
+		DW COM_08				; считывание описателя в буфер 0x5CDD
+		DW COM_09				; запись описателя файла на диск
+		DW COM_0A				; поиск файла по имени и расширению
+		DW COM_0B				; запись блока кодов на диск
+		DW COM_0C				; запись бейсик программы на диск
+		DW END_COMAND
+		DW COM_0E				; загрузка или проверка файла
+		DW END_COMAND
+		DW END_COMAND
+		DW END_COMAND
+		DW COM_12				; удаление файла
+		DW COM_13				; перенос описателя файла в буфер 0x5CDD
+		DW COM_14				; перенос описателя файла из буфера 0x5CDD
+		DW COM_15				; проверка дорожки
+		DW COM_16				; установка стороны 0 диска
+		DW COM_17				; установка стороны 1 диска
+		DW COM_18				; настройка на дискету
+ECOMAND_TBL
+
+	DUPL 0X28D8-$,0XFF
+; вывод каталога в канал
+COM_07		push	af
+		call	COM_18				; настройка на дискету
+		pop	af
+		jp	loc_479
+
+; перенос описателя файла в буфер 0x5CDD
+COM_13		xor	a
+		jr	loc_28E5
+
+; перенос описателя файла из буфера 0x5CDD
+COM_14		ld	a,0xff
+loc_28E5	ld	de,TRD_5CDD			; имя файла
+		ld	bc,0x10
+		or	a
+		jr	z,loc_28EF
+		ex	de,hl
+loc_28EF	ldir
+		ret
+
+; запись бейсик программы на диск
+COM_0C		call	COM_18				; настройка на дискету
+		call	CP_FREE_ON_DSK
+		jp	loc_1B27
+
+; запись блока кодов на диск
+COM_0B		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	(TRD_5CD9),de			; промежуточная	длина для <B> и	<C>
+		ld	(TRD_5CDB),de
+		call	COM_18				; настройка на дискету
+		call	CP_FREE_ON_DSK
+		jp	loc_1B53
+
+; загрузка или проверка файла
+COM_0E		or	a
+		ld	(TRD_5CD6),a			; 0xFF - команда принята синтаксическим анализатором
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+		ld	(TRD_5CDB),de
+		call	FIND_FILENAME			; поиск	файла по имени файла
+		call	FIND_RD_HEAD
+		call	CP_PARAMS			; WDC
+		jp	RD_FILE
+
+; удаление файла
+COM_12		call	COM_18				; настройка на дискету
+		call	FIND_FILENAME			; поиск	файла по имени файла
+		jp	ERASE_FILES
+
+; поиск	файла по имени
+FIND_FILE	call	SET_FILENAME
+		call	COM_18				; настройка на дискету
+		jp	FIND_FILENAME			; поиск	файла по имени файла
+
+; печать имени файла
+PRINT_FILENAME	push	bc
+		ld	b,8
+loc_293B	ld	a,(hl)
+		rst	0x10
+		inc	hl
+		djnz	loc_293B
+		ld	a,"<"
+		rst	0x10
+		ld	a,(hl)
+		rst	0x10
+		ld	a,">"
+		rst	0x10
+		pop	bc
+		ret
+
+; создание буфера
+CREATE_BUF	push	hl
+		push	de
+		push	bc
+		push	af
+		ld	hl,TRD_5D0C
+		ld	a,(hl)
+		or	a
+		jr	z,loc_2992
+		push	hl
+		ld	bc,0x101
+		push	bc
+		call	CP_FREE_RAM
+		pop	bc
+		pop	hl
+		ld	(hl),0
+		ld	hl,TRD_5D25
+		call	RESERV_RAM
+		ld	hl,(TRD_5D11)			; адрес	строки команды TR-DOS
+		ld	bc,0x101
+		add	hl,bc
+		jr	loc_298F
+
+; удаление буфера, если он есть
+DEL_BUF		push	hl
+		push	de
+		push	bc
+		push	af
+		ld	hl,TRD_5D0C
+		ld	a,(hl)
+		or	a
+		jr	nz,loc_2992
+		ld	(hl),0xff
+		ld	hl,TRD_5D25
+		ld	bc,0x101
+		call	DEL_WORKRAM
+		or	a
+		ld	bc,0x101
+		ld	hl,(TRD_5D11)			; адрес	строки команды TR-DOS
+		sbc	hl,bc
+loc_298F	ld	(TRD_5D11),hl			; адрес	строки команды TR-DOS
+loc_2992	pop	af
+		pop	bc
+		pop	de
+		pop	hl
+		ret
+
+COM_40		xor	a
+loc_2998	ld	(TRD_5CD7),a			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		call	EXIT_IF_SINTAX			; возврат в предыдущий вызов,если проверка синтаксиса
+		call	CP_SECOND_SYM			; проверка следующего символа
+		jp	z,SINTAX_ERROR
+		call	GET_TYPE_DISK			; получение кода режима	работы дисковода
+		ld	a,(TRD_5CD7)			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	(hl),a
+		jp	ERR_OK
+
+COM_80		ld	a,80h
+		jr	loc_2998
+
+TXT_ERROR_	DC "\r*ERROR*\r"
+TXT_NOSPACE_	DC "\rNo space\r"
+TXT_FILEEXISTS_	DC "\rFile exists\r"
+TXT_FREE_	DC " Free\r"
+READ_ONLY	DC "\rRead Only"
+TXT_DISCERROR_	DC "\rDisc Error"
+TXT_R_O		DC "\rRec.  O/F"
+TXT_TITLE_	DC "Title: "
+TXT_RIA_	DZ "\rRetry,Abort,Ignore?"
+TXT_TRK_	DC "\rTrk "
+TXT_SEC_	DC " sec "
+TXT_DELFILE_	DC " Del. File\r"
+TXT_NOFILES_	DB "\r"
+TXT_NOFILES	DC "No File(s)\r"
+		DB 0
+
+sub_2A35	ld	hl,loc_2A41
+		ld	de,4080h
+		ld	bc,20h
+		ldir
+		ret
+
+loc_2A41	ld	a,(loc_3B5)
+		cp	0F3h
+		ld	a,10h
+		jr	z,loc_2A4B
+		xor	a
+loc_2A4B	ld	(KSTATE1),a
+		ld	bc,7FFDh
+		ld	a,10h
+		out	(c),a
+		ret
+
+MAGIC		push	af
+		push	bc
+		push	de
+		push	hl
+		push	ix
+		push	iy
+		exx
+		push	bc
+		push	de
+		push	hl
+		ex	af,af'
+		push	af
+		ld	a,i
+		push	af
+		ld	a,r
+		push	af
+		ld	hl,0
+		add	hl,sp
+		push	hl
+		ld	a,3Ch
+		out	(0FFh),a
+		ld	a,3Fh
+		ld	i,a
+		in	a,(1Fh)
+		and	80h
+		rrca
+		rrca
+		rrca
+		ld	(KSTATE1),a
+		call	sub_2F65
+		call	PAUSE_3_C_A
+		call	PAUSE_3_C_A
+		ld	de,0Ah
+		ld	hl,4000h
+		push	hl
+		call	sub_2D73
+		ld	hl,4100h
+		ld	de,0Bh
+		call	sub_2D73
+		pop	hl
+		push	hl
+		ld	de,8
+		call	sub_2F1B
+		ld	hl,40E3h
+		ld	a,(hl)
+		ld	(KSTATE0),a
+		inc	hl
+		ld	a,(hl)
+		inc	(hl)
+		inc	hl
+		ld	e,(hl)
+		inc	hl
+		ld	d,(hl)
+		or	a
+		ex	de,hl
+		ld	de,0C0h
+		sbc	hl,de
+		ld	(40E5h),hl
+		ld	hl,4000h
+		ld	de,8
+		call	sub_2D73
+		pop	hl
+		ld	de,(40E1h)
+		push	de
+		ld	de,0Ah
+		call	sub_2F1B
+		pop	de
+		call	sub_2D4C
+		push	de
+		ld	a,3Ch
+		out	(0FFh),a
+		call	sub_2F65
+		ld	hl,4000h
+		ld	de,8
+		ld	b,1
+		call	sub_2F1B
+		pop	de
+		ld	hl,(40E1h)
+		ld	(40E1h),de
+		push	hl
+		ld	hl,4000h
+		ld	de,8
+		ld	b,1
+		call	sub_2D73
+		ld	a,(40E4h)
+		dec	a
+		call	sub_2CE5
+		ld	(hl),"@"
+		inc	hl
+		ld	b,7
+loc_2B09	ld	(hl)," "
+		inc	hl
+		djnz	loc_2B09
+		ld	(hl),"C"
+		pop	de
+		pop	bc
+		inc	hl
+		ld	(hl),c
+		inc	hl
+		ld	(hl),b
+		inc	hl
+		inc	hl
+		inc	hl
+		ld	(hl),0C0h
+		inc	hl
+		ld	(hl),e
+		inc	hl
+		ld	(hl),d
+		ld	hl,4000h
+		ld	de,0
+		in	a,(5Fh)
+		dec	a
+		ld	e,a
+		ld	b,1
+		call	sub_2D73
+		ld	hl,0
+		add	hl,sp
+		ld	(4140h),hl
+		ld	sp,41FFh
+		call	sub_2A35
+		ld	hl,0C000h
+		xor	a
+loc_2B3F	add	a,(hl)
+		inc	hl
+		ld	b,a
+		ld	a,h
+		or	a
+		ld	a,b
+		jr	nz,loc_2B3F
+		ld	hl,4100h
+		ld	(hl),a
+		push	hl
+		ld	hl,loc_2B58
+		push	hl
+		ld	hl,loc_3D2F
+		push	hl
+		di
+		jp	4080h
+
+loc_2B58	pop	hl
+		ld	bc,7FFDh
+		ld	a,0AAh
+		ld	(4130h),a
+		ld	d,5
+		ld	a,(KSTATE1)
+		or	d
+		ld	d,a
+		out	(c),d
+		ld	a,(0C130h)
+		cp	0AAh
+		jp	nz,loc_2C1B
+		ld	a,d
+		and	0F8h
+		ld	d,a
+		inc	hl
+		ld	b,8
+loc_2B79	ld	(hl),d
+		out	(c),d
+		xor	a
+		ld	hl,0C000h
+loc_2B80	add	a,(hl)
+		inc	hl
+		ld	e,a
+		ld	a,h
+		or	a
+		ld	a,e
+		jr	nz,loc_2B80
+		ld	hl,4100h
+		cp	(hl)
+		inc	hl
+		jr	z,loc_2B93
+		inc	d
+		djnz	loc_2B79
+		dec	d
+loc_2B93	ld	b,8
+loc_2B95	push	bc
+		call	sub_2C37
+		pop	bc
+		djnz	loc_2B95
+		ld	c,0
+		call	sub_2F3A
+		call	sub_2D2A
+		ld	a,(40E4h)
+		ld	(4102h),a
+		inc	a
+		ld	(40E4h),a
+		ld	hl,(40E5h)
+		ld	de,1
+		sbc	hl,de
+		ld	(40E5h),hl
+		ret	c
+		ld	hl,(40E1h)
+		ld	(411Eh),hl
+		call	sub_2D1E
+		ld	a,38h
+		ld	(4111h),a
+		ld	a,1
+		ld	(411Dh),a
+		ld	hl,4100h
+		ld	(4119h),hl
+		ld	hl,100h
+		ld	(411Bh),hl
+		ld	de,(40E1h)
+		call	sub_2F65
+		ld	c,d
+		call	sub_2F3A
+		ld	hl,4100h
+		ld	b,1
+		call	loc_2D58
+		ld	(40E1h),de
+		ld	c,0
+		call	sub_2F3A
+		call	sub_2D34
+		ld	a,(4102h)
+		call	sub_2CE5
+		ld	de,4110h
+		ld	bc,10h
+		ex	de,hl
+		ldir
+		in	a,(5Fh)
+		dec	a
+		ld	e,a
+		ld	d,0
+		ld	hl,4000h
+		call	sub_2D73
+		ld	bc,7FFDh
+		ld	a,(4101h)
+		out	(c),a
+loc_2C1B	ld	hl,(4140h)
+		ld	sp,hl
+		ld	hl,4000h
+		ld	de,0Ah
+		call	sub_2F1B
+		ld	hl,4100h
+		ld	de,0Bh
+		call	sub_2F1B
+		ld	a,3Ch
+		push	af
+		jp	loc_2EBC
+
+sub_2C37	ld	a,b
+		dec	a
+		ld	(4103h),a
+		ld	b,a
+		ld	a,(4101h)
+		and	7
+		cp	b
+		ret	z
+		ld	a,2
+		cp	b
+		ret	z
+		ld	a,(4101h)
+		and	8
+		jr	z,loc_2C55
+		ld	a,b
+		cp	7
+		ret	z
+		jr	loc_2C59
+
+loc_2C55	ld	a,b
+		cp	5
+		ret	z
+loc_2C59	call	sub_2C5D
+		ret
+
+sub_2C5D	ld	hl,4101h
+		ld	a,(hl)
+		and	0F8h
+		ld	c,a
+		ld	a,b
+		or	c
+		push	bc
+		ld	bc,7FFDh
+		out	(c),a
+		pop	bc
+		ld	hl,0C000h
+loc_2C70	ld	a,(hl)
+		or	a
+		jr	nz,loc_2C7A
+		inc	hl
+		ld	a,h
+		or	a
+		jr	nz,loc_2C70
+		ret
+
+loc_2C7A	call	sub_2C7E
+		ret
+
+sub_2C7E	ld	c,0
+		call	sub_2F3A
+		call	sub_2D2A
+		ld	a,(40E4h)
+		ld	(4102h),a
+		inc	a
+		ld	(40E4h),a
+		ld	hl,(40E5h)
+		ld	de,40h
+		sbc	hl,de
+		ld	(40E5h),hl
+		ret	c
+		ld	hl,(40E1h)
+		ld	(411Eh),hl
+		call	sub_2D1E
+		ld	a,40h
+		ld	(411Dh),a
+		ld	hl,0C000h
+		ld	(4119h),hl
+		ld	hl,4000h
+		ld	(411Bh),hl
+		ld	de,(40E1h)
+		call	sub_2D3E
+		ld	(40E1h),de
+		ld	c,0
+		call	sub_2F3A
+		call	sub_2D34
+		ld	a,(4102h)
+		call	sub_2CE5
+		ld	de,4110h
+		ld	bc,10h
+		ex	de,hl
+		ldir
+		in	a,(5Fh)
+		dec	a
+		ld	e,a
+		ld	d,0
+		ld	hl,4000h
+		call	sub_2D73
+		ret
+
+sub_2CE5	ld	c,a
+		and	0F0h
+		rrca
+		rrca
+		rrca
+		rrca
+		ld	b,a
+		push	bc
+		ld	e,b
+		ld	d,0
+		ld	hl,4000h
+		push	de
+		call	sub_2F1B
+		pop	de
+		pop	bc
+		ld	b,0
+		ld	a,c
+		and	0Fh
+		rlca
+		rlca
+		rlca
+		rlca
+		ld	hl,4000h
+		add	a,l
+		ld	l,a
+		ret
+
+sub_2D09	ld	hl,4110h
+		ld	b,9
+loc_2D0E	ld	(hl)," "
+		inc	hl
+		djnz	loc_2D0E
+		ld	a,"@"
+		ld	(4110h),a
+		ld	a,"C"
+		ld	(4118h),a
+		ret
+
+sub_2D1E	call	sub_2D09
+		ld	a,(4103h)
+		add	a,"0"
+		ld	(4111h),a
+		ret
+
+sub_2D2A	ld	hl,4000h
+		ld	de,8
+		call	sub_2F1B
+		ret
+
+sub_2D34	ld	hl,4000h
+		ld	de,8
+		call	sub_2D73
+		ret
+
+sub_2D3E	call	sub_2F65
+		ld	c,d
+		call	sub_2F3A
+		ld	hl,0C000h
+		ld	b,40h
+		jr	loc_2D58
+
+sub_2D4C	call	sub_2F65
+		ld	c,d
+		call	sub_2F3A
+		ld	hl,4000h
+		ld	b,0C0h
+loc_2D58	push	bc
+		push	de
+		call	sub_2D73
+		ld	de,100h
+		add	hl,de
+		pop	de
+		inc	e
+		ld	a,e
+		cp	10h
+		jr	nz,loc_2D6F
+		ld	e,0
+		inc	d
+		ld	c,d
+		call	sub_2F3A
+loc_2D6F	pop	bc
+		djnz	loc_2D58
+		ret
+
+sub_2D73	ld	a,e
+		inc	a
+		out	(5Fh),a
+		push	hl
+		ld	d,14h
+		push	de
+loc_2D7B	di
+		ld	c,7Fh
+		ld	a,0A0h
+		out	(1Fh),a
+		call	WR_DATAPORT
+		pop	de
+		pop	hl
+		in	a,(0x1f)
+		and	0x7f
+		ret	z
+		dec	d
+		push	hl
+		push	de
+		jr	nz,loc_2D7B
+		halt
+loc_2D92	ld	hl,(TRD_5CE6)			; для <C> - стартовый адрес, для <B>-длина программы
+		ld	de,(TRD_5CEB)			; номер	первого	сектора	файла
+		ld	a,(TRD_5CEA)			; длина	файла в	секторах
+		ld	b,a
+		call	COM_05				; чтение секторов
+		ret
+
+GOTO		call	SET_AND_PUT
+		call	EXIT_IF_SINTAX			; возврат в предыдущий вызов,если проверка синтаксиса
+		call	INP_EXTFILENAME			; прием	расширения файла
+		call	SET_FILENAME			; перенос заданного имени файла	в буфер	0x5CDD
+		ld	(4020h),bc
+		ld	a,c
+		cp	8
+		jr	nc,loc_2DD2
+		call	COM_18				; настройка на дискету
+		call	FIND_FILENAME			; поиск	файла по имени файла
+		jp	nz,ERR_NOFILES
+		ld	hl,TRD_5CDD			; имя файла
+		ld	bc,(4020h)
+		add	hl,bc
+		ld	(hl),"8"
+		push	hl
+		call	FIND_FILENAME			; поиск	файла по имени файла
+		pop	hl
+		jr	z,loc_2DD8
+		ld	(hl)," "
+loc_2DD2	call	FIND_FILENAME			; поиск	файла по имени файла
+		jp	loc_2E33
+
+loc_2DD8	call	RDHEAD_FILENAME			; чтение описателя файла
+		call	loc_2D92
+		ld	sp,40FFh
+		ld	b,8
+loc_2DE3	push	bc
+		ld	a,b
+		ld	bc,7FFDh
+		dec	a
+		push	af
+		or	10h
+		out	(c),a
+		pop	af
+		add	a,"0"
+		ld	hl,TRD_5CDD			; имя файла
+		ld	bc,(4020h)
+		add	hl,bc
+		ld	(hl),a
+		call	FIND_FILENAME			; поиск	файла по имени файла
+		jr	nz,loc_2E05
+		call	RDHEAD_FILENAME			; чтение описателя файла
+		call	loc_2D92
+loc_2E05	pop	bc
+		djnz	loc_2DE3
+		ld	a," "
+		ld	hl,TRD_5CDD			; имя файла
+		ld	bc,(4020h)
+		add	hl,bc
+		ld	(hl),a
+		call	FIND_FILENAME			; поиск	файла по имени файла
+		call	RDHEAD_FILENAME			; чтение описателя файла
+		push	bc
+		push	af
+		ld	bc,7FFDh
+		ld	a,(4101h)
+		out	(c),a
+		pop	af
+		pop	bc
+		jr	loc_2E39
+
+		call	SET_AND_PUT
+		call	EXIT_IF_SINTAX			; возврат в предыдущий вызов, если проверка синтаксиса
+		call	INP_EXTFILENAME			; прием	расширения файла
+		call	FIND_FILE			; поиск	файла по имени
+loc_2E33	jp	nz,ERR_NOFILES
+		call	RDHEAD_FILENAME			; чтение описателя файла
+loc_2E39	ld	a,(TRD_5CDD)			; имя файла
+		cp	"$"
+		di
+		jr	nz,loc_2E43
+		im	2
+loc_2E43	ld	sp,40F0h
+		call	GET_TYPE_DISK			; получение кода режима	работы дисковода
+		ld	(4010h),a
+		ld	a,(TRD_5D16)			; копия	системного регистра (порт 0xFF)
+		ld	(4011h),a
+		ld	hl,(TRD_5CE6)			; для <C> - стартовый адрес, для <B> - длина программы
+		push	hl
+		ld	de,(TRD_5CEB)			; номер	первого	сектора	файла
+		push	de
+		inc	e
+		ld	a,e
+		cp	10h
+		jr	nz,loc_2E64
+		ld	e,0
+		inc	d
+loc_2E64	ld	c,d
+		call	sub_2F07
+		ld	a,(4010h)
+		and	2
+		call	nz,sub_2F0F
+		ld	a,c
+		call	loc_2F50
+		ld	hl,4100h
+		ld	b,0BFh
+loc_2E79	push	bc
+		push	de
+		call	sub_2F1B
+		ld	de,100h
+		add	hl,de
+		pop	de
+		inc	e
+		ld	a,e
+		cp	10h
+		jr	nz,loc_2E9C
+		ld	e,0
+		inc	d
+		ld	c,d
+		call	sub_2F07
+		ld	a,(4010h)
+		and	2
+		call	nz,sub_2F0F
+		ld	a,c
+		call	loc_2F50
+loc_2E9C	pop	bc
+		djnz	loc_2E79
+		pop	de
+		pop	hl
+		ld	sp,hl
+		ld	a,(4011h)
+		push	af
+		ld	c,d
+		call	sub_2F07
+		ld	a,(4010h)
+		and	2
+		call	nz,sub_2F0F
+		ld	a,c
+		call	loc_2F50
+		ld	hl,4000h
+		call	sub_2F1B
+loc_2EBC	pop	af
+		ex	af,af'
+		pop	af
+		ld	r,a
+		pop	af
+		ld	i,a
+		di
+		ld	a,0FFh
+		jp	po,loc_2ECC
+		ld	a,0
+loc_2ECC	ld	(KSTATE0),a
+		pop	af
+		pop	hl
+		pop	de
+		pop	bc
+		exx
+		ex	af,af'
+		pop	iy
+		pop	ix
+		pop	hl
+		pop	de
+		pop	bc
+		ld	a,(BORDCR)
+		and	38h
+		rrca
+		rrca
+		rrca
+		out	(0FEh),a
+		ld	a,(SWAP_8)
+		cp	0EEh
+		jr	nz,loc_2EF7
+		push	bc
+		ld	bc,7FFDh
+		ld	a,(BANKM)
+		out	(c),a
+		pop	bc
+loc_2EF7	ld	a,(KSTATE0)
+		or	a
+		ld	a,0C9h
+		ld	(KSTATE0),a
+		jr	nz,loc_2F03
+		ei
+loc_2F03	pop	af
+		jp	KSTATE0
+
+sub_2F07	ld	a,(4011h)
+		or	0x3c
+loc_2F0C	out	(0xff),a
+		ret
+
+sub_2F0F	ld	a,c
+		or	a
+		rra
+		ld	c,a
+		ret	nc
+		ld	a,(4011h)
+		and	0x6f				; LORD OF CHAOS
+		jr	loc_2F0C
+
+sub_2F1B	ld	a,e				; EXOLON
+		inc	a
+		out	(0x5f),a
+		push	hl
+		ld	d,0x14
+		push	de
+loc_2F23	di
+		ld	c,0x7f
+		ld	a,0x80
+		out	(0x1f),a
+		call	RD_DATAPORT
+		pop	de
+		pop	hl
+		in	a,(0x1f)
+		and	0x7f
+		ret	z
+		dec	d
+		push	hl
+		push	de
+		jr	nz,loc_2F23
+		halt
+sub_2F3A	ld	a,3Ch
+		out	(0FFh),a
+		ld	a,(KSTATE0)
+		and	8
+		jr	nz,loc_2F4F
+		ld	a,c
+		or	a
+		rra
+		ld	c,a
+		jr	nc,loc_2F4F
+		ld	a,2Ch
+		out	(0xff),a
+loc_2F4F	ld	a,c
+loc_2F50	out	(0x7f),a
+		call	PAUSE725779T
+		ld	a,0x18
+loc_2F57	out	(0x1f),a
+loc_2F59	in	a,(0xff)
+		and	0x80
+		jr	z,loc_2F59
+		push	bc
+		call	PAUSE725779T
+		pop	bc
+		ret
+
+sub_2F65	ld	a,0x08				; SOLDIER OF THE FUTURE
+		jr	loc_2F57
+
+WORK4ERROR	ld	hl,(TRD_5D1C)			; сохранение регистра SP
+		dec	hl
+		dec	hl
+		ld	sp,hl
+		jp	loc_1D2F
+
+CALL2BASIC	ld	(TRD_5D02),hl
+		ld	(TRD_5D04),de
+		pop	hl
+		ld	e,(hl)
+		inc	hl
+		ld	d,(hl)
+		inc	hl
+		push	hl
+		ld	hl,loc_3D2F
+		push	hl
+		push	de
+		ld	hl,TRD_5CC2
+		push	hl
+		ld	hl,(TRD_5D02)
+		ld	de,(TRD_5D04)
+		ret
+
+SET_VARS	LD HL,0xFFFF
+		ld	(TRD_5CFA),hl			; время	перемещения дисковода A
+		ld	(TRD_5CFC),hl			; время	перемещения дисковода C
+		ld	(TRD_5CC8),hl			; режим	работа дисковода A
+		ld	(TRD_5CCA),hl			; режим	работа дисковода C
+		xor	a
+		ld	(TRD_5D17),a			; рисование заставки, если 0xAA
+		ld	(TRD_5D19),a			; дисковод по умолчанию
+		ld	(TRD_5D18),a
+		ld	(TRD_5D0F),a			; номер	ошибки TR-DOS
+		ld	(TRD_5D1F),a
+		ld	a,0xff
+		out	(0xff),a
+		ld	(ERR_NR),a
+		ld	(TRD_5D16),a			; копия	системного регистра (порт 0xFF)
+		ld	(TRD_5D0C),a
+		ld	a,0xc9
+		ld	(TRD_5CC2),a
+		ld	a,0xd0
+		out	(0x1f),a
+		ret
+
+CP_END_CAT	call	CP_END_BUF
+		ld	a,(hl)
+		or	a
+		jp	z,END_OUT_DIR
+		cp	1
+		call	z,ADD_10
+		ret	nz
+		jr	CP_END_CAT
+
+LOAD_SEC2BUF	ld	b,1
+		ld	hl,TRD_5D25
+		jp	loc_1E67
+
+LOAD_END_FILE	push	hl
+		ld	de,(TRD_5CF4)
+		call	LOAD_SEC2BUF
+		ld	a,(TRD_5CDB)
+		pop	de
+		or	a
+		ret	z
+		ld	c,a
+		ld	hl,TRD_5D25
+		ldir
+		ret
+
+; ТАБЛИЦА БЕЙСИК КОМАНД ДЛЯ TR-DOS
+CODE_BYTE_COM	db __CAT
+		db "*"
+		db __FORMAT
+		db __MOVE
+		db __NEW
+		db __ERASE
+		db __LOAD
+		db __SAVE
+		db __RETURN
+		db __PEEK
+		db __POKE
+		db __MERGE
+		db __RUN
+		db __OPEN
+		db __CLOSE
+		db __COPY
+		db "4"
+		db __GOTO
+		db "8"
+		db __LIST
+		db __VERIFY
+ECODE_BYTE_COM
+
+; таблица адресов исполнения команд
+SPIS_ADR_COM	dw CAT
+		dw COM_STAR
+		dw FORMAT
+		dw MOVE
+		dw NEW					; выполнение команды NEW
+		dw ERASE				; выполнение команды ERASE
+		dw LOAD
+		dw SAVE
+		dw RETURN
+		dw PEEK
+		dw POKE
+		dw MERGE
+		dw RUN
+		dw OPEN
+		dw CLOSE
+		dw COPY
+		dw COM_40
+		dw GOTO
+		dw COM_80
+		dw LIST
+		dw VERIFY
+
+SAE2E_LINE	ld	hl,(E_LINE)			; адрес	начала редактируемой строки
+		ld	(TRD_5D11),hl			; адрес	строки команды TR-DOS
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+		ld	a,0xff
+		ld	(TRD_5CD6),a			; 0xFF - команда принята синтаксическим анализатором
+		ld	hl,TRD_5CDB
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		jr	loc_3057
+
+SAE2_HL_	ld	(TRD_5D11),hl			; АДРЕС	СТРОКИ КОМАНДЫ TR-DOS
+		ld	(TRD_5CD9),hl			; ПРОМЕЖУТОЧНАЯ	ДЛИНА ДЛЯ <B> и	<C>
+		call	CP_ADR_STR
+		ret	nz
+		inc	hl
+		inc	hl
+		ld	(TRD_5CD7),hl			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+loc_3057	call	CMP_SPECSYM
+		jr	nz,loc_3087
+		ex	de,hl
+		inc	de
+		ld	b,0
+		ld	hl,BYTES_COM
+		add	hl,bc
+		ld	a,(hl)
+		ld	hl,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		ld	(hl),a
+		inc	hl
+		ex	de,hl
+		rst	0x20
+		dw	0x19dd
+		push	bc
+		rst	20h
+		dw	19E8h
+		pop	bc
+		ld	a,(TRD_5CD6)			; 0FF - команда принята синтаксическим анализатором
+		or	a
+		jr	nz,loc_3087
+		ld	hl,(TRD_5CD7)			; промежуточный	старт файла или	кол-во треков
+							; после	проверки типа дисковода
+		ld	e,(hl)
+		inc	hl
+		ld	d,(hl)
+		ex	de,hl
+		or	a
+		sbc	hl,bc
+		ex	de,hl
+		ld	(hl),d
+		dec	hl
+		ld	(hl),e
+loc_3087	ld	hl,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		ld	a,(hl)
+		cp	0x0d
+		ret	z
+		inc	hl
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+		ld	a,(hl)
+		cp	0x0d
+		ret	z
+		cp	0x22
+		jr	nz,loc_3057
+loc_309A	inc	hl
+		ld	a,(hl)
+		cp	0x0d
+		ret	z
+		cp	0x22
+		jr	nz,loc_309A
+		inc	hl
+		ld	(TRD_5CD9),hl			; промежуточная	длина для <B> и	<C>
+		jr	loc_3057
+
+FIND_KEYWORD	ld	hl,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		ld	de,TBL_KEYWORD			; "SAVE"
+		ld	c,0
+loc_30B1	ld	a,(hl)
+		and	0xdf
+		ld	b,a
+		or	a
+		jr	nz,loc_30BB
+		inc	hl
+		jr	loc_30B1
+
+loc_30BB	ld	a,(de)
+		and	0x80
+		jr	nz,loc_30C8
+		ld	a,(de)
+		cp	b
+		jr	nz,loc_30D9
+		inc	hl
+		inc	de
+		jr	loc_30B1
+
+loc_30C8	ld	a,(de)
+		and	0x7f
+		cp	b
+		ret	z
+loc_30CD	inc	c
+		ld	hl,(TRD_5CD9)			; промежуточная	длина для <B> и	<C>
+		inc	de
+		ld	a,(de)
+		cp	0xff
+		jr	nz,loc_30B1
+		or	a
+		ret
+
+loc_30D9	inc	de
+		ld	a,(de)
+		and	0x80
+		jr	z,loc_30D9
+		jr	loc_30CD
+
+CP_ADR_STR	ld	hl,(PPC)
+		inc	hl
+		inc	hl
+		ld	a,h
+		or	l
+		jr	z,loc_30F4
+		xor	a
+		ld	(TRD_5CD6),A			; 0xFF - команда принята синтаксическим анализатором
+		dec	hl
+		dec	hl
+		rst	0x20
+		dw	0x196e
+		ret
+
+loc_30F4	ld	a,0xff
+		ld	(TRD_5CD6),a			; 0xFF - команда принята синтаксическим анализатором
+		ld	hl,(E_LINE)			; адрес	начала редактируемой строки
+		ret
+
+;ТАБЛИЦА КЛЮЧЕВЫХ СЛОВ
+TBL_KEYWORD	DB "SAVE",0x80
+		DC "SAVE"
+		DB "LOAD",0x80
+		DC "LOAD"
+		DB "RUN",0x80
+		DC "RUN"
+		DB "CAT",0x80
+		DC "CAT"
+		DB "ERASE",0x80
+		DC "ERASE"
+		DB "NEW",0x80
+		DC "NEW"
+		DB "MOVE",0x80
+		DC "MOVE"
+		DB "MERGE",0x80
+		DC "MERGE"
+		DB "PEEK",0x80
+		DC "PEEK"
+		DB "POKE",0x80
+		DC "POKE"
+		DB "OPEN",0x83
+		DB "CLOSE",0x83
+		DB "CODE",0x80
+		DC "CODE"
+		DB "RND",0x80
+		DC "RND"
+		DB "DATA",0x80
+		DC "DATA"
+		DB "SCREEN",4,0x84
+		DB "SCREEN",0x84
+		DB "COPY",0x80
+		DC "COPY"
+		DB "FORMAT",0x80
+		DC "FORMAT"
+		DB "GOTO",0x80
+		DC "GOTO"
+		DB "LIST",0x80
+		DC "LIST"
+		DB "LINE",0x80
+		DC "LINE"
+		DB "VERIFY",0x80
+		DC "VERIFY"
+		DB 0xff,0xff
+
+; байтовые коды ключевых слов
+BYTES_COM	dw __SAVE << 8 + __SAVE
+		dw __LOAD << 8 + __LOAD
+		dw __RUN << 8 + __RUN
+		dw __CAT << 8 + __CAT
+		dw __ERASE << 8 + __ERASE
+		dw __NEW << 8 + __NEW
+		dw __MOVE << 8 + __MOVE
+		dw __MERGE << 8 + __MERGE
+		dw __PEEK << 8 + __PEEK
+		dw __POKE << 8 + __POKE
+		dw __CLOSE << 8 + __OPEN
+		dw __CODE << 8 + __CODE
+		dw __RND << 8 + __RND
+		dw __DATA << 8 + __DATA
+		dw __SCREENS << 8 + __SCREENS
+		dw __COPY << 8 + __COPY
+		dw __FORMAT << 8 + __FORMAT
+		dw __GOTO << 8 + __GOTO
+		dw __LIST << 8 + __LIST
+		dw __LINE << 8 + __LINE
+		dw __VERIFY << 8 + __VERIFY
+		db 0
+
+CP_VARSTRDOS	LD HL,(CHANS)
+		or	a
+		ld	bc,TRD_5D25
+		sbc	hl,bc
+		ret
+
+; ===============FREE SPACE 2============
+; ===============FREE SPACE 2============
+
+		TITLE "evo-dos.a80"
+
+		DUPL 0X3C01-$,0XFF
+		jr	loc_3C06
+
+		db	0xff
+		jr	loc_3C09
+
+loc_3C06	jp	loc_3D00
+
+loc_3C09	jp	loc_3D03
+
+; ===============FREE SPACE 3============
+	DUPL 0X3C30-$,0XFF
+		IN A,(0X1F)
+		RET
+
+	DUPL 0X3C50-$,0XFF
+		JP HC_REZIDENT
+
+	DUPL ADR_RST8END-$,0XFF
+		JP EDOS2RST8
+; ===============FREE SPACE 3============
+
+	DUPL 0X3CFA-$,0XFF
+loc_3CFA	nop
+		jr	loc_3D2F
+
+loc_3CFD	jp	CALL_3D13
+
+; вход в DOS (15616)
+loc_3D00	nop
+		jr	IN_DOS_15616
+
+; обращение из бейсика (15619)
+loc_3D03	nop
+		jr	IN_DOS_15619
+
+loc_3D06	nop
+		jp	INPUTDATAFILE
+
+loc_3D0A	jp	OUT_SYM2FILE
+
+		nop
+loc_3D0E	jr	loc_3D0A
+
+		nop
+		jr	loc_3CFA
+
+		nop
+		jr	loc_3CFD
+
+loc_3D16	nop
+		jp	WORK4ERROR
+
+IN_DOS_15619	call	CREATE_VARS_TRD
+		push	hl
+		jp	CONTINUE_15619
+
+CREATE_VARS_TRD	call	CP_VARSTRDOS
+		nop
+		nop
+		call	c,JMP_CREATE_VARS
+		ld	hl,TRD_5CC2
+		ret
+
+		nop
+		nop
+loc_3D2F	nop
+		ret
+
+IN_DOS_15616	call	CREATE_VARS_TRD
+		push	hl
+		jp	IN_COMMAND_CPU			; вхождение в командный	процессор доса
+
+INI_INTERFACE1	xor	a
+		DUPL 2,0
+		in	a,(0xf7)
+		cp	0x1e
+		jr	z,loc_3D44
+		cp	0x1f
+		ret	nz
+loc_3D44	rst	8
+		db	0x31
+		ld	a,1
+		ld	(TRD_5CEF),a
+		ret
+
+JMP_CREATE_VARS	xor	a
+		out	(0xff),a
+		in	a,(0xf6)
+		ld	hl,INI_INTERFACE1
+		ld	de,MEMBOT
+		ld	bc,0x14
+		ldir					; ADS
+		ld	hl,CREATE_VARS
+		push	hl
+		LD	hl,loc_3D2F
+		push	hl
+		jp	MEMBOT
+
+CREATE_VARS	ld	hl,SET_VARS
+		push	hl
+		ld	hl,loc_3D2F
+		push	hl
+		ld	hl,0x1655
+		push	hl
+		ld	hl,TSTACK_END
+		push	hl
+		ld	(hl),0xc9
+		ld	hl,P_RAMT+1
+		ld	bc,0x70
+		ret
+
+PRINT_0D	ld	a,0x0d
+PRINT_A_	push	hl
+		push	bc
+		push	de
+		JR PRINT_A_RET
+
+	DUPL 3
+
+WR_BYTE_RET	OUT (C),A
+		RET
+
+PRINT_A_RET	call	PRINT_SYM
+		pop	de
+		pop	bc
+		pop	hl
+		ret
+
+PRINT_SYM	rst	0x20
+		dw	0x10
+		ret
+
+; восстановление ВГ93
+COM_00		ld	a,0x08
+COM2VG_WAIT	out	(0x1f),a
+loc_3D9C	push	hl
+		rst	0x20
+		dw	0x1f54
+		jr	c,loc_3DA5
+		rst	0x20
+		dw	0x1b7b
+loc_3DA5	pop	hl
+		in	a,(0xff)
+		and	0x80
+		jr	z,loc_3D9C
+		ret
+
+CP_PRESENT_DISK	ld	a,0x08
+		call	COM2VG_WAIT
+		ld	de,0
+		in	a,(0x1f)
+		and	2
+		ld	b,a
+loc_3DBA	in	a,(0x1f)
+		and	2
+		cp	b
+		ret	nz
+		inc	de
+		ld	a,e
+		or	d
+		jr	nz,loc_3DBA
+		jp	loc_3EE7
+
+; выбор дисковода по умолчанию
+ACTIV_DEF_DSK	ld	a,(TRD_5D19)			; дисковод по умолчанию
+; настройка на дисковод
+COM_01		ld	(TRD_5CF6),a			; настройка на дисковод
+		ld	hl,TRD_5D16			; копия	системного регистра (порт 0xFF)
+		ld	c,a
+		ld	a,3Ch
+		or	c
+		out	(0FFh),a
+		ld	(hl),a
+		call	GET_TIME_HEAD	; ПОЛУЧЕНИЕ ВРЕМЕНИ ПЕРЕМЕЩЕНИЯ	ГОЛОВКИ
+		and	80h
+		jr	z,loc_3DFA
+		call	CP_PRESENT_DISK	; ПРОВЕРКА НАЛИЧИЯ ДИСКА
+		call	CP_TIME_GOHEAD	; ОПРЕДЕЛЕНИЕ ВРЕМЕНИ ПЕРЕМЕЩЕНИЯ ГОЛОВКИ
+		call	GET_TYPE_DISK	; ПОЛУЧЕНИЕ КОДА РЕЖИМА	РАБОТЫ ДИСКОВОДА
+		cp	0FFh
+		jr	nz,loc_3DFA
+		push	hl
+		call	CP_DISK_TRACK
+		pop	hl
+		cp	80		; ПРОВЕРКА НА 80 ДОРОЖЕК
+		ld	a,0
+		jr	nz,loc_3DF9
+		ld	a,80h
+loc_3DF9	ld	(hl),a
+loc_3DFA	call	WR_NUM_TRACK
+PAUSE725779T	ld	a,0x50
+PAUSE_C_A	ld	c,0xff
+loc_3E01	dec	c
+		jr	nz,loc_3E01
+		dec	a
+		jr	nz,PAUSE_C_A
+		ret
+
+; получение времени перемещения	головки
+GET_TIME_HEAD	ld	de,TRD_5CFA			; время	перемещения дисковода A
+loc_3E0B	ld	hl,(TRD_5CF6)			; дисковод для временной операции
+		add	hl,de
+		ld	a,(hl)
+		ret
+
+GET_TYPE_DISK	ld	de,TRD_5CC8			; режим	работа дисковода A
+		jr	loc_3E0B
+
+; определение времени перемещения головки
+CP_TIME_GOHEAD	call	GET_TIME_HEAD			; получение времени перемещения	головки
+		ld	b,8
+		ld	c,4
+loc_3E1D	ld	(hl),b
+		ld	a,0Bh
+		call	COM2VG_WAIT
+		ld	a,20h
+		ld	b,0Bh
+		call	HEAD_POSITION
+		ld	b,(hl)
+		ld	a,1
+		call	HEAD_POSITION
+		in	a,(1Fh)
+		and	4
+		jr	nz,loc_3E3F
+		xor	a
+		call	HEAD_POSITION
+		in	a,(1Fh)
+		and	4
+		ret	nz
+loc_3E3F	inc	b
+		dec	c
+		ret	z
+		jr	loc_3E1D
+
+HEAD_POSITION	out	(0x7f),a
+		ld	a,b
+		or	0x18
+		jp	COM2VG_WAIT
+
+POSITIONIREN	out	(0x7f),a
+		push	bc
+		ld	b,a
+		in	a,(0x3f)
+		cp	b
+		pop	bc
+		push	af
+		ld	a,b
+		or	0x18
+		call	COM2VG_WAIT
+		pop	af
+		ret	z
+		push	bc
+		call	PAUSE725779T
+		pop	bc
+		ret
+
+; установка головки на дорожку
+COM_02		ld	c,a
+		call	COM_16
+		call	GET_TYPE_DISK
+		and	2
+		call	nz,SET_SIDE_DSK
+		push	bc
+		bit	7,(hl)
+		jr	z,loc_3E83
+		bit	0,(hl)
+		jr	nz,loc_3E83
+		in	a,(0x3f)
+		cp	c
+		jr	z,loc_3E82
+		rlca
+		out	(0x3f),a
+		ld	a,c
+		rlca
+loc_3E82	ld	c,a
+loc_3E83	call	GET_TIME_HEAD			; получение времени перемещения	головки
+		ld	b,a
+		in	a,(3Fh)
+		cp	c
+		push	bc
+		call	nz,PAUSE725779T
+		pop	bc
+		ld	a,c
+		call	POSITIONIREN
+		pop	bc
+		ld	a,c
+		out	(0x3f),a
+		ld	a,(TRD_5CCD)			; 0x80 - готовность дисковода
+		or	a
+		ret	z
+		xor	a
+		ld	(TRD_5CCD),a			; 0x80 - готовность дисковода
+PAUSE_3_C_A	ld	b,3
+loc_3EA2	ld	a,0xff
+		call	PAUSE_C_A
+		djnz	loc_3EA2
+		ret
+
+SET_SIDE_DSK	ld	a,c
+		or	a
+		rra
+		ld	c,a
+		ret	nc
+		jp	COM_17
+
+GET_NUM_TRACK	call	COM_16
+loc_3EB5	in	a,(0x1f)
+		and	0x80
+		ld	(TRD_5CCD),a			; 0x80 - готовность дисковода
+		in	a,(0x3f)
+		ld	h,a
+		call	BUGFIX_3EBF			; PATCH ERROR
+		ld	c,0x7f
+		ld	d,1
+		di
+		ld	a,0xc0
+		out	(0x1f),a
+		push	bc
+		ld	b,3
+loc_3ECE	in	a,(0xff)
+		and	0xc0
+		jr	nz,loc_3EF2
+		inc	de
+		ld	a,e
+		or	d
+		jr	nz,loc_3ECE
+		djnz	loc_3ECE
+		pop	bc
+		ei
+		ld	a,0xd0
+		out	(0x1f),a
+		ld	a,(TRD_5D17)
+		cp	0xff
+		ret	z
+loc_3EE7	call	SET_TAPELDERR
+		ld	a,0xff
+		ld	(TRD_5D17),a			; рисование заставки, если 0xAA
+		jp	loc_271B
+
+loc_3EF2	pop	bc
+		in	h,(c)
+loc_3EF5	in	a,(0xff)
+		and	0xc0
+		jr	z,loc_3EF5
+		ei
+		ret	m
+		di
+		in	a,(0x7f)
+		jr	loc_3EF5
+
+; установка номера сектора
+COM_03		ld	(TRD_5CFF),a
+		ret
+
+; установка адреса буфера
+COM_04		ld	(TRD_5D00),hl
+		ret
+
+SAVE_SECTOR	ld	a,0xa0
+		jr	loc_3F10
+
+LOAD_SECTOR	ld	a,0x80
+loc_3F10	ld	(TRD_5CFE),a
+loc_3F13	ld	d,0x0a
+loc_3F15	push	de
+		di
+		ld	a,(TRD_5CFF)
+		inc	a
+		out	(0x5f),a
+		ld	hl,(TRD_5D00)
+		ld	c,0x7f
+		ld	a,(TRD_5CFE)
+		out	(0x1f),a
+		cp	0xa0
+		push	af
+		call	z,WRITE_SEC
+		pop	af
+		call	nz,READ_SEC
+		pop	de
+		ei
+		in	a,(0x1f)
+		ld	b,a
+		and	0x7f
+		ret	z
+loc_3F39	ld	hl,READ_ONLY			; READ ONLY
+		and	0x40
+		jr	nz,loc_3F4B
+		ld	a,b
+		and	4
+		jr	z,loc_3FA0
+		dec	d
+		jr	nz,loc_3F15
+loc_3F48	ld	hl,TXT_DISCERROR_		; DISC ERROR
+loc_3F4B	ld	a,0xd0
+		out	(0x1f),a
+		ld	a,b
+		and	1
+		jp	nz,loc_3EE7
+		in	a,(0x3f)
+		or	a
+		jr	nz,loc_3F5F
+		in	a,(0x5f)
+		cp	0x0a
+		ret	z
+loc_3F5F	push	hl
+		call	CLEAR_SCREEN			; очистка основного экрана
+		pop	hl
+		rst	0x18
+		ld	hl,TXT_TRK_			; TRACK
+		rst	0x18
+		in	a,(0x3f)
+		call	PRINT_CHISLO_A_
+		ld	hl,TXT_SEC_			; SECTOR
+		rst	0x18
+		in	a,(0x5f)
+		call	PRINT_CHISLO_A_
+		ld	hl,TXT_RIA_
+		rst	0x18
+loc_3F7B	call	GET_KEYS			; ожидание нажатия клавиши
+		cp	"I"				; IGNORE - возврат в адрес 0x1E8E
+		ret	z
+		cp	"R"				; RETRY
+		jr	z,PRESS_RETRY
+		cp	"A"				; ABORT
+		jr	nz,loc_3F7B
+		call 	SET_TAPELDERR			; PRESS	ABORT
+		ld	a,7
+		ld	(TRD_5D0F),a			; номер	ошибки TR-DOS
+		jp	END_COMAND
+
+PRESS_RETRY	ld	a,(TRD_5CF5)
+		call	COM_02
+		call	PAUSE_3_C_A
+		jp	loc_3F13
+
+loc_3FA0	dec	d
+		jp	z,loc_3F48			; DISC ERROR
+		push	de
+		call	GET_TIME_HEAD			; получение времени перемещения	головки
+		and	2
+		jr	nz,loc_3FAD
+		inc	(hl)
+loc_3FAD	call	COM_00
+		ld	a,(TRD_5CF5)
+		call	COM_02
+		pop	de
+		jp	loc_3F15
+
+WRITE_SEC	ld	b,4
+loc_3FBC	in	a,(0xff)
+		and	0xc0
+		jr	nz,loc_3FD1
+		inc	de
+		ld	a,e
+		or	d
+		jr	nz,loc_3FBC
+		djnz	loc_3FBC
+		ret
+
+WR_DATAPORT	in	a,(0xff)
+		and	0xc0
+		jr	z,WR_DATAPORT
+		ret	m
+loc_3FD1	outi
+		jr	WR_DATAPORT
+
+READ_SEC	ld	b,4
+loc_3FD7	in	a,(0xff)
+		and	0xc0
+		jr	nz,loc_3FEC
+		inc	de
+		ld	a,e
+		or	d
+		jr	nz,loc_3FD7
+		djnz	loc_3FD7
+		ret
+
+RD_DATAPORT	in	a,(0xff)
+		and	0xc0
+		jr	z,RD_DATAPORT
+		ret	m
+loc_3FEC	ini
+		jr	RD_DATAPORT
+
+		OUT (C),A
+FOR_RET		RET
+
+		IN A,(C)
+		RET
+
+	DUPL 0X3FF8-$,0XFF
+		DB "NEODOS"
+		DW DATA_VERS

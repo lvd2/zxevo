@@ -1,5 +1,5 @@
 
-; LAST UPDATE: 22.11.2021 savelij
+; LAST UPDATE: 15.01.2022 savelij
 
 ;‘€’…‹ € (€„…‘ ‚ IX)
 ;+00 X „€’€
@@ -261,28 +261,59 @@ NONETRDOS	DB 0X06,0X08,0X03,0X16,0X16,0X0F,%00000000,0
 TXT_NONETRDOS	DB 0X17,0XFF,0X0D,3,"Not TR-DOS disk",0 
 ;===============… TR-DOS „‘=============================
 
-;[’‚€’ ‹ ‡€ƒ“†€’ ‚ €„‘]
-SEL_MOUNT	DB 0X07,0X07,LOW ((SELMOUNT2-SELMOUNT1)/2)+2,0X0B,0X07,0X1F,%00100000,0
-		DW 0,((SELMOUNT2-SELMOUNT1)/2)
-		DW SELMOUNTTXT,SELMOUNT1,0,SELMOUNTKEYS
-SELMOUNTTXT	DB 0X17,0XFF,"Mounter"
-		DB 0X0D," L.Ramdisk"
-		DB 0X0D," 1.Mount A:"
-		DB 0X0D," 2.Mount B:"
-		DB 0X0D," 3.Mount C:"
-		DB 0X0D," 4.Mount D:"
-		DB 0X0D," X.Exit",0
+;===============§ £ΰγ§ª  SCL ®΅ΰ § ========================
+LOAD_SCL	DB 0X07,0X07,LOW ((.SELMOUNT2-.SELMOUNT1)/2)+2,0X0C,0X07,0X1F,%00100000,0
+		DW 0,((.SELMOUNT2-.SELMOUNT1)/2)
+		DW .SELMOUNTTXT,.SELMOUNT1,0,.SELMOUNTKEYS
+.SELMOUNTTXT	DB "\x17\xFFSCL to:\r"
+		DB " 0.Only load\r"
+		DB " 1.Ramdisk A:\r"
+		DB " 2.Ramdisk B:\r"
+		DB " 3.Ramdisk C:\r"
+		DB " 4.Ramdisk D:\r"
+		DZ " X.Exit"
 
-SELMOUNTKEYS	DB LOW (SELMOUNT1-$-1),"l1234x"
+.SELMOUNTKEYS	DB LOW (.SELMOUNT1-$-1),"01234x"
 
-SELMOUNT1	DW LOADIMAGE
+.SELMOUNT1	DW LOADIMAGE
+		DW SCL_A
+		DW SCL_B
+		DW SCL_C
+		DW SCL_D
+		DW RESTART
+.SELMOUNT2
+;===============§ £ΰγ§ª  SCL ®΅ΰ § ========================
+
+;===============§ ―γαª ¨§ TRD ®΅ΰ § =======================
+RUN_IMAGE	DB 0X07,0X07,LOW ((.SELMOUNT2-.SELMOUNT1)/2)+2,0X0C,0X07,0X1F,%00100000,0
+		DW 0,((.SELMOUNT2-.SELMOUNT1)/2)
+		DW .SELMOUNTTXT,.SELMOUNT1,0,.SELMOUNTKEYS
+.SELMOUNTTXT	DB "\x17\xFFTRD to:\r"
+		DB " 0.Only load\r"
+		DB " 1.Ramdisk A:\r"
+		DB " 2.Ramdisk B:\r"
+		DB " 3.Ramdisk C:\r"
+		DB " 4.Ramdisk D:\r"
+		DB " 5.Mount A:\r"
+		DB " 6.Mount B:\r"
+		DB " 7.Mount C:\r"
+		DB " 8.Mount D:\r"
+		DZ " X.Exit"
+
+.SELMOUNTKEYS	DB LOW (.SELMOUNT1-$-1),"012345678x"
+
+.SELMOUNT1	DW LOADIMAGE
+		DW RUNIMG_A
+		DW RUNIMG_B
+		DW RUNIMG_C
+		DW RUNIMG_D
 		DW MOUNT_A
 		DW MOUNT_B
 		DW MOUNT_C
 		DW MOUNT_D
 		DW RESTART
-SELMOUNT2
-;===============’‚€’ ‹ ‡€ƒ“†€’ ‚ €„‘========
+.SELMOUNT2
+;===============§ ―γαª ¨§ ®΅ΰ § ===========================
 
 ;[ ‚›‚„€ €‰„…›• ”€‰‹‚ TR-DOS]
 WIN_FILES	DB 0X00,0X00,0X00,0X0C,0X0F,0X1F,%00010010,0

@@ -1,0 +1,22 @@
+
+; LAST UPDATE: 07.01.2022 savelij
+
+		TITLE "raznoe.a80"
+
+; печать текста до нулевого байта
+PRINT2ZERO	LD A,(HL)
+		INC HL
+		AND A
+		RET Z
+		RST 0X10
+		JR PRINT2ZERO
+
+; печать буквы виртуального дисковода
+ADD_TXT_VERS	LD HL,TEXT4VIRTDRV	; текст про виртуальный дисковод
+		RST 0X18		; печать на экране
+		LD H,VIRT_REAL_DRIVE
+		CALL READCMOS		; чтение номера виртуального диска
+		AND 3			; нам нужны только 2 младших бита
+		ADD A,"A"		; преобразовали в текст
+		RST 0X10		; напечатали букву
+		RET

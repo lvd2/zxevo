@@ -1,0 +1,225 @@
+
+; LAST UPDATE: 07.01.2022 savelij
+
+		TITLE "virtual.a80"
+
+		DB 0XFF				;DCU
+
+CP_TYPEDRIVE	PUSH BC
+		PUSH HL
+		LD H,VIRT_REAL_DRIVE
+		CALL READCMOS
+		POP HL
+		AND 3
+		LD B,A
+		LD A,(TRD_5CF6)
+		CP B
+		POP BC
+		RET
+
+; установка переменных текущего привода
+SET_DRIVENAME	LD H,VIRT_REAL_DRIVE
+		CALL READCMOS
+		RRCA
+		RRCA
+		AND 3
+		LD (TRD_5D19),A
+		LD (TRD_5CF6),A
+		OR 0X3C
+		LD (TRD_5D16),A
+		RET
+
+; форматирование RAM диска
+FORMAT_RAM	LD A,(TRD_5CF6)
+		LD B,A
+		INC B
+		LD A,%00001000
+		RLCA
+		DJNZ $-1
+		LD B,A
+	RST8D _MOUNTER,_GET_VIRT_BITS
+		LD (COPY_VIRT_BITS),A
+		AND B
+		JR NZ,FORMAT_RAM3		; если бит=1 формат примонтированного образа
+		CALL CP_TYPEDRIVE
+		RET NZ				; выход для формата рельного диска
+		CALL CREATE_TRDTABL		; формат рамдиска 
+		XOR A
+		RET
+
+FORMAT_RAM3	LD HL,TRD_5D25
+		LD DE,TRD_5D26
+		LD BC,0XFF
+		LD (HL),B
+		LDIR
+		LD D,B
+		LD E,B
+		LD B,0X10
+FORMAT_RAM1	PUSH BC
+		PUSH DE
+		LD B,1
+		LD HL,TRD_5D25
+		CALL COM_06
+		POP DE
+		POP BC
+		INC E
+		DJNZ FORMAT_RAM1
+		XOR A
+		RET
+
+; проверка наличия маркера рамдиска
+CMP_RAM_DISK	CALL READ_WCPU12
+		LD BC,WIN_P1
+		LD A,RAM_RAMDISK
+		OUT (C),A
+		LD HL,CPU1+0X3FFF
+		LD D,(HL)
+		DEC H
+		LD E,(HL)			; взяли байты для проверки маркера
+		CALL WRITE_WCPU12
+		LD HL,"RD"
+		AND A
+		SBC HL,DE
+		RET Z				; если маркер на месте, то рамдиск не создаем
+; создание чистого рамдиска
+CREATE_TRDTABL	LD BC,WIN_P1
+		LD A,RAM_RAMDISK		; нужна страница начала рамдиска, где будет таблица описателей
+		OUT (C),A
+		LD HL,CPU1
+		PUSH HL
+		LD DE,CPU1+1
+		LD BC,0X3FFF
+		LD (HL),L
+		LDIR				; очистили страницу
+		POP DE				; адрес начала
+		LD HL,0				; смещение в блоках и страницах
+		LD A,0XA0
+ELT2		PUSH AF
+		LD BC,0X1000			; счетчик номеров секторов и их номера
+		LD A,L
+		RRCA
+		RRCA
+		LD (DE),A			; смещение в блоках дорожки в странице
+		INC D
+		LD A,H
+		LD (DE),A			; смещение в страницах до дорожки
+		INC D
+ELT1		INC C
+		LD A,C
+		LD (DE),A			; номер сектора
+		INC D
+		LD A,2
+		LD (DE),A			; размер сектора
+		INC D
+		DJNZ ELT1			; вносим в таблицу все номера секторов с размерами
+		LD D,HIGH (CPU1)		; вернули указатель в начало
+		INC E				; для следующей дорожки
+		LD BC,0X40
+		ADD HL,BC			; переход к следующей дорожке
+		POP AF
+		DEC A
+		JR NZ,ELT2			; повторяем для всех дорожек
+		LD HL,CPU1+0X3FFF
+		LD (HL),"R"			; вносим маркер рамдиска
+		DEC H
+		LD (HL),"D"
+		LD BC,WIN_P1
+		LD A,RAM_DATARAMD
+		OUT (C),A
+		LD HL,CPU1
+		LD DE,CPU1+1
+		LD BC,0X0FFF
+		LD (HL),L
+		LDIR
+		LD HL,DSKINFO
+		LD DE,CPU1+0X8E1
+		LD BC,DSK_END-DSKINFO
+		LDIR
+		LD BC,WIN_A1
+		LD A,0X7A
+		OUT (C),A
+		RET
+
+; восстановление конфигурации окон проецирования 1,2
+WRITE_WCPU12	LD BC,(BB_CPU1)
+		LD A,C
+		LD C,LOW (WIN_A0)
+		OUT (C),A
+		LD BC,(BB_CPU2)
+		LD A,C
+		LD C,LOW (WIN_A0)
+		OUT (C),A
+		RET
+
+; чтение конфигурации окон проецирования 1,2
+READ_WCPU12	LD BC,RD_RAMNROM
+		IN L,(C)			; биты RAM & ROM
+		INC B
+		IN H,(C)			; биты DOS & 7FFD
+		ADD HL,HL
+		LD B,HIGH (RD_1WINA1)
+		IN A,(C)
+		CP 0XC0
+		JR NC,RST30_01
+		LD E,A
+		LD D,HIGH (WIN_P1)
+		JR RST30_02
+
+RST30_01	RLCA
+		RLCA
+		SLA L
+		RRA
+		SLA H
+		RRA
+		LD E,A
+		LD D,HIGH (WIN_A1)
+RST30_02	LD (BB_CPU1),DE
+		INC B
+		IN A,(C)
+		CP 0XC0
+		JR NC,RST30_03
+		LD E,A
+		LD D,HIGH (WIN_P2)
+		JR RST30_04
+
+RST30_03	RLCA
+		RLCA
+		SLA L
+		RRA
+		SLA H
+		RRA
+		LD E,A
+		LD D,HIGH (WIN_A2)
+RST30_04	LD (BB_CPU2),DE
+		RET
+
+DISK_NONE	PUSH HL
+		PUSH BC
+		CALL READ_WCPU12
+		LD BC,WIN_A1
+		LD A,0X40
+		OUT (C),A
+		LD B,HIGH (WIN_P1)
+		LD A,RAM_RAMDISK
+		OUT (C),A
+		LD HL,CPU1+0X3FFF
+		LD A,(HL)
+		DEC H
+		CP "R"
+		SCF
+		JR NZ,DISK_NONE1
+		LD A,(HL)
+		CP "D"
+		SCF
+		JR NZ,DISK_NONE1
+		XOR A
+DISK_NONE1	PUSH AF
+		CALL WRITE_WCPU12
+		POP AF
+		POP BC
+		POP HL
+		RET
+
+TEXT4VIRTDRV	DB 0X16,ZASTV_Y+2,1
+TXT4VIRTDRV	DC "Virtual Drive: "
+ETXT4VIRTDRV

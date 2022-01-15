@@ -1,5 +1,5 @@
 
-; LAST UPDATE: 22.11.2021 savelij
+; LAST UPDATE: 22.12.2021 savelij
 
 ;номера функций RST 8
  INIT_VAR 0X40
@@ -70,8 +70,9 @@ _MEM_MODE_PENT	EQU %11000000			;MEMORY MODE PENT 1024 KB
  SETVAR _REST_NAMELOAD				; получение описателя файла загруженного в рамдиск
  SETVAR _CMP_DRIVE				; проверка примонтированного образа на указанной букве
  SETVAR _GET_VIRT_BITS				; получение битов смонтированных дисков
-; SETVAR _MOUNT_RAMDISK				; монтирование рамдиска
- SETVAR _SET_RAMDISK
+ SETVAR _SET_VIRTREAL				; переключение реального/виртуального дисковода
+ SETVAR _SET_REAL				; переключение реального дисковода
+ SETVAR _SET_VIRT				; переключение виртуального дисковода
 
 ;номера функций менеджера устройств
  INIT_VAR

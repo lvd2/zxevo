@@ -19,11 +19,11 @@ echo ##################
 cd ..\..\page1\dos_fe
 call build.bat
 
-echo #######################
-echo ## BUILD TR-DOS 5.03 ##
-echo #######################
-cd ..\..\page1\trdos503
-call build.bat
+rem echo #######################
+rem echo ## BUILD TR-DOS 5.03 ##
+rem echo #######################
+rem cd ..\..\page1\trdos503
+rem call build.bat
 
 echo ######################
 echo ## BUILD START PAGE ##
@@ -32,9 +32,9 @@ cd ..\..\page0\source
 call build.bat
 
 echo ###################
-echo ## BUILD EVO-DOS ##
+echo ## BUILD NEO-DOS ##
 echo ###################
-cd ..\..\page1\evo-dos
+cd ..\..\page1\neo-dos
 call build.bat
 
 echo #####################
@@ -72,23 +72,23 @@ cd ..\..
 echo ###############
 echo ## BUILD ERS ##
 echo ###############
-copy /b /y page3\basic48_128.rom + page1\evo-dos_virt.rom + page5\rst8service.rom    + ff_16k.rom + page3\basic48_128.rom + page1\evo-dos_emu3d13.rom + page2\basic128.rom + page0\services.rom    ers.rom
-copy /b /y ff_16k.rom            + ff_16k.rom             + page5\rst8service_fe.rom + ff_16k.rom + page3\basic48_128.rom + page1\tr5_03.rom        + page2\basic128.rom + page0\services_fe.rom ers_fe.rom
+rem copy /b /y page3\basic48_128.rom + page1\evo-dos_virt.rom + page5\rst8service.rom    + ff_16k.rom + page3\basic48_128.rom + page1\evo-dos_emu3d13.rom + page2\basic128.rom + page0\services.rom    ers.rom
+copy /b /y ff_16k.rom            + ff_16k.rom             + page5\rst8service_fe.rom + ff_16k.rom + page3\basic48_128.rom + page1\neo-dos.rom         + page2\basic128.rom + page0\services_fe.rom ers_fe.rom
 
 echo #####################
 echo ## BUILD PENT GLUK ##
 echo #####################
-copy /b /y page3\2006.rom+trdos_v6\dosatm3.rom+page2\basic128.rom+page0\glukpen.rom glukpent.rom
+copy /b /y page3\2006.rom + trdos_v6\dosatm3.rom + page2\basic128.rom + page0\glukpen.rom glukpent.rom
 
 echo ####################
 echo ## BUILD ATM CP/M ##
 echo ####################
-copy /b /y atm_cpm\rbios.rom+page3\basic48_128_std.rom+page2\128_std.rom+page3\basic48_orig.rom basics_std.rom
+copy /b /y atm_cpm\rbios.rom + page3\basic48_128_std.rom + page2\128_std.rom + page3\basic48_orig.rom basics_std.rom
 
-echo ########################
-echo ## BUILD FULL ERS ROM ##
-echo ########################
-copy /b /y ff_64k.rom + basics_std.rom + glukpent.rom + profrom\evoprofrom.rom + ers.rom zxevo.rom
+rem echo ########################
+rem echo ## BUILD FULL ERS ROM ##
+rem echo ########################
+rem copy /b /y ff_64k.rom + basics_std.rom + glukpent.rom + profrom\evoprofrom.rom + ers.rom zxevo.rom
 
 echo ####################################
 echo ## BUILD FULL ERS ROM EMUL FDD FE ##
@@ -99,10 +99,10 @@ copy /b /y ff_64k.rom + basics_std.rom + glukpent.rom + profrom\evoprofrom.rom +
 echo #################################
 echo ## COPY ROM'S FOR UNRESLSPECCY ##
 echo #################################
-copy /B /Y zxevo.rom d:\yad\unrealspeccy\zxevo.rom
+rem copy /B /Y zxevo.rom d:\yad\unrealspeccy\zxevo.rom
 copy /B /Y zxevo_fe.rom d:\yad\unrealspeccy\zxevo_fe.rom
 
-del ers.rom
+rem del ers.rom
 del ers_fe.rom
 del glukpent.rom
 del basics_std.rom

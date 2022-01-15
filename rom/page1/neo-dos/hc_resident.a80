@@ -1,0 +1,117 @@
+
+; LAST UPDATE: 06.01.2022 savelij
+
+HC_REZIDENT	LD H,CMOS_BYTE_01
+		CALL READCMOS
+		AND M_REZIDENT
+		JR Z,LOC_3C4B
+		JR loc_3C50
+
+loc_3C47	LD BC,WIN_A3
+		LD A,0XFF
+		OUT (C),A			; возврат привязки к порту 7FDD
+LOC_3C4B	LD DE,0XFFFF
+		ld	a, 7
+		jp	loc_9
+
+loc_3C50	ld	sp, 0X5BFF
+		LD BC,WIN_A3
+		LD A,0X40
+		OUT (C),A			; разблокировка привязки к порту 7FFD
+		ld	a, 1Fh ! 0XFF
+		LD BC,WIN_P3
+		OUT (C),A
+		ld	hl, 0C000h
+		ld	a, (hl)
+		cp	0C3h
+		jr	nz, loc_3C47
+		LD A,MEMORY_128 | TURBO_3
+	RST8D _SET_MODE				; установка 3,5Мгц и память 128К
+		xor	a
+loc_3C61	add	a, (hl)
+		adc	a, 0
+		inc	hl
+		bit	7, h
+		jr	nz, loc_3C61
+		dec	a
+		jr	nz, loc_3C47
+		ld	a, 0AAh
+		dec	hl
+		cp	(hl)
+		jr	nz, loc_3C47
+		cpl
+		dec	hl
+		cp	(hl)
+		jr	nz, loc_3C47
+		LD H,CMOS_BYTE_03
+		CALL READCMOS
+		AND M_KILL_REZIDENT
+		JR Z,.L1
+		LD (0XC000),A			; портим резидент
+.L1		ld	hl, 0D000h
+		ld	de, 5B00h
+		ld	bc, 2500h
+		ldir
+		LD BC,WIN_P3			; порт установки номера страницы
+		ld	a, 1Eh ! 0XFF
+		LD HL,LDIR_HL_DE
+		LD DE,.E1
+		JP (HL)
+
+.E1		ld	a, 3 ! 0XFF
+		LD HL,LDIR_DE_HL
+		LD DE,.E2
+		JP (HL)
+
+.E2		ld	a, 1Dh ! 0XFF
+		LD HL,LDIR_HL_DE
+		LD DE,.E3
+		JP (HL)
+
+.E3		ld	a, 1 ! 0XFF
+		LD HL,LDIR_DE_HL
+		LD DE,.E4
+		JP (HL)
+
+.E4		ld	a, 1Ch ! 0XFF
+		LD HL,LDIR_HL_DE
+		LD DE,.E5
+		JP (HL)
+
+.E5
+		LD A, 0 ! 0XFF
+		LD HL,LDIR_DE_HL
+		LD DE,.E6
+		JP (HL)
+
+.E6		ld	a, 1Bh ! 0XFF
+		LD HL,LDIR_HL_DE
+		LD DE,.E7
+		JP (HL)
+
+.E7
+		LD A,0 ! 0XFF
+		OUT (C),A			; вернули страницу
+		LD BC,WIN_A3
+		LD A,0XFF
+		OUT (C),A			; возврат привязки к порту 7FDD
+		ld	sp, (0X5B73)
+		ret
+
+LDIR_DE_HL	OUT (C),A
+		ld	a, 0FFh
+		or	a
+		jr	loc_3CE0
+
+LDIR_HL_DE	OUT (C),A
+		xor	a
+loc_3CE0	EXX
+		ld	hl, 0C000h
+		ld	de, 8000h
+		ld	bc, 4000h
+		jr	z, loc_3CEC
+		ex	de, hl
+loc_3CEC	ldir
+		EXX
+		EX DE,HL
+		JP (HL)

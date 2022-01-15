@@ -1,0 +1,117 @@
+
+; LAST UPDATE: 07.01.2022 savelij
+
+		TITLE "patch.a80"
+
+; 0x18B7 установка адреса запуска
+ADR_START_COM	LD (TRD_5CC6),HL
+		LD DE,(TRD_5CEB)		; трек и сектор местоположения файла
+		RET
+
+; 0x1CFE удаление буфера
+DELETE_BUFFER	CALL DELETE_BUF
+		JP CLRBUF_EDITOR
+
+; 0x1D5E запуска файла
+RUN_FILE	JP Z,WORK4AUTORUN		; обработка строки автозапуска бейсика
+		CP "C"
+		JP NZ,SINTAX_ERROR
+RUNCODE		LD HL,RUN_CODE
+		LD (TRD_5D1A),HL
+		JP END_COMAND
+
+; 0x36E8 запускалка кодового блока
+RUN_CODE	CALL RESTORE_SP
+		LD BC,(TRD_5CC6)		; адрес загрузки из командной строки
+		PUSH BC
+		RET
+
+; печать текущего форматируемого трека и стороны
+PRINT_NUM_TRK	PUSH DE
+		PUSH AF
+		PUSH DE
+		LD A,0X16
+		RST 0X10
+		LD A,(0X5C6B)
+		DEC A
+		RST 0X10
+		LD A,0
+		RST 0X10
+		LD HL,TXT_FORMAT_TRK
+		RST 0X18
+		POP DE
+		LD C,E
+		LD B,0
+		CALL PRINT_CHISLO
+		LD HL,TXT_FSIDE
+		RST 0X18
+		POP AF
+		LD A,"0"
+		ADC A,0
+		RST 0X10
+		POP DE
+		RET
+		
+TXT_FORMAT_TRK	DC "FORMAT TRACK: "
+TXT_FSIDE	DC "  SIDE: "
+
+; 0x3057 проверка на "." для расширенной команды
+CMP_SPECSYM	LD HL,(TRD_5CD9)
+		LD A,(HL)
+		CP "."
+		JP NZ,FIND_KEYWORD
+		POP HL
+		RET
+
+; 0x0325 ENDCOMAND
+ENDCOMAND	LD A,D
+		CP "."
+		JP NZ,END_COMAND
+		cp __RETURN
+		call nz,CREATE_BUF		; создание буфера
+		ld a,9
+		ld (TRD_5D06),a			; количество символов имени файла при поиске
+		xor a
+		ld (TRD_5D0F),a			; номер	ошибки TR-DOS
+		ld (TRD_5CD6),a			; 0xFF - команда принята синтаксическим анализатором
+		ld (TRD_5D10),a			; старший байт ошибки
+		ld hl,FLAGS
+		res 7,(hl)
+		LD HL,COM_DOT
+		JP LOC_353
+
+; 0x3EBF BUGFIX_3EBF
+BUGFIX_3EBF	PUSH AF
+		PUSH HL
+		CALL GET_TIME_HEAD
+		LD B,A
+		POP HL
+		POP AF
+		JP HEAD_POSITION
+
+; 0x211E очистка буфера выполненной команды
+CLRBUF_EDITOR2	POP HL
+		RES 7,(IY+1)
+		RST 0X20
+		DW 0X19FB
+		XOR A
+		LD (SUBPPC),A
+		DEC A
+		LD (ERR_NR),A
+		LD HL,(E_LINE)
+		LD (CH_ADD),HL
+		RST 0X20
+		DW 0X19FB
+		RST 0X20
+		DW 0X18
+		RST 0X20
+		DW 0X16B0
+		RET
+
+; печать номера форматируемой дорожки и стороны
+loc_20D1	AND A
+		CALL PRINT_NUM_TRK
+		CALL FORMAT_TREK
+		CALL COM_17
+		SCF
+		JP PRINT_NUM_TRK

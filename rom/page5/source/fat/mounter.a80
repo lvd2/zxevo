@@ -1,5 +1,5 @@
 
-; LAST UPDATE: 06.11.2021 savelij
+; LAST UPDATE: 15.01.2022 savelij
 
 	TITLE "mounter.a80 ROM_RST83"
 
@@ -16,17 +16,20 @@ MOUNTER		CALL P5_READ_BYTE
 		LD L,A
 		JP (HL)
 		
-TAB_MOUNTER	DW OPEN_MOUNT				; 00 монтирование образа
-		DW RDWR_MOUNT				; 01 чтение/запись примонтированных образов
-		DW FIND_MOUNTED				; 02 поиск монтируемых образов прописанных в IMAGE.FNT
-		DW GET_MOUNTED				; 03 получение буфера описателей примонтированных образов
-		DW CLOSEMOUNT				; 04 демонтирование образа
-		DW LOADIMAGE				; 05 загрузка образа в рамдиск
-		DW REST_NAMELOAD			; 07 получение описателя файла загруженного в рамдиск
-		DW CMP_DRIVE				; 08 проверка примонтированного образа на указанной букве
-		DW GET_VIRT_BITS			; 09 получение битов смонтированных дисков
-		DW MOUNT_RAMDISK			; 0A монтирование рамдиска
-		DW SET_RAMDISK				; 0B
+TAB_MOUNTER	DW OPEN_MOUNT				; монтирование образа
+		DW RDWR_MOUNT				; чтение/запись примонтированных образов
+		DW FIND_MOUNTED				; поиск монтируемых образов прописанных в IMAGE.FNT
+		DW GET_MOUNTED				; получение буфера описателей примонтированных образов
+		DW CLOSEMOUNT				; демонтирование образа
+		DW LOADIMAGE				; загрузка образа в рамдиск
+		DW REST_NAMELOAD			; получение описателя файла загруженного в рамдиск
+		DW CMP_DRIVE				; проверка примонтированного образа на указанной букве
+		DW GET_VIRT_BITS			; получение битов смонтированных дисков
+		DW SET_VIRTREAL				; переключение реального/виртуального дисковода
+		DW SET_REAL
+		DW SET_VIRT
+;		DW MOUNT_RAMDISK			; монтирование рамдиска
+;		DW SET_RAMDISK				; отключение/установка рамдиска
 
 NOFUNC		RET
 
@@ -1224,14 +1227,13 @@ GET_VIRT_BITS	LD HL,MOUNT_DRIVES
 .L2		LD A,(HL)
 		AND A
 		JR Z,.L1
-;		SCF
 		SET 4,E
 .L1		RR E
 		LD A,0X40
 		ADD A,L
 		LD L,A
 		JR NZ,.L2
-; VIRT_BITS - в 3-0 битах биты примонтированнх образов для дисков D-A
+; VIRT_BITS - в 3-0 битах биты примонтированных образов для дисков D-A
 		CALL GET_VIRTREAL
 		AND 3
 		INC A
@@ -1257,27 +1259,35 @@ WR_VIRT_BITS	PUSH BC
 		RRCA
 		AND 0X0F			; рамдиск
 		OR H
-;		LD BC,FDD_EMU_PORT
-;		OUT (C),A
 		LD (B_PORT_VIRT),A
 		LD A,L
 	ENDIF
 		LD (CPU2+VIRT_BITS),A		; внутренняя переменая
 		LD (RREG_A),A			; возвращаемое значение в регистре A
 		EX AF,AF'
-		EVOPORT WIN_P2,RAM_EVODOS
+	EVOPORT WIN_P2,RAM_EVODOS
+		PUSH BC
 		EX AF,AF'
 		LD (CPU2+COPY_VIRT_BITS),A	; копия переменной для эмуля
+		LD A,VIRT_REAL_DRIVE
+		LD BC,CMOSD_SET_ADR
+		OUT (C),A
+		LD BC,CMOSD_RD_WR
+		IN A,(C)
+		AND 3
+		LD (CPU2+VIRT_DRIVE),A
+		POP BC
 		XOR A
 		OUT (C),A
 		POP HL
 		POP BC
 		RET
 
+	IF 0
 ;[монтирование рамдиска]
-MOUNT_RAMDISK	CALL GET_VIRTREAL
-		AND 3
-		JR SET_RAMDISK.L1
+;MOUNT_RAMDISK	CALL GET_VIRTREAL
+;		AND 3
+;		JR SET_RAMDISK.L1
 
 ; отключение/установка рамдиска
 ; A = >3 - отключение рамдиска
@@ -1299,9 +1309,53 @@ SET_RAMDISK	LD A,(RREG_A)
 		LD A,(CPU2+VIRT_BITS)
 		AND 0X0F
 		OR L
-		JR WR_VIRT_BITS
+		JP WR_VIRT_BITS
+	ENDIF
+
+; установка номера в реальный и виртуальный дисковод
+; A = 0..3 - номер дисковода для установки
+SET_VIRTREAL	LD A,(RREG_A)
+		LD E,A
+		CALL GET_VIRTREAL
+		AND %11110000
+		LD D,A
+		LD A,E
+		AND 3
+		LD E,A
+		ADD A,A
+		ADD A,A
+		OR E
+.L1		LD L,A
+	ROMCALL IWRITECMOS,ROM_RST82
+		JP GET_VIRT_BITS
+
+; установка номера реального дисковода
+; A = 0..3 - номер дисковода для установки
+SET_REAL	LD A,(RREG_A)
+		LD E,A
+		CALL GET_VIRTREAL
+		AND %11110011
+		LD D,A
+		LD A,E
+		AND 3
+		ADD A,A
+		ADD A,A
+		OR D
+		JR SET_VIRTREAL.L1
+
+; установка номера виртуального дисковода
+; A = 0..3 - номер дисковода для установки
+SET_VIRT	LD A,(RREG_A)
+		LD E,A
+		CALL GET_VIRTREAL
+		AND %11111100
+		LD D,A
+		LD A,E
+		AND 3
+		OR D
+		JR SET_VIRTREAL.L1
 
 GET_VIRTREAL	LD H,VIRT_REAL_DRIVE
-		ROMCALL READCMOS,ROM_RST82
+	ROMCALL READCMOS,ROM_RST82
 		AND 0X0F
 		RET

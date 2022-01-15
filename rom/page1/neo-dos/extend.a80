@@ -1,0 +1,518 @@
+
+; LAST UPDATE: 07.01.2022 savelij
+
+		TITLE "extend.a80"
+
+; инфа для создания 9 сектора нового диска
+DSKINFO		DB 0			; +0XE1 - номер первого свободного сектора
+		DB 1			; +0XE2 - номер первого свободного трека
+		DB 0X16			; +0XE3 - тип дискеты
+		DB 0			; +0XE4 - количество файлов на дискете
+SECFREE		DW 2544			; +0XE5 - количество свободных секторов
+		DB 0X10			; +0XE7 - идентификационный код TRDOS
+		DW 0			; +0XE8 - 2 байта 0
+		DUPL 9," "		; +0XEA - 9 байт 0x20
+		DB 0			; +0XF3 - 1 байт 0
+		DB 0			; +0XF4 - количество удаленных файлов
+		DB "RAMDISKO"		; +0XF5 - имя дискеты
+DSK_END
+
+; обработчик вызова RST 8
+DOS2RST8	EX (SP),HL			; HL
+		PUSH AF				; AF
+		PUSH BC				; BC
+		LD A,R
+		JP PE,.L1
+		LD A,R
+.L1		DI
+		PUSH AF				; RF
+		PUSH HL				; ADR_RET
+		PUSH DE				; DE
+		IN A,(PEVO_CONF)
+		LD L,A
+		OR 1
+		OUT (PEVO_CONF),A
+		LD BC,RD_1WINA0
+		IN A,(C)
+		LD H,A
+		AND 0X3E
+		RES 0,H
+		LD B,HIGH (RD_DOS7FFD)
+		IN E,(C)
+		RES 4,E
+		DEC B
+		IN D,(C)
+		LD BC,WIN_A0
+		OUT (C),A
+		LD B,HIGH (WIN_P0)
+		XOR A
+		JP ADR_SEL_ROM
+
+EDOS2RST8	LD A,ROM_BAS48 | 0X80
+		LD BC,WIN_A0
+		CALL WR_BYTE_RET
+		LD A,L
+		OUT (PEVO_CONF),A
+		POP DE
+		POP HL
+		POP AF
+		JP PO,.L1
+		EI
+.L1		POP BC
+		POP AF
+		EX (SP),HL
+		RET
+
+; ABCDEFGHIJKLMNOPQRSTUVWXYZ
+EXTEND_COM	
+		BBW "CD",CD			; смена пути на FAT устройстве
+		BBW "CLRCMOS",CLRCMOS		; сброс CMOS на значения по умолчанию
+		BBW "DIR",DIR			; показ содержимого директории на FAT
+		BBW "DRIVE",DRIVE		; показ найденных/переключение текущего FAT устройств
+		BBW "HELP",HELP			; вывод списка возможных команд
+		BBW "MOUNT",MOUNT		; монтирование образа на букву A..D
+		BBW "UMOUNT",UMOUNT		; демонтрование образа на букве A..D
+		BBW "VER",PRT_VERS		; показ версии и даты сборки DOS
+		BBW "VIRT",SET_VIRT		; показ/переключение виртуального дисковода
+		DB 0
+
+; обработчик расширенных команд
+END_EXT_COM	INC DE
+		LD A,(DE)
+		CP ":"
+		DEC DE
+		JP NZ,SINTAX_ERROR
+		LD A,(DE)
+		AND 0DFH
+		SUB "A"
+		JP C,SINTAX_ERROR
+		CP 4
+		JR NC,SELFATDRV
+		LD (TRD_5CF6),A			; дисковод для временной операции
+		LD (TRD_5D19),A			; дисковод по умолчанию
+		LD B,A
+		LD A,(TRD_5D16)			; копия	системного регистра (порт 0xFF)
+		AND 7CH
+		OR B
+		LD (TRD_5D16),A			; копия	системного регистра (порт 0xFF)
+		LD HL,ERR_OK
+		PUSH HL
+SET_CURRVIRT	LD H,VIRT_REAL_DRIVE
+		CALL READCMOS
+		AND %00000011
+		LD L,A
+		LD A,B
+		RLCA
+		RLCA
+		OR L
+		LD L,A
+	RST8D _CMOS_RW,_WRITE_CMOS
+		RRCA
+		RRCA
+		AND 3
+		OR 0X3C
+		RET
+
+SELFATDRV	SUB 4
+		PUSH AF
+	RST8D _COM_DEV,_DEVFIND
+	RST8D _COM_DEV,_KOL_VOL
+		POP AF
+		CP E
+		JP NC,SINTAX_ERROR
+	RST8D _COM_DEV,_SET_VOL
+		JP ERR_OK
+
+COM_DOT		CALL EXIT_IF_SINTAX
+		LD HL,EXTEND_COM
+NEXT_CMP_COM	LD A,1
+		LD (TRD_5CEF),A
+		LD DE,(TRD_5D11)
+		INC DE
+		LD A,(HL)
+		INC HL
+		AND A
+		JP Z,END_EXT_COM
+		LD B,A
+LOC_C34		LD A,(DE)
+		AND 0DFH
+		CP (HL)
+		JR NZ,PROPUSK
+		INC DE
+		INC HL
+		DJNZ LOC_C34
+		LD A,(DE)
+		CP 0DH
+		JR Z,NO_PARAM
+		CP " "
+		JR Z,GET_PARAM
+		JR LOC_C58
+
+PROPUSK		INC HL
+		DJNZ PROPUSK
+LOC_C58		INC HL
+		INC HL
+		JR NEXT_CMP_COM
+
+GET_PARAM	INC DE
+NO_PARAM	LD A,(HL)
+		INC HL
+		LD H,(HL)
+		LD L,A
+		PUSH HL
+		LD HL,END_COMAND
+		EX (SP),HL
+		JP (HL)
+
+; вывод имени виртуального диска если не указано имя для изменения
+PRT_NUM_VIRT	LD HL,TXT4VIRTDRV
+		LD B,ETXT4VIRTDRV-TXT4VIRTDRV-1
+		CALL PRT_B_HL_
+		LD A," "
+		RST 0X10
+		LD H,VIRT_REAL_DRIVE
+		CALL READCMOS
+		AND 3
+		ADD A,"A"
+		RST 0X10
+		LD A,0X0D
+		RST 0X10
+		RET
+
+; установка виртуального диска
+SET_VIRT	LD A,(DE)
+		CP 0X0D
+		JR Z,PRT_NUM_VIRT
+		LD C,A
+		INC DE
+		LD A,(DE)
+		CP ":"
+		JP NZ,SINTAX_ERROR
+		LD A,C
+		CALL NUMDSK2BYTE		; получили новый номер дисковода указанный в командной строке
+	RST8D _MOUNTER,_SET_VIRT
+		RET
+
+; печать версии доса и даты компиляции
+PRT_VERS	LD HL,0X3FF8
+		LD B,6
+		CALL PRT_B_HL_
+		LD A," "
+		RST 0X10
+		LD C,(HL)
+		INC HL
+		LD B,(HL)
+		PUSH BC
+		LD HL,ZASTAVKA_VER
+		LD B,9
+		CALL PRT_B_HL_
+		LD A," "
+		RST 0X10
+		POP BC
+		LD A,C
+		AND 0X1F			; нужны 5 бит-число месяца
+		CALL A2TXT			; конверсия и укладка даты
+		SRL B
+		RR C				; сдвинули для целостности номера месяца
+		LD A,"."
+		RST 0X10
+		LD A,C				; взяли биты месяца
+		RRCA
+		RRCA
+		RRCA
+		RRCA				; сдвинули в младшие биты
+		AND 0X0F			; нам нужны только 4 бита месяца
+		CALL A2TXT			; конверсия и укладка месяца
+		LD A,"."
+		RST 0X10
+		LD A,B				; взяли номер года
+		AND 0X3F			; нужны только 6 бит
+		CALL A2TXT			; конверсия и укладка года
+		BIT 6,B				; если бит 6 (сдвинутый бит 7) установлен
+		RET Z
+		LD HL,TXT_BETA
+PRT_ROMVER	RST 0X18
+		LD A,0X0D
+		RST 0X10
+		RET
+
+; печать B = количество символов из HL = адрес текста для вывода
+PRT_B_HL_	LD A,(HL)
+		INC HL
+		RST 0X10
+		DJNZ PRT_B_HL_
+		RET
+
+TXT_BETA	DC " beta"
+
+; перевод "A" в десятичку и в текст
+A2TXT		LD L,A
+		LD H,0
+		LD DE,10
+		XOR A
+		DEC A
+.L1		INC A
+		SBC HL,DE
+		JR NC,.L1
+		ADD HL,DE
+		ADD A,"0"
+		RST 0X10
+		LD A,L
+		ADD A,"0"
+		RST 0X10
+		RET
+
+DRIVES		DC "Drives: "
+EDRIVES
+
+DRIVE
+	RST8D _COM_DEV,_DEVFIND
+		JP C,FAT_NOT_FOUND
+	RST8D _COM_DEV,_KOL_VOL
+		LD A,"D"
+		ADD A,E
+		PUSH AF
+		LD HL,DRIVES
+		RST 0X18
+		LD A,"E"
+		RST 0X10
+		LD A,"-"
+		RST 0X10
+		POP AF
+		RST 0X10
+		RET
+
+TXT_DIR		DC "<DIR> "
+TXT_FATERR	DC "FAT not found"
+
+; команда DIR
+DIR		LD B,0
+		LD A,(DE)
+		INC DE
+		CP "/"
+		JR NZ,DIR06
+		LD A,(DE)
+		AND 0XDF
+		CP "L"
+		JR NZ,DIR06
+		LD B,A
+DIR06
+	RST8D _COM_DEV,_DEVFIND
+		JR NC,DIR061
+FAT_NOT_FOUND	CALL OPEN_CHAN_0
+		LD HL,TXT_FATERR		; ни одного раздела не найдено
+		RST 0X18
+		RET
+
+DIR061		PUSH IX
+		LD IXL,B
+		CALL CLEAR_SCREEN
+		CALL OPEN_CHAN_2
+		LD A,2
+	RST8D _COM_FAT,_POS_FILES
+DIR05		LD E,0X17
+DIR01		PUSH DE
+		PUSH BC
+		LD HL,TRD_5D25
+	RST8D _COM_FAT,_READ_DIR
+		LD DE,0X0B
+		ADD HL,DE
+		LD A,(HL)
+		SBC HL,DE
+		AND 0X10
+		JR Z,DIR04
+		PUSH HL
+		LD HL,TXT_DIR
+		RST 0X18
+		POP HL
+DIR04		LD A,IXL
+		AND A
+		JR Z,DIR08
+		PUSH HL
+	RST8D _COM_FAT,_GET_LONGNAME
+		POP HL
+DIR03		LD A,(HL)
+		AND A
+		JR Z,DIR02
+		INC HL
+		RST 0X10
+		JR DIR03
+
+DIR08		LD B,8
+DIR081		LD A,(HL)
+		CP " "
+		JR Z,DIR082
+		RST 0X10
+		INC HL
+		DJNZ DIR081
+DIR082		LD A,B
+		AND A
+		JR Z,DIR085
+DIR086		LD A,(HL)
+		CP " "
+		JR NZ,DIR085
+		INC HL
+		DJNZ DIR086
+DIR085		LD A,(HL)
+		CP " "
+		JR Z,DIR084
+		LD A,"."
+		RST 0X10
+DIR084		LD B,3
+DIR083		LD A,(HL)
+		CP " "
+		JR Z,DIR02
+		RST 0X10
+		INC HL
+		DJNZ DIR083
+DIR02		LD A,0X0D
+		RST 0X10
+		LD A,4
+		LD B,1
+	RST8D _COM_FAT,_POS_FILES
+		POP HL
+		AND A
+		SBC HL,BC
+		POP DE
+		JR Z,DIR07
+		DEC E
+		JR NZ,DIR01
+		JR DIR05
+
+DIR07		POP IX
+		RET
+
+; команда CD
+CD		PUSH DE
+	RST8D _COM_DEV,_DEVFIND
+		POP HL
+	RST8D _COM_FAT,_FIND_NAME
+		JP C,SINTAX_ERROR
+	RST8D _COM_FAT,_ENTER_DIR
+		RET
+
+NOMER_DRV
+	RST8D _COM_DEV,_DEVFIND
+		CCF
+		RET NC				; ни одного раздела не найдено
+	RST8D _COM_DEV,_KOL_VOL
+		CALL CREATE_BUF
+		LD HL,TRD_5D25
+	RST8D _COM_FAT,_GET_PATH
+		CALL PRINT2ZERO
+		CALL DEL_BUF
+		SCF
+		RET
+
+; команда MOUNT
+MOUNT		PUSH DE
+	RST8D _COM_DEV,_DEVFIND
+		EX DE,HL
+		POP HL
+		JP C,FAT_NOT_FOUND
+		PUSH HL
+	RST8D _COM_FAT,_FIND_NAME
+		JP C,SINTAX_ERROR
+		POP DE
+		LD B,0X0C
+MOUNT02		LD A,(DE)
+		CP "!"
+		JR C,MOUNT01
+		INC DE
+		DJNZ MOUNT02
+MOUNT01		LD A,(DE)
+		CP 0X0D
+		JP Z,SINTAX_ERROR
+		CP " "
+		JP NZ,SINTAX_ERROR
+		INC DE
+		LD A,(DE)
+		CP "A"
+		JP C,SINTAX_ERROR
+		AND 0XDF
+		CP "E"
+		JP NC,SINTAX_ERROR
+		SUB "A"
+		LD C,A
+		INC DE
+		LD A,(DE)
+		CP ":"
+		JP NZ,SINTAX_ERROR
+		LD A,C
+	RST8D _MOUNTER,_OPEN_MOUNT
+		RET
+
+; команда UMOUNT
+UMOUNT		LD A,(DE)
+		INC DE
+		AND 0XDF
+		LD B,A
+		LD A,(DE)
+		INC DE
+		CP ":"
+		JP NZ,SINTAX_ERROR
+		LD A,B
+		CP "A"
+		JP C,SINTAX_ERROR
+		CP "E"
+		JP NC,SINTAX_ERROR
+		SUB "A"
+	RST8D _MOUNTER,_CLOSEMOUNT
+		RET
+
+; команда очистки CMOS
+CLRCMOS	
+	RST8D _CMOS_RW,_CLEAR_CMOS
+		RET
+
+; команды вывода на экран списка расширенных команд
+HELP		CALL CLEAR_SCREEN
+		CALL OPEN_CHAN_2
+		LD HL,EXTEND_COM
+HELP4		LD C,3
+HELP2		LD A,(HL)
+		AND A
+		RET Z
+		INC HL
+		LD B,A
+		PUSH BC
+		LD A,"."
+		RST 0X10
+HELP1		LD A,(HL)
+		INC HL
+		RST 0X10
+		DJNZ HELP1
+		INC HL
+		INC HL
+		POP BC
+		LD A,9
+		SUB B
+		LD B,A
+HELP3		LD A," "
+		RST 0X10
+		DJNZ HELP3
+		DEC C
+		JR NZ,HELP2
+		LD A,0X0D
+		RST 0X10
+		JR HELP4
+
+; чтение CMOS
+; На входе: H - адрес ячейки
+;	    L - прочитанное значение
+READCMOS	PUSH BC
+		LD BC,CMOSD_SET_ADR
+		OUT (C),H
+		LD B,HIGH (CMOSD_RD_WR)
+		IN L,(C)
+		POP BC
+		LD A,L
+		AND A
+		RET
+
+; запись CMOS
+; На входе: H - адрес ячейки
+;	    L - что туда записать
+WRITECMOS
+	RST8D _CMOS_RW,_WRITE_CMOS
+		RET

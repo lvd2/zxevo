@@ -1,65 +1,61 @@
 
-;LAST UPDATE: 28.07.2019 savelij
+; LAST UPDATE: 15.01.2022 savelij
 
-;ЗАГРУЗКА ВЫБРАННОГО ШРИФТА
+; загрузка выбранного шрифта
 LOAD_FONT	LD HL,FONTS
 		LD DE,CMP4FONTS
 		JR FATBOOT4
 
-;ЗАГРУЗКА TAP ФАЙЛА
+; загрузка tap файла
 EMULTAPLOAD	LD HL,TAPES
 		LD DE,CMP4TAPES
 		JR FATBOOT4
 
-;ЗАГРУЗКА ПОЛНОГО ROM ФАЙЛА ДЛЯ ОБНОВЛЕНИЯ 512KB
+; загрузка полного rom файла для обновления 512KB
 LOAD4FLASH_FULL	LD HL,ROMS
 		LD DE,CMP4ROMS
 		LD A,8
 		LD (CMP_ROMSIZE),A
 		JR FATBOOT4
 
-;ЗАГРУЗКА USER ROM ФАЙЛА ДЛЯ ОБНОВЛЕНИЯ 64KB
+; загрузка USER ROM файла для обновления 64KB
 LOAD4FLASH_CUST	LD HL,ROMS
 		LD DE,CMP4ROMS
 		LD A,1
 		LD (CMP_ROMSIZE),A
 		JR FATBOOT4
 
-;ЗАГРУЗКА ОБРАЗА НА РАМДИСК
+; загрузка образа на рамдиск
 COPYIMAGE	LD HL,IMAGES
 		LD DE,CMP4IMAGE
 		JR FATBOOT4
 
-;ЗАГРУЗКА HOBETA ФАЙЛА ДЛЯ ЗАПУСКА
+; загрузка HOBETA файла для запуска
 FATBOOT		LD HL,HOBETA
 		LD DE,CMP4HOBETA
 FATBOOT4	LD (GDE_EXT_FILES),HL
 		LD (CMP_FOUNDED),DE
 SELECT_DEVICE	DI
 		LD HL,ERS_FLAGS
-		SET B_RUN_FAT,(HL)		;РАБОТАТЬ БУДЕМ С FAT
-;		RST 8
-;		DB _COM_DEV			;ВЫЗОВ МЕНЕДЖЕРА УСТРОЙСТВ
-;		DB _DEVFIND			;СКАНИРОВАНИЕ УСТРОЙСТВ
-;		JP C,_STUPID			;ОШИБКА, НИ ОДНОГО РАЗДЕЛА НЕ НАЙДЕНО
-		RST8 _COM_DEV,_KOL_VOL
+		SET B_RUN_FAT,(HL)		; работать будем с FAT
+	RST8 _COM_DEV,_KOL_VOL
 		LD A,E
 		AND A
 		JP Z,_STUPID
-		LD HL,ADR_CAT-0X100		;АДРЕС КУДА ПОЛОЖИТЬ ТАБЛИЦУ НАЙДЕННЫХ РАЗДЕЛОВ
-		RST8 _COM_DEV,_GET_FNDVOLUME	;ПОЛУЧЕНИЕ ТАБЛИЦЫ НАЙДЕННЫХ РАЗДЕЛОВ
-		LD B,E				;СЧЕТЧИК КОЛИЧЕСТВА НАЙДЕННЫХ РАЗДЕЛОВ
-		LD IX,SEL_FAT_DEV		;АДРЕС ОПИСАТЕЛЯ ОКНА ВЫБОРА РАЗДЕЛОВ
-		LD (IX+_NUM_PKT),D		;НОМЕР ПУНКТА В ОКНЕ
-		LD (IX+_TEK_PKT_L),D		;НОМЕР ТЕКУЩЕГО ПУНКТА
-		LD (IX+_NUM_KOL_L),E		;КОЛИЧЕСТВО ПУНКТОВ В ОКНЕ
+		LD HL,ADR_CAT-0X100		; адрес куда положить таблицу найденных разделов
+	RST8 _COM_DEV,_GET_FNDVOLUME		; получение таблицы найденных разделов
+		LD B,E				; счетчик количества найденных разделов
+		LD IX,SEL_FAT_DEV		; адрес описателя окна выбора разделов
+		LD (IX+_NUM_PKT),D		; номер пункта в окне
+		LD (IX+_TEK_PKT_L),D		; номер текущего пункта
+		LD (IX+_NUM_KOL_L),E		; количество пунктов в окне
 		INC E
 		INC E
-		LD (IX+_V_SIZE),E		;УСТАНОВИЛИ ВЫСОТУ ВЫВОДИМОГО ОКНА
-		LD DE,6				;ШАГ ПО ТАБЛИЦЕ НАЙДЕННЫХ РАЗДЕЛОВ -2
+		LD (IX+_V_SIZE),E		; установили высоту выводимого окна
+		LD DE,6				; шаг по таблице найденных разделов -2
 		EXX
 		LD HL,TXT_FAT_SEL
-		LD DE,SEL_FAT_DRV		;АДРЕС ГДЕ БУДЕТ ФОРМИРОВАТЬСЯ ТЕКСТ ОКНА ВЫБОРА РАЗДЕЛОВ
+		LD DE,SEL_FAT_DRV		; адрес где будет формироваться текст окна выбора разделов
 		LD BC,ETXT_FAT_SEL-TXT_FAT_SEL
 		LDIR
 		EX DE,HL
@@ -70,26 +66,26 @@ FATBOOT1	EXX
 		LD (HL),3
 		INC HL
 		EXX
-		LD A,(HL)			;ВЗЯЛИ НОМЕР РАЗДЕЛА
+		LD A,(HL)			; взяли номер раздела
 		INC HL
-		LD C,(HL)			;MASTER ИЛИ SLAVE
+		LD C,(HL)			; MASTER или SLAVE
 		INC HL
 		ADD A,C
 		ADD A,C
-		SUB 4				;-4, ИБО ДИСКОВОДЫ НЕ УЧИТЫВАЮТСЯ
+		SUB 4				; -4, ибо дисководы не учитываются
 		EXX
 		EX DE,HL
-		LD HL,TXT4MENU_DEVICE		;АДРЕС ТАБЛИЦЫ ТЕКСТА О РАЗДЕЛАХ
+		LD HL,TXT4MENU_DEVICE		; адрес таблицы текста о разделах
 		LD C,A
 		ADD A,A
 		ADD A,A
 		ADD A,C
 		ADD A,A
-		ADD A,A				;УМНОЖЕНО НА 20
+		ADD A,A				; умножено на 20
 		LD C,A
 		LD B,0
-		ADD HL,BC			;ПОЛУЧИЛИ АДРЕС ОТКУДА ТЕКСТ ВЗЯТЬ
-		LD BC,20			;ДЛИНА ПЕРЕНОСА 20 БАЙТ
+		ADD HL,BC			; получили адрес откуда текст взять
+		LD BC,20			; длина переноса 20 байт
 		EXX
 		LD A,L
 		EXX
@@ -97,22 +93,22 @@ FATBOOT1	EXX
 		RRCA
 		RRCA
 		AND 0X1F
-		ADD A,"E"			;БУКВА НАЙДЕННОГО УСТРОЙСТВА
+		ADD A,"E"			; буква найденного устройства
 		LD (DE),A
 		INC DE
-		LDIR				;ПЕРЕНОС ТЕКСТА ИЗ ВЫБРАННОЙ ТАБЛИЦЫ
+		LDIR				; перенос текста из выбранной таблицы
 		EXX
-		LD A,(HL)			;ТИП РАЗДЕЛА
+		LD A,(HL)			; тип раздела
 		EXX
 		LD C,A
 		ADD A,A
 		ADD A,A
-		ADD A,C				;УМНОЖЕННО НА 5
-		LD HL,TXT4MENU_TYPE		;АДРЕС ТАБЛИЦЫ ТЕКСТА ТИПОВ РАЗДЕЛОВ
+		ADD A,C				; умноженно на 5
+		LD HL,TXT4MENU_TYPE		; адрес таблицы текста типов разделов
 		LD C,A
 		ADD HL,BC
 		LD C,5
-		LDIR				;ПЕРЕНОС ТЕКСТА ИЗ ВЫБРАННОЙ ТАБЛИЦЫ
+		LDIR				; перенос текста из выбранной таблицы
 		EX DE,HL
 		EXX
 		ADD HL,DE
@@ -126,16 +122,16 @@ FATBOOT1	EXX
 		LD C,B
 		LD A,"E"
 		LD (IX+_ADR_HOTKEY_L),L
-		LD (IX+_ADR_HOTKEY_H),H		;АДРЕС ТАБЛИЦЫ ГОРЯЧИХ КЛАВИШ ВЫБОРА FAT УСТРОЙСТВА
+		LD (IX+_ADR_HOTKEY_H),H		; адрес таблицы горячих клавиш выбора FAT устройства
 		LD (HL),B
 		INC HL
-FATBOOT3	LD (HL),A			;ФОРМИРОВАНИЕ ТАБЛИЦЫ ГОРЯЧИХ КЛАВИШ
+FATBOOT3	LD (HL),A			; формирование таблицы горячих клавиш
 		INC HL
 		INC A
 		DJNZ FATBOOT3
-		LD (SELFATDEVEXE),HL		;ПОЛОЖИЛИ АДРЕС ТАБЛИЦЫ АДРЕСОВ ВЫЗОВА ВЫБРАННОГО
+		LD (SELFATDEVEXE),HL		; положили адрес таблицы адресов вызова выбранного
 		LD B,C
-FATBOOT2	LD (HL),LOW (SEL_FAT)		;ФОРМИРОВАНИЕ ТАБЛИЦЫ АДРЕСОВ ВЫЗЫВОВ
+FATBOOT2	LD (HL),LOW (SEL_FAT)		; формирование таблицы адресов вызывов
 		INC HL
 		LD (HL),HIGH (SEL_FAT)
 		INC HL
@@ -144,8 +140,8 @@ FATBOOT2	LD (HL),LOW (SEL_FAT)		;ФОРМИРОВАНИЕ ТАБЛИЦЫ АДРЕСОВ ВЫЗЫВОВ
 		EXX
 		DEC A
 		JR Z,SEL_FAT
-		RST8 _WINW
-		JP _RULILKA			;ВОЗВРАЩАЕМСЯ К ОБЩЕМУ УПРАВЛЕНИЮ
+	RST8 _WINW
+		JP _RULILKA			; возвращаемся к общему управлению
 
 FILES_BROWSE	LD HL,SUPPORT_EXT
 		LD DE,CMP4TAPES
@@ -156,62 +152,63 @@ FILES_BROWSE	LD HL,SUPPORT_EXT
 		SET B_RUN_FAT,(HL)
 		JR SEL_FILES
 
-;ПЕРЕКЛЮЧЕНИЕ НА УСТРОЙСТВА И ВЫВОД НАЙДЕННОГО НА НЕМ
+; переключение на устройства и вывод найденного на нем
 SEL_FAT		DI
-		LD A,(IX+_TEK_PKT_L)		;ВЗЯЛИ НОМЕР ВЫБРАННОГО УСТРОЙСТВА
-		RST8 _COM_DEV,_SET_VOL		;ВЫБРАЛИ УСТРОЙСТВО ПО НОМЕРУ
-SEL_FILES	RST8 _COM_DEV,_KOL_VOL
+		LD A,(IX+_TEK_PKT_L)		; взяли номер выбранного устройства
+	RST8 _COM_DEV,_SET_VOL			; выбрали устройство по номеру
+SEL_FILES
+	RST8 _COM_DEV,_KOL_VOL
 		LD A,E
 		AND A
 		JP Z,_STUPID
 		CALL SEARCH_FILE
 		LD HL,1
 		AND A
-		SBC HL,BC			;НАЙДЕННО ЧТО-ТО ОДНО?
-		JR NZ,SEL_FAT1			;ЕСЛИ НАЙДЕНО >1, ТО ПРОДОЛЖАЕМ
-		PUSH BC				;СОХРАНИЛИ КОЛИЧЕСТВО НАЙДЕННОГО
-		LD BC,(ADR_CAT_FAT)		;ВЗЯЛИ НОМЕР ЕДИНСТВЕННОГО НАЙДЕННОГО
+		SBC HL,BC			; найденно что-то одно?
+		JR NZ,SEL_FAT1			; если найдено >1, то продолжаем
+		PUSH BC				; сохранили количество найденного
+		LD BC,(ADR_CAT_FAT)		; взяли номер единственного найденного
 		LD A,6
-		RST8 _COM_FAT,_POS_FILES
+	RST8 _COM_FAT,_POS_FILES
 		LD HL,BUF_FILEITEM
-		RST8 _COM_FAT,_READ_DIR		;ПОЛУЧИЛИ ОПИСАТЕЛЬ
-		POP BC				;ВЕРНУЛИ КОЛИЧЕСТВО НАЙДЕННОГО
+	RST8 _COM_FAT,_READ_DIR			; получили описатель
+		POP BC				; вернули количество найденного
 		LD DE,0X0B
 		ADD HL,DE
-		LD A,(HL)			;ВЗЯЛИ ФЛАГОВЫЙ БАЙТ ТОГО ЧТО НАШЛИ
+		LD A,(HL)			; взяли флаговый байт того что нашли
 		AND 0X10
-		LD HL,0				;ЕСЛИ ЗАПУСКАЕМ, ТО НОМЕР 0 ИЗ НАЙДЕННОГО
-		JR Z,RUN_HOB1			;ЕСЛИ ЭТО ФАЙЛ СРАЗУ ЗАПУСКАЕМ
-SEL_FAT1	LD IX,FAT_FILES			;ЕСЛИ ДИРА, ТО ВЫВОДИМ В ОКНО
+		LD HL,0				; если запускаем, то номер 0 из найденного
+		JR Z,RUN_HOB1			; если это файл сразу запускаем
+SEL_FAT1	LD IX,FAT_FILES			; если дира, то выводим в окно
 		JP OUT_HOB
 
-;ЗАПУСК ВЫБРАННОГО КОДОВОГО ФАЙЛА ИЗ HOBETA ФАЙЛА ИЛИ ВХОД/ВЫХОД В ДИРЫ
+; запуск выбранного кодового файла из HOBETA файла или вход/выход в диры
 RUN_HOB		DI
-		CALL SHUT2AY			;БУМКАЛКА В AY
+		CALL SHUT2AY			; бумкалка в AY
 		LD L,(IX+_TEK_PKT_L)
-		LD H,(IX+_TEK_PKT_H)		;HL=НОМЕР ВЫБРАННОГО ФАЙЛА
+		LD H,(IX+_TEK_PKT_H)		; HL = номер выбранного файла
 RUN_HOB1	LD DE,ADR_CAT_FAT
 		ADD HL,HL
-		ADD HL,DE			;ОТКУДА НОМЕР ФАЙЛА ВЗЯТЬ
+		ADD HL,DE			; откуда номер файла взять
 		LD C,(HL)
 		INC HL
-		LD B,(HL)			;ПОЛУЧИЛИ ТЕКУЩИЙ ВЫБРАННЫЙ НОМЕР
+		LD B,(HL)			; получили текущий выбранный номер
 		LD A,6
-		RST8 _COM_FAT,_POS_FILES	;УСТАНОВКА ВНУТРЕННЕГО УКАЗАТЕЛЯ FAT ДРАЙВЕРА
+	RST8 _COM_FAT,_POS_FILES		; установка внутреннего указателя FAT драйвера
 		LD HL,BUF_FILEITEM
-		RST8 _COM_FAT,_READ_DIR		;ПОЛУЧИЛИ ОПИСАТЕЛЬ ПО УСТАНОВЛЕННОМУ НОМЕРУ
-		LD DE,0X0B			;НУЖЕН БАЙТ ПО СМЕЩЕНИЮ
-		ADD HL,DE			;ДЛЯ ОПРЕДЕЛЕНИЯ ФАЙЛ ИЛИ ДИРЕКТОРИЯ
-		LD A,(HL)			;ИЗ ЭТОГО БАЙТА НУЖЕН ОДИН БИТ
+	RST8 _COM_FAT,_READ_DIR			; получили описатель по установленному номеру
+		LD DE,0X0B			; нужен байт по смещению
+		ADD HL,DE			; для определения файл или директория
+		LD A,(HL)			; из этого байта нужен один бит
 		SBC HL,DE
-		AND 0X10			;ПРОВЕРИЛИ
-		JP Z,GO_RUN_HOB			;ЕСЛИ ЭТО ФАЙЛ, ТО ЗАПУСКАЕМ КОДОВЫЙ БЛОК
-		RST8 _COM_FAT,_ENTER_DIR	;ВХОДИМ В ВЫБРАННУЮ ДИРЕКТОРИЮ
-		PUSH HL				;СОХРАНИЛИ АДРЕС ГДЕ ОПИСАТЕЛЬ ВЫБРАННОГО ФАЙЛА ЛЕЖИТ
+		AND 0X10			; проверили
+		JP Z,GO_RUN_HOB			; если это файл, то запускаем кодовый блок
+	RST8 _COM_FAT,_ENTER_DIR		; входим в выбранную директорию
+		PUSH HL				; сохранили адрес где описатель выбранного файла лежит
 		LD HL,BUF_RDPATH
-		RST8 _COM_FAT,_GET_PATH		;ПОЛУЧИТЬ ПУТЬ К ФАЙЛУ ПОСЛЕ ВХОДА В ДИРЕКТОРИЮ
-		LD A,(HL)			;ВЗЯЛИ БУКВУ УСТРОЙСТВА ТЕКУЩЕГО ПУТИ
-		SUB "E"				;ПРЕОБРАЗОВАЛИ В НОМЕР УСТРОЙСТВА
+	RST8 _COM_FAT,_GET_PATH			; получить путь к файлу после входа в директорию
+		LD A,(HL)			; взяли букву устройства текущего пути
+		SUB "E"				; преобразовали в номер устройства
 		LD D,A
 		LD E,0
 		LD HL,BUF_LEVDIR
@@ -220,12 +217,12 @@ RUN_HOB1	LD DE,ADR_CAT_FAT
 		SRL D
 		RR E
 		ADD HL,DE
-		EX (SP),HL			;СОХРАНИЛИ АДРЕС ОПИСАТЕЛЯ FAT УСТРОЙСТВА, ВОССТАНОВИЛИ АДРЕС ОПИСАТЕЛЯ ФАЙЛА
-		LD A,(HL)			;БУДЕМ ПРОВЕРЯТЬ ПЕРВЫЙ СИМВОЛ ИМЕНИ ПРЕДЫДУЩЕГО ОПИСАТЕЛЯ
-		POP HL				;ВОССТАНОВИЛИ АДРЕС ОПИСАТЕЛЯ FAT УСТРОЙСТВА 
-		CP "."				;ЕСЛИ ПЕРВЫЙ СИМВОЛ ИМЕНИ НЕ ".", ТО СОХРАНЯЕМ ТЕКУЩИЕ ЗНАЧЕНИЯ ОКОШКА И  
-		JR NZ,SNYT0			;ВХОДИМ В ДИРУ
-		LD C,(HL)			;ПРИ ВЫХОДЕ ИЗ ДИРЕКТОРИИ ВОССТАНАВЛИВАЕМ ПОЗИЦИИ В ОКНЕ
+		EX (SP),HL			; сохранили адрес описателя FAT устройства, восстановили адрес описателя файла
+		LD A,(HL)			; будем проверять первый символ имени предыдущего описателя
+		POP HL				; восстановили адрес описателя FAT устройства 
+		CP "."				; если первый символ имени не ".", то сохраняем текущие значения окошка и  
+		JR NZ,SNYT0			; входим в диру
+		LD C,(HL)			; при выходе из директории восстанавливаем позиции в окне
 		INC HL
 		LD B,(HL)
 		INC HL
@@ -248,18 +245,18 @@ RUN_HOB1	LD DE,ADR_CAT_FAT
 		LD (IX+_TEK_PKT_L),C
 		LD (IX+_TEK_PKT_H),B
 		LD (IX+_NUM_PKT),A
-		CALL SEARCH_FILE		;ПОИСК ПО МАСКЕ В ДИРЕКТОРИИ В КОТОРУЮ ВОШЛИ
+		CALL SEARCH_FILE		; поиск по маске в директории в которую вошли
 		LD (IX+_NUM_KOL_L),C
-		LD (IX+_NUM_KOL_H),B		;УСТАНОВИЛИ КОЛИЧЕСТВО НАЙДЕННЫХ ПО МАСАКЕ ФАЙЛОВ В ЭТОЙ ДИРЕКТОРИИ
-		JP REOUT_HOB			;ВЫВЕЛИ НОВОЕ СОДЕРЖИМОЕ ОКНА
+		LD (IX+_NUM_KOL_H),B		; установили количество найденных по маске файлов в этой директории
+		JP REOUT_HOB			; вывели новое содержимое окна
 
-;ПРИ ВХОДЕ В ДИРУ СОХРАНЕНИЕ ТЕКУЩИХ ДАННЫХ ОКНА
+; при входе в диру сохранение текущих данных окна
 SNYT0		LD C,(HL)
 		INC HL
-		LD B,(HL)			;BC=СМЕЩЕНИЕ ДО ПЕРВОЙ СВОБОДНОЙ ЯЧЕЙКИ
+		LD B,(HL)			; BC = смещение до первой свободной ячейки
 		INC HL
-		PUSH HL				;HL=АДРЕС НАЧАЛА САМИХ ЯЧЕЕК
-		ADD HL,BC			;HL=АДРЕС ПЕРВОЙ СВОБОДНОЙ ЯЧЕЙКИ
+		PUSH HL				; HL = адрес начала самих ячеек
+		ADD HL,BC			; HL = адрес первой свободной ячейки
 		LD D,(IX+_TEK_PKT_H)
 		LD E,(IX+_TEK_PKT_L)
 		LD A,(IX+_NUM_PKT)
@@ -269,7 +266,7 @@ SNYT0		LD C,(HL)
 		INC HL
 		LD (HL),A
 		INC HL
-		POP DE				;DE=АДРЕС НАЧАЛА САМИХ ЯЧЕЕК
+		POP DE				; DE = адрес начала самих ячеек
 		AND A
 		SBC HL,DE
 		EX DE,HL
@@ -282,7 +279,7 @@ SNYT0		LD C,(HL)
 		CALL SEARCH_FILE
 		JP OUT_HOB
 
-;(ADR)-BCDE=BCDE
+; BCDE = (ADR) - BCDE
 BCDEHLM		LD A,(HL)
 		INC HL
 		SUB E
@@ -304,28 +301,57 @@ SELMOUNT	LD HL,BUF_FILEITEM+0X1C
 		LD BC,0X0A
 		LD DE,0
 		CALL BCDEHLM
-		JP M,LOADIMAGE			;ОБРАЗ МЕНЬШЕ СТАНДАРТНОГО, ЗАГРУЗКА В РАМДИСК
-;РАЗМЕР TRD ОБРАЗА СТАНДАРТНОГО РАЗМЕРА ИЛИ БОЛЬШЕ
-		LD IX,SEL_MOUNT
-		RST8 _WINW
+		JP M,LOADIMAGE			; образ меньше стандартного, загрузка в рамдиск
+; размер TRD образа стандартного размера или больше
+		LD HL,ERS_FLAGS
+		BIT B_VIEW_IMG,(HL)
+;		LD IX,SEL_MOUNT
+;		JR Z,.L1
+		LD IX,RUN_IMAGE			; окно выбора загрузки/монтирования
+.L1
+	RST8 _WINW
 		JP _RULILKA
 
-MOUNT_A		XOR A
-MOUNT_ALL	PUSH AF
-		RST8 _MOUNTER,_OPEN_MOUNT	; !!!
+RUNIMG_A	XOR A
+		JR RUNIMG_ALL
+
+RUNIMG_B	LD A,1
+		JR RUNIMG_ALL
+
+RUNIMG_C	LD A,2
+		JR RUNIMG_ALL
+
+RUNIMG_D	LD A,3
+; запуск Basic файла с принудительным переключением виртуального и реального дисковода на указанный номер
+RUNIMG_ALL	PUSH AF
+	RST8 _MOUNTER,_LOADIMAGE
+	RST8 _MOUNTER,_SET_VIRTREAL
 		POP AF
 		LD HL,ERS_FLAGS
 		BIT B_VIEW_IMG,(HL)
 		JP Z,RESTART
 		RES B_VIEW_IMG,(HL)
-		LD C,A				;НОМЕР СМОНТИРОВАННОГО ДИСКОВОДА
-		LD H,VIRT_REAL_DRIVE
-		CALL READCMOS
-		AND %11111100
-		OR C
-		LD L,A				;ПЕРЕЗАПИСЬ В КМОС НОМЕРА СМОНТИРОВАННОГО ДИСКОВОДА
-		CALL WRITECMOS
-		LD A,C
+		JP RUNMOUNT
+
+; только загрузка образа
+LOADIMAGE
+	RST8 _MOUNTER,_LOADIMAGE
+		LD HL,ERS_FLAGS
+		BIT B_VIEW_IMG,(HL)
+		JP Z,RESTART
+		RES B_VIEW_IMG,(HL)
+		JP START_IMG
+
+MOUNT_A		XOR A
+; запуск Basic файла с принудительным переключением виртуального и реального дисковода на указанный номер
+MOUNT_ALL	PUSH AF
+	RST8 _MOUNTER,_OPEN_MOUNT		; !!!
+	RST8 _MOUNTER,_SET_VIRTREAL
+		POP AF
+		LD HL,ERS_FLAGS
+		BIT B_VIEW_IMG,(HL)
+		JP Z,RESTART
+		RES B_VIEW_IMG,(HL)
 		JP RUNMOUNT
 
 MOUNT_B		LD A,1
@@ -338,7 +364,8 @@ MOUNT_D		LD A,3
 		JR MOUNT_ALL
 
 ;ЗАПУСК, ЗАГРУЗКА ИЛИ МОНТИРОВАНИЕ ФАЙЛОВ
-GO_RUN_HOB	RST8 _COM_FAT,_OPEN_FILE
+GO_RUN_HOB
+	RST8 _COM_FAT,_OPEN_FILE
 		LD DE,8
 		ADD HL,DE
 		PUSH HL
@@ -347,115 +374,116 @@ GO_RUN_HOB	RST8 _COM_FAT,_OPEN_FILE
 		AND A
 		SBC HL,DE
 		POP HL
-		JR Z,SELMOUNT			;ПЕРЕХОДА НА ЗАГРУЗКУ TRD ОБРАЗА
+		JP Z,SELMOUNT			; перехода на загрузку TRD образа
 		LD A,(HL)
 		CP "$"
-		JR Z,GORUNHOB1			;ПЕРЕХОД НА ЗАГРУЗКУ HOBETA
+		JR Z,GORUNHOB1			; переход на загрузку HOBETA
 		CP "S"
-		JP NZ,LOAD_IMAGE		;ПЕРЕХОД НА ЗАГРУЗКУ SCL ОБРАЗА
+		JP NZ,LOAD_IMAGE		; переход на загрузку SCL образа
 		INC HL
 		LD A,(HL)
 		DEC HL
 		CP "P"
-		JR Z,GORUNHOB1			;ПЕРЕХОД НА ЗАГРУЗКУ SPG
+		JR Z,GORUNHOB1			; переход на загрузку SPG
 		CP "N"
 		LD A,(HL)
-		JP NZ,LOAD_IMAGE		;ПЕРЕХОД НА ЗАГРУЗКУ ОБРАЗА
-GORUNHOB1	RST8 _COM_DEV,_KOL_VOL		;ЗАПРОС У МЕНЕДЖЕРА УСТРОЙСТВ О ТЕКУЩЕМ УСТРОЙСТВЕ
-		LD A,D				;ВЗЯЛИ НОМЕР ТЕКУЩЕГО УСТРОЙСТВА
+		JP NZ,LOAD_IMAGE		; переход на загрузку образа
+GORUNHOB1
+	RST8 _COM_DEV,_KOL_VOL			; запрос у менеджера устройств о текущем устройстве
+		LD A,D				; взяли номер текущего устройства
 		LD HL,ADR_CAT_FAT
-		RST8 _COM_DEV,_GET_FNDVOLUME
+	RST8 _COM_DEV,_GET_FNDVOLUME
 		ADD A,A
 		ADD A,A
 		ADD A,A
 		LD C,A
 		LD B,0
 		ADD HL,BC
-		LD A,(HL)			;ВЗЯЛИ ТИП РАЗДЕЛА
-;		SUB 4				;ПРОПУСКАЕМ ДИСКОВОДЫ
-		LD D,A				;НОМЕР ТЕКУЩЕГО УСТРОЙСТВА
+		LD A,(HL)			; взяли тип раздела
+;		SUB 4				; пропускаем дисководы
+		LD D,A				; номер текущего устройства
 		INC HL
-		LD E,(HL)			;ВЗЯЛИ МЕСТОПОЛОЖЕНИЕ НОСИТЕЛЯ (MASTER/SLAVE)
+		LD E,(HL)			; взяли местоположение носителя (MASTER/SLAVE)
 		PUSH DE
 		LD HL,0X5800
 		LD DE,0X5801
 		LD BC,0X02FF
 		LD (HL),L
-		LDIR				;ЗАЧЕРНИЛИ ЭКРАН ДЛЯ МАСКИРОВКИ ЗАПУСКАЛКИ
+		LDIR				; зачернили экран для маскировки запускалки
 		LD HL,RUN_CODE
 		LD DE,0X5D3B
 		LD BC,ERUN_CODE-RUN_CODE
 		LDIR
-		CALL MEMSET			;ВЫСТАВИЛИ РЕЖИМ КОМПА
+		CALL MEMSET			; выставили режим компа
 		CALL FOR_RUN
-		LD HL,0X4200			;КУДА СКОПИРОВАТЬ ПЕРЕМЕННЫЕ FAT ТЕКУЩЕГО ВЫБРАННОГО РАЗДЕЛА
-		RST8 _INST_FATBOOT
+		LD HL,0X4200			; куда скопировать переменные FAT текущего выбранного раздела
+	RST8 _INST_FATBOOT
 		POP DE
 		LD (0X42FE),DE
 		JP 0X4300
 
-;ЗАГРУЗКА ШРИФТА ДЛЯ ТЕКСТМОДА
+; загрузка шрифта для текстмода
 LOAD_FNT	LD HL,ADR_CAT
 LOAD_FNT1	LD A,4
-		RST8 _COM_FAT,_READ_FILE
-		PEC_ON M_FONT_BF
+	RST8 _COM_FAT,_READ_FILE
+	PEC_ON M_FONT_BF
 		LD HL,ADR_CAT
 		LD DE,0
 		LD BC,0X800
 		LDIR
-		PEC_OFF M_FONT_BF
+	PEC_OFF M_FONT_BF
 		JP RESTART
 
-;ЗАГРУЗКА FDI ОБРАЗА
+; загрузка FDI образа
 LOAD_FDI	LD A,E
 		CP "N"
-		JR Z,LOAD_FNT			;ПЕРЕХОД НА ЗАГРУЗКУ ФОНТА
+		JR Z,LOAD_FNT			; переход на загрузку фонта
 		LD HL,ERS_FLAGS
 		SET B_LOAD_IMG,(HL)
-		LD A,RAM_RAMDISK		;СТРАНИЦА НАЧАЛА РАМДИСКА
-		PUSH AF				;СОХРАНИЛИ НА СТЕКЕ
-		CALL SET4MBPAGE			;ВКЛЮЧИЛИ ЕЕ
+		LD A,RAM_RAMDISK		; страница начала рамдиска
+		PUSH AF				; сохранили на стеке
+		CALL SET4MBPAGE			; включили ее
 		LD HL,FDI_TABLE_CYL
 		LD DE,FDI_TABLE_CYL+1
 		LD BC,0X3FFF
 		LD (HL),0
-		LDIR				;ОЧИСТКА СТРАНИЦЫ С ОПИСАТЕЛЯМИ ДОРОЖЕК
+		LDIR				; очистка страницы с описателями дорожек
 		LD IXH,0XFF
-		CALL LOAD1SECFDI		;ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА ПЕРВОГО СЕКТОРА
-		LD A,(0XC006)			;ВЗЯЛИ КОЛИЧЕСТВО СТОРОН
+		CALL LOAD1SECFDI		; принудительная загрузка первого сектора
+		LD A,(0XC006)			; взяли количество сторон
 		DEC A
-		LD A,(0XC004)			;ВЗЯЛИ КОЛИЧЕСТВО ДОРОЖЕК
+		LD A,(0XC004)			; взяли количество дорожек
 		JR Z,LOADFDI1
-		ADD A,A				;ЕСЛИ СТОРОН 2, ТО УМНОЖИЛИ КОЛИЧЕСТВО ДОРОЖЕК НА 2
-LOADFDI1	LD C,A				;КОЛИЧЕСТВО ДОРОЖЕК
+		ADD A,A				; если сторон 2, то умножили количество дорожек на 2
+LOADFDI1	LD C,A				; количество дорожек
 		LD HL,(0XC00A)
 		LD (START_DATA),HL
-		LD DE,0X4000			;АДРЕС БУФЕРА НАЧАЛА ОПИСАТЕЛЕЙ ДОРОЖЕК
-		LD HL,0XC00F			;АДРЕС НАЧАЛА ВЫБОРКИ ОПИСАТЕЛЕЙ ДОРОЖЕК В FDI ЗАГОЛОВКЕ
+		LD DE,0X4000			; адрес буфера начала описателей дорожек
+		LD HL,0XC00F			; адрес начала выборки описателей дорожек в FDI заголовке
 LOADFDI3	BIT 1,H
-		CALL NZ,LOAD1SECFDI		;ЕСЛИ ВЫШЛИ ЗА ПРЕДЕЛЫ СЕКТОРА МЕНЯЕМ УКАЗАТЕЛЬ И ГРУЗИМ СЛЕДУЮЩИЙ СЕКТОР В БУФЕР
-		LD A,(HL)			;БИТЫ 8-15 СМЕЩЕНИЯ ДОРОЖКИ ОТ НАЧАЛА
-		AND 0X3F			;ВЗЯЛИ ДЛЯ 8-13 БИТЫ-СМЕЩЕНИЕ В БЛОКАХ В СТРАНИЦЕ
-		LD (DE),A			;УЛОЖИЛИ СМЕЩЕНИЕ В БЛОКАХ В СТРАНИЦЕ
-		LD A,(HL)			;ВЗЯЛИ БИТЫ 14-15
-		INC HL				;СЛЕДУЮЩИЙ БАЙТ FDI ЗАГОЛОВКА
-		INC D				;ЗДЕСЬ ПОЛОЖИМ СМЕЩЕНИЕ В СТРАНИЦАХ ДО НУЖНОЙ ДОРОЖКИ
+		CALL NZ,LOAD1SECFDI		; если вышли за пределы сектора меняем указатель и грузим следующий сектор в буфер
+		LD A,(HL)			; биты 8-15 смещения дорожки от начала
+		AND 0X3F			; взяли для 8-13 биты - смещение в блоках в странице
+		LD (DE),A			; уложили смещение в блоках в странице
+		LD A,(HL)			; взяли биты 14-15
+		INC HL				; следующий байт FDI заголовка
+		INC D				; здесь положим смещение в страницах до нужной дорожки
 		BIT 1,H
-		CALL NZ,LOAD1SECFDI		;ЕСЛИ ВЫШЛИ ЗА ПРЕДЕЛЫ СЕКТОРА МЕНЯЕМ УКАЗАТЕЛЬ И ГРУЗИМ СЛЕДУЮЩИЙ СЕКТОР В БУФЕР
-		LD B,A				;СОХРАНИЛИ НУЖНЫЕ 14-15 БИТЫ 
-		LD A,(HL)			;ВЗЯЛИ 16-23 БИТЫ СМЕЩЕНИЯ ДОРОЖКИ ОТ НАЧАЛА
+		CALL NZ,LOAD1SECFDI		; если вышли за пределы сектора меняем указатель и грузим следующий сектор в буфер
+		LD B,A				; сохранили нужные 14-15 биты
+		LD A,(HL)			; взяли 16-23 биты смещения дорожки от начала
 		RL B
 		RLA
 		RL B
 		RLA
-		LD (DE),A			;УКЛАДКА БИТОВ СМЕЩЕНИЯ НОМЕРА СТРАНИЦЫ 
+		LD (DE),A			; укладка битов смещения номера страницы
 		INC D
-		REPT 4
+	REPT 4
 		INC HL
-		ENDM
+	ENDM
 		BIT 1,H
-		CALL NZ,LOAD1SECFDI		;ЕСЛИ ВЫШЛИ ЗА ПРЕДЕЛЫ СЕКТОРА МЕНЯЕМ УКАЗАТЕЛЬ И ГРУЗИМ СЛЕДУЮЩИЙ СЕКТОР В БУФЕР
-		LD B,(HL)			;ВЗЯЛИ КОЛИЧЕСТВО СЕКТОРОВ НА ДОРОЖКЕ
+		CALL NZ,LOAD1SECFDI		; если вышли за пределы сектора меняем указатель и грузим следующий сектор в буфер
+		LD B,(HL)			; взяли количество секторов на дорожке
 		LD A,B
 		AND A
 		JP Z,LOADFDI_ERR
@@ -463,14 +491,14 @@ LOADFDI3	BIT 1,H
 		INC HL
 LOADFDI4	INC HL
 		BIT 1,H
-		CALL NZ,LOAD1SECFDI		;ЕСЛИ ВЫШЛИ ЗА ПРЕДЕЛЫ СЕКТОРА МЕНЯЕМ УКАЗАТЕЛЬ И ГРУЗИМ СЛЕДУЮЩИЙ СЕКТОР В БУФЕР
-		LDI				;ПЕРЕНОС НОМЕРА СЕКТОРА
+		CALL NZ,LOAD1SECFDI		; если вышли за пределы сектора меняем указатель и грузим следующий сектор в буфер
+		LDI				; перенос номера сектора
 		DEC DE
 		INC C
 		INC D
 		BIT 1,H
-		CALL NZ,LOAD1SECFDI		;ЕСЛИ ВЫШЛИ ЗА ПРЕДЕЛЫ СЕКТОРА МЕНЯЕМ УКАЗАТЕЛЬ И ГРУЗИМ СЛЕДУЮЩИЙ СЕКТОР В БУФЕР
-		LD A,(HL)			;ВЗЯЛИ РАЗМЕР СЕКТОРА
+		CALL NZ,LOAD1SECFDI		; если вышли за пределы сектора меняем указатель и грузим следующий сектор в буфер
+		LD A,(HL)			; взяли размер сектора
 		EX DE,HL
 		LD (HL),1
 		AND A
@@ -484,17 +512,17 @@ LOADFDI4	INC HL
 		LD (HL),8
 LOADFDI2	EX DE,HL
 		INC D
-		REPT 5
+	REPT 5
 		INC HL
-		ENDM
-		DJNZ LOADFDI4			;ВОЗВРАЩАЕМСЯ ДЛЯ ПРОДОЛЖЕНИЯ, ПОКА СЕКТОРА ДОРОЖКИ НЕ КОНЧАТСЯ
+	ENDM
+		DJNZ LOADFDI4			; возвращаемся для продолжения, пока сектора дорожки не кончатся
 		LD D,0X40
 		INC E
 		DEC C
-		JR NZ,LOADFDI3			;ВОЗВРАЩАЕМСЯ ДЛЯ ПРОДОЛЖЕНИЯ ПОКА НЕ КОНЧАТСЯ ДОРОЖКИ
+		JR NZ,LOADFDI3			; возвращаемся для продолжения пока не кончатся дорожки
 		DEC HL
 		BIT 1,H
-		CALL NZ,LOAD1SECFDI		;ЕСЛИ ВЫШЛИ ЗА ПРЕДЕЛЫ СЕКТОРА МЕНЯЕМ УКАЗАТЕЛЬ И ГРУЗИМ СЛЕДУЮЩИЙ СЕКТОР В БУФЕР
+		CALL NZ,LOAD1SECFDI		; если вышли за пределы сектора меняем указатель и грузим следующий сектор в буфер
 		PUSH HL
 		LD A,H
 		AND 1
@@ -515,23 +543,23 @@ START_DATA	EQU $-2
 		JR Z,LOADFDI7
 LOADFDI8	INC H
 		BIT 1,H
-		CALL NZ,LOAD1SECFDI		;ЕСЛИ ВЫШЛИ ЗА ПРЕДЕЛЫ СЕКТОРА МЕНЯЕМ УКАЗАТЕЛЬ И ГРУЗИМ СЛЕДУЮЩИЙ СЕКТОР В БУФЕР
+		CALL NZ,LOAD1SECFDI		; если вышли за пределы сектора меняем указатель и грузим следующий сектор в буфер
 		DEC D
 		JR NZ,LOADFDI8
 LOADFDI7	ADD HL,DE
 		BIT 1,H
-		CALL NZ,LOAD1SECFDI		;ЕСЛИ ВЫШЛИ ЗА ПРЕДЕЛЫ СЕКТОРА МЕНЯЕМ УКАЗАТЕЛЬ И ГРУЗИМ СЛЕДУЮЩИЙ СЕКТОР В БУФЕР
-		PUSH HL				;СОХРАНИЛИ АДРЕС НА НАЧАЛО НАЧАЛА СЕКТОРОВ
+		CALL NZ,LOAD1SECFDI		; если вышли за пределы сектора меняем указатель и грузим следующий сектор в буфер
+		PUSH HL				; сохранили адрес на начало начала секторов
 		LD DE,0XC000
 		AND A
 		SBC HL,DE
-		LD (OSTAT_SECT),HL		;СКОЛЬКО БАЙТ ПЕРЕНЕСТИ ИЗ ХВОСТА СЕКТОРА В БУФЕРЕ В НАЧАЛО СТРАНИЦЫ
+		LD (OSTAT_SECT),HL		; сколько байт перенести из хвоста сектора в буфере в начало страницы
 		LD B,H
 		LD C,L
 		LD HL,0X200
 		SBC HL,BC
-		LD (NACH_SECT),HL		;СКОЛЬКО БАЙТ ПЕРЕНЕСТИ ИЗ НАЧАЛА СЕКТОРА В БУФЕРЕ В КОНЕЦ СТРАНИЦЫ
-		POP HL				;ВОССТАНОВИЛИ СДРЕС НАЧАЛА СЕКТОРОВ, ДАЛЕЕ ЗАГРУЗКА ВСЕХ СЕКТОРОВ В ПАМЯТЬ
+		LD (NACH_SECT),HL		; сколько байт перенести из начала сектора в буфере в конец страницы
+		POP HL				; восстановили сдрес начала секторов, далее загрузка всех секторов в память
 LOADFDI5	POP AF
 		INC A
 		CALL SET4MBPAGE
@@ -547,13 +575,13 @@ NACH_SECT	EQU $-2
 		JP C,ELOAD_IMAGE
 		EX DE,HL
 		LD A,0X1F
-		RST8 _COM_FAT,_READ_FILE
+	RST8 _COM_FAT,_READ_FILE
 		JP C,ELOAD_IMAGE
 		PUSH HL
 		LD HL,0XC000
 		PUSH HL
 		LD A,1
-		RST8 _COM_FAT,_READ_FILE
+	RST8 _COM_FAT,_READ_FILE
 		POP HL
 		POP DE
 		LD BC,0
@@ -574,7 +602,7 @@ LOADFDI_ERR	LD A,RAM_RAMDISK
 		POP IX
 		JP LDFDI_ERROR
 
-;СОЗДАНИЕ ТАБЛИЦЫ ОПИСАТЕЛЕЙ ДЛЯ ПУСТОГО РАМДИСКА
+; создание таблицы описателей для пустого рамдиска
 CREATE_TRD640	PUSH IX
 		PUSH IY
 		LD (LD_FILE_SP),SP
@@ -585,10 +613,10 @@ CREATE_RAMTABL	PUSH IX
 		PUSH IY
 		LD (LD_FILE_SP),SP
 		LD SP,ADR_CAT
-;СОЗДАНИЕ ТАБЛИЦЫ ОПИСАТЕЛЯ ДЛЯ ЗАГРУЖЕННЫХ TRD И SCL ОБРАЗОВ
-END_LOAD_TRD	LD A,RAM_DATARAMD		;НУЖНА СТРАНИЦА ОТКУДА НАЧИНАЕТСЯ ЗАГРУЖЕННЫЙ ОБРАЗ
+; создание таблицы описателя для загруженных TRD и SCL образов
+END_LOAD_TRD	LD A,RAM_DATARAMD		; нужна страница откуда начинается загруженный образ
 		CALL SET4MBPAGE
-		LD HL,(0X48E1)			;ПЕРВЫЙ СВОБОДНЫЙ ТРЕК СЕКТОР
+		LD HL,(0X48E1)			; первый свободный трек сектор
 		LD A,L
 		LD L,H
 		LD H,0
@@ -597,55 +625,55 @@ END_LOAD_TRD	LD A,RAM_DATARAMD		;НУЖНА СТРАНИЦА ОТКУДА НАЧИНАЕТСЯ ЗАГРУЖЕННЫЙ ОБ
 		ADD HL,HL
 		ADD HL,HL
 		OR L
-		LD L,A				;КОЛИЧЕСТВО ЗАНЯТЫХ СЕКТОРОВ С ДИРЕКТОРИЕЙ
-		LD DE,(0X48E5)			;КОЛИЧЕСТВО СВОБОДНЫХ СЕКТОРОВ
+		LD L,A				; количество занятых секторов с директорией
+		LD DE,(0X48E5)			; количество свободных секторов
 		ADD HL,DE
 		ADD HL,HL
 		ADD HL,HL
 		ADD HL,HL
-		ADD HL,HL			;H=КОЛИЧЕСТВО ДОРОЖЕК
+		ADD HL,HL			; H = количество дорожек
 		LD A,H
 		CP 0XA0
 		JR NC,ELT3
 ELT4		LD A,0XA0
 ELT3		EX AF,AF'
-		LD A,RAM_RAMDISK		;НУЖНА СТРАНИЦА НАЧАЛА РАМДИСКА, ГДЕ БУДЕТ ТАБЛИЦА ОПИСАТЕЛЕЙ
+		LD A,RAM_RAMDISK		; нужна страница начала рамдиска, где будет таблица описателей
 		CALL SET4MBPAGE
 		LD HL,0X4000
 		PUSH HL
 		LD DE,0X4001
 		LD BC,0X3FFF
 		LD (HL),L
-		LDIR				;ОЧИСТИЛИ СТРАНИЦУ
-		POP DE				;АДРЕС НАЧАЛА 
-		LD HL,0				;СМЕЩЕНИЕ В БЛОКАХ И СТРАНИЦАХ
+		LDIR				; очистили страницу
+		POP DE				; адрес начала 
+		LD HL,0				; смещение в блоках и страницах
 		EX AF,AF'
 ELT2		EX AF,AF'
-		LD BC,0X1000			;СЧЕТЧИК НОМЕРОВ СЕКТОРОВ И ИХ НОМЕРА
+		LD BC,0X1000			; счетчик номеров секторов и их номера
 		LD A,L
 		RRCA
 		RRCA
-		LD (DE),A			;СМЕЩЕНИЕ В БЛОКАХ ДОРОЖКИ В СТРАНИЦЕ
+		LD (DE),A			; смещение в блоках дорожки в странице
 		INC D
 		LD A,H
-		LD (DE),A			;СМЕЩЕНИЕ В СТРАНИЦАХ ДО ДОРОЖКИ
+		LD (DE),A			; смещение в страницах до дорожки
 		INC D
 ELT1		INC C
 		LD A,C
-		LD (DE),A			;НОМЕР СЕКТОРА
+		LD (DE),A			; номер сектора
 		INC D
 		LD A,2
-		LD (DE),A			;РАЗМЕР СЕКТОРА
+		LD (DE),A			; размер сектора
 		INC D
-		DJNZ ELT1			;ВНОСИМ В ТАБЛИЦУ ВСЕ НОМЕРА СЕКТОРОВ С РАЗМЕРАМИ
-		LD D,0X40			;ВЕРНУЛИ УКАЗАТЕЛЬ В НАЧАЛО
-		INC E				;ДЛЯ СЛЕДУЮЩЕЙ ДОРОЖКИ
+		DJNZ ELT1			; вносим в таблицу все номера секторов с размерами
+		LD D,0X40			; вернули указатель в начало
+		INC E				; для следующей дорожки
 		LD BC,0X40
-		ADD HL,BC			;ПЕРЕХОД К СЛЕДУЮЩЕЙ ДОРОЖКЕ
+		ADD HL,BC			; переход к следующей дорожке
 		EX AF,AF'
 		DEC A
-		JR NZ,ELT2			;ПОВТОРЯЕМ ДЛЯ ВСЕХ ДОРОЖЕК
-;ОБЩИЙ ВЫХОД ИЗ ЗАГРУЗКИ С ВОЗВРАТОМ СТАНДАРТНОЙ СТРАНИЦЫ В ОКНЕ ПРОЕЦИРОВАНИЯ 1
+		JR NZ,ELT2			; повторяем для всех дорожек
+; общий выход из загрузки с возвратом стандартной страницы в окне проецирования 1
 ELOAD_IMAGE	LD A,RAM_RAMDISK
 		CALL SET4MBPAGE
 		LD HL,0X7FFF
@@ -663,30 +691,24 @@ LD_FILE_SP	EQU $-2
 		BIT B_VIEW_IMG,(HL)
 		RET Z
 		RES B_VIEW_IMG,(HL)
-;ЗАГРУЗКА КАТАЛОГА TR-DOS И ПОИСК ВЫБРАННОГО И ЗАПУСК ВЫБРАННОГО BASIC ФАЙЛА
-		LD H,VIRT_REAL_DRIVE
+; загрузка каталога TR-DOS и поиск выбранного и запуск выбранного BASIC файла
+START_IMG	LD H,VIRT_REAL_DRIVE
 		CALL READCMOS
 		AND 3
 		LD C,A
 		PUSH AF
-		RST8 _MOUNTER,_CLOSEMOUNT	; !!!
+	RST8 _MOUNTER,_CLOSEMOUNT		; !!!
 		POP AF
-RUNMOUNT	LD (0X5D19),A
-		ADD A,A
-		ADD A,A
-		LD B,A
-		LD A,L
-		AND %11110011
-		OR B
-		LD L,A
-		CALL WRITECMOS
-		LD A,C
+RUNMOUNT	PUSH AF
+		CALL SETUP_DRIVE		; переключение TR-DOS на указанный номер
+	RST8 _MOUNTER,_GET_VIRT_BITS
+		POP AF
 		LD C,1
 		CALL TO_DOS4BAS
 		LD HL,ADR_CAT
 		LD DE,0
 		LD BC,0X0905
-		CALL TO_DOS4BAS			;ЗАГРУЗКА TR-DOS ДИРЫ
+		CALL TO_DOS4BAS			; загрузка TR-DOS диры
 		DI
 		LD IX,WIN_FILES
 		LD B,(IX+8)
@@ -732,14 +754,14 @@ SRN1		LD A,(DE)
 		DJNZ SRN1
 		RET
 
-;ЗАГРУЗКА СЛЕДУЮЩЕГО СЕКТОРА ЗАГОЛОВКА FDI
+; загрузка следующего сектора заголовка FDI
 LOAD1SECFDI	PUSH HL
 		PUSH BC
 		PUSH DE
 		PUSH AF
 		LD HL,0XC000
 		LD A,1
-		RST8 _COM_FAT,_READ_FILE
+	RST8 _COM_FAT,_READ_FILE
 		INC IXH
 		POP AF
 		POP DE
@@ -748,15 +770,15 @@ LOAD1SECFDI	PUSH HL
 		RES 1,H
 		RET
 
-;ВКЛЮЧЕНИЕ В 1 ОКНО ПРОЕЦИРОВАНИЯ ЗАДАННОЙ СТРАНИЦЫ
+; включение в 1 окно проецирования заданной страницы
 SET4MBPAGE	PUSH BC
 		LD B,A
-		PEC_ON M_SHADOW_BF
+	PEC_ON M_SHADOW_BF
 		LD A,B
 		LD BC,WIN_P1
 		OUT (C),A
 		LD B,A
-		PEC_OFF M_SHADOW_BF
+	PEC_OFF M_SHADOW_BF
 		LD A,B
 		POP BC
 		RET
@@ -766,12 +788,12 @@ LOADIMAGE4	PUSH IX
 		LD (LD_FILE_SP),SP
 		LD SP,ADR_CAT
 		LD A,RAM_TAPE
-;ЗАГРУЗКА TRD ИЛИ TAP ОБРАЗА
+; загрузка TRD или TAP образа
 LOADIMAGE3	PUSH AF
 		CALL SET4MBPAGE
 		LD HL,0X4000
 		LD A,0X20
-		RST8 _COM_FAT,_READ_FILE
+	RST8 _COM_FAT,_READ_FILE
 		JR C,END_LOAD_TAP
 		POP AF
 		INC A
@@ -797,30 +819,24 @@ END_LOAD_TAP	XOR A
 		JP Z,RESTART
 		JP TAPELOAD1
 
-LOADIMAGE	RST8 _MOUNTER,_LOADIMAGE
-		JP RESTART
-
-;		LD DE,"TR"
-;		JR LOADIMAGE2
-
 LOAD_IMAGE	DI
-		LD D,A				;ПЕРВЫЙ СИМВОЛ РАСШИРЕНИЯ
+		LD D,A				; первый символ расширения
 		INC HL
-		LD E,(HL)			;ВТОРОЙ СИМВОЛ РАСШИРЕНИЯ
+		LD E,(HL)			; второй символ расширения
 		CP "B"
 		JR NZ,LOADIMAGE1_
 		LD A,E
 		CP "M"
-		JR Z,LOADIMAGE2			;BMP
-LOADIMAGE1_	CP "T"				;TAP ИЛИ TRD ?
+		JR Z,LOADIMAGE2			; BMP
+LOADIMAGE1_	CP "T"				; TAP или TRD ?
 		JR NZ,LOADIMAGE1
 		LD A,E
 		CP "A"
-		JP Z,LOADIMAGE4			;TAP
+		JP Z,LOADIMAGE4			; TAP
 LOADIMAGE1	LD A,D
 		CP "R"
 		LD HL,FLASHER
-		JR Z,LOAD_IMAGE8		;TRD
+		JR Z,LOAD_IMAGE8		; TRD
 LOADIMAGE2	LD HL,RESTART
 LOAD_IMAGE8	PUSH HL
 		PUSH IX
@@ -828,29 +844,29 @@ LOAD_IMAGE8	PUSH HL
 		LD (LD_FILE_SP),SP
 		LD SP,ADR_CAT
 		LD A,D
-		CP "S"				;ЭТО SCL ФАЙЛ?
+		CP "S"				; это SCL файл?
 		JR Z,LOAD_IMAGE2
-		CP "F"				;ЭТО FDI ФАЙЛ?
+		CP "F"				; это FDI файл?
 		JP Z,LOAD_FDI
-		CP "B"				;ЭТО BMP ФАЙЛ?
+		CP "B"				; это BMP файл?
 		JP Z,BMPVIEW
-		CP "T"				;ЭТО TRD ФАЙЛ?
+		CP "T"				; это TRD файл?
 		JR NZ,LOAD_ROM
 		LD HL,ERS_FLAGS
 		SET B_LOAD_IMG,(HL)
 		LD A,RAM_DATARAMD
-;ЗАГРУЗКА TRD ИЛИ TAP ОБРАЗА
+; загрузка TRD или TAP образа
 LOAD_IMAGE1	PUSH AF
 		CALL SET4MBPAGE
 		LD HL,CPU1
 		LD A,0X20
-		RST8 _COM_FAT,_READ_FILE
+	RST8 _COM_FAT,_READ_FILE
 		JP C,END_LOAD_TRD
 		POP AF
 		INC A
 		JR LOAD_IMAGE1
 
-LOAD_ROM	CP "R"				;ЭТО ROM ФАЙЛ?
+LOAD_ROM	CP "R"				; это ROM файл?
 		JP NZ,ELOAD_IMAGE
 		LD A,RAM_FLASHER
 		CALL LOAD_IN_PAGE
@@ -863,56 +879,74 @@ LOAD_IN_PAGE	PUSH AF
 		CALL SET4MBPAGE
 		LD HL,CPU1
 		LD A,0X20
-		RST8 _COM_FAT,_READ_FILE
+	RST8 _COM_FAT,_READ_FILE
 		JR C,LOADINPAGE1
 		POP AF
 		INC A
 		JR LOAD_IN_PAGE
 
 LOADINPAGE1	POP AF
-		LD A,ZXSTD_CPU1;0XFA
+		LD A,ZXSTD_CPU1
 		JP SET4MBPAGE
 
-;ЗАГРУЗКА SCL ОБРАЗА
-LOAD_IMAGE2	LD HL,DSKINFO
+; меню выбора на какую букву диска SCL образ переключить
+LOAD_IMAGE2	LD IX,LOAD_SCL
+	RST8 _WINW
+		JP _RULILKA
+
+SCL_A		XOR A
+		JR SCL_ALL
+
+SCL_B		LD A,1
+		JR SCL_ALL
+
+SCL_C		LD A,2
+		JR SCL_ALL
+
+SCL_D		LD A,3
+SCL_ALL		PUSH AF
+	RST8 _MOUNTER,_SET_VIRTREAL
+		POP AF
+; загрузка SCL образа
+LOAD_SCL_IMAGE	LD HL,DSKINFO
 		LD DE,ADR_CAT+0XF00
 		LD BC,DSK_END-DSKINFO
-		LDIR				;СОХРАНЕНИЕ ИНФЫ ДЛЯ СОЗДАНИЯ ЗАГОЛОВКА ДИСКЕТЫ
+		LDIR				; сохранение инфы для создания заголовка дискеты
 		LD HL,ERS_FLAGS
 		SET B_LOAD_IMG,(HL)
 		LD A,RAM_DATARAMD
 LOAD_IMAGE4	PUSH AF
-		CALL SET4MBPAGE			;ВКЛЮЧИЛИ ПЕРВУЮ СТРАНИЦУ ОТКУДА РАМДИСК НАЧИНАЕТСЯ
+		CALL SET4MBPAGE			; включили первую страницу откуда рамдиск начинается
 		LD HL,0X5000
 		LD A,0X18
-		RST8 _COM_FAT,_READ_FILE
-		PUSH AF				;СОХРАНИЛИ ФЛАГ ОКОНЧАНИЯ ЗАГРУЗКИ НА СЛУЧАЙ ОКОНЧАНИЯ ОБРАЗА
+	RST8 _COM_FAT,_READ_FILE
+		PUSH AF				; сохранили флаг окончания загрузки на случай окончания образа
 		LD HL,0X4000
-		PUSH HL				;СОХРАНИЛИ АДРЕС НАЧАЛА КАТАЛОГА
+		PUSH HL				; сохранили адрес начала каталога
 		LD (HL),L
 		LD D,H
 		LD E,L
 		INC DE
 		LD BC,0XFFF
-		LDIR				;ЗАЧИСТКА ОБЛАСТИ ПЕРВОЙ ДОРОЖКИ ДЛЯ ФОРМИРОВАНИЯ КАТАЛОГА ДИСКА
-		LD HL,0X5008			;АДРЕС КОЛИЧЕСТВА ФАЙЛОВ В SCL ОБРАЗЕ
-		LD A,(HL)			;ВЗЯЛИ КОЛИЧЕСТВО ФАЙЛОВ КАК СЧЕТЧИК
-		INC HL				;ПЕРЕШЛИ НА ПЕРВЫЙ ОПИСАТЕЛЬ ФАЙЛА
+		LDIR				; зачистка области первой дорожки для формирования каталога диска
+		LD HL,0X5008			; адрес количества файлов в SCL образе
+		LD A,(HL)			; взяли количество файлов как счетчик
+		INC HL				; перешли на первый описатель файла
 		EXX
-		LD HL,0				;НОМЕР АБСОЛЮТНОГО СЕКТОРА
-		LD D,L				;ПРИРАЩЕНИЕ СЕКТОРОВ НЕ МОЖЕТ БЫТЬ БОЛЕЕ 255 СЕКТОРОВ
-		LD B,A				;СОХРАНЕНИЕ КОЛИЧЕСТВА ФАЙЛОВ
+		LD HL,0				; номер абсолютного сектора
+		LD D,L				; приращение секторов не может быть более 255 секторов
+		LD B,A				; сохранение количества файлов
 		EXX
-		POP DE				;ВЕРНУЛИ АДРЕС НАЧАЛА КАТАЛОГА ДИСКА
+		POP DE				; вернули адрес начала каталога диска
 LOAD_IMAGE3	EX AF,AF'
 		LD BC,0X0D
-		LDIR				;ПЕРЕНЕСЛИ 13 БАЙТ ТЕЛА ОПИСАТЕЛЯ
-		LD A,(HL)			;ЗАБРАЛИ РАЗМЕР ФАЙЛА В СЕКТОРАХ
-		LDI				;ПЕРЕНЕСЛИ ЕЩЕ БАЙТ
+		LDIR				; перенесли 13 байт тела описателя
+		LD A,(HL)			; забрали размер файла в секторах
+		LDI				; перенесли еще байт
 		EXX
 		LD E,A
-		PUSH HL				;СОХРАНИЛИ ТЕКЩЕЕ ЗНАЧЕНИЕ НОМЕРА СЕКТОРА
-		ADD HL,DE			;УВЕЛИЧИЛИ ТЕКЩЕЕ ЗНАЧЕНИЕ НА РАЗМЕР ФАЙЛА В СЕКТОРАХ
+		PUSH HL				; сохранили текщее значение номера сектора
+		ADD HL,DE			; увеличили текщее значение на размер файла в секторах
 		EXX
 		EX (SP),HL
 		LD A,L
@@ -924,27 +958,27 @@ LOAD_IMAGE3	EX AF,AF'
 		AND 0X0F
 		LD L,A
 		EX (SP),HL
-		POP BC				;ВОССТАНОВИЛИ ТЕКЩИЙ НОМЕР СЕКТОРА
+		POP BC				; восстановили текщий номер сектора
 		EX DE,HL
 		LD (HL),C
 		INC HL
-		LD (HL),B			;УЛОЖИЛИ ПОСЛЕ ТЕКУЩЕГО ОПИСАТЕЛЯ
+		LD (HL),B			; уложили после текущего описателя
 		INC HL
 		EX DE,HL
 		EX AF,AF'
 		DEC A
-		JR NZ,LOAD_IMAGE3		;ЕСЛИ ФАЙЛЫ НЕ КОНЧИЛИСЬ ПРОДОЛЖАЕМ
-		PUSH HL				;СОХРАНИЛИ АДРЕС НАЧАЛА ДАННЫХ
+		JR NZ,LOAD_IMAGE3		; если файлы не кончились продолжаем
+		PUSH HL				; сохранили адрес начала данных
 		LD HL,ADR_CAT+0XF00
 		LD DE,0X48E1
 		LD BC,DSK_END-DSKINFO
 		LDIR
 		EXX
-		LD DE,2544			;СТАНДАРТНЫЙ РАЗМЕР ДИСКЕТЫ
+		LD DE,2544			; стандартный размер дискеты
 		EX DE,HL
 		AND A
 		SBC HL,DE
-		LD (0X48E5),HL			;КОЛИЧЕСТВО СВОБОДНЫХ СЕКТОРОВ
+		LD (0X48E5),HL			; количество свободных секторов
 		EX DE,HL
 		LD A,L
 		ADD HL,HL
@@ -954,19 +988,19 @@ LOAD_IMAGE3	EX AF,AF'
 		INC H
 		AND 0X0F
 		LD L,A
-		LD (0X48E1),HL			;ПЕРВЫЙ СВОБОДНЫЙ ТРЕК И СЕКТОР
+		LD (0X48E1),HL			; первый свободный трек и сектор
 		LD A,B
-		LD (0X48E4),A			;КОЛИЧЕСТВО ФАЙЛОВ НА ДИСКЕ
+		LD (0X48E4),A			; количество файлов на диске
 		EXX
-		POP DE				;ВОССТАНОВЛЕНИЕ АДРЕСА НАЧАЛА ДАННЫХ
-		LD HL,0X8000			;КОНЕЦ ОКНА ПРОЕЦИРОВАНИЯ
+		POP DE				; восстановление адреса начала данных
+		LD HL,0X8000			; конец окна проецирования
 		AND A
-		SBC HL,DE			;ПОЛУЧИЛИ КОЛИЧЕСТВО БАЙТ ДЛЯ СДВИГА
+		SBC HL,DE			; получили количество байт для сдвига
 		LD B,H
 		LD C,L
-		LD HL,0X5000			;НАЧАЛО ДАННЫХ НА РАМДИСКЕ
+		LD HL,0X5000			; начало данных на рамдиске
 		EX DE,HL
-		LDIR				;СДВИНУЛИ, ПОСЛЕ ПЕРЕНОСА DE=АДРЕС КУДА ДАЛЕЕ ГРУЗИТЬ
+		LDIR				; сдвинули, после переноса DE = адрес куда далее грузить
 		LD A,D
 		CP 0X7E
 		JR NC,LOAD_IMAGE7
@@ -975,11 +1009,11 @@ LOAD_IMAGE3	EX AF,AF'
 		SUB H
 		SRL A
 		LD IXL,A
-		RST8 _COM_FAT,_READ_FILE
+	RST8 _COM_FAT,_READ_FILE
 		LD DE,0X8000
 		EX DE,HL
 LOAD_IMAGE7	AND A
-		SBC HL,DE			;ПОЛУЧИЛИ СКОЛЬКО БАЙТ ОСТАЛОСЬ ДО КОНЦА ОКНА
+		SBC HL,DE			; получили сколько байт осталось до конца окна
 		LD (OST_HWOST),HL
 		LD (KUDA_HWOST),DE
 		LD DE,0
@@ -989,8 +1023,8 @@ LOAD_IMAGE7	AND A
 		AND H
 		LD H,A
 		LD (NEXT4PAGE),HL
-		POP AF				;ВОССТАНОВИЛИ ФЛАГ ПОСЛЕДНЕЙ ЗАГРУЗКИ
-		JP C,END_LOAD_TRD		;ЕСЛИ ФАЙЛ УЖЕ КОНЧИЛСЯ, ТО ВЫХОД
+		POP AF				; восстановили флаг последней загрузки
+		JP C,END_LOAD_TRD		; если файл уже кончился, то выход
 		JR LOAD_IMAGE5
 
 LOAD_IMAGE6	LD DE,0X4000
@@ -1001,18 +1035,18 @@ NEXT4PAGE	EQU $-2
 		JP C,END_LOAD_TRD
 		EX DE,HL
 		LD A,0X1F
-		RST8 _COM_FAT,_READ_FILE
+	RST8 _COM_FAT,_READ_FILE
 		JP C,END_LOAD_TRD
 LOAD_IMAGE5	LD HL,ADR_CAT
 		PUSH HL
 		LD A,1
-		RST8 _COM_FAT,_READ_FILE
-		EX AF,AF'			;СПРЯТАЛИ ФЛАГ ЗАГРУЗКИ СЕКТОРА
-		POP HL				;ВОССТАНОВИЛИ АДРЕС КУДА СЕКТОР В БУФЕР ЗАГРУЗИЛИ
+	RST8 _COM_FAT,_READ_FILE
+		EX AF,AF'			; спрятали флаг загрузки сектора
+		POP HL				; восстановили адрес куда сектор в буфер загрузили
 		LD DE,0
-KUDA_HWOST	EQU $-2				;КУДА ЛОЖИТЬ ОСТАТОК В ОКНЕ
+KUDA_HWOST	EQU $-2				; куда ложить остаток в окне
 		LD BC,0
-OST_HWOST	EQU $-2				;СКОЛЬКО ПЕРЕНОСИТЬ В КОНЕЦ СТРАНИЦЫ
+OST_HWOST	EQU $-2				; сколько переносить в конец страницы
 		LDIR
 		POP AF
 		INC A
@@ -1020,44 +1054,44 @@ OST_HWOST	EQU $-2				;СКОЛЬКО ПЕРЕНОСИТЬ В КОНЕЦ СТРАНИЦЫ
 		CALL SET4MBPAGE
 		JR LOAD_IMAGE6
 
-;ПРОВЕРКА ЗАГОЛОВКА HOBETA ФАЙЛА
-;НА ВЫХОДЕ: ФЛАГ С=1-НЕ СООТВЕСТВУЕТ
+; проверка заголовка HOBETA файла
+;на выходе: флаг С=1-не соотвествует
 CMP4HOBETA	SUB 1
 		RET NZ
 		LD A,(BUF_RDSEC+8)
-		CP "C"				;ПРОВЕРКА ЧТО ЭТО КОДОВЫЙ БЛОК, А НЕ ЧТО-ТО ДРУГОЕ
+		CP "C"				; проверка что это кодовый блок, а не что-то другое
 		SCF
 		RET NZ
-		PUSH DE				;СОХРАНИЛИ АДРЕС СКЛАДИРОВАНИЯ ДЛЯ ДАЛЬНЕЙШЕЙ ПРОВЕРКИ
-		LD BC,BUF_RDSEC			;ВОЗВРАЩАЕМСЯ В НАЧАЛО СЕКТОРА
-		CALL HOB_CRC			;СЧИТАЕМ CRC HOBETA ЗАГОЛОВКА
+		PUSH DE				; сохранили адрес складирования для дальнейшей проверки
+		LD BC,BUF_RDSEC			; возвращаемся в начало сектора
+		CALL HOB_CRC			; считаем CRC HOBETA заголовка
 		LD A,(BC)
 		INC BC
 		LD E,A
 		LD A,(BC)
-		LD D,A				;В "DE" РАССЧИТАННОЕ CRC ХОБЕТА ЗАГОЛОВКА
-		AND A				;В "HL" ВЗЯТОЕ ИЗ СМЕЩЕНИЯ +0X0F ОТ НАЧАЛА ФАЙЛА
-		SBC HL,DE			;СРАВНИВАЕМ 
-		POP DE				;ЕСЛИ НЕ СОВПАЛО ТО ВОЗМОЖНО ЭТО НЕ ХОБЕТА
+		LD D,A				; в "DE" рассчитанное CRC HOBETA заголовка
+		AND A				; в "HL" взятое из смещения +0x0F от начала файла
+		SBC HL,DE			; сравниваем 
+		POP DE				; если не совпало то возможно это не HOBETA
 		SCF
-		RET NZ				;ПРОПУСКАЕМ ФАЙЛ
+		RET NZ				; пропускаем файл
 		EXX
 		LD HL,(BUF_RDSEC+9)
-		DEC HL				;ДЛЯ ЗАГРУЗКИ МАСИМУМ 40960 БАЙТ (160 СЕКТОРОВ)
+		DEC HL				; для загрузки масимум 40960 байт (160 секторов)
 		LD DE,(BUF_RDSEC+0X0B)
-		ADD HL,DE			;ПРОВЕРЯЕМ ВЫХОД ЗА ПРЕДЕЛЫ ОЗУ
-		EXX				;ЕСЛИ ВЫЛЕТ ЗА ПРЕДЕЛ ОЗУ
-		RET C				;ПРОПУСКАЕМ ФАЙЛ
+		ADD HL,DE			; проверяем выход за пределы озу
+		EXX				; если вылет за предел озу
+		RET C				; пропускаем файл
 		EXX
 		LD HL,(BUF_RDSEC+9)
-		LD DE,0X6000			;ПРОВЕРЯЕМ АДРЕС ЗАГРУЗКИ
-		AND A				;АДРЕС ЗАГРУЗКИ НЕ ДОЛЖЕН БЫТЬ НИЖЕ 0X6000
+		LD DE,0X6000			; проверяем адрес загрузки
+		AND A				; адрес загрузки не должен быть ниже 0x6000
 		SBC HL,DE
-		EXX				;ЕСЛИ АДРЕС ЗАГРУЗКИ НИЖЕ 0X6000
+		EXX				; если адрес загрузки ниже 0x6000
 		RET
 
-;НА ВХОДЕ: BC-АДРЕС ЗАГОЛОВКА
-;НА ВЫХОДЕ: HL-HOBETA CRC
+; на входе:  BC - адрес заголовка
+; на выходе: HL - HOBETA CRC
 HOB_CRC		LD A,0X0F
 		LD HL,0
 		EXX
@@ -1128,17 +1162,17 @@ CMP4FDI		EXX
 		RET NZ
 		INC HL
 		INC HL
-		LD A,(HL)			;КОЛИЧЕСТВО ЦИЛИНДРОВ
+		LD A,(HL)			; количество цилиндров
 		CP 0X57
 		CCF
 		RET C
 		INC HL
-		LD A,(HL)			;ДОЛЖЕН БЫТЬ 0
+		LD A,(HL)			; должен быть 0
 		AND A
 		SCF
 		RET NZ
 		INC HL
-		LD A,(HL)			;КОЛИЧЕСТВО СТОРОН
+		LD A,(HL)			; количество сторон
 		AND A
 		SCF
 		RET Z
@@ -1146,7 +1180,7 @@ CMP4FDI		EXX
 		CCF
 		RET C
 		INC HL
-		LD A,(HL)			;ДОЛЖНО БЫТЬ 0
+		LD A,(HL)			; должно быть 0
 		AND A
 		SCF
 		RET NZ
@@ -1159,8 +1193,8 @@ CMP4IMAGE	CP 3
 		CP 4
 		JR Z,CMP4BMP
 		SUB 1
-		RET Z				;ДЛЯ TRD ПРОВЕРКА НЕ НУЖКА
-;ДЛЯ SCL ПРОВЕРКА НАЛИЧИЯ СЛОВА "SINCLAIR" В ПЕРВЫХ 8 БАЙТАХ
+		RET Z				; для TRD проверка не нужка
+; для SCL проверка наличия слова "SINCLAIR" в первых 8 байтах
 		EXX
 		LD HL,BUF_RDSEC
 		LD DE,SIGN_SCL
@@ -1209,60 +1243,60 @@ CMP4BMP		EXX
 
 SEARCH_FILE	LD A,1
 		LD HL,(GDE_EXT_FILES)
-		RST8 _COM_FAT,_SET_MASK_EXT
-		LD DE,ADR_CAT_FAT		;АДРЕС БУФЕРА КУДА СКЛАДИРОВАТЬ НАЙДЕННОЕ
-		RST8 _COM_FAT,_FIND_FILEITEM
-		LD H,A				;НОМЕР СТРАНИЦЫ ГДЕ НАЙДЕННОЕ БРАТЬ
+	RST8 _COM_FAT,_SET_MASK_EXT
+		LD DE,ADR_CAT_FAT		; адрес буфера куда складировать найденное
+	RST8 _COM_FAT,_FIND_FILEITEM
+		LD H,A				; номер страницы где найденное брать
 		LD A,B
 		OR C
 		JR NZ,SEARCHF1
 		PUSH IX
 		LD IX,NOBASIC
-		RST8 _WINW
+	RST8 _WINW
 		POP IX
-		RST8 _COM_DEV,_KOL_VOL
+	RST8 _COM_DEV,_KOL_VOL
 		DEC E
 		JP Z,NO_BAS
 		JP SELECT_DEVICE
 
 SEARCHF1	PUSH BC
 		PUSH HL
-		RST8 _SORT_FINDFILES
-		PEC_ON M_SHADOW_BF
+	RST8 _SORT_FINDFILES
+	PEC_ON M_SHADOW_BF
 		POP AF
 		LD BC,WIN_P1
 		OUT (C),A
 		LD HL,CPU1
-		LD DE,ADR_CAT_SCRH		;АДРЕС БУФЕРА СКЛАДИРОВАНИЯ ПО МАСКЕ
+		LD DE,ADR_CAT_SCRH		; адрес буфера складирования по маске
 		LD BC,0X1000
 		LDIR
 		LD BC,WIN_A1
 		LD A,0X7A
 		OUT (C),A
-		PEC_OFF M_SHADOW_BF
+	PEC_OFF M_SHADOW_BF
 		POP BC
 		LD DE,ADR_CAT_FAT
-		LD HL,ADR_CAT_SCRH		;АДРЕС БУФЕРА СКЛАДИРОВАНИЯ ПО МАСКЕ
+		LD HL,ADR_CAT_SCRH		; адрес буфера складирования по маске
 SEARCHF3	PUSH BC
 		LD C,(HL)
 		INC HL
 		LD B,(HL)
 		DEC HL
 		LD A,6
-		RST8 _COM_FAT,_POS_FILES
+	RST8 _COM_FAT,_POS_FILES
 		PUSH HL
 		LD HL,BUF_FILEITEM
-		RST8 _COM_FAT,_READ_DIR
+	RST8 _COM_FAT,_READ_DIR
 		PUSH DE
 		LD DE,0X0B
 		ADD HL,DE
 		LD A,(HL)
 		AND 0X10
 		JR NZ,SEARCHF4
-		RST8 _COM_FAT,_OPEN_FILE
+	RST8 _COM_FAT,_OPEN_FILE
 		LD HL,BUF_RDSEC
 		LD A,1
-		RST8 _COM_FAT,_READ_FILE
+	RST8 _COM_FAT,_READ_FILE
 		LD HL,BUF_FILEITEM
 		CALL CP_EXT
 		CALL 0
@@ -1341,108 +1375,108 @@ COMPARF2	CP (HL)
 		DJNZ COMPARF1
 		RET
 
-;ПРОШИВАТЕЛЬ ПЗУ С ИНДИКАЦИЕЙ ПРОЦЕССА
+; прошиватель пзу с индикацией процесса
 FLASHER		LD BC,PENT_CONF
 		XOR A
 		OUT (C),A
-		PEC_ON M_SHADOW_BF
+	PEC_ON M_SHADOW_BF
 		LD BC,0XFF77
 		LD A,0XA3
-		OUT (C),A			;ПРИНУДИТЕЛЬНОЕ ВКЛЮЧЕНИЕ ТУРБО РЕЖИМА 7МГЦ
+		OUT (C),A			; принудительное включение турбо режима 7МГЦ
 		LD A,(CMP_ROMSIZE)
 		DEC A
 		JR NZ,FLASHER6
 		LD IX,UPDATE_CUSTOM
-		RST8 _WINW
+	RST8 _WINW
 		LD SP,ADR_CAT
-		PEC_ON M_SHADOW_BF+M_FLASH_BF
+	PEC_ON M_SHADOW_BF+M_FLASH_BF
 		LD BC,WIN_A0
 		LD A,0X7F
-		OUT (C),A			;ОТКЛЮЧЕНИЕ ПЗУ В ОКНЕ 0
+		OUT (C),A			; отключение пзу в окне 0
 		LD E,0
 		LD HL,0
-		CALL ERASE_BLK			;СТИРАНИЕ COSTOM ROM СТРАНИЦЫ
+		CALL ERASE_BLK			; стирание CUSTOM ROM страницы
 		LD A,RAM_FLASHER
 		LD E,0
-		CALL FLASH_64KB			;ПРОГРАММИРОВАНИЕ CUSTOM ROM СТРАНИЦЫ
+		CALL FLASH_64KB			; программирование CUSTOM ROM страницы
 		JP EFLASHER
 
-FLASHER6	LD IX,ERASE_ROM			;ВЫВОД ОКНА О СТИРАНИИ FLASH
-		RST8 _WINW
-		LD IX,UPDATE_WIN		;ВЫВОД ОКНА ОБ ОБНОВЛЕНИИ FLASH
-		RST8 _WINW
+FLASHER6	LD IX,ERASE_ROM			; вывод окна о стирании FLASH
+	RST8 _WINW
+		LD IX,UPDATE_WIN		; вывод окна об обновлении FLASH
+	RST8 _WINW
 		LD IX,ERASE_ROM
 		LD SP,ADR_CAT
-		PEC_ON M_SHADOW_BF+M_FLASH_BF	;РАЗРЕШЕНИЕ ПРОГРАММИРОВАНИЯ FLASH
+	PEC_ON M_SHADOW_BF+M_FLASH_BF		; разрешение программирования FLASH
 		LD BC,WIN_A0
 		LD A,0X7F
-		OUT (C),A			;ОТКЛЮЧЕНИЕ ROM В ОКНЕ 0
+		OUT (C),A			; отключение rom в окне 0
 		LD A,3
-		CALL SETWIN_INDICAT		;УСТАНОВКА ИНДИКАТОРА ПРОЦЕССА
+		CALL SETWIN_INDICAT		; установка индикатора процесса
 		LD E,0
 		LD HL,0
-FLASHER4	CALL ERASE_BLK			;СТИРАНИЕ БЛОКА 64КБ
-		CALL INC_INDICAT		;ОБНОВЛЕНИЕ ИНДИКАТОРА ПРОЦЕССА
-		INC E				;СЛЕДУЮЩИЙ БЛОК	
+FLASHER4	CALL ERASE_BLK			; стирание блока 64КБ
+		CALL INC_INDICAT		; обновление индикатора процесса
+		INC E				; следующий блок	
 		BIT 3,E
 		JR Z,FLASHER4
 		LD IX,UPDATE_WIN
-		LD A,RAM_FLASHER		;СТРАНИЦА НАЧАЛА ЗАГРУЖЕННОГО ROM ФАЙЛА
+		LD A,RAM_FLASHER		; страница начала загруженного ROM файла
 		LD E,0
-FLASHER3	CALL FLASH_64KB			;ПРОШИВАНИЕ ОДНОЙ 64КБ СТРАНИЦЫ
-		INC E				;СЛЕДУЮЩАЯ 64КБ СТРАНИЦА
+FLASHER3	CALL FLASH_64KB			; прошивание одной 64КБ страницы
+		INC E				; следующая 64кб страница
 		BIT 3,E
 		JR Z,FLASHER3
 EFLASHER	LD BC,WIN_P3
 		XOR A
-		OUT (C),A			;ВКЛЮЧЕНИЕ RAM В ОКНЕ 3
+		OUT (C),A			; включение RAM в окне 3
 		LD A,(CPU3+0X20)
 		XOR B
-		LD (CPU3+0X20),A		;МЕНЯЕМ БАЙТ ДЛЯ НАРУШЕНИЯ CRC КОНТРОЛЯ И ПОЛНОГО РЕИНИТА
+		LD (CPU3+0X20),A		; меняем байт для нарушения CRC контроля и полного реинита
 		LD A,(CPU1+BUF_TABLVOL+0XFE)
 		XOR B
-		LD (CPU1+BUF_TABLVOL+0XFE),A	;АНАЛОГИЧНО ДЛЯ DEVICE MANAGER
-		PEC_OFF M_FLASH_BF
-		LD HL,0X79ED			;OUT (C),A
-		LD (0XFFFE),HL			;УКЛАДКА КОМАНДЫ OUT (C),A
+		LD (CPU1+BUF_TABLVOL+0XFE),A	; аналогично для DEVICE MANAGER
+	PEC_OFF M_FLASH_BF
+		LD HL,0X79ED			; OUT (C),A
+		LD (0XFFFE),HL			; укладка команды OUT (C),A
 		LD BC,0XBC77
 		LD A,2
 		JP 0XFFFE
 
-;ПРОШИВАНИЕ ОДНОЙ 64КБ СТРАНИЦЫ
-;ВХОД: A=НОМЕР 16КБ СТРАНИЦЫ ОТКУДА БРАТЬ БАЙТЫ ДЛЯ ПРОШИВАНИЯ
-;      E=НОМЕР ПРОШИВАЕМОЙ 64КБ СТРАНИЦЫ
+; прошивание одной 64КБ страницы
+; вход: A = номер 16КБ страницы откуда брать байты для прошивания
+;       E = номер прошиваемой 64КБ страницы
 FLASH_64KB	LD HL,0
 		PUSH AF
 		LD A,E
 		ADD A,2
-		CALL SETWIN_INDICAT		;ОБНОВЛЕНИЕ ИНДИКАТОРА ПРОЦЕССА
+		CALL SETWIN_INDICAT		; обновление индикатора процесса
 		POP AF
 FLASHER2	PUSH AF
 		LD BC,WIN_P0
-		OUT (C),A			;ВКЛЮЧЕНИЕ СТРАНИЦЫ RAM ОТКУДА БРАТЬ БАЙТЫ ДЛЯ ПРОШИВАНИЯ
+		OUT (C),A			; включение страницы RAM откуда брать байты для прошивания
 		PUSH IX
 		LD IX,0
-FLASHER1	LD A,(IX)			;ВЗЯЛИ БАЙТ ДЛЯ ПРОШИВАНИЯ
+FLASHER1	LD A,(IX)			; взяли байт для прошивания
 		INC A
-		JR Z,FLASHER5			;ЕСЛИ БАЙТ = FF, ТО НЕ ПРОШИВАЕМ
+		JR Z,FLASHER5			; если байт = 0xFF, то не прошиваем
 		DEC A
-		CALL PGM_BYTE			;ПРОШИЛИ БАЙТ
+		CALL PGM_BYTE			; прошили байт
 FLASHER5	INC IX
 		INC HL
 		LD A,H
 		AND 0X0F
 		OR L
-		CALL Z,INC_INDICAT		;ОБНОВИЛИ ИНДИКАТОР ЕСЛИ ПРОШИЛИ 4КБ
+		CALL Z,INC_INDICAT		; обновили индикатор если прошили 4КБ
 		LD A,IXH
 		AND 0X40
-		JR Z,FLASHER1			;ПРОДОЛЖАЕМ ПОКА НЕ КОНЧИТСЯ СТРАНИЦА ВЫБОРКИ БАЙТ
+		JR Z,FLASHER1			; продолжаем пока не кончится страница выборки байт
 		POP IX
 		POP AF
-		INC A				;СЛЕДУЮЩАЯ СТРАНИЦА ОТКУДА БАЙТЫ БРАТЬ ДЛЯ ПРОШИВАНИЯ
-		LD D,A				;ВРЕМЕННО СОХРАНИЛИ
-		LD A,H				;ПРОВЕРКА НА ОКОНЧАНИЕ 64КБ СТРАНИЦЫ 
+		INC A				; следующая страница откуда байты брать для прошивания
+		LD D,A				; временно сохранили
+		LD A,H				; проверка на окончание 64КБ страницы 
 		AND A
-		LD A,D				;ВОССТАНОВИЛИ
+		LD A,D				; восстановили
 		JR NZ,FLASHER2
 		RET
