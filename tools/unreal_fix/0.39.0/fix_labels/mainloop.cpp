@@ -150,6 +150,7 @@ void mainloop(const volatile bool &Exit)
 
       for (unsigned f = rsm.needframes[rsm.frame]; f; f--)
       {
+         //comp.fddIO2Ram_wr_disable = false;
          temp.sndblock = !conf.sound.enabled;
          temp.inputblock = temp.vidblock && conf.sound.enabled;
          spectrum_frame();

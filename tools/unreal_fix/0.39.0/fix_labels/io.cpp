@@ -1030,6 +1030,7 @@ __inline unsigned char in1(unsigned port)
       else if ((p1 & 0x9F) == 0x1F || p1 == 0xFF) {// 1F, 3F, 5F, 7F, FF
 		  if((comp.flags & CF_TRDOS)&&conf.trdos_IORam
 				&&((1<<comp.wd.drive)&comp.fddIO2Ram_mask)&&(bankr[0]==base_dos_rom)){
+              comp.fddIO2Ram_wr_disable = true;
 		      cpu.nmi_in_progress=conf.trdos_IORam;
 			  trdos_in_nmi = comp.flags&CF_TRDOS;
 			  set_banks();

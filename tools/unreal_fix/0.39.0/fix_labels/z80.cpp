@@ -60,7 +60,9 @@ u8 __fastcall Rm(u32 addr)
 
 void __fastcall Wm(u32 addr, u8 val)
 {
-    z80fast::wm(addr, val);
+    if(comp.fddIO2Ram_wr_disable == false){
+        z80fast::wm(addr, val);
+    }
 }
 
 u8 __fastcall DbgXm(u32 addr)
@@ -75,7 +77,9 @@ u8 __fastcall DbgRm(u32 addr)
 
 void __fastcall DbgWm(u32 addr, u8 val)
 {
-    z80dbg::wm(addr, val);
+    if(comp.fddIO2Ram_wr_disable == false){
+        z80dbg::wm(addr, val);
+    }
 }
 
 void reset(ROM_MODE mode)
@@ -97,6 +101,7 @@ void reset(ROM_MODE mode)
    comp.pBF = 0; // ATM3
    comp.pBE = 0; // ATM3
    comp.fddIO2Ram_mask = 0x00;
+   comp.fddIO2Ram_wr_disable = 0x00;
 
    if (conf.mem_model == MM_ATM710 || conf.mem_model == MM_ATM3)
    {

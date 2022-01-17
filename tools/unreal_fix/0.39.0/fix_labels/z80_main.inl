@@ -123,6 +123,7 @@ void wm(unsigned addr, unsigned char val)
 Z80INLINE unsigned char m1_cycle(Z80 *cpu)
 {
    unsigned char temp_op_code;
+   comp.fddIO2Ram_wr_disable = false;
    if ((conf.mem_model == MM_PENTAGON) &&
        ((comp.pEFF7 & (EFF7_CMOS | EFF7_4BPP)) == (EFF7_CMOS | EFF7_4BPP)))
        temp.offset_vscroll++;
