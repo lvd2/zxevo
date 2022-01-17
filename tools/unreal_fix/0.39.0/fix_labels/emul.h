@@ -1,3 +1,5 @@
+#ifndef UNREAL_EMUL_H
+#define UNREAL_EMUL_H
 #pragma once
 #include "sysdefs.h"
 #include "z80/defs.h"
@@ -627,3 +629,5 @@ extern unsigned nmi_pending;
 bool ConfirmExit();
 BOOL WINAPI ConsoleHandler(DWORD CtrlType);
 void showhelp(const char *anchor = nullptr);
+
+#endif UNREAL_EMUL_H

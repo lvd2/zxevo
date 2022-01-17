@@ -1033,7 +1033,7 @@ __inline unsigned char in1(unsigned port)
               comp.fddIO2Ram_wr_disable = true;
 		      cpu.nmi_in_progress=conf.trdos_IORam;
 			  trdos_in_nmi = comp.flags&CF_TRDOS;
-			  set_banks();
+			  set_banks(); 
 			  return 0xff;
 		  }else{
 		      if(conf.trdos_IORam && (p1&0x80)) return (comp.wd.in(p1) & 0xE0) | comp.trdos_last_ff;
